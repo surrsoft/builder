@@ -11,6 +11,7 @@
       "grunt-packer": "",
       "grunt-wi-json-palette": "",
       "grunt-wsmod-packer": "",
+      "grunt-cli": "",
       "grunt-contrib-copy": ""
    },
    "engines": {
