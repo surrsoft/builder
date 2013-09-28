@@ -12,13 +12,13 @@ module.exports = function(grunt) {
    grunt.option('color', !!process.stdout.isTTY);
 
    grunt.loadNpmTasks('grunt-packer');
-   grunt.loadNpmTasks('grunt-contrib-copy');
    grunt.loadNpmTasks('grunt-wsmod-packer');
+   grunt.loadNpmTasks('grunt-text-replace');
 
    grunt.file.setBase(target);
 
    grunt.initConfig(configBuilder(app));
 
-   grunt.registerTask('default', ['packwsmod', 'packjs', 'packcss']);
+   grunt.registerTask('default', ['replace', 'packwsmod', 'packjs', 'packcss']);
 
 };
