@@ -12,31 +12,32 @@ module.exports = function(grunt) {
 
       var needSplit = grunt.option('split'),
           defaultLang = grunt.option('defLang'),
-          availableLang = {},
+          availableLang = {}, jsDict = {},
           key;
       if ( needSplit ) {
          for (key in dicts) {
             if (dicts.hasOwnProperty(key)) {
+               availableLang ={}; jsDict = {};
+
                grunt.file.mkdir( key + '/' );
-               (function(lang){
-                  grunt.file.recurse('./', function( abspath, rootdir, subdir, filename ){
+               (function(lang, jsDict){
+                  i18n.recursive( grunt, function( abspath, rootdir, subdir, filename ){
                      // Копируем только нужные нам словари
                      var isDict = abspath.match( /\/lang\/(.+)\.json$/);
-                     if( isDict && ( isDict.slice(1)[0] !== lang ) )
+                     if ( isDict && ( isDict.slice(1)[0] !== lang ) ) {
                         return;
+                     } else if( isDict ) {
+                        i18n.getDictionaryPath( grunt, jsDict, lang, abspath );
+                     }
 
-                     // Игнорируем папки со статикой для конкретного языка
-                     if( i18n.isLangDir( subdir ) )
-                        return;
-
-                     var dest = path.join(rootdir, lang, subdir ? subdir : '', filename );
-                     i18n.copy( grunt, abspath, dest, lang, /\.xhtml$/.test( filename ) );
+                     i18n.copy( grunt, abspath, path.join(rootdir, lang, subdir ? subdir : '', filename ), lang, /\.xhtml$/.test( filename ) );
                   });
-               })(key);
+               })(key, jsDict);
 
-               availableLang = {};
                availableLang[key] = ISO639[key];
-               i18n.replaceContents( grunt, availableLang, key );
+               i18n.replaceContents( grunt, 'availableLanguage', availableLang, key );
+               i18n.replaceContents( grunt, 'dictionary', jsDict, key );
+
             }
          }
          // Ну и основную статику переведем "по умолчанию"
@@ -45,18 +46,23 @@ module.exports = function(grunt) {
 
       if (defaultLang) {
          // Заменим только html в статике по умолчанию
-         grunt.file.recurse('./', function( abspath, rootdir, subdir, filename ) {
-            // Игнорируем папки со статикой для конкретного языка
-            if( i18n.isLangDir( subdir ) )
-               return;
-
+         i18n.recursive( grunt, function( abspath, rootdir, subdir, filename ) {
             if( /\.xhtml$/.test( filename ) )
                i18n.copy( grunt, abspath, abspath, null, /\.xhtml$/.test( filename ) );
          });
 
          // На статике по умолчанию нет поддердживаемых языков
-         i18n.replaceContents( grunt, {} );
+         i18n.replaceContents( grunt, 'availableLanguage', {} );
+         i18n.replaceContents( grunt, 'dictionary', {} );
       } else {
+         i18n.recursive( grunt, function( abspath ) {
+            var isDict, lang;
+            lang = (isDict = abspath.match( /\/lang\/(.+)\.json$/)) ? isDict.slice(1)[0] : null;
+            if ( lang && ( lang in dicts ) ) {
+               i18n.getDictionaryPath( grunt, jsDict, lang, abspath );
+            }
+         });
+
          // Оставляем все как есть, еще попутно записав, какие языки поддерживаются, переведется на клиенте
          availableLang = {};
          for (key in dicts) {
@@ -64,7 +70,8 @@ module.exports = function(grunt) {
                availableLang[key] = ISO639[key];
             }
          }
-         i18n.replaceContents( grunt, availableLang );
+         i18n.replaceContents( grunt, 'availableLanguage', availableLang );
+         i18n.replaceContents( grunt, 'dictionary', jsDict );
       }
    });
 
@@ -96,14 +103,11 @@ i18n.findDictionary = function findDictionary( grunt, dictMask ) {
    });
 };
 
-i18n.replaceContents = function replaceContents( grunt, availableLang, subdir ) {
+i18n.replaceContents = function replaceContents( grunt, key, value, subdir ) {
    var abspath = path.join(subdir || '', 'resources/contents.json'),
        content = grunt.file.readJSON( abspath );
    if ( content ) {
-      content.availableLanguage = availableLang;
-
-      //TODO: В идеале здесь же надо заполнить блок dictionary
-
+      content[key] = value;
       grunt.file.write( abspath, JSON.stringify(content, null, 2) );
    } else {
       grunt.fail.warn( "Not find content.json file" );
@@ -138,6 +142,43 @@ i18n.isLangDir = function( subdir ) {
       return true;
 
    return false;
+};
+
+i18n.getDictionaryPath = function getDictionaryPath( grunt, obj, lang, path ) {
+   // Теперь надо понять какому модулю мы принадлежим, и есть ли css
+   // Надо получить имя модуля, для этого получим папку где лежит словарь
+   var langDir = 'lang\/' + lang + '.json',
+       regExp = new RegExp( '\/(\\w+)\/' + langDir),
+       dirName = path.match(regExp),
+       text, modName, cssPath;
+   dirName = dirName ? dirName.slice(1)[0] : null;
+   if( dirName ) {
+      // Вычитаем файл с модулем, и найдем в нем название модуля
+      text = grunt.file.read( path.replace( langDir, dirName + '.module.js' ) );
+      if (text) {
+         modName = text.match( /define\(.*?["'](\S+)["']/ );
+         modName = modName ? modName.slice(1)[0] : null;
+         if (modName) {
+            obj[modName+'.'+lang+'.json'] = path;
+            cssPath = path.replace( langDir, 'lang\/' + lang + '.css' );
+            if (grunt.file.exists( cssPath)) {
+               obj[modName+'.'+lang+'.css'] = cssPath;
+            }
+         }
+      }
+   }
+
+   return obj;
+};
+
+i18n.recursive = function recursive( grunt, callback ) {
+   grunt.file.recurse('./', function( abspath, rootdir, subdir, filename ){
+      // Игнорируем папки со статикой для конкретного языка
+      if( i18n.isLangDir( subdir ) )
+         return;
+
+      callback( abspath, rootdir, subdir, filename );
+   });
 };
 
 var ISO639 = {
