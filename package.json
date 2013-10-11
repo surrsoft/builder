@@ -1,7 +1,7 @@
 {
    "name": "sbis3-builder",
    "description": "Grunt-based builder for SBIS3 web projects",
-   "version": "0.2.0",
+   "version": "0.3.0",
    "author": "Oleg Elifantiev <oleg@elifantiev.ru>",
    "contributors": [],
    "keywords": [
@@ -12,7 +12,7 @@
       "grunt-wi-json-palette": "",
       "grunt-wsmod-packer": "0.2.3",
       "grunt-cli": "",
-      "grunt-contrib-copy": ""
+      "grunt-text-replace": "0.3.8"
    },
    "engines": {
       "node": ">=0.8"
