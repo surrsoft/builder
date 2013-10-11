@@ -15,7 +15,7 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-contrib-copy');
    grunt.loadNpmTasks('grunt-wsmod-packer');
 
-   grunt.loadTasks('Tasks');
+   grunt.loadTasks('tasks');
 
    grunt.file.setBase(target);
 
