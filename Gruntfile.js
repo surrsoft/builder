@@ -4,6 +4,7 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root'));
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
+   var defaultTasks = ['packwsmod', 'packjs', 'packcss', 'i18n' ];
 
    target = path.resolve(target) || '';
 
@@ -12,8 +13,8 @@ module.exports = function(grunt) {
    grunt.option('color', !!process.stdout.isTTY);
 
    grunt.loadNpmTasks('grunt-packer');
-   grunt.loadNpmTasks('grunt-contrib-copy');
    grunt.loadNpmTasks('grunt-wsmod-packer');
+   grunt.loadNpmTasks('grunt-text-replace');
 
    grunt.loadTasks('tasks');
 
@@ -21,6 +22,10 @@ module.exports = function(grunt) {
 
    grunt.initConfig(configBuilder(app));
 
-   grunt.registerTask('default', ['packwsmod', 'packjs', 'packcss', 'i18n']);
+   if(typeof grunt.option('versionize') == 'string') {
+      defaultTasks.push('replace');
+   }
+
+   grunt.registerTask('default', defaultTasks);
 
 };
