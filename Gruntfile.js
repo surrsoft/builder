@@ -4,7 +4,7 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root'));
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'packjs', 'packcss' ];
+   var defaultTasks = ['packwsmod', 'packjs', 'packcss', 'i18n' ];
 
    target = path.resolve(target) || '';
 
@@ -15,6 +15,8 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-packer');
    grunt.loadNpmTasks('grunt-wsmod-packer');
    grunt.loadNpmTasks('grunt-text-replace');
+
+   grunt.loadTasks('tasks');
 
    grunt.file.setBase(target);
 
