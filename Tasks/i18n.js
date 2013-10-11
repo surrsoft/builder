@@ -6,7 +6,10 @@ module.exports = function(grunt) {
       var needSplit = grunt.option('translate'),
           indexDict = grunt.option('index-dict');
 
-      helpers.findDictionary(grunt, this.data.dict || ['**/lang/*.json']);
+      if (needSplit || indexDict) {
+         helpers.findDictionary(grunt, this.data.dict || ['**/lang/*.json']);
+      }
+
       if (needSplit) {
          if (typeof needSplit === 'string') {
             if (needSplit === 'all') {
