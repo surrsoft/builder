@@ -22,10 +22,14 @@ module.exports = function(grunt) {
 
    grunt.initConfig(configBuilder(app));
 
-   if(typeof grunt.option('versionize') == 'string') {
+   if (typeof grunt.option('versionize') == 'string') {
       defaultTasks.push('replace');
    }
 
-   grunt.registerTask('default', defaultTasks);
+   if (grunt.option('collect-dependencies')) {
+      grunt.registerTask('default', [ 'collect-dependencies' ]);
+   } else {
+      grunt.registerTask('default', defaultTasks);
+   }
 
 };
