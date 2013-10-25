@@ -4,7 +4,7 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root'));
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'packjs', 'packcss', 'i18n' ];
+   var defaultTasks = ['packwsmod'/*, 'packjs', 'packcss', 'i18n' */];
 
    target = path.resolve(target) || '';
 
