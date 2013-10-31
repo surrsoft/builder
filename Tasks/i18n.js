@@ -7,7 +7,7 @@ module.exports = function(grunt) {
           indexDict = grunt.option('index-dict');
 
       if (needSplit || indexDict) {
-         helpers.findDictionary(grunt, this.data.dict || ['**/lang/*.json']);
+         helpers.findDictionary(grunt, this.data.dict || ['**/resources/lang/*.json']);
       }
 
       if (needSplit) {
