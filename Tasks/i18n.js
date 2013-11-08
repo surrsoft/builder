@@ -13,18 +13,18 @@ module.exports = function(grunt) {
       if (needSplit) {
          if (typeof needSplit === 'string') {
             if (needSplit === 'all') {
-               helpers.translateAll(grunt);
+               helpers.translateAll(grunt, this.data.application);
             } else {
-               helpers.translateOne(grunt, needSplit);
+               helpers.translateOne(grunt, needSplit, this.data.application);
             }
          }
 
          // Заменим только html в статике по умолчанию
-         helpers.translateDef(grunt);
+         helpers.translateDef(grunt, this.data.application);
       }
 
       if (indexDict) {
-         helpers.indexDict(grunt);
+         helpers.indexDict(grunt, this.data.application);
       }
 
       return true;
