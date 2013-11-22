@@ -1,10 +1,16 @@
 module.exports = function(grunt) {
 
+   var doConcat = grunt.option('concat');
    var path = require('path');
    var target = path.resolve(grunt.option('root'));
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'packjs', 'packcss', 'i18n'];
+   var defaultTasks = ['packwsmod'];
+
+   if (doConcat === true || doConcat === undefined) {
+      defaultTasks.push('packjs', 'packcss');
+   }
+   defaultTasks.push('i18n');
 
    target = path.resolve(target) || '';
 
