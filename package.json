@@ -10,7 +10,7 @@
       "grunt": "0.4.x",
       "grunt-packer": "0.1.8",
       "grunt-wi-json-palette": "",
-      "grunt-wsmod-packer": "0.3.7",
+      "grunt-wsmod-packer": "0.3.8",
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8"
    },
