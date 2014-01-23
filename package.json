@@ -12,7 +12,8 @@
       "grunt-wi-json-palette": "",
       "grunt-wsmod-packer": "0.3.8",
       "grunt-cli": "",
-      "grunt-text-replace": "0.3.8"
+      "grunt-text-replace": "0.3.8",
+      "sbis3-json-generator": "git+https://git.sbis.ru/av.malutin/sbis3-json-generator.git"
    },
    "engines": {
       "node": ">=0.8"
