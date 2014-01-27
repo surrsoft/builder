@@ -4,7 +4,7 @@ var helpers = require('../lib/i18n.js'),
 module.exports = function(grunt) {
 
    grunt.registerMultiTask('i18n', 'Translate static', function() {
-      var needSplit = grunt.option('translate'),
+      var translate = grunt.option('translate'),
           indexDict = grunt.option('index-dict'),
           prepare = grunt.option('prepare'),
           application = this.data.application;
@@ -13,16 +13,14 @@ module.exports = function(grunt) {
          helpers2.prepareXHTML(grunt, application);
       }
 
-      if (needSplit || indexDict) {
-         helpers.findDictionary(grunt, this.data.dict || ['**/resources/lang/*.json']);
-      }
+      if (translate) {
+         helpers.findDictionary(grunt, this.data.dict, application);
 
-      if (needSplit) {
-         if (typeof needSplit === 'string') {
-            if (needSplit === 'all') {
+         if (typeof translate === 'string') {
+            if (translate === 'all') {
                helpers.translateAll(grunt, application);
             } else {
-               helpers.translateOne(grunt, needSplit, application);
+               helpers.translateOne(grunt, translate, application);
             }
          }
 
@@ -31,7 +29,7 @@ module.exports = function(grunt) {
       }
 
       if (indexDict) {
-         helpers.indexDict(grunt, application);
+         helpers.indexDict(grunt, this.data.dict, application);
       }
 
       return true;
