@@ -13,6 +13,7 @@
       "grunt-wsmod-packer": "0.3.8",
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8",
+      "tensor-xmldom": "0.1.18",
       "sbis3-json-generator": "0.0.1"
    },
    "engines": {

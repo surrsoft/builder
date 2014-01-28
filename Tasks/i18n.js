@@ -6,7 +6,7 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', function() {
       var translate = grunt.option('translate'),
           indexDict = grunt.option('index-dict'),
-          prepare = grunt.option('prepare'),
+          prepare = grunt.option('prepare-xhtml'),
           application = this.data.application;
 
       if (prepare) {
