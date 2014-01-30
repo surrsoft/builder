@@ -2,7 +2,7 @@ module.exports = function(grunt) {
 
    var doConcat = grunt.option('concat');
    var path = require('path');
-   var target = path.resolve(grunt.option('root'));
+   var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
    var defaultTasks = ['packwsmod'];
@@ -11,8 +11,6 @@ module.exports = function(grunt) {
       defaultTasks.push('packjs', 'packcss');
    }
    defaultTasks.push('i18n');
-
-   target = path.resolve(target) || '';
 
    process.env.WS = path.join(target, app, 'ws');
 
