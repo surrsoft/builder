@@ -20,18 +20,7 @@ module.exports = function(grunt) {
       }
 
       if (translate) {
-         helpers.findDictionary(grunt, this.data.dict, application);
-
-         if (typeof translate === 'string') {
-            if (translate === 'all') {
-               helpers.translateAll(grunt, application);
-            } else {
-               helpers.translateOne(grunt, translate, application);
-            }
-         }
-
-         // Заменим только html в статике по умолчанию
-         helpers.translateDef(grunt, application);
+         helpers.translate(grunt, translate, this.data.dict, application);
          // Не надо уже ничего индексировать. все проиндексируемо уже здесь
          return true;
       }
