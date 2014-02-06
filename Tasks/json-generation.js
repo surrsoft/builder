@@ -13,7 +13,7 @@ module.exports = function(grunt) {
          'isWs': false
       });
 
-      var relative = path.relative.bind(path, [process.cwd()]);
+      var relative = path.relative.bind(path, process.cwd());
 
       var generatorOptions = {
          outDir: options.outDir && relative(options.outDir),
