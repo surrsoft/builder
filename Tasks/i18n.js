@@ -27,7 +27,7 @@ module.exports = function(grunt) {
       }
 
       if (packer) {
-         packageDictionary(grunt, application);
+         packageDictionary(grunt, this.data, application);
       }
 
       grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
