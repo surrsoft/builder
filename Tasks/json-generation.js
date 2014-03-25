@@ -13,10 +13,8 @@ module.exports = function(grunt) {
          'isWs': false
       });
 
-      var relative = path.relative.bind(path, process.cwd());
-
       var generatorOptions = {
-         outDir: options.outDir && relative(options.outDir),
+         outDir: options.outDir && options.outDir,
          isWs: options.isWs,
          showStdout: false
       };
@@ -24,7 +22,7 @@ module.exports = function(grunt) {
 
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Построение метаинформации начато.');
 
-      sbis3JSONGenerator.generateJson(relative(options.inDir), done, generatorOptions);
+      sbis3JSONGenerator.generateJson(options.inDir, done, generatorOptions);
 
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Построение метаинформации выполнено.');
    });
