@@ -14,7 +14,7 @@ module.exports = function(grunt) {
       });
 
       var generatorOptions = {
-         outDir: options.outDir && options.outDir,
+         outDir: options.outDir,
          isWs: options.isWs,
          showStdout: false
       };
