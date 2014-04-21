@@ -39,3 +39,7 @@ module.exports = function(grunt) {
    grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
 
 };
+
+if (require.main == module) {
+   console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
+}
