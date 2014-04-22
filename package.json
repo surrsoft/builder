@@ -16,6 +16,10 @@
       "tensor-xmldom": "0.2.0-b6",
       "sbis3-json-generator": "0.0.21"
    },
+   "devDependencies": {
+      "mocha": "",
+      "assert": ""
+   },
    "engines": {
       "node": ">=0.8"
    }
