@@ -20,6 +20,9 @@
       "mocha": "",
       "assert": ""
    },
+   "scripts": {
+      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
+   },
    "engines": {
       "node": ">=0.8"
    }
