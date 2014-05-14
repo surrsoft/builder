@@ -1,20 +1,27 @@
 {
    "name": "sbis3-builder",
    "description": "Grunt-based builder for SBIS3 web projects",
-   "version": "0.5.2",
+   "version": "3.6.1-BUILD",
    "author": "Oleg Elifantiev <oleg@elifantiev.ru>",
    "contributors": [],
    "keywords": [
    ],
    "dependencies": {
       "grunt": "0.4.x",
-      "grunt-packer": "0.1.10",
+      "grunt-packer": "0.1.11",
       "grunt-wi-json-palette": "",
-      "grunt-wsmod-packer": "0.3.10-2",
+      "grunt-wsmod-packer": "0.3.13",
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8",
-      "tensor-xmldom": "0.1.18",
-      "sbis3-json-generator": "0.0.1"
+      "tensor-xmldom": "0.2.0-b6",
+      "sbis3-json-generator": "0.0.21"
+   },
+   "devDependencies": {
+      "mocha": "",
+      "assert": ""
+   },
+   "scripts": {
+      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
    },
    "engines": {
       "node": ">=0.8"
