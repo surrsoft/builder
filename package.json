@@ -14,7 +14,8 @@
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8",
       "tensor-xmldom": "0.2.0-b6",
-      "sbis3-json-generator": "0.0.21"
+      "sbis3-json-generator": "0.0.21",
+      "jsshaper": "0.1.2"
    },
    "devDependencies": {
       "mocha": "",
