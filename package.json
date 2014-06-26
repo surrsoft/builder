@@ -8,7 +8,7 @@
    ],
    "dependencies": {
       "grunt": "0.4.x",
-      "grunt-packer": "0.1.11",
+      "grunt-packer": "0.1.14",
       "grunt-wi-json-palette": "",
       "grunt-wsmod-packer": "0.3.13",
       "grunt-cli": "",
