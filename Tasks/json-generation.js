@@ -1,5 +1,4 @@
-var sbis3JSONGenerator = require('sbis3-json-generator'),
-    path = require('path');
+var sbis3JSONGenerator = require('sbis3-json-generator');
 
 module.exports = function(grunt) {
 
