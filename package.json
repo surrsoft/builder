@@ -16,7 +16,8 @@
       "tensor-xmldom": "0.2.0-t2",
       "jsshaper": "0.1.2",
       "sbis3-genie-server": "0.5.*",
-      "mkdirp": "0.3.5"
+      "mkdirp": "0.3.5",
+      "node-uuid": "1.4.1"
    },
    "devDependencies": {
       "mocha": "",
