@@ -15,11 +15,11 @@ module.exports = function(grunt) {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
 
       if (makeDict) {
-         createResultDict(grunt);
+         createResultDict(grunt, this);
       }
 
       if (prepare) {
-         prepareXHTML(grunt, application);
+         prepareXHTML(grunt, application, this);
       }
 
       if (languages) {
