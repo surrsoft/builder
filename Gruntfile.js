@@ -5,12 +5,11 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod'];
+   var defaultTasks = ['uglify', 'cssmin', 'imagemin', 'packwsmod'];
 
    if (doConcat === true || doConcat === undefined) {
       defaultTasks.push('packjs', 'packcss');
    }
-   defaultTasks.push('i18n');
 
    process.env.WS = path.join(target, app, 'ws');
 
@@ -20,6 +19,10 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-wsmod-packer');
    grunt.loadNpmTasks('grunt-text-replace');
 
+   grunt.loadNpmTasks('grunt-contrib-uglify');
+   grunt.loadNpmTasks('grunt-contrib-cssmin');
+   grunt.loadNpmTasks('grunt-contrib-imagemin');
+
    grunt.loadTasks('tasks');
 
    grunt.file.setBase(target);
@@ -27,11 +30,9 @@ module.exports = function(grunt) {
    grunt.initConfig(configBuilder(app));
 
    if (typeof grunt.option('versionize') == 'string') {
-      defaultTasks.push('replace');
-   }
-
-   if (grunt.option('collect-dependencies')) {
-      grunt.registerTask('default', [ 'collect-dependencies' ]);
+      grunt.registerTask('default', ['replace']);
+   } else if (grunt.option('collect-dependencies')) {
+      grunt.registerTask('default', ['collect-dependencies']);
    } else {
       grunt.registerTask('default', defaultTasks);
    }
