@@ -24,6 +24,7 @@
       "assert": ""
    },
    "scripts": {
+     "postinstall": "node ./lib/install.js",
       "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
    },
    "engines": {
