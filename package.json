@@ -20,7 +20,7 @@
       "node-uuid": "1.4.1",
       "grunt-contrib-uglify": "0.8.0",
       "grunt-contrib-cssmin": "0.12.2",
-      "grunt-contrib-imagemin": "0.9.3"
+      "grunt-contrib-imagemin": "0.9.4"
    },
    "devDependencies": {
       "mocha": "",
@@ -30,6 +30,6 @@
       "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
    },
    "engines": {
-      "node": ">=0.8"
+      "node": ">=0.10"
    }
 }
