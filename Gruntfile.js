@@ -5,7 +5,7 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['uglify', 'cssmin', 'imagemin', 'packwsmod'];
+   var defaultTasks = ['uglify', 'cssmin', 'packwsmod'];
 
    if (doConcat === true || doConcat === undefined) {
       defaultTasks.push('packjs', 'packcss');
@@ -21,7 +21,6 @@ module.exports = function(grunt) {
 
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-cssmin');
-   grunt.loadNpmTasks('grunt-contrib-imagemin');
 
    grunt.loadTasks('tasks');
 
