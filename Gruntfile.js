@@ -5,13 +5,11 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['uglify', 'cssmin', 'packwsmod'];
+   var defaultTasks = ['collect-dependencies', 'packwsmod', 'owndepspack', 'uglify', 'cssmin'];
 
    if (doConcat === true || doConcat === undefined) {
       defaultTasks.push('packjs', 'packcss');
    }
-
-   defaultTasks.push('collect-dependencies', 'owndepspack');
 
    process.env.WS = path.join(target, app, 'ws');
 
