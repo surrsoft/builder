@@ -1,7 +1,7 @@
 {
    "name": "sbis3-builder",
    "description": "Grunt-based builder for SBIS3 web projects",
-   "version": "3.7.2-BUILD",
+   "version": "3.7.2100-BUILD",
    "author": "Oleg Elifantiev <oleg@elifantiev.ru>",
    "contributors": [],
    "keywords": [
