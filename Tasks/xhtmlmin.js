@@ -3,7 +3,6 @@ var path = require('path');
 module.exports = function(grunt) {
    grunt.registerMultiTask('xhtmlmin', 'minify xhtml', function () {
       var done = this.async(),
-          availableFiles,
           files = grunt.file.expand({cwd: process.cwd()}, this.data);
 
       files.forEach(function(file) {
