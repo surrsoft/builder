@@ -1,19 +1,13 @@
 module.exports = function(grunt) {
    grunt.registerMultiTask('xhtmlmin', 'minify xhtml and html', function () {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача xhtmlmin.');
-      var files = grunt.file.expand({cwd: process.cwd()}, this.data);
+      var   files = grunt.file.expand({cwd: process.cwd()}, this.data);
       files.forEach(function(file) {
-         readFileData(file, function(fileData, originalFile) {
-            fileData = fileData.replace(/\s{2,}/g,' ');
-            fileData = fileData.replace(/ </g,'<');
-            grunt.file.write(originalFile, fileData);
-         });
+         var data = grunt.file.read(file, {encoding: 'utf8'});
+         data = data.replace(/\s{2,}/g,' ');
+         data = data.replace(/ </g,'<');
+         grunt.file.write(file, data);
       });
       grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача xhtmlmin выполнена.');
    });
-
-   function readFileData(file, callback) {
-      var data = grunt.file.read(file, {encoding: 'utf8'});
-      callback(data, file);
-   }
 };
