@@ -5,13 +5,16 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'cssmin', 'uglify'];
+   var defaultTasks = ['collect-dependencies', 'packwsmod', 'cssmin', 'uglify'];
 
    if (doConcat === true || doConcat === undefined) {
       defaultTasks.push('packjs', 'packcss');
    }
 
+   defaultTasks.push('owndepspack');
+
    process.env.WS = path.join(target, app, 'ws');
+   process.env.RESOURCES = path.join(target, app, 'resources');
 
    grunt.option('color', !!process.stdout.isTTY);
 
