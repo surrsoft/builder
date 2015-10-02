@@ -1,7 +1,7 @@
 {
    "name": "sbis3-builder",
    "description": "Grunt-based builder for SBIS3 web projects",
-   "version": "3.7.3-BUILD",
+   "version": "3.7.310-BUILD",
    "author": "Oleg Elifantiev <oleg@elifantiev.ru>",
    "contributors": [],
    "keywords": [
@@ -10,16 +10,16 @@
       "grunt": "0.4.x",
       "grunt-packer": "0.3.3",
       "grunt-wi-json-palette": "",
-      "grunt-wsmod-packer": "0.7.11",
+      "grunt-wsmod-packer": "0.8.0",
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8",
       "tensor-xmldom": "0.2.0-t2",
       "jsshaper": "0.1.2",
       "sbis3-genie-server": "0.5.x",
       "mkdirp": "0.3.5",
-      "node-uuid": "1.4.1",
-      "grunt-contrib-uglify": "0.8.0",
-      "grunt-contrib-cssmin": "0.12.2"
+      "node-uuid": "1.4.x",
+      "grunt-contrib-uglify": "0.9.x",
+      "grunt-contrib-cssmin": "0.14.x"
    },
    "devDependencies": {
       "mocha": "",

@@ -11,7 +11,10 @@ module.exports = function(grunt) {
       defaultTasks.push('packjs', 'packcss');
    }
 
+   defaultTasks.push('owndepspack');
+
    process.env.WS = path.join(target, app, 'ws');
+   process.env.RESOURCES = path.join(target, app, 'resources');
 
    grunt.option('color', !!process.stdout.isTTY);
 
