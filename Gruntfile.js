@@ -29,7 +29,7 @@ module.exports = function(grunt) {
 
    grunt.file.setBase(target);
 
-   grunt.initConfig(configBuilder(app));
+   grunt.initConfig(configBuilder(app, grunt.option('ignore-ws')));
 
    if (typeof grunt.option('versionize') == 'string') {
       grunt.registerTask('default', ['replace']);
