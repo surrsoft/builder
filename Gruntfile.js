@@ -8,19 +8,7 @@ module.exports = function(grunt) {
    var copyWS = grunt.option('copyWS');
    var ignoreWS = grunt.option('ignore-ws');
    var versionize = grunt.option('versionize');
-   var packaging = grunt.option('packaging');
-
-   var packageTasks = (function() {
-      var tasks = ['packwsmod', 'cssmin', 'uglify'];
-
-      if (doConcat === true || doConcat === undefined) {
-         tasks.push('packjs', 'packcss');
-      }
-
-      //defaultTasks.push('owndepspack');
-
-      return tasks;
-   })();
+   var packaging = grunt.option('package');
 
    // Init environment
    var target = path.resolve(root);
@@ -47,12 +35,17 @@ module.exports = function(grunt) {
    if (copyWS) {
       var defaultTasks = ['collect-dependencies'];
 
+      if (packaging) {
+         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
+      }
+
       if (typeof versionize == 'string') {
          defaultTasks.push('replace');
       }
 
+      // Самый последний таск, когда уже все минифицировано и версионировано
       if (packaging) {
-         defaultTasks.concat(packageTasks);
+         defaultTasks.push('owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
@@ -62,6 +55,17 @@ module.exports = function(grunt) {
       } else if (grunt.option('collect-dependencies')) {
          grunt.registerTask('default', ['collect-dependencies']);
       } else {
+         var packageTasks = (function() {
+            var tasks = ['packwsmod', 'cssmin', 'uglify'];
+
+            if (doConcat === true || doConcat === undefined) {
+               tasks.push('packjs', 'packcss');
+            }
+
+            //tasks.push('owndepspack');
+
+            return tasks;
+         })();
          grunt.registerTask('default', packageTasks);
       }
    }
