@@ -1,46 +1,76 @@
 module.exports = function(grunt) {
-
-   var doConcat = grunt.option('concat');
    var path = require('path');
-   var target = path.resolve(grunt.option('root') || '');
+
+   // Read options
+   var doConcat = grunt.option('concat');
+   var root = grunt.option('root') || '';
    var app = grunt.option('application') || '';
+   var copyWS = grunt.option('copyWS');
+   var ignoreWS = grunt.option('ignore-ws');
+   var versionize = grunt.option('versionize');
+   var packaging = grunt.option('package');
+
+   // Init environment
+   var target = path.resolve(root);
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'cssmin', 'uglify'];
-
-   if (doConcat === true || doConcat === undefined) {
-      defaultTasks.push('packjs', 'packcss');
-   }
-
-   //defaultTasks.push('owndepspack');
 
    process.env.WS = path.join(target, app, 'ws');
    process.env.RESOURCES = path.join(target, app, 'resources');
 
    grunt.option('color', !!process.stdout.isTTY);
 
+   // Load tasks
    grunt.loadNpmTasks('grunt-packer');
    grunt.loadNpmTasks('grunt-wsmod-packer');
    grunt.loadNpmTasks('grunt-text-replace');
-
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-cssmin');
-
    grunt.loadTasks('tasks');
 
+   // Init config
    grunt.file.setBase(target);
+   grunt.initConfig(configBuilder(app, ignoreWS));
 
-   grunt.initConfig(configBuilder(app, grunt.option('ignore-ws')));
+   // New init tasks
+   if (copyWS) {
+      var defaultTasks = ['collect-dependencies'];
 
-   if (typeof grunt.option('versionize') == 'string') {
-      grunt.registerTask('default', ['replace']);
-   } else if (grunt.option('collect-dependencies')) {
-      grunt.registerTask('default', ['collect-dependencies']);
-   } else {
+      if (packaging) {
+         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
+      }
+
+      if (typeof versionize == 'string') {
+         defaultTasks.push('replace');
+      }
+
+      // Самый последний таск, когда уже все минифицировано и версионировано
+      if (packaging) {
+         defaultTasks.push('owndepspack');
+      }
+
       grunt.registerTask('default', defaultTasks);
+   } else {
+      if (typeof versionize == 'string') {
+         grunt.registerTask('default', ['replace']);
+      } else if (grunt.option('collect-dependencies')) {
+         grunt.registerTask('default', ['collect-dependencies']);
+      } else {
+         var packageTasks = (function() {
+            var tasks = ['packwsmod', 'cssmin', 'uglify'];
+
+            if (doConcat === true || doConcat === undefined) {
+               tasks.push('packjs', 'packcss');
+            }
+
+            //tasks.push('owndepspack');
+
+            return tasks;
+         })();
+         grunt.registerTask('default', packageTasks);
+      }
    }
 
    grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
-
 };
 
 if (require.main == module) {
