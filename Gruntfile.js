@@ -13,6 +13,7 @@ module.exports = function(grunt) {
    // Init environment
    var target = path.resolve(root);
    var configBuilder = require('./lib/config-builder.js');
+   var defaultTasks = ['packwsmod', 'cssmin', 'uglify'];
 
    process.env.WS = path.join(target, app, 'ws');
    process.env.RESOURCES = path.join(target, app, 'resources');
@@ -33,7 +34,7 @@ module.exports = function(grunt) {
 
    // New init tasks
    if (copyWS) {
-      var defaultTasks = ['collect-dependencies'];
+      var defaultTasks = ['deanonymize', 'collect-dependencies'];
 
       if (packaging) {
          defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
@@ -43,7 +44,7 @@ module.exports = function(grunt) {
          defaultTasks.push('replace');
       }
 
-      // Самый последний таск, когда уже все минифицировано и версионировано
+      // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       if (packaging) {
          defaultTasks.push('owndepspack');
       }
@@ -56,7 +57,7 @@ module.exports = function(grunt) {
          grunt.registerTask('default', ['collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['packwsmod', 'cssmin', 'uglify'];
+            var tasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
