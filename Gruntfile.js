@@ -44,7 +44,7 @@ module.exports = function(grunt) {
          defaultTasks.push('replace');
       }
 
-      // ����� ��������� ����, ����� ��� ��� �������������� � ��������������
+      // Данный таск должен быть самым последним
       if (packaging) {
          defaultTasks.push('owndepspack');
       }
