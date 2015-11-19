@@ -13,7 +13,6 @@ module.exports = function(grunt) {
    // Init environment
    var target = path.resolve(root);
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'cssmin', 'uglify'];
 
    process.env.WS = path.join(target, app, 'ws');
    process.env.RESOURCES = path.join(target, app, 'resources');
@@ -44,9 +43,9 @@ module.exports = function(grunt) {
          defaultTasks.push('replace');
       }
 
-      // Данный таск должен быть самым последним
+      // Last task!!!!
       if (packaging) {
-         defaultTasks.push('owndepspack');
+         //defaultTasks.push('owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
