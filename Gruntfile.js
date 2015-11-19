@@ -5,7 +5,7 @@ module.exports = function(grunt) {
    var target = path.resolve(grunt.option('root') || '');
    var app = grunt.option('application') || '';
    var configBuilder = require('./lib/config-builder.js');
-   var defaultTasks = ['packwsmod', 'cssmin', 'uglify'];
+   var defaultTasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify'];
 
    if (doConcat === true || doConcat === undefined) {
       defaultTasks.push('packjs', 'packcss');
