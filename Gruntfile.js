@@ -33,7 +33,7 @@ module.exports = function(grunt) {
 
    // New init tasks
    if (copyWS) {
-      var defaultTasks = ['collect-dependencies'];
+      var defaultTasks = ['deanonymize', 'collect-dependencies'];
 
       if (packaging) {
          defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
@@ -43,9 +43,9 @@ module.exports = function(grunt) {
          defaultTasks.push('replace');
       }
 
-      // Самый последний таск, когда уже все минифицировано и версионировано
+      // Last task!!!!
       if (packaging) {
-         defaultTasks.push('owndepspack');
+         //defaultTasks.push('owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
@@ -56,7 +56,7 @@ module.exports = function(grunt) {
          grunt.registerTask('default', ['collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['packwsmod', 'cssmin', 'uglify'];
+            var tasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
