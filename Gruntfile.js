@@ -36,7 +36,7 @@ module.exports = function(grunt) {
       var defaultTasks = ['deanonymize', 'collect-dependencies'];
 
       if (packaging) {
-         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
+         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'xhtmlmin', 'packjs', 'packcss');
       }
 
       if (typeof versionize == 'string') {
@@ -56,7 +56,7 @@ module.exports = function(grunt) {
          grunt.registerTask('default', ['collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify'];
+            var tasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify', 'xhtmlmin'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
