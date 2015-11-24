@@ -45,24 +45,25 @@ module.exports = function(grunt) {
 
       // Last task!!!!
       if (packaging) {
-         //defaultTasks.push('owndepspack');
+         defaultTasks.push('owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
    } else {
+      grunt.log.error('Deprecated! Use --copyWS [--package=true, [--versionize="version_number"]] flags.');
       if (typeof versionize == 'string') {
          grunt.registerTask('default', ['replace']);
       } else if (grunt.option('collect-dependencies')) {
-         grunt.registerTask('default', ['collect-dependencies']);
+         grunt.registerTask('default', ['deanonymize', 'collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['deanonymize', 'packwsmod', 'cssmin', 'uglify', 'xhtmlmin'];
+            var tasks = ['packwsmod', 'cssmin', 'uglify', 'xhtmlmin'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
             }
 
-            //tasks.push('owndepspack');
+            tasks.push('owndepspack');
 
             return tasks;
          })();
