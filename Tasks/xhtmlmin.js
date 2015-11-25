@@ -7,7 +7,7 @@ module.exports = function(grunt) {
          var mn = /\/\*.*?\*+\/+?/g,
              ln = /\/\/.*\r\n/g;
          data = data.replace(ln, '');
-         data = data.replace(/\s{2,}/g,' ');
+         data = data.replace(/\s{2,}/g,'');
          data = data.replace(/ </g,'<');
          data = data.replace(mn,'');
          grunt.file.write(file, data);
