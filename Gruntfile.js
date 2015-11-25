@@ -35,17 +35,12 @@ module.exports = function(grunt) {
    if (copyWS) {
       var defaultTasks = ['deanonymize', 'collect-dependencies'];
 
-      if (packaging) {
-         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss');
-      }
-
       if (typeof versionize == 'string') {
          defaultTasks.push('replace');
       }
 
-      // Last task!!!!
       if (packaging) {
-         defaultTasks.push('owndepspack');
+         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss', 'owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
