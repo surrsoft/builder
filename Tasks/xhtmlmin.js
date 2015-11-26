@@ -4,10 +4,10 @@ module.exports = function(grunt) {
       var   files = grunt.file.expand({cwd: process.cwd()}, this.data);
       files.forEach(function(file) {
          var data = grunt.file.read(file, {encoding: 'utf8'});
-         var mn = /\/\*.*?\*+\/+?/g,
+         var mn = /\s?\/\*[\s\S]*?\*+\/+?\s?/g,
              ln = /\/\/.*\r\n/g;
          data = data.replace(ln, '');
-         data = data.replace(/\s{2,}/g,'');
+         data = data.replace(/\s{2,}/g,' ');
          data = data.replace(/ </g,'<');
          data = data.replace(mn,'');
          grunt.file.write(file, data);
