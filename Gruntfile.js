@@ -40,7 +40,7 @@ module.exports = function(grunt) {
       }
 
       if (packaging) {
-         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'xhtmlmin', 'packjs', 'packcss', 'owndepspack');
+         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss', 'owndepspack');
       }
 
       grunt.registerTask('default', defaultTasks);
@@ -52,7 +52,7 @@ module.exports = function(grunt) {
          grunt.registerTask('default', ['deanonymize', 'collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['packwsmod', 'cssmin', 'uglify', 'xhtmlmin'];
+            var tasks = ['packwsmod', 'cssmin', 'uglify'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
