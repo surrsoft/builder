@@ -36,11 +36,15 @@ module.exports = function(grunt) {
       var defaultTasks = ['deanonymize', 'collect-dependencies'];
 
       if (typeof versionize == 'string') {
-         defaultTasks.push('replace');
+         defaultTasks.push('replace:core', 'replace:css', 'replace:res');
       }
 
       if (packaging) {
          defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'packjs', 'packcss', 'owndepspack');
+      }
+
+      if (typeof versionize == 'string') {
+         defaultTasks.push('replace:html');
       }
 
       grunt.registerTask('default', defaultTasks);
