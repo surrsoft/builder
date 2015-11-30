@@ -15,7 +15,7 @@ module.exports = function(grunt) {
              data = data.substr(endScr, data.length);
              startScr = data.indexOf(scriptWord);
           }
-          out += (data.substr(0, data.length));
+          out += min(data.substr(0, data.length));
           return out;
     }
 
