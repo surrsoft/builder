@@ -40,7 +40,8 @@ module.exports = function(grunt) {
         * Если найденное вхождение совпадет с одним из сохраненных, то пропустим его.
         * Остальные вхождения примем за комментарий и удалим. Так же удалим многострочные комментарии и переводы строк*/
        var possibleComments = /\/\/.*\r\n/g,
-          mnComments = /\s?\/\*[\s\S]*?\*+\/+?\s?/g;
+          mnComments = /\s?\/\*[\s\S]*?\*+\/+?\s?/g,
+          compressSymbols = / {|{ | }|} | =|= | ;|; |, | ,| \)|\) |\( | \(/g;
        data = data.replace(possibleComments, function(str) {
           var isNotComment;
           slahes.forEach(function(item) {
@@ -56,6 +57,10 @@ module.exports = function(grunt) {
        });
        data = data.replace(mnComments, '');
        data = data.replace(/\s{2,}/g,' ');
+       data = data.replace(compressSymbols, function(str) {
+          str = str.replace(/ /, '');
+          return str;
+       });
        return data;
     }
 
