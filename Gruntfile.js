@@ -33,7 +33,13 @@ module.exports = function(grunt) {
 
    // New init tasks
    if (copyWS) {
-      var defaultTasks = ['deanonymize', 'collect-dependencies'];
+      var defaultTasks = [];
+
+      if (packaging) {
+         defaultTasks.push('deanonymize');
+      }
+
+      defaultTasks.push('collect-dependencies');
 
       if (typeof versionize == 'string') {
          defaultTasks.push('replace:core', 'replace:css', 'replace:res');
@@ -53,7 +59,7 @@ module.exports = function(grunt) {
       if (typeof versionize == 'string') {
          grunt.registerTask('default', ['replace']);
       } else if (grunt.option('collect-dependencies')) {
-         grunt.registerTask('default', ['deanonymize', 'collect-dependencies']);
+         grunt.registerTask('default', ['collect-dependencies']);
       } else {
          var packageTasks = (function() {
             var tasks = ['packwsmod', 'cssmin', 'uglify'];
