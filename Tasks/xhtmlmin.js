@@ -66,7 +66,7 @@ module.exports = function(grunt) {
 
     function min(data) {
        data = data.replace(/<!--[\s\S]*?-->/g, function(str) {
-          if((str.indexOf('[if') != -1) || (str.indexOf(' [if') != -1)) {
+          if((str.indexOf('[if') != -1) || (str.indexOf('[ if') != -1)) {
              return str;
           } else {
              return ''
