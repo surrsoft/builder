@@ -29,7 +29,7 @@ module.exports = function(grunt) {
 
    // Init config
    grunt.file.setBase(target);
-   grunt.initConfig(configBuilder(app, ignoreWS));
+   grunt.initConfig(configBuilder(grunt, app, ignoreWS));
 
    // New init tasks
    if (copyWS) {
