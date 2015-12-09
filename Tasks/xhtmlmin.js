@@ -66,7 +66,8 @@ module.exports = function(grunt) {
 
     function min(data) {
        data = data.replace(/<!--[\s\S]*?-->/g, function(str) {
-          if((str.indexOf('[if') != -1) || (str.indexOf('[ if') != -1)) {
+          var specComment = /WS-EXPERT|\[if|\[\s*if/;
+          if(specComment.test(str)) {
              return str;
           } else {
              return ''
