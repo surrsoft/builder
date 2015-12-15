@@ -6,7 +6,6 @@ module.exports = function(grunt) {
    var root = grunt.option('root') || '';
    var app = grunt.option('application') || '';
    var copyWS = grunt.option('copyWS');
-   var ignoreWS = grunt.option('ignore-ws');
    var versionize = grunt.option('versionize');
    var packaging = grunt.option('package');
 
@@ -29,7 +28,7 @@ module.exports = function(grunt) {
 
    // Init config
    grunt.file.setBase(target);
-   grunt.initConfig(configBuilder(grunt, app, ignoreWS));
+   grunt.initConfig(configBuilder(grunt, app));
 
    // New init tasks
    if (copyWS) {
