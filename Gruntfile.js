@@ -45,7 +45,7 @@ module.exports = function(grunt) {
       }
 
       if (packaging) {
-         defaultTasks.push('packwsmod', 'cssmin', 'uglify', 'xhtmlmin', 'packjs', 'packcss', 'owndepspack');
+         defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
       }
 
       if (typeof versionize == 'string') {
@@ -61,7 +61,7 @@ module.exports = function(grunt) {
          grunt.registerTask('default', ['collect-dependencies']);
       } else {
          var packageTasks = (function() {
-            var tasks = ['packwsmod', 'cssmin', 'uglify', 'xhtmlmin'];
+            var tasks = ['cssmin', 'uglify', 'packwsmod', 'xhtmlmin'];
 
             if (doConcat === true || doConcat === undefined) {
                tasks.push('packjs', 'packcss');
