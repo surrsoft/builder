@@ -2,10 +2,8 @@ module.exports = function(grunt) {
    var path = require('path');
 
    // Read options
-   var doConcat = grunt.option('concat');
    var root = grunt.option('root') || '';
    var app = grunt.option('application') || '';
-   var copyWS = grunt.option('copyWS');
    var versionize = grunt.option('versionize');
    var packaging = grunt.option('package');
 
@@ -30,50 +28,27 @@ module.exports = function(grunt) {
    grunt.file.setBase(target);
    grunt.initConfig(configBuilder(grunt, app));
 
-   // New init tasks
-   if (copyWS) {
-      var defaultTasks = [];
+   var defaultTasks = [];
 
-      if (packaging) {
-         defaultTasks.push('deanonymize');
-      }
-
-      defaultTasks.push('collect-dependencies');
-
-      if (typeof versionize == 'string') {
-         defaultTasks.push('replace:core', 'replace:css', 'replace:res');
-      }
-
-      if (packaging) {
-         defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
-      }
-
-      if (typeof versionize == 'string') {
-         defaultTasks.push('replace:html');
-      }
-
-      grunt.registerTask('default', defaultTasks);
-   } else {
-      grunt.log.error('Deprecated! Use --copyWS [--package=true, [--versionize="version_number"]] flags.');
-      if (typeof versionize == 'string') {
-         grunt.registerTask('default', ['replace']);
-      } else if (grunt.option('collect-dependencies')) {
-         grunt.registerTask('default', ['collect-dependencies']);
-      } else {
-         var packageTasks = (function() {
-            var tasks = ['cssmin', 'uglify', 'packwsmod', 'xhtmlmin'];
-
-            if (doConcat === true || doConcat === undefined) {
-               tasks.push('packjs', 'packcss');
-            }
-
-            tasks.push('owndepspack');
-
-            return tasks;
-         })();
-         grunt.registerTask('default', packageTasks);
-      }
+   if (packaging) {
+      defaultTasks.push('deanonymize');
    }
+
+   defaultTasks.push('collect-dependencies');
+
+   if (typeof versionize == 'string') {
+      defaultTasks.push('replace:core', 'replace:css', 'replace:res');
+   }
+
+   if (packaging) {
+      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
+   }
+
+   if (typeof versionize == 'string') {
+      defaultTasks.push('replace:html');
+   }
+
+   grunt.registerTask('default', defaultTasks);
 
    grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
 };
