@@ -21,8 +21,8 @@ module.exports = function(grunt) {
 
     function saveSlahes(data) {
        //Пройдет по скрипту и сохранит все вхождения двойных слешей, заключенных в кавычки
-       var correctDoubleSlashes = /".*(\/{2}.*?".*?\r\n)/g,
-          correctSlashes = /'.*(\/{2}.*?'.*?\r\n)/g,
+       var correctDoubleSlashes = /".*(\/{2}.*?".*?[\r\n])/g,
+          correctSlashes = /'.*(\/{2}.*?'.*?[\r\n])/g,
           savedSlahes = [];
        data.replace(correctDoubleSlashes, function(str, p1) {
           savedSlahes.push(p1);
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
         /* Найдет все вхождения двойных слешей и сравнит с сохраненным массивом
         * Если найденное вхождение совпадет с одним из сохраненных, то пропустим его.
         * Остальные вхождения примем за комментарий и удалим. Так же удалим многострочные комментарии и переводы строк*/
-       var possibleComments = /\/\/.*\r\n/g,
+       var possibleComments = /\/\/.*[\r\n]*/g,
           mnComments = /\s?\/\*[\s\S]*?\*+\/+?\s?/g,
           compressSymbols = / {|{ | }|} | =|= | ;|; |, | ,| \)|\) |\( | \(/g;
        data = data.replace(possibleComments, function(str) {
@@ -73,8 +73,8 @@ module.exports = function(grunt) {
              return ''
           }
        });
-       data = data.replace(/\s{2,}/g,' ');
-       data = data.replace(/ </g,'<');
+       data = data.replace(/[\n\r]\s*/g,' ');
+       data = data.replace(/>\s*</g,'><');
        return data;
     }
 
