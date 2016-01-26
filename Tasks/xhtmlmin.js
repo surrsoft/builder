@@ -73,8 +73,8 @@ module.exports = function(grunt) {
              return ''
           }
        });
-       data = data.replace(/\s{2,}/g,' ');
-       data = data.replace(/ </g,'<');
+       data = data.replace(/[\n\r]\s*/g,' ');
+       data = data.replace(/>\s*</g,'><');
        return data;
     }
 
