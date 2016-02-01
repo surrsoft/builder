@@ -61,7 +61,7 @@ module.exports = function(grunt) {
 
    function minifyDOM(data) {
       data = data.replace(/[\n\r]\s*/g, ' ');
-      data = data.replace(/>\s*</g, '><');
+      data = data.replace(/>\s+</g, '> <');
       return data;
    }
 
