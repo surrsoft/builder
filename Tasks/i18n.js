@@ -1,7 +1,7 @@
-var indexDict = require('../lib/i18n.js').indexDict,
-    prepareXHTML = require('../lib/i18n-prepare.js').prepareXHTML,
-    createResultDict = require('../lib/i18n-dict.js').createResultDict,
-    packageDictionary = require('../lib/i18n-packer.js').packageDictionary;
+var indexDict = require('../lib/i18n/indexDictionary').indexDict,
+    prepareXHTML = require('../lib/i18n/prepareXHTML').prepareXHTML,
+    createResultDict = require('../lib/i18n/createResultDictionary').createResultDict,
+    packageDictionary = require('../lib/i18n/packer.js').packageDictionary;
 
 module.exports = function(grunt) {
 
