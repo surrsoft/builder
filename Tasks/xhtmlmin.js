@@ -67,8 +67,8 @@ module.exports = function(grunt) {
 
    function saveSlashes(data) {
       //Пройдет по скрипту и сохранит все вхождения двойных слешей, заключенных в кавычки
-      var correctDoubleSlashes = /".*(\/{2}.*?".*?[\r\n])/g,
-          correctSlashes = /'.*(\/{2}.*?'.*?[\r\n])/g,
+      var correctDoubleSlashes = /".*(\/{2}.*?".*?[\r\n]*)/g,
+          correctSlashes = /'.*(\/{2}.*?'.*?[\r\n]*)/g,
           savedSlahes = [];
 
       data.replace(correctDoubleSlashes, function(str, p1) {
