@@ -9,7 +9,7 @@
    "dependencies": {
       "grunt": "0.4.x",
       "grunt-packer": "0.3.4",
-      "grunt-wsmod-packer": "0.8.43",
+      "grunt-wsmod-packer": "0.8.44",
       "grunt-cli": "",
       "grunt-text-replace": "0.3.8",
       "tensor-xmldom": "0.2.0-t2",
