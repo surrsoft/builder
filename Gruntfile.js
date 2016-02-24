@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize');
    }
 
-   defaultTasks.push('collect-dependencies', 'i18n');
+   defaultTasks.push('i18n', 'collect-dependencies');
 
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res');
