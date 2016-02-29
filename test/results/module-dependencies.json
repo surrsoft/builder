@@ -1,0 +1,4247 @@
+{
+  "nodes": {
+    "js!SBIS3.MySite.Head": {
+      "path": "resources\\Shop\\Head\\Head.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CompoundControl": {
+      "path": "ws\\lib\\Control\\CompoundControl\\CompoundControl.module.js",
+      "amd": true
+    },
+    "html!SBIS3.MySite.Head": {
+      "path": "resources\\Shop\\Head\\Head.xhtml"
+    },
+    "css!SBIS3.MySite.Head": {
+      "path": "resources\\Shop\\Head\\Head.css"
+    },
+    "js!SBIS3.MySite.Head/resources/SubHead": {
+      "path": "resources\\Shop\\Head\\resources\\SubHead.js",
+      "amd": true
+    },
+    "js!SBIS3.MySite.Index": {
+      "path": "resources\\Shop\\Index\\Index.module.js",
+      "amd": true
+    },
+    "html!SBIS3.MySite.Index": {
+      "path": "resources\\Shop\\Index\\Index.xhtml"
+    },
+    "css!SBIS3.MySite.Index": {
+      "path": "resources\\Shop\\Index\\Index.css"
+    },
+    "Core/BackgroundMapper": {
+      "path": "ws\\core\\BackgroundMapper.js",
+      "amd": true
+    },
+    "Core/ParserUtilities": {
+      "path": "ws\\core\\ParserUtilities.js",
+      "amd": true
+    },
+    "Core/SessionStorage": {
+      "path": "ws\\core\\SessionStorage.js",
+      "amd": true
+    },
+    "Core/dt_layout": {
+      "path": "ws\\core\\dt_layout.js",
+      "amd": true
+    },
+    "Core/jquery-dblclick": {
+      "path": "ws\\core\\jquery-dblclick.js",
+      "amd": true
+    },
+    "Core/js-template-doT": {
+      "path": "ws\\core\\js-template-doT.js",
+      "amd": true
+    },
+    "js!Core/tmpl/config": {
+      "path": "ws\\ext\\requirejs\\plugins\\tmpl.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/data/array": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\data\\array.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/utils": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\utils.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/errorHandling": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\errorHandling.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/data/number": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\data\\number.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/entityHelpers": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\entityHelpers.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/data/object": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\data\\object.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/data/string": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\data\\string.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/else": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\else.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/processExpressions": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\processExpressions.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/for": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\for.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/State": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\State.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/jison/beforejs": {
+      "path": "ws\\core\\tmpl\\js\\jison\\beforejs.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/scopes": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\scopes.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/if": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\if.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/challengeModuleValues": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\challengeModuleValues.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/include": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\include.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/straightFromFile": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\straightFromFile.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/includeAMD": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\includeAMD.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/straightFromFileAMD": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\straightFromFileAMD.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/module": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\module.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/partial": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\partial.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/injectedDataForce": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\injectedDataForce.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/astModules/template": {
+      "path": "ws\\core\\tmpl\\js\\astModules\\template.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/calculator": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\calculator.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/decorators": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\decorators.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/expressions": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\expressions.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/requireFile": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\requireFile.js",
+      "amd": true
+    },
+    "fs": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\requireFile.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/requireFileAMD": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\requireFileAMD.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/skipVars": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\skipVars.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/helpers/whatType": {
+      "path": "ws\\core\\tmpl\\js\\helpers\\whatType.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/jison/htmlparser": {
+      "path": "ws\\core\\tmpl\\js\\jison\\htmlparser.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/processing": {
+      "path": "ws\\core\\tmpl\\js\\processing.js",
+      "amd": true
+    },
+    "js!Core/tmpl/js/traverse": {
+      "path": "ws\\core\\tmpl\\js\\traverse.js",
+      "amd": true
+    },
+    "js!Core/tmpl/tmpl": {
+      "path": "ws\\ext\\requirejs\\plugins\\tmpl.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.bignumWrapper": {
+      "path": "ws\\ext\\bignumWrapper.js",
+      "amd": true
+    },
+    "jquery": {
+      "path": "ws\\ext\\jquery-min.js",
+      "amd": true
+    },
+    "native-css": {
+      "path": "ws\\ext\\requirejs\\plugins\\native-css.js",
+      "amd": true
+    },
+    "normalize": {
+      "path": "ws\\ext\\requirejs\\plugins\\normalize.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Cache": {
+      "path": "ws\\lib\\Cache\\Cache.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.CollapsingNavigation": {
+      "path": "ws\\lib\\CollapsingNavigation\\CollapsingNavigation.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.CollapsingNavigation": {
+      "path": "ws\\lib\\CollapsingNavigation\\CollapsingNavigation.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CollapsingNavigation": {
+      "path": "ws\\lib\\CollapsingNavigation\\CollapsingNavigation.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Accordion": {
+      "path": "ws\\lib\\Control\\Accordion\\Accordion.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Accordion/Accordion_element": {
+      "path": "ws\\lib\\Control\\Accordion\\Accordion.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Accordion": {
+      "path": "ws\\lib\\Control\\Accordion\\Accordion.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Accordion": {
+      "path": "ws\\lib\\Control\\Accordion\\Accordion.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Control": {
+      "path": "ws\\lib\\Control\\Control.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.AccordionCollapsePlugin": {
+      "path": "ws\\lib\\Control\\Accordion\\plugins\\Collapse-plugin.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.AreaAbstract": {
+      "path": "ws\\lib\\Control\\AreaAbstract\\AreaAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.AreaAbstract": {
+      "path": "ws\\lib\\Control\\AreaAbstract\\AreaAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.AttributeCfgParser": {
+      "path": "ws\\lib\\Control\\AttributeCfgParser\\AttributeCfgParser.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Button": {
+      "path": "ws\\lib\\Control\\Button\\Button.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Button/Button_image": {
+      "path": "ws\\lib\\Control\\Button\\Button.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Button": {
+      "path": "ws\\lib\\Control\\Button\\Button.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Button": {
+      "path": "ws\\lib\\Control\\Button\\Button.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ButtonAbstract": {
+      "path": "ws\\lib\\Control\\ButtonAbstract\\ButtonAbstract.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ButtonAbstract": {
+      "path": "ws\\lib\\Control\\ButtonAbstract\\ButtonAbstract.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.LinkButton": {
+      "path": "ws\\lib\\Control\\LinkButton\\LinkButton.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.CloseButton": {
+      "path": "ws\\lib\\Control\\CloseButton\\CloseButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CloseButton": {
+      "path": "ws\\lib\\Control\\CloseButton\\CloseButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Infobox": {
+      "path": "ws\\lib\\Control\\Infobox\\Infobox.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DataBoundMixin": {
+      "path": "ws\\lib\\Mixins\\DataBoundMixin.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.NavigationController": {
+      "path": "ws\\lib\\NavigationController\\NavigationController.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.CustomView": {
+      "path": "ws\\lib\\Control\\CustomView\\CustomView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CustomView": {
+      "path": "ws\\lib\\Control\\CustomView\\CustomView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DataViewAbstract": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\DataViewAbstract.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.DataViewAbstract": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\DataViewAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TDataSource": {
+      "path": "ws\\lib\\Type\\TDataSource\\TDataSource.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldDropdown": {
+      "path": "ws\\lib\\Control\\FieldDropdown\\FieldDropdown.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Paging": {
+      "path": "ws\\lib\\Control\\Paging\\Paging.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Dialog": {
+      "path": "ws\\lib\\Control\\Dialog\\Dialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.LoadingIndicator": {
+      "path": "ws\\lib\\Control\\LoadingIndicator\\LoadingIndicator.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SumDialog": {
+      "path": "ws\\res\\wsmodules\\SumDialog\\SumDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CopyPlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\Copy-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HistoryPlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\History-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.MarkedRowOptionsPlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\MarkedRowOptions-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.MergePlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\Merge-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SelectMergeRecordDialog": {
+      "path": "ws\\res\\wsmodules\\SelectMergeRecordDialog\\SelectMergeRecordDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.MovePlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\Move-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DragAndDropPlugin": {
+      "path": "ws\\lib\\Control\\DragAndDropPlugin\\DragAndDropPlugin.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DialogConfirm": {
+      "path": "ws\\lib\\Control\\DialogConfirm\\DialogConfirm.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FloatArea": {
+      "path": "ws\\lib\\Control\\FloatArea\\FloatArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ReplaceRecordDialog": {
+      "path": "ws\\res\\wsmodules\\ReplaceRecordDialog\\ReplaceRecordDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PrintPlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\Print-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ValidateCountDialog": {
+      "path": "ws\\res\\wsmodules\\ValidateCountDialog\\ValidateCountDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SelectColumnsDialog": {
+      "path": "ws\\res\\wsmodules\\SelectColumnsDialog\\SelectColumnsDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ToolbarPlugin": {
+      "path": "ws\\lib\\Control\\DataViewAbstract\\plugins\\Toolbar-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ToolBar": {
+      "path": "ws\\lib\\Control\\ToolBar\\ToolBar.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HierarchyView": {
+      "path": "ws\\lib\\Control\\HierarchyView\\HierarchyView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TreeView": {
+      "path": "ws\\lib\\Control\\TreeView\\TreeView.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.DateRange": {
+      "path": "ws\\lib\\Control\\DateRange\\DateRange.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DateRange": {
+      "path": "ws\\lib\\Control\\DateRange\\DateRange.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldDate": {
+      "path": "ws\\lib\\Control\\FieldDate\\FieldDate.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.DateRangeChoose": {
+      "path": "ws\\lib\\Control\\DateRangeChoose\\DateRangeChoose.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DateRangeChoose": {
+      "path": "ws\\lib\\Control\\DateRangeChoose\\DateRangeChoose.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.LinkButton": {
+      "path": "ws\\lib\\Control\\LinkButton\\LinkButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldCheckbox": {
+      "path": "ws\\lib\\Control\\FieldCheckbox\\FieldCheckbox.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Menu": {
+      "path": "ws\\lib\\Control\\Menu\\Menu.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Window": {
+      "path": "ws\\lib\\Control\\Window\\Window.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ModalOverlay": {
+      "path": "ws\\lib\\Control\\ModalOverlay\\ModalOverlay.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DialogAlert": {
+      "path": "ws\\lib\\Control\\DialogAlert\\DialogAlert.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SimpleDialogAbstract": {
+      "path": "ws\\lib\\Control\\SimpleDialogAbstract\\SimpleDialogAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DialogRecord": {
+      "path": "ws\\lib\\Control\\DialogRecord\\DialogRecord.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ConfirmRecordActionsDialog": {
+      "path": "ws\\res\\wsmodules\\ConfirmRecordActionsDialog\\ConfirmRecordActionsDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.DialogSelector": {
+      "path": "ws\\lib\\Control\\DialogSelector\\DialogSelector.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Selector": {
+      "path": "ws\\lib\\Control\\DialogSelector\\Selector.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FloatAreaSelector": {
+      "path": "ws\\lib\\Control\\DialogSelector\\FloatAreaSelector.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldAbstract": {
+      "path": "ws\\lib\\Control\\FieldAbstract\\FieldAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldAbstract": {
+      "path": "ws\\lib\\Control\\FieldAbstract\\FieldAbstract.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldCheckbox": {
+      "path": "ws\\lib\\Control\\FieldCheckbox\\FieldCheckbox.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldCheckbox": {
+      "path": "ws\\lib\\Control\\FieldCheckbox\\FieldCheckbox.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldDate/resources/ext/jquery.ui.datepicker-ru": {
+      "path": "ws\\lib\\Control\\FieldDate\\resources\\ext\\jquery.ui.datepicker-ru.js",
+      "amd": true
+    },
+    "js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min": {
+      "path": "ws\\lib\\Ext\\jquery-ui\\jquery-ui-1.8.5.custom.min.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldFormatAbstract": {
+      "path": "ws\\lib\\Control\\FieldFormatAbstract\\FieldFormatAbstract.module.js",
+      "amd": true
+    },
+    "css!Ext/jquery-ui/jquery-ui-1.8.5.custom": {
+      "path": "ws\\lib\\Ext\\jquery-ui\\jquery-ui-1.8.5.custom.css"
+    },
+    "html!SBIS3.CORE.FieldDatePicker": {
+      "path": "ws\\lib\\Control\\FieldDatePicker\\FieldDatePicker.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldDatePicker/FieldDatePicker-legend": {
+      "path": "ws\\lib\\Control\\FieldDatePicker\\FieldDatePicker.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldDatePicker": {
+      "path": "ws\\lib\\Control\\FieldDatePicker\\FieldDatePicker.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldDropdown": {
+      "path": "ws\\lib\\Control\\FieldDropdown\\FieldDropdown.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldDropdown": {
+      "path": "ws\\lib\\Control\\FieldDropdown\\FieldDropdown.module.js",
+      "amd": true
+    },
+    "js!Ext/jquery-ui/jquery-ui-position": {
+      "path": "ws\\lib\\Ext\\jquery-ui\\jquery-ui-position.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldEditAtPlace": {
+      "path": "ws\\lib\\Control\\FieldEditAtPlace\\FieldEditAtPlace.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldEditAtPlace": {
+      "path": "ws\\lib\\Control\\FieldEditAtPlace\\FieldEditAtPlace.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldEditAtPlace": {
+      "path": "ws\\lib\\Control\\FieldEditAtPlace\\FieldEditAtPlace.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldString": {
+      "path": "ws\\lib\\Control\\FieldString\\FieldString.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CompoundActiveFixMixin": {
+      "path": "ws\\lib\\Mixins\\CompoundActiveFixMixin.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldInteger": {
+      "path": "ws\\lib\\Control\\FieldInteger\\FieldInteger.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldMoney": {
+      "path": "ws\\lib\\Control\\FieldMoney\\FieldMoney.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldText": {
+      "path": "ws\\lib\\Control\\FieldText\\FieldText.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldLink": {
+      "path": "ws\\lib\\Control\\FieldLink\\FieldLink.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldFormatAbstract": {
+      "path": "ws\\lib\\Control\\FieldFormatAbstract\\FieldFormatAbstract.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldImage": {
+      "path": "ws\\lib\\Control\\FieldImage\\FieldImage.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldImage": {
+      "path": "ws\\lib\\Control\\FieldImage\\FieldImage.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldImage": {
+      "path": "ws\\lib\\Control\\FieldImage\\FieldImage.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CropPlugin": {
+      "path": "ws\\lib\\Control\\FieldImage\\plugins\\FieldImageCrop-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldImage/resources/ext/jcrop/jquery.Jcrop.min": {
+      "path": "ws\\lib\\Control\\FieldImage\\resources\\ext\\jcrop\\jquery.Jcrop.min.js"
+    },
+    "css!SBIS3.CORE.FieldImage/resources/ext/jcrop/jquery.Jcrop.min": {
+      "path": "ws\\lib\\Control\\FieldImage\\resources\\ext\\jcrop\\jquery.Jcrop.min.css"
+    },
+    "js!SBIS3.CORE.ZoomPlugin": {
+      "path": "ws\\lib\\Control\\FieldImage\\plugins\\FieldImageZoom-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldNumeric": {
+      "path": "ws\\lib\\Control\\FieldNumeric\\FieldNumeric.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldLabel": {
+      "path": "ws\\lib\\Control\\FieldLabel\\FieldLabel.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldLabel": {
+      "path": "ws\\lib\\Control\\FieldLabel\\FieldLabel.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldLink/FieldLink_link": {
+      "path": "ws\\lib\\Control\\FieldLink\\FieldLink.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldLink": {
+      "path": "ws\\lib\\Control\\FieldLink\\FieldLink.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldLink": {
+      "path": "ws\\lib\\Control\\FieldLink\\FieldLink.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Suggest": {
+      "path": "ws\\lib\\Control\\Suggest\\Suggest.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldMask": {
+      "path": "ws\\lib\\Control\\FieldMask\\FieldMask.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldMonth": {
+      "path": "ws\\lib\\Control\\FieldMonth\\FieldMonth.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldMonth": {
+      "path": "ws\\lib\\Control\\FieldMonth\\FieldMonth.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldMonth": {
+      "path": "ws\\lib\\Control\\FieldMonth\\FieldMonth.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldNumeric": {
+      "path": "ws\\lib\\Control\\FieldNumeric\\FieldNumeric.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldRadio": {
+      "path": "ws\\lib\\Control\\FieldRadio\\FieldRadio.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRadio/resources/ext/ui.checkbox": {
+      "path": "ws\\lib\\Control\\FieldRadio\\resources\\ext\\ui.checkbox.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldRadio": {
+      "path": "ws\\lib\\Control\\FieldRadio\\FieldRadio.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRadio": {
+      "path": "ws\\lib\\Control\\FieldRadio\\FieldRadio.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldRichEditor": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\FieldRichEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRichEditor/resources/config": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\resources\\config.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRichEditor/resources/utilites": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\resources\\utilites.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldRichEditor": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\FieldRichEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRichEditor": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\FieldRichEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldTinyEditor": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PluginManager": {
+      "path": "ws\\lib\\PluginManager\\PluginManager.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\resources\\ImagePropertiesDialog\\ImagePropertiesDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog": {
+      "path": "ws\\lib\\Control\\FieldRichEditor\\resources\\ImagePropertiesDialog\\ImagePropertiesDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldString": {
+      "path": "ws\\lib\\Control\\FieldString\\FieldString.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldString/resources/ext/ierange-m2-min": {
+      "path": "ws\\lib\\Control\\FieldString\\FieldString.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldText": {
+      "path": "ws\\lib\\Control\\FieldText\\FieldText.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldText": {
+      "path": "ws\\lib\\Control\\FieldText\\FieldText.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldText/resources/Autosize-plugin": {
+      "path": "ws\\lib\\Control\\FieldText\\resources\\Autosize-plugin.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FieldTinyEditor": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldTinyEditor": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/skin.min": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/content.inline.min": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FieldTinyEditor/resources/tinymce/tinymce": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\FieldTinyEditor.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileStorageLoader": {
+      "path": "ws\\lib\\Control\\FileStorageLoader\\FileStorageLoader.module.js",
+      "amd": true
+    },
+    "tinymce/AddOnManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\AddOnManager.js",
+      "amd": true
+    },
+    "tinymce/dom/ScriptLoader": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\ScriptLoader.js",
+      "amd": true
+    },
+    "tinymce/util/Tools": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\Tools.js",
+      "amd": true
+    },
+    "tinymce/Compat": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\Compat.js",
+      "amd": true
+    },
+    "tinymce/dom/DOMUtils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\DOMUtils.js",
+      "amd": true
+    },
+    "tinymce/dom/EventUtils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\EventUtils.js",
+      "amd": true
+    },
+    "tinymce/Env": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\Env.js",
+      "amd": true
+    },
+    "tinymce/Editor": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\Editor.js",
+      "amd": true
+    },
+    "tinymce/dom/DomQuery": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\DomQuery.js",
+      "amd": true
+    },
+    "tinymce/NodeChange": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\NodeChange.js",
+      "amd": true
+    },
+    "tinymce/html/Node": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Node.js",
+      "amd": true
+    },
+    "tinymce/dom/Serializer": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\Serializer.js",
+      "amd": true
+    },
+    "tinymce/html/Serializer": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Serializer.js",
+      "amd": true
+    },
+    "tinymce/dom/Selection": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\Selection.js",
+      "amd": true
+    },
+    "tinymce/Formatter": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\Formatter.js",
+      "amd": true
+    },
+    "tinymce/UndoManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\UndoManager.js",
+      "amd": true
+    },
+    "tinymce/EnterKey": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\EnterKey.js",
+      "amd": true
+    },
+    "tinymce/ForceBlocks": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ForceBlocks.js",
+      "amd": true
+    },
+    "tinymce/EditorCommands": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\EditorCommands.js",
+      "amd": true
+    },
+    "tinymce/util/URI": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\URI.js",
+      "amd": true
+    },
+    "tinymce/WindowManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\WindowManager.js",
+      "amd": true
+    },
+    "tinymce/html/Schema": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Schema.js",
+      "amd": true
+    },
+    "tinymce/html/DomParser": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\DomParser.js",
+      "amd": true
+    },
+    "tinymce/util/Quirks": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\Quirks.js",
+      "amd": true
+    },
+    "tinymce/EditorObservable": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\EditorObservable.js",
+      "amd": true
+    },
+    "tinymce/Shortcuts": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\Shortcuts.js",
+      "amd": true
+    },
+    "tinymce/dom/ElementUtils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\ElementUtils.js",
+      "amd": true
+    },
+    "tinymce/dom/RangeUtils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\RangeUtils.js",
+      "amd": true
+    },
+    "tinymce/dom/TreeWalker": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\TreeWalker.js",
+      "amd": true
+    },
+    "tinymce/EditorManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\EditorManager.js",
+      "amd": true
+    },
+    "tinymce/util/Observable": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\Observable.js",
+      "amd": true
+    },
+    "tinymce/util/I18n": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\I18n.js",
+      "amd": true
+    },
+    "tinymce/FocusManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\FocusManager.js",
+      "amd": true
+    },
+    "tinymce/dom/BookmarkManager": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\BookmarkManager.js",
+      "amd": true
+    },
+    "tinymce/fmt/Preview": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\fmt\\Preview.js",
+      "amd": true
+    },
+    "tinymce/LegacyInput": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\LegacyInput.js",
+      "amd": true
+    },
+    "tinymce/util/VK": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\VK.js",
+      "amd": true
+    },
+    "tinymce/html/SaxParser": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\SaxParser.js",
+      "amd": true
+    },
+    "tinymce/ui/Window": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Window.js",
+      "amd": true
+    },
+    "tinymce/ui/MessageBox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\MessageBox.js",
+      "amd": true
+    },
+    "tinymce/dom/ControlSelection": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\ControlSelection.js",
+      "amd": true
+    },
+    "tinymce/dom/Sizzle": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\Sizzle.js",
+      "amd": true
+    },
+    "tinymce/html/Styles": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Styles.js",
+      "amd": true
+    },
+    "tinymce/dom/Range": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\Range.js",
+      "amd": true
+    },
+    "tinymce/html/Entities": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Entities.js",
+      "amd": true
+    },
+    "tinymce/dom/StyleSheetLoader": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\StyleSheetLoader.js",
+      "amd": true
+    },
+    "tinymce/dom/TridentSelection": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\dom\\TridentSelection.js",
+      "amd": true
+    },
+    "tinymce/html/Writer": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\html\\Writer.js",
+      "amd": true
+    },
+    "tinymce/ui/AbsoluteLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\AbsoluteLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/Layout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Layout.js",
+      "amd": true
+    },
+    "tinymce/ui/Button": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Button.js",
+      "amd": true
+    },
+    "tinymce/ui/Widget": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Widget.js",
+      "amd": true
+    },
+    "tinymce/ui/ButtonGroup": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ButtonGroup.js",
+      "amd": true
+    },
+    "tinymce/ui/Container": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Container.js",
+      "amd": true
+    },
+    "tinymce/ui/Checkbox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Checkbox.js",
+      "amd": true
+    },
+    "tinymce/ui/Collection": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Collection.js",
+      "amd": true
+    },
+    "tinymce/ui/Selector": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Selector.js",
+      "amd": true
+    },
+    "tinymce/util/Class": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\Class.js",
+      "amd": true
+    },
+    "tinymce/ui/ColorBox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ColorBox.js",
+      "amd": true
+    },
+    "tinymce/ui/ComboBox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ComboBox.js",
+      "amd": true
+    },
+    "tinymce/ui/ColorButton": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ColorButton.js",
+      "amd": true
+    },
+    "tinymce/ui/PanelButton": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\PanelButton.js",
+      "amd": true
+    },
+    "tinymce/ui/ColorPicker": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ColorPicker.js",
+      "amd": true
+    },
+    "tinymce/ui/DragHelper": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\DragHelper.js",
+      "amd": true
+    },
+    "tinymce/ui/DomUtils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\DomUtils.js",
+      "amd": true
+    },
+    "tinymce/util/Color": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\Color.js",
+      "amd": true
+    },
+    "tinymce/ui/Factory": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Factory.js",
+      "amd": true
+    },
+    "tinymce/ui/Control": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Control.js",
+      "amd": true
+    },
+    "tinymce/ui/KeyboardNavigation": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\KeyboardNavigation.js",
+      "amd": true
+    },
+    "tinymce/util/EventDispatcher": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\EventDispatcher.js",
+      "amd": true
+    },
+    "tinymce/ui/ElementPath": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ElementPath.js",
+      "amd": true
+    },
+    "tinymce/ui/Path": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Path.js",
+      "amd": true
+    },
+    "tinymce/ui/FieldSet": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FieldSet.js",
+      "amd": true
+    },
+    "tinymce/ui/Form": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Form.js",
+      "amd": true
+    },
+    "tinymce/ui/FilePicker": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FilePicker.js",
+      "amd": true
+    },
+    "tinymce/ui/FitLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FitLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/FlexLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FlexLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/FloatPanel": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FloatPanel.js",
+      "amd": true
+    },
+    "tinymce/ui/Panel": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Panel.js",
+      "amd": true
+    },
+    "tinymce/ui/Movable": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Movable.js",
+      "amd": true
+    },
+    "tinymce/ui/Resizable": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Resizable.js",
+      "amd": true
+    },
+    "tinymce/ui/FlowLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FlowLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/FormItem": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FormItem.js",
+      "amd": true
+    },
+    "tinymce/ui/FormatControls": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\FormatControls.js",
+      "amd": true
+    },
+    "tinymce/ui/GridLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\GridLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/Iframe": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Iframe.js",
+      "amd": true
+    },
+    "tinymce/ui/Label": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Label.js",
+      "amd": true
+    },
+    "tinymce/ui/ListBox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ListBox.js",
+      "amd": true
+    },
+    "tinymce/ui/MenuButton": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\MenuButton.js",
+      "amd": true
+    },
+    "tinymce/ui/Menu": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Menu.js",
+      "amd": true
+    },
+    "tinymce/ui/MenuItem": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\MenuItem.js",
+      "amd": true
+    },
+    "tinymce/ui/MenuBar": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\MenuBar.js",
+      "amd": true
+    },
+    "tinymce/ui/Toolbar": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Toolbar.js",
+      "amd": true
+    },
+    "tinymce/ui/Scrollable": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Scrollable.js",
+      "amd": true
+    },
+    "tinymce/ui/Radio": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Radio.js",
+      "amd": true
+    },
+    "tinymce/ui/ResizeHandle": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\ResizeHandle.js",
+      "amd": true
+    },
+    "tinymce/ui/Spacer": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Spacer.js",
+      "amd": true
+    },
+    "tinymce/ui/SplitButton": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\SplitButton.js",
+      "amd": true
+    },
+    "tinymce/ui/StackLayout": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\StackLayout.js",
+      "amd": true
+    },
+    "tinymce/ui/TabPanel": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\TabPanel.js",
+      "amd": true
+    },
+    "tinymce/ui/TextBox": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\TextBox.js",
+      "amd": true
+    },
+    "tinymce/ui/Throbber": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Throbber.js",
+      "amd": true
+    },
+    "tinymce/ui/Tooltip": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\ui\\Tooltip.js",
+      "amd": true
+    },
+    "tinymce/util/JSON": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\JSON.js",
+      "amd": true
+    },
+    "tinymce/util/JSONP": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\JSONP.js",
+      "amd": true
+    },
+    "tinymce/util/JSONRequest": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\JSONRequest.js",
+      "amd": true
+    },
+    "tinymce/util/XHR": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\XHR.js",
+      "amd": true
+    },
+    "tinymce/util/LocalStorage": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\classes\\util\\LocalStorage.js",
+      "amd": true
+    },
+    "tinymce/pasteplugin/Clipboard": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\paste\\classes\\Clipboard.js",
+      "amd": true
+    },
+    "tinymce/pasteplugin/Utils": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\paste\\classes\\Utils.js",
+      "amd": true
+    },
+    "tinymce/pasteplugin/Plugin": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\paste\\classes\\Plugin.js",
+      "amd": true
+    },
+    "tinymce/PluginManager": {
+      "path": "tinymce\\PluginManager.js"
+    },
+    "tinymce/pasteplugin/WordFilter": {
+      "path": "tinymce\\pasteplugin\\WordFilter.js"
+    },
+    "tinymce/pasteplugin/Quirks": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\paste\\classes\\Quirks.js",
+      "amd": true
+    },
+    "tinymce/spellcheckerplugin/DomTextMatcher": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\spellchecker\\classes\\DomTextMatcher.js",
+      "amd": true
+    },
+    "tinymce/spellcheckerplugin/Plugin": {
+      "path": "ws\\lib\\Control\\FieldTinyEditor\\resources\\tinymce\\plugins\\spellchecker\\classes\\Plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileBrowse": {
+      "path": "ws\\lib\\Control\\FileBrowse\\FileBrowse.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileButton": {
+      "path": "ws\\lib\\Control\\FileButton\\FileButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileLoader": {
+      "path": "ws\\lib\\Control\\FileLoader\\FileLoader.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileCam": {
+      "path": "ws\\lib\\Control\\FileCam\\FileCam.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileCamLoader": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\FileCamLoader.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileCamLoader/resources/canvasToBlob": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\resources\\canvasToBlob.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FileCamLoader": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\FileCamLoader.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileLoaderAbstract": {
+      "path": "ws\\lib\\Control\\FileLoaderAbstract\\FileLoaderAbstract.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.CameraWindow": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\resources\\CameraWindow\\CameraWindow.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.CameraWindow": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\resources\\CameraWindow\\CameraWindow.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CameraWindow": {
+      "path": "ws\\lib\\Control\\FileCamLoader\\resources\\CameraWindow\\CameraWindow.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileClipboard": {
+      "path": "ws\\lib\\Control\\FileClipboard\\FileClipboard.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileClipboardLoader": {
+      "path": "ws\\lib\\Control\\FileClipboardLoader\\FileClipboardLoader.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FileLoader": {
+      "path": "ws\\lib\\Control\\FileLoader\\FileLoader.module.js",
+      "amd": true
+    },
+    "json!SBIS3.CORE.FileLoader/resources/MimeTypes": {
+      "path": "ws\\lib\\Control\\FileLoader\\FileLoader.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FileLoader": {
+      "path": "ws\\lib\\Control\\FileLoader\\FileLoader.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileScanLoader": {
+      "path": "ws\\lib\\Control\\FileScanLoader\\FileScanLoader.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PluginSetupDialog": {
+      "path": "ws\\lib\\PluginManager\\resources\\PluginSetupDialog\\PluginSetupDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SelectScannerDialog": {
+      "path": "ws\\lib\\Control\\FileScanLoader\\resources\\SelectScannerDialog\\SelectScannerDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SelectScannerDialog": {
+      "path": "ws\\lib\\Control\\FileScanLoader\\resources\\SelectScannerDialog\\SelectScannerDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SelectScannerDialog": {
+      "path": "ws\\lib\\Control\\FileScanLoader\\resources\\SelectScannerDialog\\SelectScannerDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TableView": {
+      "path": "ws\\lib\\Control\\TableView\\TableView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FileScaner": {
+      "path": "ws\\lib\\Control\\FileScaner\\FileScaner.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FilterButton": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButton.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FilterButton": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterButton": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterFloatArea": {
+      "path": "ws\\lib\\Control\\FilterFloatArea\\FilterFloatArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterButtonArea": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButtonArea\\FilterButtonArea.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FilterButtonArea": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButtonArea\\FilterButtonArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.OutlineButton": {
+      "path": "ws\\lib\\Control\\OutlineButton\\OutlineButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TemplatedArea": {
+      "path": "ws\\lib\\Control\\TemplatedArea\\TemplatedArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Label": {
+      "path": "ws\\lib\\Control\\Label\\Label.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FilterButtonHistory": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButtonHistory\\FilterButtonHistory.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterButtonHistory": {
+      "path": "ws\\lib\\Control\\FilterButton\\FilterButtonHistory\\FilterButtonHistory.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RequestHistoryPlugin": {
+      "path": "ws\\lib\\Control\\FilterButton\\plugins\\RequestHistory-plugin.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FilterController": {
+      "path": "ws\\lib\\Control\\FilterController\\FilterController.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FilterController": {
+      "path": "ws\\lib\\Control\\FilterController\\FilterController.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterController": {
+      "path": "ws\\lib\\Control\\FilterController\\FilterController.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PathFilter": {
+      "path": "ws\\lib\\Control\\PathFilter\\PathFilter.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FilterFloatArea": {
+      "path": "ws\\lib\\Control\\FilterFloatArea\\FilterFloatArea.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.FilterView": {
+      "path": "ws\\lib\\Control\\FilterView\\FilterView.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FilterView": {
+      "path": "ws\\lib\\Control\\FilterView\\FilterView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FilterView": {
+      "path": "ws\\lib\\Control\\FilterView\\FilterView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FiltersArea": {
+      "path": "ws\\lib\\Control\\FiltersArea\\FiltersArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TemplatedAreaAbstract": {
+      "path": "ws\\lib\\Control\\TemplatedAreaAbstract\\TemplatedAreaAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FiltersDialog": {
+      "path": "ws\\lib\\Control\\FiltersDialog\\FiltersDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FiltersWindow": {
+      "path": "ws\\lib\\Control\\FiltersWindow\\FiltersWindow.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.FloatArea": {
+      "path": "ws\\lib\\Control\\FloatArea\\FloatArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.FloatAreaManager": {
+      "path": "ws\\lib\\FloatAreaManager\\FloatAreaManager.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Grid": {
+      "path": "ws\\lib\\Control\\Grid\\Grid.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.GridAbstract": {
+      "path": "ws\\lib\\Control\\GridAbstract\\GridAbstract.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.GridAbstract": {
+      "path": "ws\\lib\\Control\\GridAbstract\\GridAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.GridLayout": {
+      "path": "ws\\lib\\Control\\GridLayout\\GridLayout.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.GroupCheckBox": {
+      "path": "ws\\lib\\Control\\GroupCheckBox\\GroupCheckBox.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.GroupCheckBox": {
+      "path": "ws\\lib\\Control\\GroupCheckBox\\GroupCheckBox.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.HTMLChunk": {
+      "path": "ws\\lib\\Control\\HTMLChunk\\HTMLChunk.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HTMLChunk": {
+      "path": "ws\\lib\\Control\\HTMLChunk\\HTMLChunk.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.HTMLView": {
+      "path": "ws\\lib\\Control\\HTMLView\\HTMLView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HTMLView": {
+      "path": "ws\\lib\\Control\\HTMLView\\HTMLView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HierarchyCustomView": {
+      "path": "ws\\lib\\Control\\HierarchyCustomView\\HierarchyCustomView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.HierarchyViewAbstract": {
+      "path": "ws\\lib\\Control\\HierarchyViewAbstract\\HierarchyViewAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PathSelector": {
+      "path": "ws\\lib\\Control\\PathSelector\\PathSelector.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ImageGallery": {
+      "path": "ws\\lib\\Control\\ImageGallery\\ImageGallery.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ImageGallery": {
+      "path": "ws\\lib\\Control\\ImageGallery\\ImageGallery.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ImageGallery": {
+      "path": "ws\\lib\\Control\\ImageGallery\\ImageGallery.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Infobox": {
+      "path": "ws\\lib\\Control\\Infobox\\Infobox.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Infobox": {
+      "path": "ws\\lib\\Control\\Infobox\\Infobox.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.InfoboxTrigger": {
+      "path": "ws\\lib\\Control\\InfoboxTrigger\\InfoboxTrigger.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.InfoboxTrigger": {
+      "path": "ws\\lib\\Control\\InfoboxTrigger\\InfoboxTrigger.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Label": {
+      "path": "ws\\lib\\Control\\Label\\Label.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Label": {
+      "path": "ws\\lib\\Control\\Label\\Label.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.LoadingIndicator": {
+      "path": "ws\\lib\\Control\\LoadingIndicator\\LoadingIndicator.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.LoadingIndicator": {
+      "path": "ws\\lib\\Control\\LoadingIndicator\\LoadingIndicator.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ProgressBar": {
+      "path": "ws\\lib\\Control\\ProgressBar\\ProgressBar.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Master": {
+      "path": "ws\\lib\\Control\\Master\\Master.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.MasterProgress": {
+      "path": "ws\\lib\\Control\\MasterProgress\\MasterProgress.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.MasterProgress": {
+      "path": "ws\\lib\\Control\\MasterProgress\\MasterProgress.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Marker": {
+      "path": "ws\\lib\\Marker\\Marker.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Menu": {
+      "path": "ws\\lib\\Control\\Menu\\Menu.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Menu/Menu_item": {
+      "path": "ws\\lib\\Control\\Menu\\Menu.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Menu": {
+      "path": "ws\\lib\\Control\\Menu\\Menu.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.NavigationPanel": {
+      "path": "ws\\lib\\Control\\NavigationPanel\\NavigationPanel.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.NavigationPanel": {
+      "path": "ws\\lib\\Control\\NavigationPanel\\NavigationPanel.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.NavigationPanel": {
+      "path": "ws\\lib\\Control\\NavigationPanel\\NavigationPanel.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.NavigationPanelCollapsePlugin": {
+      "path": "ws\\lib\\Control\\NavigationPanel\\plugins\\Collapse-plugin.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.OperationsPanel": {
+      "path": "ws\\lib\\Control\\OperationsPanel\\OperationsPanel.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.OperationsPanel": {
+      "path": "ws\\lib\\Control\\OperationsPanel\\OperationsPanel.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.OperationsPanel": {
+      "path": "ws\\lib\\Control\\OperationsPanel\\OperationsPanel.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.OperationsPanelND": {
+      "path": "ws\\lib\\Control\\OperationsPanelND\\OperationsPanelND.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.OperationsPanelND": {
+      "path": "ws\\lib\\Control\\OperationsPanelND\\OperationsPanelND.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.OperationsPanelND": {
+      "path": "ws\\lib\\Control\\OperationsPanelND\\OperationsPanelND.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.OutlineButton": {
+      "path": "ws\\lib\\Control\\OutlineButton\\OutlineButton.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.PageFilter": {
+      "path": "ws\\lib\\Control\\PageFilter\\PageFilter.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PageFilter": {
+      "path": "ws\\lib\\Control\\PageFilter\\PageFilter.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PageFilter": {
+      "path": "ws\\lib\\Control\\PageFilter\\PageFilter.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Paging": {
+      "path": "ws\\lib\\Control\\Paging\\Paging.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Paging/Pages_list": {
+      "path": "ws\\lib\\Control\\Paging\\Paging.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Paging": {
+      "path": "ws\\lib\\Control\\Paging\\Paging.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.PathFilter": {
+      "path": "ws\\lib\\Control\\PathFilter\\PathFilter.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PathFilter/resources/FieldDropDownExtendedHover": {
+      "path": "ws\\lib\\Control\\PathFilter\\resources\\FieldDropDownExtendedHover.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PathFilter": {
+      "path": "ws\\lib\\Control\\PathFilter\\PathFilter.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.PathSelector": {
+      "path": "ws\\lib\\Control\\PathSelector\\PathSelector.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PathSelector": {
+      "path": "ws\\lib\\Control\\PathSelector\\PathSelector.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.PrintDialog/PrintDialogInner": {
+      "path": "ws\\lib\\Control\\PrintDialog\\PrintDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PrintDialog/PrintDialogInner": {
+      "path": "ws\\lib\\Control\\PrintDialog\\PrintDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PrintDialog": {
+      "path": "ws\\lib\\Control\\PrintDialog\\PrintDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ProgressBar": {
+      "path": "ws\\lib\\Control\\ProgressBar\\ProgressBar.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ProgressBar": {
+      "path": "ws\\lib\\Control\\ProgressBar\\ProgressBar.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PushButton": {
+      "path": "ws\\lib\\Control\\PushButton\\PushButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PushButton": {
+      "path": "ws\\lib\\Control\\PushButton\\PushButton.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelChartGraph": {
+      "path": "ws\\lib\\Control\\RaphaelChartGraph\\RaphaelChartGraph.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelDrawerInternal": {
+      "path": "ws\\lib\\Control\\RaphaelDrawerInternal\\RaphaelDrawerInternal.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/raphael-min": {
+      "path": "ws\\lib\\Control\\RaphaelDrawerInternal\\resources\\ext\\graphael\\raphael-min.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/g.raphael-min": {
+      "path": "ws\\lib\\Control\\RaphaelDrawerInternal\\resources\\ext\\graphael\\g.raphael-min.js",
+      "amd": true
+    },
+    "eve": {
+      "path": "ws\\lib\\Control\\RaphaelDrawerInternal\\resources\\ext\\graphael\\raphael.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelMultiGraph": {
+      "path": "ws\\lib\\Control\\RaphaelMultiGraph\\RaphaelMultiGraph.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RaphaelPieGraph": {
+      "path": "ws\\lib\\Control\\RaphaelPieGraph\\RaphaelPieGraph.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RecordArea": {
+      "path": "ws\\lib\\Control\\RecordArea\\RecordArea.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.RecordFloatArea": {
+      "path": "ws\\lib\\Control\\RecordFloatArea\\RecordFloatArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RecordFloatArea": {
+      "path": "ws\\lib\\Control\\RecordFloatArea\\RecordFloatArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RelativeGrid": {
+      "path": "ws\\lib\\Control\\RelativeGrid\\RelativeGrid.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SearchString": {
+      "path": "ws\\lib\\Control\\SearchString\\SearchString.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SearchString": {
+      "path": "ws\\lib\\Control\\SearchString\\SearchString.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SearchString": {
+      "path": "ws\\lib\\Control\\SearchString\\SearchString.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.KbLayoutRevert": {
+      "path": "ws\\lib\\KbLayoutRevert\\KbLayoutRevert.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SimpleDialogAbstract": {
+      "path": "ws\\lib\\Control\\SimpleDialogAbstract\\SimpleDialogAbstract.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.StackPanel": {
+      "path": "ws\\lib\\Control\\StackPanel\\StackPanel.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Suggest": {
+      "path": "ws\\lib\\Control\\Suggest\\Suggest.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SuggestShowAllDialog": {
+      "path": "ws\\res\\wsmodules\\SuggestShowAllDialog\\SuggestShowAllDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SwitchableArea/SwitchableAreaItem": {
+      "path": "ws\\lib\\Control\\SwitchableArea\\SwitchableAreaItem.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SwitchableArea": {
+      "path": "ws\\lib\\Control\\SwitchableArea\\SwitchableArea.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SwitchableArea/SwitchableArea_area": {
+      "path": "ws\\lib\\Control\\SwitchableArea\\SwitchableArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SwitchableArea": {
+      "path": "ws\\lib\\Control\\SwitchableArea\\SwitchableArea.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.Switcher": {
+      "path": "ws\\lib\\Control\\Switcher\\Switcher.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Switcher": {
+      "path": "ws\\lib\\Control\\Switcher\\Switcher.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SwitcherAbstract": {
+      "path": "ws\\lib\\Control\\SwitcherAbstract\\SwitcherAbstract.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SwitcherAbstract": {
+      "path": "ws\\lib\\Control\\SwitcherAbstract\\SwitcherAbstract.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SwitcherDouble": {
+      "path": "ws\\lib\\Control\\SwitcherDouble\\SwitcherDouble.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.SwitcherDouble": {
+      "path": "ws\\lib\\Control\\SwitcherDouble\\SwitcherDouble.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TabButtons": {
+      "path": "ws\\lib\\Control\\TabButtons\\TabButtons.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TabButtons/TabButtons_button": {
+      "path": "ws\\lib\\Control\\TabButtons\\TabButtons.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TabButtons/TabButtons_icon": {
+      "path": "ws\\lib\\Control\\TabButtons\\TabButtons.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.TabButtons": {
+      "path": "ws\\lib\\Control\\TabButtons\\TabButtons.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TabButtons": {
+      "path": "ws\\lib\\Control\\TabButtons\\TabButtons.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TabControl/TabItem": {
+      "path": "ws\\lib\\Control\\TabControl\\TabItem.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TabControl": {
+      "path": "ws\\lib\\Control\\TabControl\\TabControl.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.TabControl": {
+      "path": "ws\\lib\\Control\\TabControl\\TabControl.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TabControl": {
+      "path": "ws\\lib\\Control\\TabControl\\TabControl.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TabTemplatedArea": {
+      "path": "ws\\lib\\Control\\TabTemplatedArea\\TabTemplatedArea.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Table": {
+      "path": "ws\\lib\\Control\\Table\\Table.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TableView/TableViewRow": {
+      "path": "ws\\lib\\Control\\TableView\\TableView.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TableView": {
+      "path": "ws\\lib\\Control\\TableView\\TableView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.AtPlaceEditPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\AtPlaceEdit-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ColorMarkPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\ColorMark-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ColorizeDialog": {
+      "path": "ws\\res\\wsmodules\\ColorizeDialog\\ColorizeDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.LadderPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\Ladder-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PartScrollPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\PartScroll-plugin\\PartScroll-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ResultsPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\Results-plugin.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.RightAccordionPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\RightAccordion-plugin\\RightAccordion-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.RightAccordionPlugin": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\RightAccordion-plugin\\RightAccordion-plugin.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ScrollPaging": {
+      "path": "ws\\lib\\Control\\TableView\\plugins\\ScrollPaging-plugin.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Tabs": {
+      "path": "ws\\lib\\Control\\Tabs\\Tabs.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.Tabs": {
+      "path": "ws\\lib\\Control\\Tabs\\Tabs.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.TileView/TileViewRow": {
+      "path": "ws\\lib\\Control\\TileView\\TileView.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.TileView": {
+      "path": "ws\\lib\\Control\\TileView\\TileView.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TileView": {
+      "path": "ws\\lib\\Control\\TileView\\TileView.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ToolBar": {
+      "path": "ws\\lib\\Control\\ToolBar\\ToolBar.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ToolBar": {
+      "path": "ws\\lib\\Control\\ToolBar\\ToolBar.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CoreValidators": {
+      "path": "ws\\lib\\CoreValidators\\CoreValidators.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.Marker": {
+      "path": "ws\\lib\\Marker\\Marker.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.MarkupTransformer": {
+      "path": "ws\\lib\\MarkupTransformer\\MarkupTransformer.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PluginManager/resources/WebSocket": {
+      "path": "ws\\lib\\PluginManager\\resources\\WebSocket.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PluginManager/resources/SwfObject": {
+      "path": "ws\\lib\\PluginManager\\resources\\SwfObject.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.PluginManager/resources/WebSocketQt": {
+      "path": "ws\\lib\\PluginManager\\resources\\WebSocketQt.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.PluginSetupDialog": {
+      "path": "ws\\lib\\PluginManager\\resources\\PluginSetupDialog\\PluginSetupDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.PluginSetupDialog": {
+      "path": "ws\\lib\\PluginManager\\resources\\PluginSetupDialog\\PluginSetupDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ServerEventBus/resources/stomp": {
+      "path": "ws\\lib\\ServerEventBus\\resources\\stomp.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ServerEventBus": {
+      "path": "ws\\lib\\ServerEventBus\\ServerEventBus.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ServerEventBus/resources/lockableStorage": {
+      "path": "ws\\lib\\ServerEventBus\\resources\\lockableStorage.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ServerEventBus/resources/reconnect": {
+      "path": "ws\\lib\\ServerEventBus\\resources\\reconnect.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ServiceUpdateNotifier": {
+      "path": "ws\\lib\\ServiceUpdateNotifier\\ServiceUpdateNotifier.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.CustomType": {
+      "path": "ws\\lib\\Type\\CustomType.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.TReaderParams": {
+      "path": "ws\\lib\\Type\\TReaderParams\\TReaderParams.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.XSLT": {
+      "path": "ws\\lib\\xslt.js",
+      "amd": true
+    },
+    "bootup": {
+      "path": "ws\\res\\js\\bootup.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ColorizeDialog": {
+      "path": "ws\\res\\wsmodules\\ColorizeDialog\\ColorizeDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ColorizeDialog": {
+      "path": "ws\\res\\wsmodules\\ColorizeDialog\\ColorizeDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ConfirmRecordActionsDialog": {
+      "path": "ws\\res\\wsmodules\\ConfirmRecordActionsDialog\\ConfirmRecordActionsDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ConfirmRecordActionsDialog": {
+      "path": "ws\\res\\wsmodules\\ConfirmRecordActionsDialog\\ConfirmRecordActionsDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ErrorsReportDialog": {
+      "path": "ws\\res\\wsmodules\\ErrorsReportDialog\\ErrorsReportDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ErrorsReportDialog": {
+      "path": "ws\\res\\wsmodules\\ErrorsReportDialog\\ErrorsReportDialog.module.js",
+      "amd": true
+    },
+    "js!SBIS3.CORE.ErrorsReportDialog": {
+      "path": "ws\\res\\wsmodules\\ErrorsReportDialog\\ErrorsReportDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ReplaceRecordDialog": {
+      "path": "ws\\res\\wsmodules\\ReplaceRecordDialog\\ReplaceRecordDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ReplaceRecordDialog": {
+      "path": "ws\\res\\wsmodules\\ReplaceRecordDialog\\ReplaceRecordDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SelectColumnsDialog": {
+      "path": "ws\\res\\wsmodules\\SelectColumnsDialog\\SelectColumnsDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SelectColumnsDialog": {
+      "path": "ws\\res\\wsmodules\\SelectColumnsDialog\\SelectColumnsDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SelectMergeRecordDialog": {
+      "path": "ws\\res\\wsmodules\\SelectMergeRecordDialog\\SelectMergeRecordDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SelectMergeRecordDialog": {
+      "path": "ws\\res\\wsmodules\\SelectMergeRecordDialog\\SelectMergeRecordDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SuggestShowAllDialog": {
+      "path": "ws\\res\\wsmodules\\SuggestShowAllDialog\\SuggestShowAllDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SuggestShowAllDialog": {
+      "path": "ws\\res\\wsmodules\\SuggestShowAllDialog\\SuggestShowAllDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.SumDialog": {
+      "path": "ws\\res\\wsmodules\\SumDialog\\SumDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.SumDialog": {
+      "path": "ws\\res\\wsmodules\\SumDialog\\SumDialog.module.js",
+      "amd": true
+    },
+    "html!SBIS3.CORE.ValidateCountDialog": {
+      "path": "ws\\res\\wsmodules\\ValidateCountDialog\\ValidateCountDialog.module.js",
+      "amd": true
+    },
+    "css!SBIS3.CORE.ValidateCountDialog": {
+      "path": "ws\\res\\wsmodules\\ValidateCountDialog\\ValidateCountDialog.module.js",
+      "amd": true
+    }
+  },
+  "links": {
+    "js!SBIS3.MySite.Head": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.MySite.Head",
+      "css!SBIS3.MySite.Head",
+      "js!SBIS3.MySite.Head/resources/SubHead"
+    ],
+    "js!SBIS3.MySite.Head/resources/SubHead": [],
+    "js!SBIS3.MySite.Index": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.MySite.Index",
+      "js!SBIS3.MySite.Head",
+      "css!SBIS3.MySite.Index"
+    ],
+    "Core/BackgroundMapper": [],
+    "Core/ParserUtilities": [],
+    "Core/SessionStorage": [],
+    "Core/dt_layout": [],
+    "Core/jquery-dblclick": [],
+    "Core/js-template-doT": [],
+    "js!Core/tmpl/config": [
+      "js",
+      "js!SBIS3.CONTROLS.Record",
+      "js!SBIS3.CONTROLS.Data.Model",
+      "js!SBIS3.CONTROLS.DataSet",
+      "js!SBIS3.CONTROLS.Data.Collection.RecordSet"
+    ],
+    "js!Core/tmpl/js/astModules/data/array": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/astModules/data/number": [
+      "js",
+      "js!Core/tmpl/js/helpers/entityHelpers"
+    ],
+    "js!Core/tmpl/js/astModules/data/object": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/entityHelpers"
+    ],
+    "js!Core/tmpl/js/astModules/data/string": [],
+    "js!Core/tmpl/js/astModules/else": [
+      "js",
+      "js!Core/tmpl/js/helpers/processExpressions",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/astModules/for": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/processExpressions",
+      "js!Core/tmpl/js/jison/beforejs",
+      "js!Core/tmpl/js/helpers/scopes",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/astModules/if": [
+      "js",
+      "js!Core/tmpl/js/helpers/challengeModuleValues"
+    ],
+    "js!Core/tmpl/js/astModules/include": [
+      "js",
+      "js!Core/tmpl/js/helpers/straightFromFile",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/helpers/State"
+    ],
+    "js!Core/tmpl/js/astModules/includeAMD": [
+      "js",
+      "js!Core/tmpl/js/helpers/straightFromFileAMD",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/helpers/State"
+    ],
+    "js!Core/tmpl/js/astModules/module": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/astModules/partial",
+      "js!Core/tmpl/js/helpers/straightFromFileAMD"
+    ],
+    "js!Core/tmpl/js/astModules/partial": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/injectedDataForce",
+      "js!Core/tmpl/js/helpers/processExpressions",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/astModules/template": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/State": [],
+    "js!Core/tmpl/js/helpers/calculator": [],
+    "js!Core/tmpl/js/helpers/challengeModuleValues": [
+      "js",
+      "js!Core/tmpl/js/helpers/processExpressions",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/decorators": [],
+    "js!Core/tmpl/js/helpers/entityHelpers": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/processExpressions"
+    ],
+    "js!Core/tmpl/js/helpers/errorHandling": [],
+    "js!Core/tmpl/js/helpers/expressions": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/calculator",
+      "js!Core/tmpl/js/helpers/decorators",
+      "js!Core/tmpl/js/helpers/scopes",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/injectedDataForce": [
+      "js",
+      "js!Core/tmpl/js/astModules/data/string",
+      "js!Core/tmpl/js/astModules/data/array",
+      "js!Core/tmpl/js/astModules/data/object",
+      "js!Core/tmpl/js/astModules/data/number"
+    ],
+    "js!Core/tmpl/js/helpers/processExpressions": [
+      "js",
+      "js!Core/tmpl/js/helpers/expressions",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/requireFile": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "fs": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/requireFileAMD": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/entityHelpers"
+    ],
+    "js!Core/tmpl/js/helpers/scopes": [],
+    "js!Core/tmpl/js/helpers/skipVars": [
+      "js",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/jison/beforejs"
+    ],
+    "js!Core/tmpl/js/helpers/straightFromFile": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/requireFile",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/straightFromFileAMD": [
+      "js",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/helpers/requireFileAMD",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/js/helpers/utils": [],
+    "js!Core/tmpl/js/helpers/whatType": [],
+    "js!Core/tmpl/js/jison/beforejs": [],
+    "js!Core/tmpl/js/jison/htmlparser": [],
+    "js!Core/tmpl/js/processing": [
+      "js",
+      "js!Core/tmpl/js/helpers/processExpressions",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/whatType",
+      "js!Core/tmpl/js/astModules/module",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/astModules/if",
+      "js!Core/tmpl/js/astModules/for",
+      "js!Core/tmpl/js/astModules/else",
+      "js!Core/tmpl/js/astModules/partial",
+      "js!Core/tmpl/js/astModules/include",
+      "js!Core/tmpl/js/astModules/template"
+    ],
+    "js!Core/tmpl/js/traverse": [
+      "js",
+      "js!Core/tmpl/js/jison/htmlparser",
+      "js!Core/tmpl/js/helpers/utils",
+      "js!Core/tmpl/js/helpers/skipVars",
+      "js!Core/tmpl/js/helpers/State",
+      "js!Core/tmpl/js/astModules/module",
+      "js!Core/tmpl/js/helpers/entityHelpers",
+      "js!Core/tmpl/js/astModules/includeAMD",
+      "js!Core/tmpl/js/astModules/template",
+      "js!Core/tmpl/js/astModules/partial",
+      "js!Core/tmpl/js/astModules/if",
+      "js!Core/tmpl/js/astModules/for",
+      "js!Core/tmpl/js/helpers/errorHandling"
+    ],
+    "js!Core/tmpl/tmpl": [
+      "js",
+      "js!Core/tmpl/js/traverse",
+      "js!Core/tmpl/js/processing"
+    ],
+    "js!SBIS3.CORE.bignumWrapper": [],
+    "jquery": [],
+    "native-css": [],
+    "normalize": [],
+    "js!SBIS3.CORE.Cache": [],
+    "html!SBIS3.CORE.CollapsingNavigation": [],
+    "css!SBIS3.CORE.CollapsingNavigation": [],
+    "js!SBIS3.CORE.CollapsingNavigation": [
+      "css",
+      "html",
+      "html!SBIS3.CORE.CollapsingNavigation",
+      "css!SBIS3.CORE.CollapsingNavigation"
+    ],
+    "html!SBIS3.CORE.Accordion": [],
+    "html!SBIS3.CORE.Accordion/Accordion_element": [],
+    "css!SBIS3.CORE.Accordion": [],
+    "js!SBIS3.CORE.Accordion": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.Accordion",
+      "html!SBIS3.CORE.Accordion/Accordion_element",
+      "css!SBIS3.CORE.Accordion"
+    ],
+    "js!SBIS3.CORE.AccordionCollapsePlugin": [
+      "js",
+      "js!SBIS3.CORE.Accordion",
+      "js!SBIS3.CORE.CollapsingNavigation"
+    ],
+    "css!SBIS3.CORE.AreaAbstract": [],
+    "js!SBIS3.CORE.AreaAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "css!SBIS3.CORE.AreaAbstract"
+    ],
+    "js!SBIS3.CORE.AttributeCfgParser": [],
+    "html!SBIS3.CORE.Button": [],
+    "html!SBIS3.CORE.Button/Button_image": [],
+    "css!SBIS3.CORE.Button": [],
+    "js!SBIS3.CORE.Button": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.ButtonAbstract",
+      "html!SBIS3.CORE.Button",
+      "html!SBIS3.CORE.Button/Button_image",
+      "Core/BackgroundMapper",
+      "css!SBIS3.CORE.Button"
+    ],
+    "css!SBIS3.CORE.ButtonAbstract": [],
+    "js!SBIS3.CORE.ButtonAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "css!SBIS3.CORE.ButtonAbstract",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "css!SBIS3.CORE.CloseButton": [],
+    "js!SBIS3.CORE.CloseButton": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Button",
+      "css!SBIS3.CORE.CloseButton"
+    ],
+    "js!SBIS3.CORE.CompoundControl": [
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "js!SBIS3.CORE.AttributeCfgParser",
+      "js!SBIS3.CORE.Control"
+    ],
+    "js!SBIS3.CORE.Control": [
+      "js",
+      "js!SBIS3.CORE.Infobox",
+      "js!SBIS3.CORE.AttributeCfgParser",
+      "js!SBIS3.CORE.DataBoundMixin",
+      "Core/ParserUtilities",
+      "js!SBIS3.CORE.NavigationController"
+    ],
+    "html!SBIS3.CORE.CustomView": [],
+    "js!SBIS3.CORE.CustomView": [
+      "is",
+      "html",
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "html!SBIS3.CORE.CustomView",
+      "is!browser?Core/jquery-dblclick"
+    ],
+    "css!SBIS3.CORE.DataViewAbstract": [],
+    "js!SBIS3.CORE.DataViewAbstract": [
+      "css",
+      "is",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.Paging",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "is!browser?Core/jquery-dblclick",
+      "css!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.SumDialog"
+    ],
+    "js!SBIS3.CORE.CopyPlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract"
+    ],
+    "js!SBIS3.CORE.HistoryPlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.Dialog"
+    ],
+    "js!SBIS3.CORE.MarkedRowOptionsPlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract"
+    ],
+    "js!SBIS3.CORE.MergePlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "js!SBIS3.CORE.SelectMergeRecordDialog"
+    ],
+    "js!SBIS3.CORE.MovePlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.DragAndDropPlugin",
+      "js!SBIS3.CORE.DialogConfirm",
+      "js!SBIS3.CORE.FloatArea",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.ReplaceRecordDialog"
+    ],
+    "js!SBIS3.CORE.PrintPlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "js!SBIS3.CORE.ValidateCountDialog",
+      "js!SBIS3.CORE.SelectColumnsDialog"
+    ],
+    "js!SBIS3.CORE.ToolbarPlugin": [
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.Infobox",
+      "js!SBIS3.CORE.ToolBar",
+      "js!SBIS3.CORE.HierarchyView",
+      "js!SBIS3.CORE.TreeView"
+    ],
+    "css!SBIS3.CORE.DateRange": [],
+    "js!SBIS3.CORE.DateRange": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.FieldDate",
+      "js!SBIS3.CORE.Button",
+      "css!SBIS3.CORE.DateRange",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "css!SBIS3.CORE.DateRangeChoose": [],
+    "js!SBIS3.CORE.DateRangeChoose": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.FieldDate",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.LinkButton",
+      "js!SBIS3.CORE.FieldCheckbox",
+      "js!SBIS3.CORE.Menu",
+      "css!SBIS3.CORE.DateRangeChoose",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "js!SBIS3.CORE.Dialog": [
+      "js",
+      "js!SBIS3.CORE.Window",
+      "js!SBIS3.CORE.ModalOverlay"
+    ],
+    "js!SBIS3.CORE.DialogAlert": [
+      "js",
+      "js!SBIS3.CORE.SimpleDialogAbstract"
+    ],
+    "js!SBIS3.CORE.DialogConfirm": [
+      "js",
+      "js!SBIS3.CORE.SimpleDialogAbstract"
+    ],
+    "js!SBIS3.CORE.DialogRecord": [
+      "js",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "js!SBIS3.CORE.ConfirmRecordActionsDialog"
+    ],
+    "js!SBIS3.CORE.DialogSelector": [
+      "js",
+      "js!SBIS3.CORE.Selector",
+      "js!SBIS3.CORE.Dialog"
+    ],
+    "js!SBIS3.CORE.FloatAreaSelector": [
+      "js",
+      "js!SBIS3.CORE.Selector",
+      "js!SBIS3.CORE.FloatArea"
+    ],
+    "js!SBIS3.CORE.Selector": [],
+    "js!SBIS3.CORE.DragAndDropPlugin": [
+      "js",
+      "js!SBIS3.CORE.Control"
+    ],
+    "css!SBIS3.CORE.FieldAbstract": [],
+    "js!SBIS3.CORE.FieldAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.Infobox",
+      "css!SBIS3.CORE.FieldAbstract"
+    ],
+    "html!SBIS3.CORE.FieldCheckbox": [],
+    "css!SBIS3.CORE.FieldCheckbox": [],
+    "js!SBIS3.CORE.FieldCheckbox": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "html!SBIS3.CORE.FieldCheckbox",
+      "css!SBIS3.CORE.FieldCheckbox"
+    ],
+    "js!SBIS3.CORE.FieldDate/resources/ext/jquery.ui.datepicker-ru": [
+      "is",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min"
+    ],
+    "js!SBIS3.CORE.FieldDate": [
+      "is",
+      "js",
+      "js!SBIS3.CORE.FieldFormatAbstract",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min",
+      "is!browser?css!Ext/jquery-ui/jquery-ui-1.8.5.custom",
+      "is!browser?js!SBIS3.CORE.FieldDate/resources/ext/jquery.ui.datepicker-ru"
+    ],
+    "html!SBIS3.CORE.FieldDatePicker": [],
+    "html!SBIS3.CORE.FieldDatePicker/FieldDatePicker-legend": [],
+    "js!SBIS3.CORE.FieldDatePicker": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.FieldDatePicker",
+      "html!SBIS3.CORE.FieldDatePicker/FieldDatePicker-legend"
+    ],
+    "html!SBIS3.CORE.FieldDropdown": [],
+    "css!SBIS3.CORE.FieldDropdown": [],
+    "js!SBIS3.CORE.FieldDropdown": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "js!SBIS3.CORE.TDataSource",
+      "html!SBIS3.CORE.FieldDropdown",
+      "css!SBIS3.CORE.FieldDropdown",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "html!SBIS3.CORE.FieldEditAtPlace": [],
+    "css!SBIS3.CORE.FieldEditAtPlace": [],
+    "js!SBIS3.CORE.FieldEditAtPlace": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.FieldEditAtPlace",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.CompoundActiveFixMixin",
+      "js!SBIS3.CORE.FieldInteger",
+      "js!SBIS3.CORE.FieldMoney",
+      "js!SBIS3.CORE.FieldText",
+      "js!SBIS3.CORE.FieldDate",
+      "js!SBIS3.CORE.FieldLink",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.ConfirmRecordActionsDialog",
+      "css!SBIS3.CORE.FieldEditAtPlace"
+    ],
+    "html!SBIS3.CORE.FieldFormatAbstract": [],
+    "js!SBIS3.CORE.FieldFormatAbstract": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "html!SBIS3.CORE.FieldFormatAbstract"
+    ],
+    "html!SBIS3.CORE.FieldImage": [],
+    "css!SBIS3.CORE.FieldImage": [],
+    "js!SBIS3.CORE.FieldImage": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "html!SBIS3.CORE.FieldImage",
+      "css!SBIS3.CORE.FieldImage"
+    ],
+    "js!SBIS3.CORE.CropPlugin": [
+      "css",
+      "is",
+      "js",
+      "js!SBIS3.CORE.FieldImage",
+      "is!browser?js!SBIS3.CORE.FieldImage/resources/ext/jcrop/jquery.Jcrop.min",
+      "css!SBIS3.CORE.FieldImage/resources/ext/jcrop/jquery.Jcrop.min"
+    ],
+    "js!SBIS3.CORE.ZoomPlugin": [
+      "js",
+      "js!SBIS3.CORE.FieldImage"
+    ],
+    "js!SBIS3.CORE.FieldInteger": [
+      "js",
+      "js!SBIS3.CORE.FieldNumeric"
+    ],
+    "html!SBIS3.CORE.FieldLabel": [],
+    "js!SBIS3.CORE.FieldLabel": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "js!SBIS3.CORE.Infobox",
+      "html!SBIS3.CORE.FieldLabel"
+    ],
+    "html!SBIS3.CORE.FieldLink/FieldLink_link": [],
+    "html!SBIS3.CORE.FieldLink": [],
+    "css!SBIS3.CORE.FieldLink": [],
+    "js!SBIS3.CORE.FieldLink": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.Menu",
+      "js!SBIS3.CORE.DialogSelector",
+      "js!SBIS3.CORE.FloatAreaSelector",
+      "js!SBIS3.CORE.TDataSource",
+      "js!SBIS3.CORE.DialogRecord",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.Suggest",
+      "js!SBIS3.CORE.CompoundControl",
+      "js!SBIS3.CORE.DataBoundMixin",
+      "html!SBIS3.CORE.FieldLink/FieldLink_link",
+      "html!SBIS3.CORE.FieldLink",
+      "css!SBIS3.CORE.FieldLink",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "js!SBIS3.CORE.FieldMask": [
+      "js",
+      "js!SBIS3.CORE.FieldFormatAbstract"
+    ],
+    "js!SBIS3.CORE.FieldMoney": [
+      "js",
+      "js!SBIS3.CORE.FieldNumeric"
+    ],
+    "html!SBIS3.CORE.FieldMonth": [],
+    "css!SBIS3.CORE.FieldMonth": [],
+    "js!SBIS3.CORE.FieldMonth": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "html!SBIS3.CORE.FieldMonth",
+      "css!SBIS3.CORE.FieldMonth"
+    ],
+    "html!SBIS3.CORE.FieldNumeric": [],
+    "js!SBIS3.CORE.FieldNumeric": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "html!SBIS3.CORE.FieldNumeric"
+    ],
+    "html!SBIS3.CORE.FieldRadio": [],
+    "js!SBIS3.CORE.FieldRadio/resources/ext/ui.checkbox": [
+      "is",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min"
+    ],
+    "css!SBIS3.CORE.FieldRadio": [
+      "is",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min"
+    ],
+    "js!SBIS3.CORE.FieldRadio": [
+      "css",
+      "is",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.Infobox",
+      "html!SBIS3.CORE.FieldRadio",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min",
+      "is!browser?js!SBIS3.CORE.FieldRadio/resources/ext/ui.checkbox",
+      "css!SBIS3.CORE.FieldRadio"
+    ],
+    "html!SBIS3.CORE.FieldRichEditor": [],
+    "js!SBIS3.CORE.FieldRichEditor/resources/config": [
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.FieldText",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.Button"
+    ],
+    "js!SBIS3.CORE.FieldRichEditor/resources/utilites": [],
+    "css!SBIS3.CORE.FieldRichEditor": [
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.FieldText",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.Button"
+    ],
+    "js!SBIS3.CORE.FieldRichEditor": [
+      "css",
+      "is",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldTinyEditor",
+      "html!SBIS3.CORE.FieldRichEditor",
+      "is!browser?js!SBIS3.CORE.FieldRichEditor/resources/config",
+      "js!SBIS3.CONTROLS.ToggleButton",
+      "js!SBIS3.CONTROLS.Button",
+      "js!SBIS3.CORE.FieldDropdown",
+      "is!browser?js!SBIS3.CORE.FieldRichEditor/resources/utilites",
+      "is!browser?js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.PluginManager",
+      "is!browser?js!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog",
+      "css!SBIS3.CORE.FieldRichEditor"
+    ],
+    "html!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog": [],
+    "js!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.FieldRichEditor.ImagePropertiesDialog",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.FieldInteger",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.FieldLabel"
+    ],
+    "html!SBIS3.CORE.FieldString": [],
+    "js!SBIS3.CORE.FieldString/resources/ext/ierange-m2-min": [],
+    "js!SBIS3.CORE.FieldString": [
+      "is",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Infobox",
+      "js!SBIS3.CORE.FieldAbstract",
+      "html!SBIS3.CORE.FieldString",
+      "is!msIe?js!SBIS3.CORE.FieldString/resources/ext/ierange-m2-min"
+    ],
+    "html!SBIS3.CORE.FieldText": [],
+    "css!SBIS3.CORE.FieldText": [],
+    "js!SBIS3.CORE.FieldText/resources/Autosize-plugin": [],
+    "js!SBIS3.CORE.FieldText": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "html!SBIS3.CORE.FieldText",
+      "css!SBIS3.CORE.FieldText",
+      "is!browser?js!SBIS3.CORE.FieldText/resources/Autosize-plugin"
+    ],
+    "html!SBIS3.CORE.FieldTinyEditor": [],
+    "css!SBIS3.CORE.FieldTinyEditor": [],
+    "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/skin.min": [],
+    "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/content.inline.min": [],
+    "js!SBIS3.CORE.FieldTinyEditor/resources/tinymce/tinymce": [],
+    "js!SBIS3.CORE.FieldTinyEditor": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldString",
+      "html!SBIS3.CORE.FieldTinyEditor",
+      "js!SBIS3.CORE.FileStorageLoader",
+      "css!SBIS3.CORE.FieldTinyEditor",
+      "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/skin.min",
+      "css!SBIS3.CORE.FieldTinyEditor/resources/tinymce/skins/lightgray/content.inline.min",
+      "is!browser?js!SBIS3.CORE.FieldTinyEditor/resources/tinymce/tinymce"
+    ],
+    "tinymce/AddOnManager": [
+      "js",
+      "tinymce/dom/ScriptLoader",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/Compat": [
+      "js",
+      "tinymce/dom/DOMUtils",
+      "tinymce/dom/EventUtils",
+      "tinymce/dom/ScriptLoader",
+      "tinymce/AddOnManager",
+      "tinymce/util/Tools",
+      "tinymce/Env"
+    ],
+    "tinymce/Editor": [
+      "js",
+      "tinymce/dom/DOMUtils",
+      "tinymce/dom/DomQuery",
+      "tinymce/AddOnManager",
+      "tinymce/NodeChange",
+      "tinymce/html/Node",
+      "tinymce/dom/Serializer",
+      "tinymce/html/Serializer",
+      "tinymce/dom/Selection",
+      "tinymce/Formatter",
+      "tinymce/UndoManager",
+      "tinymce/EnterKey",
+      "tinymce/ForceBlocks",
+      "tinymce/EditorCommands",
+      "tinymce/util/URI",
+      "tinymce/dom/ScriptLoader",
+      "tinymce/dom/EventUtils",
+      "tinymce/WindowManager",
+      "tinymce/html/Schema",
+      "tinymce/html/DomParser",
+      "tinymce/util/Quirks",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/EditorObservable",
+      "tinymce/Shortcuts"
+    ],
+    "tinymce/EditorCommands": [
+      "js",
+      "tinymce/html/Serializer",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/dom/ElementUtils",
+      "tinymce/dom/RangeUtils",
+      "tinymce/dom/TreeWalker"
+    ],
+    "tinymce/EditorManager": [
+      "js",
+      "tinymce/Editor",
+      "tinymce/dom/DomQuery",
+      "tinymce/dom/DOMUtils",
+      "tinymce/util/URI",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/util/Observable",
+      "tinymce/util/I18n",
+      "tinymce/FocusManager"
+    ],
+    "tinymce/EditorObservable": [
+      "js",
+      "tinymce/util/Observable",
+      "tinymce/dom/DOMUtils",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/EnterKey": [
+      "js",
+      "tinymce/dom/TreeWalker",
+      "tinymce/dom/RangeUtils",
+      "tinymce/Env"
+    ],
+    "tinymce/Env": [],
+    "tinymce/FocusManager": [
+      "js",
+      "tinymce/dom/DOMUtils",
+      "tinymce/Env"
+    ],
+    "tinymce/ForceBlocks": [],
+    "tinymce/Formatter": [
+      "js",
+      "tinymce/dom/TreeWalker",
+      "tinymce/dom/RangeUtils",
+      "tinymce/dom/BookmarkManager",
+      "tinymce/dom/ElementUtils",
+      "tinymce/util/Tools",
+      "tinymce/fmt/Preview"
+    ],
+    "tinymce/LegacyInput": [
+      "js",
+      "tinymce/EditorManager",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/NodeChange": [
+      "js",
+      "tinymce/dom/RangeUtils",
+      "tinymce/Env"
+    ],
+    "tinymce/Shortcuts": [
+      "js",
+      "tinymce/util/Tools",
+      "tinymce/Env"
+    ],
+    "tinymce/UndoManager": [
+      "js",
+      "tinymce/util/VK",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/html/SaxParser"
+    ],
+    "tinymce/WindowManager": [
+      "js",
+      "tinymce/ui/Window",
+      "tinymce/ui/MessageBox"
+    ],
+    "tinymce/dom/BookmarkManager": [
+      "js",
+      "tinymce/Env",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/ControlSelection": [
+      "js",
+      "tinymce/util/VK",
+      "tinymce/util/Tools",
+      "tinymce/Env"
+    ],
+    "tinymce/dom/DOMUtils": [
+      "js",
+      "tinymce/dom/Sizzle",
+      "tinymce/dom/DomQuery",
+      "tinymce/html/Styles",
+      "tinymce/dom/EventUtils",
+      "tinymce/dom/TreeWalker",
+      "tinymce/dom/Range",
+      "tinymce/html/Entities",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/dom/StyleSheetLoader"
+    ],
+    "tinymce/dom/DomQuery": [
+      "js",
+      "tinymce/dom/EventUtils",
+      "tinymce/dom/Sizzle",
+      "tinymce/util/Tools",
+      "tinymce/Env"
+    ],
+    "tinymce/dom/ElementUtils": [
+      "js",
+      "tinymce/dom/BookmarkManager",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/EventUtils": [],
+    "tinymce/dom/Range": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/RangeUtils": [
+      "js",
+      "tinymce/util/Tools",
+      "tinymce/dom/TreeWalker"
+    ],
+    "tinymce/dom/ScriptLoader": [
+      "js",
+      "tinymce/dom/DOMUtils",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/Selection": [
+      "js",
+      "tinymce/dom/TreeWalker",
+      "tinymce/dom/TridentSelection",
+      "tinymce/dom/ControlSelection",
+      "tinymce/dom/RangeUtils",
+      "tinymce/dom/BookmarkManager",
+      "tinymce/Env",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/Serializer": [
+      "js",
+      "tinymce/dom/DOMUtils",
+      "tinymce/html/DomParser",
+      "tinymce/html/Entities",
+      "tinymce/html/Serializer",
+      "tinymce/html/Node",
+      "tinymce/html/Schema",
+      "tinymce/Env",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/Sizzle": [],
+    "tinymce/dom/StyleSheetLoader": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/dom/TreeWalker": [],
+    "tinymce/dom/TridentSelection": [],
+    "tinymce/fmt/Preview": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/html/DomParser": [
+      "js",
+      "tinymce/html/Node",
+      "tinymce/html/Schema",
+      "tinymce/html/SaxParser",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/html/Entities": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/html/Node": [],
+    "tinymce/html/SaxParser": [
+      "js",
+      "tinymce/html/Schema",
+      "tinymce/html/Entities",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/html/Schema": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/html/Serializer": [
+      "js",
+      "tinymce/html/Writer",
+      "tinymce/html/Schema"
+    ],
+    "tinymce/html/Styles": [],
+    "tinymce/html/Writer": [
+      "js",
+      "tinymce/html/Entities",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/ui/AbsoluteLayout": [
+      "js",
+      "tinymce/ui/Layout"
+    ],
+    "tinymce/ui/Button": [
+      "js",
+      "tinymce/ui/Widget"
+    ],
+    "tinymce/ui/ButtonGroup": [
+      "js",
+      "tinymce/ui/Container"
+    ],
+    "tinymce/ui/Checkbox": [
+      "js",
+      "tinymce/ui/Widget"
+    ],
+    "tinymce/ui/Collection": [
+      "js",
+      "tinymce/util/Tools",
+      "tinymce/ui/Selector",
+      "tinymce/util/Class"
+    ],
+    "tinymce/ui/ColorBox": [
+      "js",
+      "tinymce/ui/ComboBox"
+    ],
+    "tinymce/ui/ColorButton": [
+      "js",
+      "tinymce/ui/PanelButton",
+      "tinymce/dom/DOMUtils"
+    ],
+    "tinymce/ui/ColorPicker": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/DragHelper",
+      "tinymce/ui/DomUtils",
+      "tinymce/util/Color"
+    ],
+    "tinymce/ui/ComboBox": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/Factory",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/Container": [
+      "js",
+      "tinymce/ui/Control",
+      "tinymce/ui/Collection",
+      "tinymce/ui/Selector",
+      "tinymce/ui/Factory",
+      "tinymce/ui/KeyboardNavigation",
+      "tinymce/util/Tools",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/Control": [
+      "js",
+      "tinymce/util/Class",
+      "tinymce/util/Tools",
+      "tinymce/util/EventDispatcher",
+      "tinymce/ui/Collection",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/DomUtils": [
+      "js",
+      "tinymce/util/Tools",
+      "tinymce/dom/DOMUtils"
+    ],
+    "tinymce/ui/DragHelper": [
+      "js",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/ElementPath": [
+      "js",
+      "tinymce/ui/Path",
+      "tinymce/EditorManager"
+    ],
+    "tinymce/ui/Factory": [],
+    "tinymce/ui/FieldSet": [
+      "js",
+      "tinymce/ui/Form"
+    ],
+    "tinymce/ui/FilePicker": [
+      "js",
+      "tinymce/ui/ComboBox",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/ui/FitLayout": [
+      "js",
+      "tinymce/ui/AbsoluteLayout"
+    ],
+    "tinymce/ui/FlexLayout": [
+      "js",
+      "tinymce/ui/AbsoluteLayout"
+    ],
+    "tinymce/ui/FloatPanel": [
+      "js",
+      "tinymce/ui/Panel",
+      "tinymce/ui/Movable",
+      "tinymce/ui/Resizable",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/FlowLayout": [
+      "js",
+      "tinymce/ui/Layout"
+    ],
+    "tinymce/ui/Form": [
+      "js",
+      "tinymce/ui/Container",
+      "tinymce/ui/FormItem",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/ui/FormItem": [
+      "js",
+      "tinymce/ui/Container"
+    ],
+    "tinymce/ui/FormatControls": [
+      "js",
+      "tinymce/ui/Control",
+      "tinymce/ui/Widget",
+      "tinymce/ui/FloatPanel",
+      "tinymce/util/Tools",
+      "tinymce/EditorManager",
+      "tinymce/Env"
+    ],
+    "tinymce/ui/GridLayout": [
+      "js",
+      "tinymce/ui/AbsoluteLayout"
+    ],
+    "tinymce/ui/Iframe": [
+      "js",
+      "tinymce/ui/Widget"
+    ],
+    "tinymce/ui/KeyboardNavigation": [],
+    "tinymce/ui/Label": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/Layout": [
+      "js",
+      "tinymce/util/Class",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/ui/ListBox": [
+      "js",
+      "tinymce/ui/MenuButton"
+    ],
+    "tinymce/ui/Menu": [
+      "js",
+      "tinymce/ui/FloatPanel",
+      "tinymce/ui/MenuItem",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/ui/MenuBar": [
+      "js",
+      "tinymce/ui/Toolbar"
+    ],
+    "tinymce/ui/MenuButton": [
+      "js",
+      "tinymce/ui/Button",
+      "tinymce/ui/Factory",
+      "tinymce/ui/MenuBar"
+    ],
+    "tinymce/ui/MenuItem": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/Factory",
+      "tinymce/Env"
+    ],
+    "tinymce/ui/MessageBox": [
+      "js",
+      "tinymce/ui/Window"
+    ],
+    "tinymce/ui/Movable": [
+      "js",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/Panel": [
+      "js",
+      "tinymce/ui/Container",
+      "tinymce/ui/Scrollable"
+    ],
+    "tinymce/ui/PanelButton": [
+      "js",
+      "tinymce/ui/Button",
+      "tinymce/ui/FloatPanel"
+    ],
+    "tinymce/ui/Path": [
+      "js",
+      "tinymce/ui/Widget"
+    ],
+    "tinymce/ui/Radio": [
+      "js",
+      "tinymce/ui/Checkbox"
+    ],
+    "tinymce/ui/Resizable": [
+      "js",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/ResizeHandle": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/DragHelper"
+    ],
+    "tinymce/ui/Scrollable": [
+      "js",
+      "tinymce/ui/DomUtils",
+      "tinymce/ui/DragHelper"
+    ],
+    "tinymce/ui/Selector": [
+      "js",
+      "tinymce/util/Class"
+    ],
+    "tinymce/ui/Spacer": [
+      "js",
+      "tinymce/ui/Widget"
+    ],
+    "tinymce/ui/SplitButton": [
+      "js",
+      "tinymce/ui/MenuButton",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/StackLayout": [
+      "js",
+      "tinymce/ui/FlowLayout"
+    ],
+    "tinymce/ui/TabPanel": [
+      "js",
+      "tinymce/ui/Panel",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/TextBox": [
+      "js",
+      "tinymce/ui/Widget",
+      "tinymce/ui/DomUtils"
+    ],
+    "tinymce/ui/Throbber": [
+      "js",
+      "tinymce/ui/DomUtils",
+      "tinymce/ui/Control"
+    ],
+    "tinymce/ui/Toolbar": [
+      "js",
+      "tinymce/ui/Container"
+    ],
+    "tinymce/ui/Tooltip": [
+      "js",
+      "tinymce/ui/Control",
+      "tinymce/ui/Movable"
+    ],
+    "tinymce/ui/Widget": [
+      "js",
+      "tinymce/ui/Control",
+      "tinymce/ui/Tooltip"
+    ],
+    "tinymce/ui/Window": [
+      "js",
+      "tinymce/ui/FloatPanel",
+      "tinymce/ui/Panel",
+      "tinymce/ui/DomUtils",
+      "tinymce/ui/DragHelper"
+    ],
+    "tinymce/util/Class": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/util/Color": [],
+    "tinymce/util/EventDispatcher": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/util/I18n": [],
+    "tinymce/util/JSON": [],
+    "tinymce/util/JSONP": [
+      "js",
+      "tinymce/dom/DOMUtils"
+    ],
+    "tinymce/util/JSONRequest": [
+      "js",
+      "tinymce/util/JSON",
+      "tinymce/util/XHR",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/util/LocalStorage": [],
+    "tinymce/util/Observable": [
+      "js",
+      "tinymce/util/EventDispatcher"
+    ],
+    "tinymce/util/Quirks": [
+      "js",
+      "tinymce/util/VK",
+      "tinymce/dom/RangeUtils",
+      "tinymce/dom/TreeWalker",
+      "tinymce/html/Node",
+      "tinymce/html/Entities",
+      "tinymce/Env",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/util/Tools": [
+      "js",
+      "tinymce/Env"
+    ],
+    "tinymce/util/URI": [
+      "js",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/util/VK": [
+      "js",
+      "tinymce/Env"
+    ],
+    "tinymce/util/XHR": [
+      "js",
+      "tinymce/util/Observable",
+      "tinymce/util/Tools"
+    ],
+    "tinymce/pasteplugin/Clipboard": [
+      "js",
+      "tinymce/Env",
+      "tinymce/dom/RangeUtils",
+      "tinymce/util/VK",
+      "tinymce/pasteplugin/Utils"
+    ],
+    "tinymce/pasteplugin/Plugin": [
+      "js",
+      "tinymce/PluginManager",
+      "tinymce/pasteplugin/Clipboard",
+      "tinymce/pasteplugin/WordFilter",
+      "tinymce/pasteplugin/Quirks"
+    ],
+    "tinymce/pasteplugin/Quirks": [
+      "js",
+      "tinymce/Env",
+      "tinymce/util/Tools",
+      "tinymce/pasteplugin/WordFilter",
+      "tinymce/pasteplugin/Utils"
+    ],
+    "tinymce/pasteplugin/Utils": [
+      "js",
+      "tinymce/util/Tools",
+      "tinymce/html/DomParser",
+      "tinymce/html/Schema"
+    ],
+    "tinymce/spellcheckerplugin/DomTextMatcher": [],
+    "tinymce/spellcheckerplugin/Plugin": [
+      "js",
+      "tinymce/spellcheckerplugin/DomTextMatcher",
+      "tinymce/PluginManager",
+      "tinymce/util/Tools",
+      "tinymce/ui/Menu",
+      "tinymce/dom/DOMUtils",
+      "tinymce/util/XHR",
+      "tinymce/util/URI",
+      "tinymce/util/JSON"
+    ],
+    "js!SBIS3.CORE.FileBrowse": [
+      "js",
+      "js!SBIS3.CORE.FileButton",
+      "js!SBIS3.CORE.FileLoader"
+    ],
+    "js!SBIS3.CORE.FileButton": [
+      "js",
+      "js!SBIS3.CORE.Button"
+    ],
+    "js!SBIS3.CORE.FileCam": [
+      "js",
+      "js!SBIS3.CORE.FileButton",
+      "js!SBIS3.CORE.FileCamLoader"
+    ],
+    "js!SBIS3.CORE.FileCamLoader/resources/canvasToBlob": [],
+    "css!SBIS3.CORE.FileCamLoader": [],
+    "js!SBIS3.CORE.FileCamLoader": [
+      "css",
+      "is",
+      "js",
+      "js!SBIS3.CORE.FileLoaderAbstract",
+      "js!SBIS3.CORE.Dialog",
+      "is!browser?js!SBIS3.Engine.HintManager",
+      "is!browser?js!SBIS3.CORE.FileCamLoader/resources/canvasToBlob",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "css!SBIS3.CORE.FileCamLoader"
+    ],
+    "html!SBIS3.CORE.CameraWindow": [],
+    "css!SBIS3.CORE.CameraWindow": [],
+    "js!SBIS3.CORE.CameraWindow": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.CameraWindow",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.CloseButton",
+      "css!SBIS3.CORE.CameraWindow"
+    ],
+    "js!SBIS3.CORE.FileClipboard": [
+      "js",
+      "js!SBIS3.CORE.FileButton",
+      "js!SBIS3.CORE.FileClipboardLoader"
+    ],
+    "js!SBIS3.CORE.FileClipboardLoader": [
+      "js",
+      "js!SBIS3.CORE.FileLoaderAbstract"
+    ],
+    "html!SBIS3.CORE.FileLoader": [],
+    "json!SBIS3.CORE.FileLoader/resources/MimeTypes": [],
+    "css!SBIS3.CORE.FileLoader": [],
+    "js!SBIS3.CORE.FileLoader": [
+      "css",
+      "json",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FileLoaderAbstract",
+      "html!SBIS3.CORE.FileLoader",
+      "json!SBIS3.CORE.FileLoader/resources/MimeTypes",
+      "css!SBIS3.CORE.FileLoader"
+    ],
+    "js!SBIS3.CORE.FileLoaderAbstract": [
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.PluginManager",
+      "js!SBIS3.CORE.LoadingIndicator"
+    ],
+    "js!SBIS3.CORE.FileScanLoader": [
+      "js",
+      "js!SBIS3.CORE.FileLoaderAbstract",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.PluginSetupDialog"
+    ],
+    "html!SBIS3.CORE.SelectScannerDialog": [],
+    "css!SBIS3.CORE.SelectScannerDialog": [],
+    "js!SBIS3.CORE.SelectScannerDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.SelectScannerDialog",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.CloseButton",
+      "css!SBIS3.CORE.SelectScannerDialog"
+    ],
+    "js!SBIS3.CORE.FileScaner": [
+      "js",
+      "js!SBIS3.CORE.FileButton",
+      "js!SBIS3.CORE.FileScanLoader"
+    ],
+    "js!SBIS3.CORE.FileStorageLoader": [
+      "js",
+      "js!SBIS3.CORE.FileLoader"
+    ],
+    "html!SBIS3.CORE.FilterButton": [],
+    "css!SBIS3.CORE.FilterButton": [],
+    "js!SBIS3.CORE.FilterButton": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.FilterFloatArea",
+      "html!SBIS3.CORE.FilterButton",
+      "js!SBIS3.CORE.FilterButtonArea",
+      "css!SBIS3.CORE.FilterButton"
+    ],
+    "html!SBIS3.CORE.FilterButtonArea": [],
+    "js!SBIS3.CORE.FilterButtonArea": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.FilterButtonArea",
+      "js!SBIS3.CORE.LinkButton",
+      "js!SBIS3.CORE.OutlineButton",
+      "js!SBIS3.CORE.TemplatedArea",
+      "js!SBIS3.CORE.Label"
+    ],
+    "html!SBIS3.CORE.FilterButtonHistory": [],
+    "js!SBIS3.CORE.FilterButtonHistory": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.FilterButtonHistory",
+      "js!SBIS3.CORE.TemplatedArea",
+      "js!SBIS3.CORE.CustomView"
+    ],
+    "js!SBIS3.CORE.RequestHistoryPlugin": [
+      "js",
+      "js!SBIS3.CORE.FilterButton"
+    ],
+    "html!SBIS3.CORE.FilterController": [],
+    "css!SBIS3.CORE.FilterController": [],
+    "js!SBIS3.CORE.FilterController": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.FilterController",
+      "js!SBIS3.CORE.PathFilter",
+      "js!SBIS3.CORE.FilterButton",
+      "css!SBIS3.CORE.FilterController"
+    ],
+    "css!SBIS3.CORE.FilterFloatArea": [],
+    "js!SBIS3.CORE.FilterFloatArea": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.FloatArea",
+      "css!SBIS3.CORE.FilterFloatArea"
+    ],
+    "html!SBIS3.CORE.FilterView": [],
+    "css!SBIS3.CORE.FilterView": [],
+    "js!SBIS3.CORE.FilterView": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.FieldLink",
+      "html!SBIS3.CORE.FilterView",
+      "js!SBIS3.CORE.FilterFloatArea",
+      "css!SBIS3.CORE.FilterView"
+    ],
+    "js!SBIS3.CORE.FiltersArea": [
+      "js",
+      "js!SBIS3.CORE.TemplatedAreaAbstract"
+    ],
+    "js!SBIS3.CORE.FiltersDialog": [
+      "js",
+      "js!SBIS3.CORE.Dialog"
+    ],
+    "js!SBIS3.CORE.FiltersWindow": [
+      "js",
+      "js!SBIS3.CORE.FiltersArea"
+    ],
+    "css!SBIS3.CORE.FloatArea": [],
+    "js!SBIS3.CORE.FloatArea": [
+      "is",
+      "css",
+      "js",
+      "js!SBIS3.CORE.TemplatedArea",
+      "js!SBIS3.CORE.FloatAreaManager",
+      "js!SBIS3.CORE.CloseButton",
+      "js!SBIS3.CORE.ModalOverlay",
+      "css!SBIS3.CORE.FloatArea",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "js!SBIS3.CORE.Grid": [
+      "is",
+      "js",
+      "js!SBIS3.CORE.GridAbstract",
+      "is!browser?Core/dt_layout"
+    ],
+    "css!SBIS3.CORE.GridAbstract": [],
+    "js!SBIS3.CORE.GridAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "css!SBIS3.CORE.GridAbstract"
+    ],
+    "js!SBIS3.CORE.GridLayout": [
+      "is",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "is!browser?Core/dt_layout"
+    ],
+    "html!SBIS3.CORE.GroupCheckBox": [],
+    "js!SBIS3.CORE.GroupCheckBox": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "js!SBIS3.CORE.FieldCheckbox",
+      "html!SBIS3.CORE.GroupCheckBox",
+      "js!SBIS3.CORE.DataBoundMixin"
+    ],
+    "html!SBIS3.CORE.HTMLChunk": [],
+    "js!SBIS3.CORE.HTMLChunk": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.HTMLChunk"
+    ],
+    "css!SBIS3.CORE.HTMLView": [],
+    "js!SBIS3.CORE.HTMLView": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.TemplatedAreaAbstract",
+      "js!SBIS3.CORE.LoadingIndicator",
+      "css!SBIS3.CORE.HTMLView"
+    ],
+    "js!SBIS3.CORE.HierarchyCustomView": [
+      "is",
+      "js",
+      "js!SBIS3.CORE.HierarchyView",
+      "is!browser?Core/jquery-dblclick"
+    ],
+    "js!SBIS3.CORE.HierarchyView": [
+      "js",
+      "js!SBIS3.CORE.HierarchyViewAbstract",
+      "js!SBIS3.CORE.PathSelector"
+    ],
+    "js!SBIS3.CORE.HierarchyViewAbstract": [
+      "js",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "js!SBIS3.CORE.Control"
+    ],
+    "css!SBIS3.CORE.ImageGallery": [],
+    "html!SBIS3.CORE.ImageGallery": [],
+    "js!SBIS3.CORE.ImageGallery": [
+      "html",
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "js!SBIS3.CORE.FieldImage",
+      "css!SBIS3.CORE.ImageGallery",
+      "js!SBIS3.CORE.FileBrowse",
+      "js!SBIS3.CORE.Button",
+      "html!SBIS3.CORE.ImageGallery"
+    ],
+    "html!SBIS3.CORE.Infobox": [],
+    "css!SBIS3.CORE.Infobox": [],
+    "js!SBIS3.CORE.Infobox": [
+      "is",
+      "css",
+      "html",
+      "html!SBIS3.CORE.Infobox",
+      "css!SBIS3.CORE.Infobox",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "html!SBIS3.CORE.InfoboxTrigger": [],
+    "js!SBIS3.CORE.InfoboxTrigger": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.Infobox",
+      "html!SBIS3.CORE.InfoboxTrigger"
+    ],
+    "html!SBIS3.CORE.Label": [],
+    "css!SBIS3.CORE.Label": [],
+    "js!SBIS3.CORE.Label": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.Label",
+      "css!SBIS3.CORE.Label"
+    ],
+    "css!SBIS3.CORE.LinkButton": [],
+    "js!SBIS3.CORE.LinkButton": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Button",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "html!SBIS3.CORE.LoadingIndicator": [],
+    "css!SBIS3.CORE.LoadingIndicator": [],
+    "js!SBIS3.CORE.LoadingIndicator": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.LoadingIndicator",
+      "js!SBIS3.CORE.Window",
+      "js!SBIS3.CORE.ProgressBar",
+      "js!SBIS3.CORE.ModalOverlay",
+      "css!SBIS3.CORE.LoadingIndicator"
+    ],
+    "js!SBIS3.CORE.Master": [
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "js!SBIS3.CORE.TemplatedArea"
+    ],
+    "css!SBIS3.CORE.MasterProgress": [],
+    "js!SBIS3.CORE.MasterProgress": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.Marker",
+      "css!SBIS3.CORE.MasterProgress"
+    ],
+    "html!SBIS3.CORE.Menu": [],
+    "html!SBIS3.CORE.Menu/Menu_item": [],
+    "css!SBIS3.CORE.Menu": [],
+    "js!SBIS3.CORE.Menu": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "html!SBIS3.CORE.Menu",
+      "html!SBIS3.CORE.Menu/Menu_item",
+      "css!SBIS3.CORE.Menu",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "js!SBIS3.CORE.ModalOverlay": [],
+    "html!SBIS3.CORE.NavigationPanel": [],
+    "css!SBIS3.CORE.NavigationPanel": [],
+    "js!SBIS3.CORE.NavigationPanel": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "html!SBIS3.CORE.NavigationPanel",
+      "css!SBIS3.CORE.Accordion",
+      "css!SBIS3.CORE.NavigationPanel"
+    ],
+    "js!SBIS3.CORE.NavigationPanelCollapsePlugin": [
+      "js",
+      "js!SBIS3.CORE.NavigationPanel",
+      "js!SBIS3.CORE.CollapsingNavigation"
+    ],
+    "html!SBIS3.CORE.OperationsPanel": [],
+    "css!SBIS3.CORE.OperationsPanel": [],
+    "js!SBIS3.CORE.OperationsPanel": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "js!SBIS3.CORE.LinkButton",
+      "js!SBIS3.CORE.Menu",
+      "html!SBIS3.CORE.OperationsPanel",
+      "js!SBIS3.CORE.PrintPlugin",
+      "css!SBIS3.CORE.OperationsPanel"
+    ],
+    "html!SBIS3.CORE.OperationsPanelND": [],
+    "css!SBIS3.CORE.OperationsPanelND": [],
+    "js!SBIS3.CORE.OperationsPanelND": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.OperationsPanel",
+      "html!SBIS3.CORE.OperationsPanelND",
+      "css!SBIS3.CORE.OperationsPanelND"
+    ],
+    "css!SBIS3.CORE.OutlineButton": [],
+    "js!SBIS3.CORE.OutlineButton": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Button",
+      "css!SBIS3.CORE.OutlineButton"
+    ],
+    "html!SBIS3.CORE.PageFilter": [],
+    "css!SBIS3.CORE.PageFilter": [],
+    "js!SBIS3.CORE.PageFilter": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.FieldAbstract",
+      "html!SBIS3.CORE.PageFilter",
+      "css!SBIS3.CORE.PageFilter"
+    ],
+    "html!SBIS3.CORE.Paging": [],
+    "html!SBIS3.CORE.Paging/Pages_list": [],
+    "css!SBIS3.CORE.Paging": [],
+    "js!SBIS3.CORE.Paging": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.Paging",
+      "html!SBIS3.CORE.Paging/Pages_list",
+      "css!SBIS3.CORE.Paging"
+    ],
+    "html!SBIS3.CORE.PathFilter": [],
+    "js!SBIS3.CORE.PathFilter/resources/FieldDropDownExtendedHover": [
+      "js",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.LinkButton",
+      "js!SBIS3.CORE.FieldCheckbox"
+    ],
+    "css!SBIS3.CORE.PathFilter": [
+      "js",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.LinkButton",
+      "js!SBIS3.CORE.FieldCheckbox"
+    ],
+    "js!SBIS3.CORE.PathFilter": [
+      "css",
+      "is",
+      "html",
+      "js",
+      "js!SBIS3.CORE.PathSelector",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.FieldCheckbox",
+      "html!SBIS3.CORE.PathFilter",
+      "js!SBIS3.CORE.FieldDropdown",
+      "is!browser?js!SBIS3.CORE.PathFilter/resources/FieldDropDownExtendedHover",
+      "html!SBIS3.CORE.PathSelector",
+      "css!SBIS3.CORE.PathFilter",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "html!SBIS3.CORE.PathSelector": [],
+    "css!SBIS3.CORE.PathSelector": [],
+    "js!SBIS3.CORE.PathSelector": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.TDataSource",
+      "html!SBIS3.CORE.PathSelector",
+      "css!SBIS3.CORE.PathSelector"
+    ],
+    "html!SBIS3.CORE.PrintDialog/PrintDialogInner": [],
+    "css!SBIS3.CORE.PrintDialog/PrintDialogInner": [],
+    "js!SBIS3.CORE.PrintDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.PrintDialog/PrintDialogInner",
+      "css!SBIS3.CORE.PrintDialog/PrintDialogInner",
+      "js!SBIS3.CORE.CloseButton",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.HTMLView"
+    ],
+    "html!SBIS3.CORE.ProgressBar": [],
+    "css!SBIS3.CORE.ProgressBar": [],
+    "js!SBIS3.CORE.ProgressBar": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "html!SBIS3.CORE.ProgressBar",
+      "css!SBIS3.CORE.ProgressBar"
+    ],
+    "css!SBIS3.CORE.PushButton": [],
+    "js!SBIS3.CORE.PushButton": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Button",
+      "css!SBIS3.CORE.PushButton"
+    ],
+    "js!SBIS3.CORE.RaphaelChartGraph": [
+      "js",
+      "js!SBIS3.CORE.RaphaelDrawerInternal",
+      "js!SBIS3.CORE.Infobox"
+    ],
+    "js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/raphael-min": [],
+    "js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/g.raphael-min": [
+      "is",
+      "is!browser?js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/raphael-min"
+    ],
+    "js!SBIS3.CORE.RaphaelDrawerInternal": [
+      "is",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "is!browser?js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/raphael-min",
+      "is!browser?js!SBIS3.CORE.RaphaelDrawerInternal/resources/ext/graphael/g.raphael-min"
+    ],
+    "eve": [],
+    "js!SBIS3.CORE.RaphaelMultiGraph": [
+      "js",
+      "js!SBIS3.CORE.RaphaelChartGraph",
+      "js!SBIS3.CORE.RaphaelPieGraph"
+    ],
+    "js!SBIS3.CORE.RaphaelPieGraph": [
+      "js",
+      "js!SBIS3.CORE.RaphaelDrawerInternal"
+    ],
+    "js!SBIS3.CORE.RecordArea": [
+      "js",
+      "js!SBIS3.CORE.TemplatedArea",
+      "js!SBIS3.CORE.DialogRecord"
+    ],
+    "css!SBIS3.CORE.RecordFloatArea": [],
+    "js!SBIS3.CORE.RecordFloatArea": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.DialogRecord",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.FloatArea",
+      "js!SBIS3.CORE.ModalOverlay",
+      "css!SBIS3.CORE.RecordFloatArea"
+    ],
+    "js!SBIS3.CORE.RelativeGrid": [
+      "js",
+      "js!SBIS3.CORE.GridAbstract",
+      "Core/js-template-doT"
+    ],
+    "html!SBIS3.CORE.SearchString": [],
+    "css!SBIS3.CORE.SearchString": [],
+    "js!SBIS3.CORE.SearchString": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.FloatArea",
+      "js!SBIS3.CORE.FieldString",
+      "html!SBIS3.CORE.SearchString",
+      "js!SBIS3.CORE.KbLayoutRevert",
+      "css!SBIS3.CORE.SearchString",
+      "css!SBIS3.CORE.LinkButton"
+    ],
+    "css!SBIS3.CORE.SimpleDialogAbstract": [],
+    "js!SBIS3.CORE.SimpleDialogAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Window",
+      "css!SBIS3.CORE.SimpleDialogAbstract"
+    ],
+    "js!SBIS3.CORE.StackPanel": [
+      "js",
+      "js!SBIS3.CORE.GridAbstract"
+    ],
+    "css!SBIS3.CORE.Suggest": [],
+    "js!SBIS3.CORE.Suggest": [
+      "css",
+      "is",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "js!SBIS3.CORE.DialogSelector",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.TDataSource",
+      "js!SBIS3.CORE.FloatAreaSelector",
+      "js!SBIS3.CORE.Button",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position",
+      "css!SBIS3.CORE.Suggest",
+      "js!SBIS3.CORE.KbLayoutRevert",
+      "js!SBIS3.CORE.SuggestShowAllDialog"
+    ],
+    "js!SBIS3.CORE.SwitchableArea/SwitchableAreaItem": [
+      "js",
+      "js!SBIS3.CORE.CompoundControl"
+    ],
+    "html!SBIS3.CORE.SwitchableArea": [
+      "js",
+      "js!SBIS3.CORE.CompoundControl"
+    ],
+    "html!SBIS3.CORE.SwitchableArea/SwitchableArea_area": [
+      "js",
+      "js!SBIS3.CORE.CompoundControl"
+    ],
+    "js!SBIS3.CORE.SwitchableArea": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "js!SBIS3.CORE.SwitchableArea/SwitchableAreaItem",
+      "html!SBIS3.CORE.SwitchableArea",
+      "html!SBIS3.CORE.SwitchableArea/SwitchableArea_area"
+    ],
+    "html!SBIS3.CORE.Switcher": [],
+    "js!SBIS3.CORE.Switcher": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.SwitcherAbstract",
+      "html!SBIS3.CORE.Switcher"
+    ],
+    "css!SBIS3.CORE.SwitcherAbstract": [],
+    "js!SBIS3.CORE.SwitcherAbstract": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.Control",
+      "css!SBIS3.CORE.SwitcherAbstract"
+    ],
+    "html!SBIS3.CORE.SwitcherDouble": [],
+    "js!SBIS3.CORE.SwitcherDouble": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.SwitcherAbstract",
+      "html!SBIS3.CORE.SwitcherDouble",
+      "css!SBIS3.CORE.SwitcherAbstract"
+    ],
+    "html!SBIS3.CORE.TabButtons": [],
+    "html!SBIS3.CORE.TabButtons/TabButtons_button": [],
+    "html!SBIS3.CORE.TabButtons/TabButtons_icon": [],
+    "css!SBIS3.CORE.TabButtons": [],
+    "js!SBIS3.CORE.TabButtons": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.TabButtons",
+      "html!SBIS3.CORE.TabButtons/TabButtons_button",
+      "html!SBIS3.CORE.TabButtons/TabButtons_icon",
+      "js!SBIS3.CORE.FieldEditAtPlace",
+      "css!SBIS3.CORE.TabButtons"
+    ],
+    "js!SBIS3.CORE.TabControl/TabItem": [],
+    "html!SBIS3.CORE.TabControl": [],
+    "css!SBIS3.CORE.TabControl": [],
+    "js!SBIS3.CORE.TabControl": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "js!SBIS3.CORE.TabControl/TabItem",
+      "html!SBIS3.CORE.TabControl",
+      "js!SBIS3.CORE.TabButtons",
+      "js!SBIS3.CORE.SwitchableArea",
+      "css!SBIS3.CORE.TabControl"
+    ],
+    "js!SBIS3.CORE.TabTemplatedArea": [
+      "js",
+      "js!SBIS3.CORE.TemplatedArea"
+    ],
+    "js!SBIS3.CORE.Table": [
+      "js",
+      "js!SBIS3.CORE.GridAbstract"
+    ],
+    "html!SBIS3.CORE.TableView/TableViewRow": [],
+    "html!SBIS3.CORE.TableView": [],
+    "js!SBIS3.CORE.TableView": [
+      "html",
+      "js",
+      "js!SBIS3.CORE.DataViewAbstract",
+      "html!SBIS3.CORE.TableView/TableViewRow",
+      "html!SBIS3.CORE.TableView"
+    ],
+    "js!SBIS3.CORE.AtPlaceEditPlugin": [
+      "js",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.RecordArea",
+      "js!SBIS3.CORE.FieldInteger",
+      "js!SBIS3.CORE.FieldNumeric",
+      "js!SBIS3.CORE.FieldMoney",
+      "js!SBIS3.CORE.FieldDate",
+      "js!SBIS3.CORE.FieldCheckbox",
+      "js!SBIS3.CORE.FieldString",
+      "js!SBIS3.CORE.FieldText",
+      "js!SBIS3.CORE.FieldDropdown",
+      "js!SBIS3.CORE.GroupCheckBox",
+      "js!SBIS3.CORE.LinkButton"
+    ],
+    "js!SBIS3.CORE.ColorMarkPlugin": [
+      "js",
+      "js!SBIS3.CORE.FloatArea",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.ColorizeDialog"
+    ],
+    "js!SBIS3.CORE.LadderPlugin": [
+      "js",
+      "js!SBIS3.CORE.TableView"
+    ],
+    "js!SBIS3.CORE.PartScrollPlugin": [
+      "js",
+      "js!SBIS3.CORE.TableView"
+    ],
+    "js!SBIS3.CORE.ResultsPlugin": [
+      "js",
+      "js!SBIS3.CORE.TableView"
+    ],
+    "css!SBIS3.CORE.RightAccordionPlugin": [],
+    "js!SBIS3.CORE.RightAccordionPlugin": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.TableView",
+      "css!SBIS3.CORE.RightAccordionPlugin"
+    ],
+    "js!SBIS3.CORE.ScrollPaging": [
+      "js",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.TableView",
+      "js!SBIS3.CORE.HierarchyView",
+      "js!SBIS3.CORE.TreeView"
+    ],
+    "css!SBIS3.CORE.Tabs": [],
+    "js!SBIS3.CORE.Tabs": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "js!SBIS3.CORE.FieldEditAtPlace",
+      "js!SBIS3.CORE.TabTemplatedArea",
+      "css!SBIS3.CORE.Tabs"
+    ],
+    "js!SBIS3.CORE.TemplatedArea": [
+      "js",
+      "js!SBIS3.CORE.TemplatedAreaAbstract"
+    ],
+    "js!SBIS3.CORE.TemplatedAreaAbstract": [
+      "js",
+      "js!SBIS3.CORE.AreaAbstract"
+    ],
+    "html!SBIS3.CORE.TileView/TileViewRow": [],
+    "css!SBIS3.CORE.TileView": [],
+    "js!SBIS3.CORE.TileView": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.HierarchyCustomView",
+      "html!SBIS3.CORE.TileView/TileViewRow",
+      "css!SBIS3.CORE.TileView"
+    ],
+    "html!SBIS3.CORE.ToolBar": [],
+    "css!SBIS3.CORE.ToolBar": [],
+    "js!SBIS3.CORE.ToolBar": [
+      "is",
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.AreaAbstract",
+      "html!SBIS3.CORE.ToolBar",
+      "js!SBIS3.CORE.Menu",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.FloatArea",
+      "css!SBIS3.CORE.ToolBar",
+      "is!browser?js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "js!SBIS3.CORE.TreeView": [
+      "js",
+      "js!SBIS3.CORE.HierarchyViewAbstract"
+    ],
+    "js!SBIS3.CORE.Window": [
+      "css",
+      "js",
+      "js!SBIS3.CORE.TemplatedAreaAbstract",
+      "js!SBIS3.CORE.ModalOverlay",
+      "js!SBIS3.CORE.FloatAreaManager",
+      "css!SBIS3.CORE.CloseButton"
+    ],
+    "js!SBIS3.CORE.CoreValidators": [],
+    "js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min": [
+      "js",
+      "js!Ext/jquery-ui/jquery-ui-position"
+    ],
+    "js!Ext/jquery-ui/jquery-ui-position": [],
+    "js!SBIS3.CORE.FloatAreaManager": [],
+    "js!SBIS3.CORE.KbLayoutRevert": [],
+    "css!SBIS3.CORE.Marker": [],
+    "js!SBIS3.CORE.Marker": [
+      "css",
+      "css!SBIS3.CORE.Marker"
+    ],
+    "js!SBIS3.CORE.MarkupTransformer": [
+      "js",
+      "Core/ParserUtilities"
+    ],
+    "js!SBIS3.CORE.CompoundActiveFixMixin": [
+      "js",
+      "js!SBIS3.CORE.Control"
+    ],
+    "js!SBIS3.CORE.DataBoundMixin": [
+      "js",
+      "js!SBIS3.CORE.Infobox"
+    ],
+    "js!SBIS3.CORE.NavigationController": [],
+    "js!SBIS3.CORE.PluginManager/resources/WebSocket": [
+      "js",
+      "js!SBIS3.CORE.PluginManager/resources/SwfObject"
+    ],
+    "js!SBIS3.CORE.PluginManager/resources/SwfObject": [],
+    "js!SBIS3.CORE.PluginManager/resources/WebSocketQt": [],
+    "js!SBIS3.CORE.PluginManager": [
+      "js",
+      "is",
+      "is!browser?js!SBIS3.CORE.PluginManager/resources/WebSocket",
+      "is!browser?js!SBIS3.CORE.PluginManager/resources/SwfObject",
+      "is!browser?js!SBIS3.CORE.PluginManager/resources/WebSocketQt",
+      "js!SBIS3.CORE.Dialog",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.PluginSetupDialog"
+    ],
+    "html!SBIS3.CORE.PluginSetupDialog": [],
+    "css!SBIS3.CORE.PluginSetupDialog": [],
+    "js!SBIS3.CORE.PluginSetupDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.PluginSetupDialog",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.CloseButton",
+      "css!SBIS3.CORE.PluginSetupDialog"
+    ],
+    "js!SBIS3.CORE.ServerEventBus/resources/stomp": [],
+    "js!SBIS3.CORE.ServerEventBus": [
+      "js",
+      "js!SBIS3.CORE.ServerEventBus/resources/stomp"
+    ],
+    "js!SBIS3.CORE.ServerEventBus/resources/lockableStorage": [],
+    "js!SBIS3.CORE.ServerEventBus/resources/reconnect": [],
+    "js!SBIS3.CORE.ServiceUpdateNotifier": [
+      "js",
+      "js!SBIS3.CORE.ServerEventBus"
+    ],
+    "js!SBIS3.CORE.CustomType": [],
+    "js!SBIS3.CORE.TDataSource": [
+      "js",
+      "js!SBIS3.CORE.CustomType",
+      "js!SBIS3.CORE.TReaderParams"
+    ],
+    "js!SBIS3.CORE.TReaderParams": [
+      "js",
+      "js!SBIS3.CORE.CustomType"
+    ],
+    "js!SBIS3.CORE.XSLT": [],
+    "bootup": [],
+    "html!SBIS3.CORE.ColorizeDialog": [],
+    "css!SBIS3.CORE.ColorizeDialog": [],
+    "js!SBIS3.CORE.ColorizeDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.ColorizeDialog",
+      "css!SBIS3.CORE.ColorizeDialog",
+      "js!SBIS3.CORE.HTMLChunk",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.GroupCheckBox"
+    ],
+    "html!SBIS3.CORE.ConfirmRecordActionsDialog": [],
+    "css!SBIS3.CORE.ConfirmRecordActionsDialog": [],
+    "js!SBIS3.CORE.ConfirmRecordActionsDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.ConfirmRecordActionsDialog",
+      "css!SBIS3.CORE.ConfirmRecordActionsDialog",
+      "js!SBIS3.CORE.Button"
+    ],
+    "html!SBIS3.CORE.ErrorsReportDialog": [],
+    "css!SBIS3.CORE.ErrorsReportDialog": [],
+    "js!SBIS3.CORE.ErrorsReportDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.ErrorsReportDialog",
+      "css!SBIS3.CORE.ErrorsReportDialog",
+      "js!SBIS3.CORE.HTMLChunk"
+    ],
+    "html!SBIS3.CORE.ReplaceRecordDialog": [],
+    "css!SBIS3.CORE.ReplaceRecordDialog": [],
+    "js!SBIS3.CORE.ReplaceRecordDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.ReplaceRecordDialog",
+      "css!SBIS3.CORE.ReplaceRecordDialog",
+      "js!SBIS3.CORE.Button",
+      "js!SBIS3.CORE.TreeView"
+    ],
+    "html!SBIS3.CORE.SelectColumnsDialog": [],
+    "css!SBIS3.CORE.SelectColumnsDialog": [],
+    "js!SBIS3.CORE.SelectColumnsDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.SelectColumnsDialog",
+      "css!SBIS3.CORE.SelectColumnsDialog",
+      "js!SBIS3.CORE.HTMLChunk",
+      "js!SBIS3.CORE.Button"
+    ],
+    "html!SBIS3.CORE.SelectMergeRecordDialog": [],
+    "css!SBIS3.CORE.SelectMergeRecordDialog": [],
+    "js!SBIS3.CORE.SelectMergeRecordDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.SelectMergeRecordDialog",
+      "css!SBIS3.CORE.SelectMergeRecordDialog",
+      "js!SBIS3.CORE.FieldRadio",
+      "js!SBIS3.CORE.Button"
+    ],
+    "html!SBIS3.CORE.SuggestShowAllDialog": [],
+    "css!SBIS3.CORE.SuggestShowAllDialog": [],
+    "js!SBIS3.CORE.SuggestShowAllDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.SuggestShowAllDialog",
+      "css!SBIS3.CORE.SuggestShowAllDialog",
+      "js!SBIS3.CORE.TableView"
+    ],
+    "html!SBIS3.CORE.SumDialog": [],
+    "css!SBIS3.CORE.SumDialog": [],
+    "js!SBIS3.CORE.SumDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.SumDialog",
+      "css!SBIS3.CORE.SumDialog",
+      "js!SBIS3.CORE.HTMLChunk",
+      "js!SBIS3.CORE.Button"
+    ],
+    "html!SBIS3.CORE.ValidateCountDialog": [],
+    "css!SBIS3.CORE.ValidateCountDialog": [],
+    "js!SBIS3.CORE.ValidateCountDialog": [
+      "css",
+      "html",
+      "js",
+      "js!SBIS3.CORE.CompoundControl",
+      "html!SBIS3.CORE.ValidateCountDialog",
+      "js!SBIS3.CORE.CoreValidators",
+      "css!SBIS3.CORE.ValidateCountDialog",
+      "js!SBIS3.CORE.FieldInteger",
+      "js!SBIS3.CORE.FieldRadio",
+      "js!SBIS3.CORE.Button"
+    ]
+  }
+}
