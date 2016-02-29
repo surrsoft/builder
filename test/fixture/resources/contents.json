@@ -4,8 +4,7 @@
    },
    "jsModules": {
       "SBIS3.MySite.Head": "/Shop/Head/Head.module.js",
-      "SBIS3.MySite.Index": "/Shop/Index/Index.module.js",
-      "SBIS3.MySite.Head/resources/SubHead": "/Shop/Head/resources/SubHead.module.js"
+      "SBIS3.MySite.Index": "/Shop/Index/Index.module.js"
    },
    "modules": {
       "Shop": "Shop"
