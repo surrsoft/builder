@@ -4,12 +4,13 @@ var
    fs = require('fs'),
    exec = require('child_process').exec;
 
-describe('deanonimyze', function(){
+describe('deanonymize', function(){
    before(function(done){
       this.timeout(15000);
-      exec('grunt --root=./test/fixture collect-dependencies', {
+      exec('grunt --root=./test/fixture deanonymize', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
+         console.log(error);
          assert.equal(error, null, "No errors");
          done();
       });
@@ -28,6 +29,7 @@ describe('collect-dependencies', function(){
       exec('grunt --root=./test/fixture collect-dependencies', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
+         console.log(error);
          assert.equal(error, null, "No errors");
          done();
       });
@@ -47,6 +49,7 @@ describe('packwsmod', function(){
       exec('grunt --root=./test/fixture packwsmod', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
+         console.log(error);
          assert.equal(error, null, "No errors");
          done();
       });
@@ -71,6 +74,7 @@ describe('owndepspack', function(){
       exec('grunt --root=./test/fixture owndepspack', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
+         console.log(error);
          assert.equal(error, null, "No errors");
          done();
       });
