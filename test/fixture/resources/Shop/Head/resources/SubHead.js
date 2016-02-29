@@ -1,3 +1,3 @@
-define('js!SBIS3.MySite.Head/resources/SubHead', [], function () {
+define([], function () {
     console.log(111);
 });
