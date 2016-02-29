@@ -1,7 +1,7 @@
 /**
  * @author Быканов А.А.
  */
-define('js!SBIS3.MySite.Head', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.MySite.Head', 'css!SBIS3.MySite.Head'], function(CompoundControl, dotTplFn) {
+define('js!SBIS3.MySite.Head', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.MySite.Head', 'css!SBIS3.MySite.Head', 'js!SBIS3.MySite.Head/resources/SubHead'], function(CompoundControl, dotTplFn) {
    /**
     * SBIS3.MySite.Head
     * @class SBIS3.MySite.Head

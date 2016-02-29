@@ -1,7 +1,7 @@
 /**
  * @author Быканов А.А.
  */
-define('js!SBIS3.MySite.Index', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.MySite.Index', 'js!SBIS3.MySite.Head', 'css!SBIS3.MySite.Index', 'js!SBIS3.MySite.MainTable'], function(CompoundControl, dotTplFn) {
+define('js!SBIS3.MySite.Index', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.MySite.Index', 'js!SBIS3.MySite.Head', 'css!SBIS3.MySite.Index'], function(CompoundControl, dotTplFn) {
    /**
     * SBIS3.MySite.Index
     * @class SBIS3.MySite.Index
@@ -22,11 +22,5 @@ define('js!SBIS3.MySite.Index', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.My
       }
    });
 
-   
-   
-   moduleClass.webPage = {
-      outFileName: "index", 
-      htmlTemplate: "/Theme/shop.html"
-   };
    return moduleClass;
 });
