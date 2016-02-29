@@ -1,0 +1,10 @@
+.site-IndexComponent__center {
+  width: 100%;
+  font-size: 22px;
+  text-align: center;
+  color: #ff4500;
+}
+
+.site-IndexComponent__table {
+  margin-top: 15px;
+}
