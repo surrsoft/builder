@@ -1,0 +1,12 @@
+{
+   "htmlNames": {
+      "js!SBIS3.MySite.Index": "index.html"
+   },
+   "jsModules": {
+      "SBIS3.MySite.Head": "/Shop/Head/Head.module.js",
+      "SBIS3.MySite.Index": "/Shop/Index/Index.module.js"
+   },
+   "modules": {
+      "Shop": "Shop"
+   }
+}
