@@ -19,7 +19,7 @@
       "node-uuid": "1.4.x",
       "grunt-contrib-uglify": "0.9.x",
       "grunt-contrib-cssmin": "0.14.x",
-      "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git"
+      "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun"
    },
    "devDependencies": {
       "mocha": "",
