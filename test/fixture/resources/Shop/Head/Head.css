@@ -1,0 +1,27 @@
+.site-HeaderComponent {
+    height: 64px;
+    background-color: #1f4a6b;
+    width: 1000px;
+    border-radius: 0 0 10px 10px;
+}
+.site-HeaderComponent__logo {
+    height: 64px;
+    width: 220px;
+    float: left;
+    margin-left: 15px;
+}
+.site-HeaderComponent__links-block {
+    float: left;
+    line-height: 64px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    width: 520px;
+} 
+.site-HeaderComponent__links-block a {
+    text-decoration: none;
+    color: white;
+    margin-left: 40px;
+}
+.site-HeaderComponent__links-block a:hover {
+    text-decoration: underline;
+}
