@@ -6,6 +6,7 @@ module.exports = function(grunt) {
    var app = grunt.option('application') || '';
    var versionize = grunt.option('versionize');
    var packaging = grunt.option('package');
+   var prepare_xhtml = grunt.option('prepare-xhtml');
 
    // Init environment
    var target = path.resolve(root);
@@ -34,7 +35,11 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize');
    }
 
-   defaultTasks.push('collect-dependencies', 'i18n');
+   defaultTasks.push('i18n', 'collect-dependencies');
+
+   if (prepare_xhtml) {
+      defaultTasks.push('replace:i18n');
+   }
 
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res');
