@@ -6,31 +6,22 @@ var indexDict = require('../lib/i18n/indexDictionary').indexDict,
 module.exports = function(grunt) {
 
    grunt.registerMultiTask('i18n', 'Translate static', function() {
-      var languages = grunt.option('index-dict'),
-          prepare = grunt.option('prepare-xhtml'),
-          packer = grunt.option('package'),
-          makeDict = grunt.option('make-dict'),
-          application = this.data.application;
-
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
 
-      if (makeDict) {
-         createResultDict(grunt, this);
-      }
+      var taskDone = this.async();
 
-      if (prepare) {
-         prepareXHTML(grunt, application, this);
-      }
+      grunt.option('make-dict') && createResultDict(grunt, done);
 
-      if (languages) {
-         indexDict(grunt, languages, this.data.dict, application);
-      }
+      grunt.option('prepare-xhtml') && prepareXHTML(grunt, this.data, done);
 
-      if (packer) {
-         packageDictionary(grunt, this.data, application);
-      }
+      grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, done);
 
-      grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
+      grunt.option('package') && packageDictionary(grunt, this.data, done);
+
+      function done(err) {
+         grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
+         taskDone(err);
+      }
 
       return true;
    });
