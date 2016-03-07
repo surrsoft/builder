@@ -1,36 +1,37 @@
 var indexDict = require('../lib/i18n/indexDictionary').indexDict,
     prepareXHTML = require('../lib/i18n/prepareXHTML').prepareXHTML,
     createResultDict = require('../lib/i18n/createResultDictionary').createResultDict,
-    packageDictionary = require('../lib/i18n/packer.js').packageDictionary;
+    packageDictionary = require('../lib/i18n/packer').packageDictionary,
+    jsonGenerator = require('../lib/i18n/jsonGenerator').jsonGenerator;
 
 module.exports = function(grunt) {
 
    grunt.registerMultiTask('i18n', 'Translate static', function() {
-      var languages = grunt.option('index-dict'),
-          prepare = grunt.option('prepare-xhtml'),
-          packer = grunt.option('package'),
-          makeDict = grunt.option('make-dict'),
-          application = this.data.application;
-
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
 
-      if (makeDict) {
-         createResultDict(grunt, this);
+      var taskDone = this.async();
+      var taskCount = 0;
+
+      grunt.option('json-generate') && jsonGenerator(grunt, ++taskCount && done);
+
+      grunt.option('make-dict') && createResultDict(grunt, ++taskCount && done);
+
+      grunt.option('prepare-xhtml') && prepareXHTML(grunt, this.data, ++taskCount && done);
+
+      grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, ++taskCount && done);
+
+      grunt.option('package') && packageDictionary(grunt, this.data, ++taskCount && done);
+
+      if (taskCount == 0) {
+         done();
       }
 
-      if (prepare) {
-         prepareXHTML(grunt, application, this);
+      function done() {
+         if (--taskCount == 0) {
+            grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
+            taskDone();
+         }
       }
-
-      if (languages) {
-         indexDict(grunt, languages, this.data.dict, application);
-      }
-
-      if (packer) {
-         packageDictionary(grunt, this.data, application);
-      }
-
-      grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
 
       return true;
    });
