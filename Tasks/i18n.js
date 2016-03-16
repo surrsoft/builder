@@ -28,7 +28,7 @@ module.exports = function(grunt) {
       }
 
       function done() {
-         if (!isDone && --taskCount == 0) {
+         if (!isDone && --taskCount <= 0) {
             grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
             isDone = true;
             taskDone();
