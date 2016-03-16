@@ -11,6 +11,7 @@ module.exports = function(grunt) {
 
       var taskDone = this.async();
       var taskCount = 0;
+      var isDone = false;
 
       grunt.option('json-generate') && jsonGenerator(grunt, ++taskCount && done);
 
@@ -27,8 +28,9 @@ module.exports = function(grunt) {
       }
 
       function done() {
-         if (--taskCount <= 0) {
+         if (!isDone && --taskCount == 0) {
             grunt.log.ok(grunt.template.today('hh:MM:ss')+ ': Задача i18n выполнена.');
+            isDone = true;
             taskDone();
          }
       }
