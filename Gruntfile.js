@@ -1,4 +1,10 @@
 module.exports = function(grunt) {
+   var ver = process.versions.node;
+
+   if (ver.split('.')[0] < 1) {
+      throw Error('nodejs >= v1.x required')
+   }
+
    var path = require('path');
 
    // Read options
