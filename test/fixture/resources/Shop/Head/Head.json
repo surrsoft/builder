@@ -1,0 +1,20 @@
+{
+   "name"       : "Head",
+   "title"      : "Абстрактная область-контейнер",
+   "initial"    : "",
+   "icon"       : "",
+   "category"   : "",
+   "requires"   : ["SBIS3.MySite.Head"],
+   "properties" : {
+      "ws-config" : {
+         "title"    : "Базовая конфигурация",
+         "options"  : {
+            "tooltip": {
+               "title" : "Текст всплывающей подсказки",
+               "default" : "",
+               "translatable" : true
+            }
+         }
+      }
+   }
+}
