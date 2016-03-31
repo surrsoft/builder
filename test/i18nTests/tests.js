@@ -96,8 +96,10 @@ describe('i18n prepareXHTML Test ', function() {
    });
 
    it('prepare-xhtml', function(){
-      var xhtmlContent = fs.readFileSync(path.join(__dirname, './../fixture/resources/Shop/Head/Head.xhtml')).toString();
-      assert(xhtmlContent.indexOf('{[Перейти на главную страницу]}') > -1, 'Phrase "Перейти на главную страницу" is not covered');
+      var HeadXhtmlContent = fs.readFileSync(path.join(__dirname, './../fixture/resources/Shop/Head/Head.xhtml')).toString(),
+         IndexXhtmlContent = fs.readFileSync(path.join(__dirname, './../fixture/resources/Shop/Index/Index.xhtml')).toString();
+      assert(HeadXhtmlContent.indexOf('{[Перейти на главную страницу]}') > -1, 'Head.xhtml: Phrase "Перейти на главную страницу" is not covered');
+      assert(IndexXhtmlContent.indexOf('{[Добро пожаловать в интернет-магазин "Тензор"!]}') > -1, 'Index.xhtml: Phrase "Добро пожаловать в интернет-магазин "Тензор"!" is not covered');
    });
 
 });
@@ -117,12 +119,12 @@ describe('i18n resultDictionary Test ', function() {
    });
 
    it('make-dict', function(){
-      var outJsonContent = readJSON('./res/out.json'),
-         expectKey = 'Перейти на главную страницу',
-         expectModule = 'resources\\Shop\\Head\\Head.xhtml';
+      var outJsonContent = readJSON('./res/out.json');
 
-      assert.equal(outJsonContent[0].key, expectKey, 'Field key in the result dictionary has wrong value');
-      assert.equal(outJsonContent[0].module, expectModule, 'Field module in the result dictionary has wrong value');
+      assert.equal(outJsonContent[0].key, 'Перейти на главную страницу', 'Field key in the result dictionary has wrong value');
+      assert.equal(outJsonContent[0].module, 'resources\\Shop\\Head\\Head.xhtml', 'Field module in the result dictionary has wrong value');
+      assert.equal(outJsonContent[1].key, 'Добро пожаловать в интернет-магазин "Тензор"!', 'Field key in the result dictionary has wrong value');
+      assert.equal(outJsonContent[1].module, 'resources\\Shop\\Index\\Index.xhtml', 'Field module in the result dictionary has wrong value');
    });
 
 });
