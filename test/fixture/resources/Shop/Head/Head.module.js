@@ -7,10 +7,11 @@ define('js!SBIS3.MySite.Head', ['js!SBIS3.CORE.CompoundControl', 'html!SBIS3.MyS
     * @class SBIS3.MySite.Head
     * @extends $ws.proto.CompoundControl
     */
-   var moduleClass = CompoundControl.extend(/** @lends SBI0S3.MySite.Head.prototype */{
+   var moduleClass = CompoundControl.extend(/** @lends SBIS3.MySite.Head.prototype */{
       _dotTplFn: dotTplFn,
       $protected: {
          _options: {
+
             /**
              * @cfg {String} Текст всплывающей подсказки
              * <wiTag group="Отображение">
