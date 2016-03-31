@@ -19,7 +19,7 @@ describe('versionize', function(){
       var result = fs.readFileSync(path.join(__dirname, './fixture/test1.xml')).toString();
 
       assert.notEqual(result.indexOf('/img/file1.v10.jpg'), -1, "Direct file path replaced");
-      assert.equal(result.indexOf('/img/file2.v10.jpg'), -1, "ws:/ path is not replaced");
+      assert.notEqual(result.indexOf('/img/file2.v10.jpg'), -1, "ws:/ path is not replaced");
    });
 
    it('Can versionize .js in .html files', function(){
