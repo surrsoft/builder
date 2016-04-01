@@ -100,6 +100,7 @@ describe('i18n prepareXHTML Test ', function() {
          IndexXhtmlContent = fs.readFileSync(path.join(__dirname, './../fixture/resources/Shop/Index/Index.xhtml')).toString();
       assert(HeadXhtmlContent.indexOf('{[Перейти на главную страницу]}') > -1, 'Head.xhtml: Phrase "Перейти на главную страницу" is not covered');
       assert(IndexXhtmlContent.indexOf('{[Добро пожаловать в интернет-магазин "Тензор"!]}') > -1, 'Index.xhtml: Phrase "Добро пожаловать в интернет-магазин "Тензор"!" is not covered');
+      assert(IndexXhtmlContent.indexOf('<option name="tooltip" value="{[Заголовок]}"></option>') > -1, 'Index.xhtml: Option "Заголовок" is not covered')
    });
 
 });
