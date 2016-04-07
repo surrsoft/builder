@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
    var ver = process.versions.node;
 
-   if (ver.split('.')[0] < 9) {
+   if (ver.split('.')[0] < 1) {
       console.error('nodejs >= v1.x required');
       process.exit(1);
    }
