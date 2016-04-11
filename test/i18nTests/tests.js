@@ -11,7 +11,6 @@ function readJSON(jPath) {
 describe('i18n Indexing Test', function() {
 
    before(function(done){
-      this.timeout(15000);
       exec('grunt --root=./test/fixture --index-dict=en-US', {
          cwd: path.join(__dirname, '../../')
       }, function() {
@@ -43,7 +42,6 @@ describe('i18n Indexing Test', function() {
 describe('i18n Packing Test ', function() {
 
    before(function(done){
-      this.timeout(15000);
       exec('grunt --root=./test/fixture --package', {
          cwd: path.join(__dirname, '../../')
       }, function() {
@@ -87,7 +85,6 @@ describe('i18n prepareXHTML Test ', function() {
    var modules = "C:/Users/ai.esin/Repo/builder/sbis3-builder/test/i18nTests/res/modules.json",
       cache = 'C:/Users/ai.esin/Repo/builder/sbis3-builder/test/i18nTests/res';
    before(function(done){
-      this.timeout(15000);
       exec('grunt --root=./test/fixture --modules='+modules + ' --json-cache=' + cache + ' --prepare-xhtml', {
          cwd: path.join(__dirname, '../../')
       }, function() {
@@ -111,7 +108,6 @@ describe('i18n resultDictionary Test ', function() {
       cache = 'C:/Users/ai.esin/Repo/builder/sbis3-builder/test/i18nTests/res',
       out = cache + '/out.json';
    before(function(done){
-      this.timeout(15000);
       exec('grunt --root=./test/fixture --out=' + out + ' --modules='+modules + ' --json-cache=' + cache + ' --make-dict', {
          cwd: path.join(__dirname, '../../')
       }, function() {
