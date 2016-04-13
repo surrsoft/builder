@@ -85,6 +85,11 @@ describe('i18n prepareXHTML Test ', function() {
    var modules = "C:/Users/ai.esin/Repo/builder/sbis3-builder/test/i18nTests/res/modules.json",
       cache = 'C:/Users/ai.esin/Repo/builder/sbis3-builder/test/i18nTests/res';
    before(function(done){
+      var globalPaths = [
+         path.join(__dirname, './../fixture/resources/Shop/Head'),
+         path.join(__dirname, './../fixture/resources/Shop/Index')
+      ];
+      fs.writeFileSync(modules, JSON.stringify(globalPaths, null, 3));
       exec('grunt --root=./test/fixture --modules='+modules + ' --json-cache=' + cache + ' --prepare-xhtml', {
          cwd: path.join(__dirname, '../../')
       }, function() {
