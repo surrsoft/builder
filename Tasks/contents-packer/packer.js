@@ -28,7 +28,7 @@ var
    fs = require('fs'),
    async = require('async'),
    mkdirp = require('mkdirp'),
-   humanize = require('humanize');
+   util = require('util');
 
 // Speed up calls to hasOwnProperty
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -127,23 +127,23 @@ Packer.prototype._sort = function (cb) {
    function overEach(type, cb, err) {
       if (err) {
          // something unexpected has happened
-         console.log('%d | %s | Uncaught exception has occurred while processing: ',
+         grunt.log.error(util.format('%d | %s | Uncaught exception has occurred while processing: ',
             process.pid,
-            humanize.date('d.m.Y H:i:s'),
+            grunt.template.today('hh:MM:ss'),
             err
-         );
+         ));
 
          process.exit(-5);
       } else {
          var
             amount = self._contents[type] ? Object.keys(self._contents[type]).length : 0;
 
-         console.log('%d | %s | %d modules has been left for type %s',
+         grunt.log.ok(util.format('%d | %s | %d modules has been left for type %s',
             process.pid,
-            humanize.date('d.m.Y H:i:s'),
+            grunt.template.today('hh:MM:ss'),
             amount,
             type
-         );
+         ));
 
          cb();
       }
@@ -152,19 +152,19 @@ Packer.prototype._sort = function (cb) {
    function over(err) {
       if (err) {
          // something unexpected has happened
-         console.log('%d | %s | Uncaught exception has occurred while processing: ',
+         grunt.log.error(util.format('%d | %s | Uncaught exception has occurred while processing: ',
             process.pid,
-            humanize.date('d.m.Y H:i:s'),
+            grunt.template.today('hh:MM:ss'),
             err
-         );
+         ));
 
          process.exit(-5);
       } else {
-         console.log('%d | %s | Packer has finished his work successfully. Taken time: %dms',
+         grunt.log.ok(util.format('%d | %s | Packer has finished his work successfully. Taken time: %dms',
             process.pid,
-            humanize.date('d.m.Y H:i:s'),
+            grunt.template.today('hh:MM:ss'),
             Date.now() - self._started
-         );
+         ));
 
          var tasks = [
             function (cb) {
@@ -177,11 +177,11 @@ Packer.prototype._sort = function (cb) {
 
          async.parallel(tasks, function(err) {
             if(err) {
-               console.log('%d | %s | Packer couldn\'t write the result to either contents.js or contents.json file.',
+               grunt.log.error(util.format('%d | %s | Packer couldn\'t write the result to either contents.js or contents.json file.',
                   process.pid,
-                  humanize.date('d.m.Y H:i:s'),
+                  grunt.template.today('hh:MM:ss'),
                   err
-               );
+               ));
 
                process.exit(-5);
             } else {
@@ -223,12 +223,12 @@ Packer.prototype._followTheSecondPrinciple = function (type, filename, moduleNam
 
    function afterShift(err) {
       if (err) {
-         console.log('%d | %s | Error has occurred while shifting module %s: ',
+         grunt.log.error(util.format('%d | %s | Error has occurred while shifting module %s: ',
             process.pid,
-            humanize.date('d.m.Y H:i:s'),
+            grunt.template.today('hh:MM:ss'),
             moduleName,
             err
-         );
+         ));
 
          cb(err);
       } else {
@@ -258,11 +258,11 @@ Packer.prototype._update = function (type, moduleName, cb) {
    if (this._contents[type] && !isEmpty(this._contents[type])) {
       delete this._contents[type][moduleName];
    } else {
-      console.log('%d | %s | Type %s is empty!',
+      grunt.log.ok(util.dormat('%d | %s | Type %s is empty!',
          process.pid,
-         humanize.date('d.m.Y H:i:s'),
+         grunt.template.today('hh:MM:ss'),
          type
-      );
+      ));
 
       delete this._contents[type];
    }
