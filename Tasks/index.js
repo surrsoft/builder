@@ -5,7 +5,7 @@
 'use strict';
 
 var
-   packerModule = require('./pack-contents/packer'),
+   packerModule = require('./../lib/pack-contents/packer'),
    util = require('util');
 
 
