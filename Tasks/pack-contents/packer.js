@@ -79,8 +79,8 @@ function Packer(g, options) {
    /**
     * Application root
     */
-   this._serviceRoot = options.root;
-   this._resources = '/resources';
+   this._serviceRoot = options.application;
+   this._resources = options.resources;
    /**
     * contents.js
     */

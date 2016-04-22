@@ -10,10 +10,12 @@ var
 
 
 
-module.exports = function(grunt, options, done) {
-   var packer = new packerModule(grunt, options);
-
+module.exports = function(grunt) {
    grunt.registerMultiTask('pack-contents', 'pack contents, following some principles of determining way', function() {
+      var
+         packer = new packerModule(grunt, this.data),
+         done = this.async();
+
       grunt.log.ok(util.format('%d | %s | Запускается задача pack-contents.',
          process.pid,
          grunt.template.today('hh:MM:ss')

@@ -32,13 +32,15 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-text-replace');
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-cssmin');
-   grunt.loadTasks('tasks');
+   grunt.loadTasks('Tasks');
 
    // Init config
    grunt.file.setBase(target);
    grunt.initConfig(configBuilder(grunt, app));
 
    var defaultTasks = [];
+
+   defaultTasks.push('pack-contents');
 
    if (packaging) {
       defaultTasks.push('deanonymize');
