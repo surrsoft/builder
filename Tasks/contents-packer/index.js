@@ -5,13 +5,28 @@
 'use strict';
 
 var
-   packerModule = require('./packer');
+   packerModule = require('./packer'),
+   util = require('util');
 
 
 
-module.exports = function(options, cb) {
-   var packer = new packerModule(options.root, options.contents, options.deps);
+module.exports = function(grunt, options, done) {
+   var packer = new packerModule(grunt, options);
 
-   packer.run(cb);
+   grunt.registerMultiTask('pack-contents', 'pack contents, following some principles of determining way', function() {
+      grunt.log.ok(util.format('%d | %s | Запускается задача pack-contents.',
+         process.pid,
+         grunt.template.today('hh:MM:ss')
+      ));
+
+      packer.run(function() {
+         grunt.log.ok(util.format('%d | %s | Задача pack-contents выполнена.',
+            process.pid,
+            grunt.template.today('hh:MM:ss')
+         ));
+
+         done();
+      });
+   });
 };
 

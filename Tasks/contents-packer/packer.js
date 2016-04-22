@@ -28,7 +28,8 @@ var
    fs = require('fs'),
    async = require('async'),
    mkdirp = require('mkdirp'),
-   util = require('util');
+   util = require('util'),
+   grunt;
 
 // Speed up calls to hasOwnProperty
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -72,17 +73,19 @@ function addExtname(filename) {
    }
 }
 
-function Packer(root, contents, dependencies) {
+function Packer(g, options) {
+   grunt = g;
+
    /**
     * Application root
     */
-   this._serviceRoot = root;
+   this._serviceRoot = options.root;
    this._resources = '/resources';
    /**
     * contents.js
     */
-   this._contents = contents;
-   this._dependencies = dependencies;
+   this._contents = require(path.join(this._serviceRoot, this._resources, 'contents.json'));
+   this._dependencies = require(path.join(this._serviceRoot, this._resources, 'module-dependencies.json'));
 }
 
 Packer.prototype._sort = function (cb) {
