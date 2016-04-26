@@ -19,6 +19,8 @@ module.exports = function(grunt) {
    var target = path.resolve(root);
    var configBuilder = require('./lib/config-builder.js');
 
+   process.env.ROOT = target;
+   process.env.APPROOT = path.join(target, app);
    process.env.WS = path.join(target, app, 'ws');
    process.env.RESOURCES = path.join(target, app, 'resources');
 
