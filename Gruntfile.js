@@ -40,6 +40,8 @@ module.exports = function(grunt) {
 
    var defaultTasks = [];
 
+   defaultTasks.push('pack-contents');
+
    if (packaging) {
       defaultTasks.push('deanonymize');
    }
@@ -61,8 +63,6 @@ module.exports = function(grunt) {
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:html');
    }
-
-   defaultTasks.push('pack-contents');
 
    grunt.registerTask('default', defaultTasks);
 
