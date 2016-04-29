@@ -55,7 +55,7 @@ module.exports = function(grunt) {
    }
 
    if (packaging) {
-      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
+      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'routsearch', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
    }
 
    if (typeof versionize == 'string') {
