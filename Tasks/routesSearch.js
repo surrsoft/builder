@@ -69,7 +69,6 @@ function parseAssignment(left, right, file) {
 function isModuleExports(left) {
    return left.type == 'MemberExpression' && left.object &&
       left.object.name == 'module' && left.property && left.property.name == 'exports';
-   ;
 }
 
 /**
