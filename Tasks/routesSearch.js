@@ -133,12 +133,12 @@ function parseRoutes(obj, file) {
  * Анализирует объект с урлами роутингов.
  * Допустимы 2 вида:
  * {
- *    "/blah1.html": "js!SBIS3.Blah",
+ *    "/blah1.html": function() {...},
  *    ...
  * }
  *
  * {
- *    "/blah2.html": function() {...}
+ *    "/blah2.html": "js!SBIS3.Blah"
  * }
  *
  * Для первого варианта не заполняем поля isMasterPage и controller.
