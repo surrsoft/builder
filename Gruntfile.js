@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize');
    }
 
-   defaultTasks.push('i18n', 'collect-dependencies');
+   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
    if (prepare_xhtml) {
       defaultTasks.push('replace:i18n');
@@ -55,7 +55,7 @@ module.exports = function(grunt) {
    }
 
    if (packaging) {
-      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'routsearch', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
+      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
    }
 
    if (typeof versionize == 'string') {
