@@ -28,6 +28,10 @@ function getRoutes(grunt, script, file) {
    }
 }
 
+function checkDublicatedUrls() {
+
+}
+
 function addToSource(file, info) {
 
    if (!(file in routesSource)) {
@@ -36,6 +40,8 @@ function addToSource(file, info) {
          isMasterPage: info.isMasterPage,
          controller: info.controller
       };
+   } else if (info.url in routesSource[file]) {
+      throw Error(file + ': обнаружено неоднократное переопределение контроллера для урла ' + info.url);
    } else {
       routesSource[file][info.url] = {
          isMasterPage: info.isMasterPage,
