@@ -19,7 +19,7 @@ function getRoutes(grunt, script, file) {
 
             //Ищем оператор =
             if (node.type == 'AssignmentExpression' && node.operator == '=') {
-               parseAssigment(node.left, node.right, file);
+               parseAssignment(node.left, node.right, file);
             }
          }
       });
@@ -52,7 +52,7 @@ function checkInContents(key) {
    }
 }
 
-function parseAssigment(left, right, file) {
+function parseAssignment(left, right, file) {
 
    if (!isModuleExports(left)) {
       return
@@ -168,7 +168,7 @@ function observeProperty(prop, file) {
 }
 
 function onError(file) {
-   throw Error(path.basename(file) + ': модуль должен возвращать объект с урлами роутингов или синхронную функцию, которая его возвращает');
+   throw Error(path.basename(file) + ': модуль должен возвращать объект с урлами роутингов или синхронную функцию, которая возвращает такой объект');
 }
 
 module.exports = function (grunt) {
