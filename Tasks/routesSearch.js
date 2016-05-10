@@ -28,10 +28,6 @@ function getRoutes(grunt, script, file) {
    }
 }
 
-function checkDublicatedUrls() {
-
-}
-
 function addToSource(file, info) {
 
    if (!(file in routesSource)) {
