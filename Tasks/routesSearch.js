@@ -10,22 +10,16 @@ var
 
 function getRoutes(grunt, script, file) {
    var
-      ast;
-
-   try {
       ast = esprima.parse(script);
-      traverse(ast, {
-         enter: function (node) {
+   traverse(ast, {
+      enter: function (node) {
 
-            //Ищем оператор =
-            if (node.type == 'AssignmentExpression' && node.operator == '=') {
-               parseAssignment(node.left, node.right, file);
-            }
+         //Ищем оператор =
+         if (node.type == 'AssignmentExpression' && node.operator == '=') {
+            parseAssignment(node.left, node.right, file);
          }
-      });
-   } catch (e) {
-      grunt.log.error(e);
-   }
+      }
+   });
 }
 
 function addToSource(file, info) {
