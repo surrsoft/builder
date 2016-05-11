@@ -40,9 +40,8 @@ module.exports = function(grunt) {
 
    var defaultTasks = [];
 
-   defaultTasks.push('pack-contents');
-
    if (packaging) {
+      defaultTasks.push('pack-contents');
       defaultTasks.push('deanonymize');
    }
 
