@@ -32,6 +32,7 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-text-replace');
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-cssmin');
+   grunt.loadNpmTasks('grunt-cleanempty');
    grunt.loadTasks('Tasks');
 
    // Init config
@@ -41,8 +42,7 @@ module.exports = function(grunt) {
    var defaultTasks = [];
 
    if (packaging) {
-      defaultTasks.push('pack-contents');
-      defaultTasks.push('deanonymize');
+      defaultTasks.push('deanonymize', 'pack-contents', 'cleanempty');
    }
 
    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
