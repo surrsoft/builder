@@ -76,7 +76,8 @@ function parseRoutes(obj, file) {
       });
    } else if (obj.type == 'FunctionExpression') {
       var returnedObjects = [],
-         innerFunctionDeclaration = 0;
+         innerFunctionDeclaration = 0,
+         innerFunctionExpression = 0;
 
       /*
        * Если это функция, разберем ее с помощью esprima.
@@ -93,7 +94,11 @@ function parseRoutes(obj, file) {
                innerFunctionDeclaration++;
             }
 
-            if (node.type == 'ReturnStatement' && innerFunctionDeclaration === 0) {
+            if (node.type == 'FunctionExpression') {
+               innerFunctionExpression++;
+            }
+
+            if (node.type == 'ReturnStatement' && innerFunctionDeclaration === 0 && innerFunctionExpression === 0) {
                if (node.argument && node.argument.type == 'ObjectExpression' && node.argument.properties) {
                   returnedObjects.push(node.argument.properties);
                }
@@ -104,14 +109,21 @@ function parseRoutes(obj, file) {
             if (node.type == 'FunctionDeclaration') {
                innerFunctionDeclaration--;
             }
+
+            if (node.type == 'FunctionExpression') {
+               innerFunctionExpression--;
+            }
          }
       });
 
-      returnedObjects.forEach(function (propArray) {
+      returnedObjects = returnedObjects.filter(function (propArray) {
          if (propArray) {
+            var allPropertiesCorrect = true;
             propArray.forEach(function (prop) {
-               observeProperty(prop, file);
+               var isCorrectProp = observeProperty(prop, file);
+               allPropertiesCorrect = allPropertiesCorrect && isCorrectProp;
             });
+            return allPropertiesCorrect;
          }
       });
 
@@ -159,11 +171,13 @@ function observeProperty(prop, file) {
             controller: controller
          })
       }
+
+      return true;
    }
 }
 
 function onError(file) {
-   throw Error(path.basename(file) + ': модуль должен возвращать объект с урлами роутингов или синхронную функцию, которая возвращает такой объект');
+   throw Error(path.basename(file) + ': модуль должен возвращать объект с урлами роутингов, начинающихся с "/" или синхронную функцию, которая возвращает такой объект');
 }
 
 module.exports = function (grunt) {
