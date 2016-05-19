@@ -5,15 +5,12 @@ var esprima = require('esprima');
 var traverse = require('estraverse').traverse;
 var
    routesSource = {},
-   grunt,
    modulesList;
 
-function getRoutes(grunt, script, file) {
-   var
-      ast = esprima.parse(script);
+function getRoutes(script, file) {
+   var ast = esprima.parse(script);
    traverse(ast, {
       enter: function (node) {
-
          //Ищем оператор =
          if (node.type == 'AssignmentExpression' && node.operator == '=') {
             parseAssignment(node.left, node.right, file);
@@ -23,7 +20,6 @@ function getRoutes(grunt, script, file) {
 }
 
 function addToSource(file, info) {
-
    if (!(file in routesSource)) {
       routesSource[file] = {};
       routesSource[file][info.url] = {
@@ -40,7 +36,6 @@ function addToSource(file, info) {
    }
 }
 
-
 function checkInContents(key) {
    return {
       isMasterPage: modulesList.indexOf(key.toString().replace('js!', '')) > -1,
@@ -49,7 +44,6 @@ function checkInContents(key) {
 }
 
 function parseAssignment(left, right, file) {
-
    if (!isModuleExports(left)) {
       return
    }
@@ -62,7 +56,7 @@ function parseAssignment(left, right, file) {
  */
 function isModuleExports(left) {
    return left.type == 'MemberExpression' && left.object &&
-      left.object.name == 'module' && left.property && left.property.name == 'exports';
+          left.object.name == 'module' && left.property && left.property.name == 'exports';
 }
 
 /**
@@ -135,6 +129,7 @@ function parseRoutes(obj, file) {
       onError(file);
    }
 }
+
 /**
  * Анализирует объект с урлами роутингов.
  * Допустимы 2 вида:
@@ -186,14 +181,14 @@ module.exports = function (grunt) {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается поиск путей роутинга.');
 
       var root = grunt.option('root') || '',
-         app = grunt.option('application') || '',
-         rootPath = path.join(root, app),
-         sourceFiles = grunt.file.expand({cwd: rootPath}, this.data),
-         sourcePath = path.join(rootPath, 'resources', 'routes-info.json'),
-         contentsPath = path.join(rootPath, 'resources', 'contents.json'),
-         tmp = JSON.parse(grunt.file.read(contentsPath)),
-         jsModules = Object.keys(tmp.jsModules),
-         modules = Object.keys(tmp.modules);
+          app = grunt.option('application') || '',
+          rootPath = path.join(root, app),
+          sourceFiles = grunt.file.expand({cwd: rootPath}, this.data),
+          sourcePath = path.join(rootPath, 'resources', 'routes-info.json'),
+          contentsPath = path.join(rootPath, 'resources', 'contents.json'),
+          tmp = JSON.parse(grunt.file.read(contentsPath)),
+          jsModules = Object.keys(tmp.jsModules),
+          modules = Object.keys(tmp.modules);
 
       modulesList = jsModules.concat(modules);
 
@@ -202,7 +197,7 @@ module.exports = function (grunt) {
             routePath = path.join(rootPath, route),
             text = grunt.file.read(routePath);
          if (text) {
-            getRoutes(grunt, text, routePath);
+            getRoutes(text, path.relative(root, routePath));
          }
       });
 
