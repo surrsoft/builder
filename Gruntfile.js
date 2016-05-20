@@ -42,7 +42,7 @@ module.exports = function(grunt) {
    var defaultTasks = [];
 
    if (packaging) {
-      defaultTasks.push('deanonymize', 'pack-contents', 'cleanempty');
+      defaultTasks.push('deanonymize', 'pack-contents'/*, 'cleanempty'*/);
    }
 
    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
