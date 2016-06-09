@@ -63,6 +63,8 @@ module.exports = function(grunt) {
       defaultTasks.push('replace:html');
    }
 
+   grunt.fail.warn = grunt.fail.fatal;
+
    grunt.registerTask('default', defaultTasks);
 
    grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
