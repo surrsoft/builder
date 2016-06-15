@@ -48,7 +48,7 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize'/*, 'pack-contents', 'cleanempty'*/);
    }
 
-   defaultTasks.push('collect-dependencies', 'routsearch');
+   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
    if (prepare_xhtml) {
       defaultTasks.push('replace:i18n');
