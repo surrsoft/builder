@@ -8,6 +8,9 @@ module.exports = function(grunt) {
 
    var path = require('path');
 
+   var logger = require('./lib/logger');
+   logger.enable(grunt);
+
    // Read options
    var root = grunt.option('root') || '';
    var app = grunt.option('application') || '';
@@ -45,7 +48,7 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize'/*, 'pack-contents', 'cleanempty'*/);
    }
 
-   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
+   defaultTasks.push('collect-dependencies', 'routsearch');
 
    if (prepare_xhtml) {
       defaultTasks.push('replace:i18n');
