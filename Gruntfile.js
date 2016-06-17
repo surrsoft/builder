@@ -47,9 +47,10 @@ module.exports = function(grunt) {
 
    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
-   if (prepare_xhtml) {
-      defaultTasks.push('replace:i18n');
-   }
+   // Пока смотрим на наличие defaultLanguage в contents.json
+   // if (prepare_xhtml) {
+   //    defaultTasks.push('replace:i18n');
+   // }
 
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res');
