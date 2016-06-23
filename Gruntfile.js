@@ -8,6 +8,9 @@ module.exports = function(grunt) {
 
    var path = require('path');
 
+   var logger = require('./lib/logger');
+   logger.enable(grunt);
+
    // Read options
    var root = grunt.option('root') || '';
    var app = grunt.option('application') || '';
