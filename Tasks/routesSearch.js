@@ -186,9 +186,17 @@ module.exports = function (grunt) {
           sourceFiles = grunt.file.expand({cwd: rootPath}, this.data),
           sourcePath = path.join(rootPath, 'resources', 'routes-info.json'),
           contentsPath = path.join(rootPath, 'resources', 'contents.json'),
-          tmp = JSON.parse(grunt.file.read(contentsPath)),
-          jsModules = Object.keys(tmp.jsModules),
-          modules = Object.keys(tmp.modules);
+          tmp,
+          jsModules,
+          modules;
+
+      try {
+         tmp = JSON.parse(grunt.file.read(contentsPath));
+         jsModules = Object.keys(tmp.jsModules);
+         modules = Object.keys(tmp.modules);
+      } catch (e) {
+         grunt.fail.fatal('Некорректный файл contents.json');
+      }
 
       modulesList = jsModules.concat(modules);
 
