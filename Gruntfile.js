@@ -54,7 +54,7 @@ module.exports = function(grunt) {
    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
    if (packaging) {
-      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
+      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
    }
 
    if (typeof versionize == 'string') {
