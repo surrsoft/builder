@@ -16,7 +16,6 @@ module.exports = function(grunt) {
    var app = grunt.option('application') || '';
    var versionize = grunt.option('versionize');
    var packaging = grunt.option('package');
-   var prepare_xhtml = grunt.option('prepare-xhtml');
 
    // Init environment
    var target = path.resolve(root);
@@ -45,19 +44,14 @@ module.exports = function(grunt) {
    var defaultTasks = [];
 
    if (packaging) {
-      defaultTasks.push('deanonymize'/*, 'pack-contents', 'cleanempty'*/);
+      defaultTasks.push('deanonymize');
    }
-
-   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
-
-   // Пока смотрим на наличие defaultLanguage в contents.json
-   // if (prepare_xhtml) {
-   //    defaultTasks.push('replace:i18n');
-   // }
 
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
+
+   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
    if (packaging) {
       defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack');
