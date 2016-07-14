@@ -56,7 +56,7 @@ module.exports = function(grunt) {
    // }
 
    if (typeof versionize == 'string') {
-      defaultTasks.push('replace:core', 'replace:css', 'replace:res');
+      defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
 
    if (packaging) {
