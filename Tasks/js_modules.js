@@ -1,0 +1,65 @@
+'use strict';
+
+var path = require('path');
+//var modRx = /define\(['"](js!)?([.\w/]+)['"],/;
+var esprima = require('esprima');
+var traverse = require('estraverse').traverse;
+
+function parseModule(module) {
+   var res;
+   try {
+      res = esprima.parse(module);
+   } catch (e) {
+      res = e;
+   }
+   return res;
+}
+
+module.exports = function (grunt) {
+   grunt.registerMultiTask('jsModules', 'fill jsModules in contents.json ', function () {
+      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача сбора jsModules.');
+
+      var
+         root = grunt.option('root') || '',
+         app = grunt.option('application') || '',
+         rootPath = path.join(root, app),
+         resourcesPath = path.join(rootPath, 'resources'),
+         sourceFiles = grunt.file.expand({cwd: resourcesPath}, this.data),
+         jsModules = {};
+
+
+      sourceFiles.forEach(function (file) {
+         var text = grunt.file.read(path.join(resourcesPath, file));
+         var ast = parseModule(text);
+
+         if (ast instanceof Error) {
+            ast.message += '\nPath: ' + fullPath;
+            return grunt.fail.fatal(ast);
+         }
+
+         traverse(ast, {
+            enter: function getModuleName(node) {
+               if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
+                  node.callee.name == 'define') {
+                  if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                     var moduleName = node.arguments[0].value;
+                     var parts = moduleName.split('!');
+                     if (parts[0] == 'js' && (parts[1].indexOf('SBIS3') == 0 || parts[1].indexOf('genie') == 0)) {
+                        jsModules[parts[1]] = '/' + file;
+                     }
+                  }
+               }
+            }
+         });
+      });
+
+      try {
+         var contents = require(path.join(resourcesPath, 'contents.json'));
+         contents.jsModules = jsModules;
+         grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
+         grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents='+JSON.stringify(contents));
+      } catch (err) {
+         grunt.fail.fatal(err);
+      }
+   });
+};

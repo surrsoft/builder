@@ -47,6 +47,8 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize');
    }
 
+   defaultTasks.push('jsModules');
+
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
