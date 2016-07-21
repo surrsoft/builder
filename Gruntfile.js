@@ -38,6 +38,7 @@ module.exports = function(grunt) {
    grunt.loadTasks('Tasks');
 
    // Init config
+   grunt.file.mkdir(target);
    grunt.file.setBase(target);
    grunt.initConfig(configBuilder(grunt, app));
 
