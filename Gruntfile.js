@@ -48,13 +48,11 @@ module.exports = function(grunt) {
       defaultTasks.push('deanonymize');
    }
 
-   defaultTasks.push('jsModules');
-
    if (typeof versionize == 'string') {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
 
-   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
+   defaultTasks.push('jsModules', 'i18n', 'collect-dependencies', 'routsearch', 'requirejsPaths');
 
    if (packaging) {
       defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
