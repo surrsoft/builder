@@ -52,7 +52,7 @@ module.exports = function(grunt) {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
 
-   defaultTasks.push('jsModules', 'i18n', 'collect-dependencies', 'routsearch', 'requirejsPaths');
+   defaultTasks.push('jsModules', 'i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
 
    if (packaging) {
       defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
