@@ -24,6 +24,7 @@ function mkSymlink(target, dest) {
 module.exports = function (grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', function () {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача конвертации ресурсов');
+      var start = Date.now();
 
       var
          input = grunt.option('input'),
@@ -31,6 +32,7 @@ module.exports = function (grunt) {
          modules = (grunt.option('modules') || '').replace(/"/g, ''),
          root = grunt.option('root') || '',
          app = grunt.option('application') || '',
+         i18n = !!grunt.option('index-dict'),
          rootPath = path.join(root, app),
          resourcesPath = path.join(rootPath, 'resources'),
          paths;
@@ -61,7 +63,8 @@ module.exports = function (grunt) {
 
       paths.forEach(function (input) {
          grunt.file.recurse(input, function (abspath) {
-            if (!symlink) {
+            var ext = path.extname(abspath);
+            if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                try {
                   grunt.file.copy(abspath, path.join(resourcesPath, transliterate(path.relative(input, abspath))));
                } catch (err) {
@@ -72,5 +75,6 @@ module.exports = function (grunt) {
             }
          });
       });
+      console.log('Duration: ' + (Date.now() - start));
    });
 };
