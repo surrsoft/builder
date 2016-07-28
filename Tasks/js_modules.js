@@ -22,6 +22,7 @@ module.exports = function (grunt) {
       var
          root = grunt.option('root') || '',
          app = grunt.option('application') || '',
+         service_mapping = grunt.option('service_mapping') || false,
          rootPath = path.join(root, app),
          resourcesPath = path.join(rootPath, 'resources'),
          sourceFiles = grunt.file.expand({cwd: resourcesPath}, this.data),
@@ -56,6 +57,20 @@ module.exports = function (grunt) {
       try {
          var contents = require(path.join(resourcesPath, 'contents.json'));
          contents.jsModules = jsModules;
+
+         if (service_mapping) {
+            var srv_arr = service_mapping.trim().split(' ');
+            if (srv_arr.length % 2 == 0) {
+               var services = {};
+               for (var i = 0; i < srv_arr.length; i+=2) {
+                  services[srv_arr[i]] = srv_arr[i + 1];
+               }
+               contents.services = services;
+            } else {
+               grunt.fail.fatal("Services list must be even!");
+            }
+         }
+
          grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
          grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents='+JSON.stringify(contents));
       } catch (err) {
