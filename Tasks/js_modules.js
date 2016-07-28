@@ -44,7 +44,7 @@ module.exports = function (grunt) {
                   if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
                      var moduleName = node.arguments[0].value;
                      var parts = moduleName.split('!');
-                     if (parts[0] == 'js' && (parts[1].indexOf('SBIS3') == 0 || parts[1].indexOf('genie') == 0)) {
+                     if (parts[0] == 'js') {
                         jsModules[parts[1]] = '/' + file;
                      }
                   }
