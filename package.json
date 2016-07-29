@@ -16,7 +16,7 @@
     "grunt-contrib-uglify": "1.0.x",
     "grunt-packer": "0.3.6",
     "grunt-text-replace": "0.3.8",
-    "grunt-wsmod-packer": "1.0.9",
+    "grunt-wsmod-packer": "1.0.10",
     "mkdirp": "0.3.5",
     "node-uuid": "1.4.x",
     "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun",
