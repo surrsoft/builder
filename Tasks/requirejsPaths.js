@@ -41,7 +41,7 @@ module.exports = function (grunt) {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача requirejsPaths.');
 
         var
-            firstLvlDirs = getFirstLevelDirs(this.data.application),
+            firstLvlDirs = getFirstLevelDirs(path.join('.', this.data.application)),
             requirejsPaths = {};
 
         firstLvlDirs.forEach(function (dir) {
