@@ -21,8 +21,6 @@ module.exports = function(grunt) {
 
       grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, ++taskCount && done);
 
-      grunt.option('package') && packageDictionary(grunt, this.data, ++taskCount && done);
-
       if (taskCount == 0) {
          done();
       }
