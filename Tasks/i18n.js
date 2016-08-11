@@ -1,7 +1,6 @@
 var indexDict = require('../lib/i18n/indexDictionary').indexDict,
     prepareXHTML = require('../lib/i18n/prepareXHTML').prepareXHTML,
     createResultDict = require('../lib/i18n/createResultDictionary').createResultDict,
-    packageDictionary = require('../lib/i18n/packer').packageDictionary,
     jsonGenerator = require('../lib/i18n/jsonGenerator').jsonGenerator;
 
 module.exports = function(grunt) {
