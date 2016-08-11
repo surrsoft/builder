@@ -1,6 +1,7 @@
 'use strict';
 
 var path = require('path');
+var fs = require('fs');
 var esprima = require('esprima');
 var traverse = require('estraverse').traverse;
 var transliterate = require('./../lib/utils/transliterate');
@@ -77,13 +78,25 @@ module.exports = function (grunt) {
       }
       htmlTemplate = transliterate(htmlTemplate.replace(/\\/g, '/'));
 
-      generateHTML(htmlTemplate, outFileName);
+      generateHTML(htmlTemplate, outFileName + '.html');
    }
 
    grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача static-html.');
       var start = Date.now();
       var sourceFiles = grunt.file.expand({cwd: appRoot}, this.data);
+      var oldHtml = grunt.file.expand({cwd: appRoot}, ['*.html']);
+
+      if (oldHtml && oldHtml.length) {
+         oldHtml.forEach(function (file) {
+            var filePath = path.join(appRoot, file);
+            try {
+               fs.unlinkSync(path.join(appRoot, file));
+            } catch (err) {
+               console.log('Can\'t delete old html: ', filePath, err);
+            }
+         });
+      }
 
       try {
          sourceFiles.forEach(function (file) {
