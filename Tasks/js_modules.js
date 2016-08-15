@@ -58,7 +58,7 @@ module.exports = function (grunt) {
       try {
          contents = require(path.join(resourcesPath, 'contents.json'));
       } catch (err) {
-         grunt.log.warn('contents.json doesn\'t exist');
+         grunt.log.warn('Error while requiring contents.json', err);
       }
 
       try {
