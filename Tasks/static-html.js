@@ -58,7 +58,14 @@ module.exports = function (grunt) {
    };
 
    function generateHTML(htmlTemplate, outFileName) {
-      var templatePath = path.join(appRoot, 'resources', htmlTemplate);
+      var templatePath = '';
+      if (!htmlTemplate) {
+         templatePath = path.join(__dirname, './../resources/index.html');
+         console.log(templatePath);
+      } else {
+         templatePath = path.join(appRoot, 'resources', htmlTemplate);
+      }
+
       var text = cache[templatePath] || (cache[templatePath] = grunt.file.read(templatePath));
       text = replaceIncludes(text, replaceOpts);
       grunt.file.write(path.join(appRoot, outFileName), text);
@@ -67,12 +74,14 @@ module.exports = function (grunt) {
    function parseOpts(opts) {
       var
          webPage = opts.webPage || {},
-         htmlTemplate = webPage.htmlTemplate,
+         htmlTemplate = webPage.htmlTemplate || '',
          outFileName = webPage.outFileName;
       replaceOpts.WINDOW_TITLE = opts.title || '';
 
-      if (!htmlTemplate || !outFileName) {
+      if (!outFileName) {
          return;
+      } else if (!htmlTemplate) {
+         grunt.log.warn('Using default template for otput file', outFileName + '.html');
       } else if (!(htmlTemplate.indexOf('Тема Скрепка') > -1 || htmlTemplate.indexOf('Tema_Skrepka') > -1)) {
          grunt.log.warn('HTML Template is not from Tema_Skrepka(Тема Cкрепка)', htmlTemplate);
       }

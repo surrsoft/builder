@@ -35,6 +35,8 @@ module.exports = function (grunt) {
          i18n = !!grunt.option('index-dict'),
          rootPath = path.join(root, app),
          resourcesPath = path.join(rootPath, 'resources'),
+         contents = {},
+         contentsModules = {},
          paths;
 
       if (modules) {
@@ -62,8 +64,12 @@ module.exports = function (grunt) {
       });
 
       paths.forEach(function (input) {
-         var parts = input.split('/');
-         var moduleName = parts[parts.length - 1] === 'resources' ? '' : parts[parts.length - 1];
+         var parts = input.replace(/\\/g, '/').split('/');
+         var moduleName = '';
+         if (modules) {
+            moduleName = parts[parts.length - 1];
+            contentsModules[moduleName] = transliterate(moduleName);
+         }
          grunt.file.recurse(input, function (abspath) {
             var ext = path.extname(abspath);
             if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
@@ -77,6 +83,24 @@ module.exports = function (grunt) {
             }
          });
       });
+
+      if (Object.keys(contentsModules).length) {
+         try {
+            contents = require(path.join(resourcesPath, 'contents.json'));
+         } catch (err) {
+            grunt.log.warn('Error while requiring contents.json', err);
+         }
+
+         try {
+            contents.modules = contentsModules;
+
+            grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
+            grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
+         } catch (err) {
+            grunt.fail.fatal(err);
+         }
+      }
+
       console.log('Duration: ' + (Date.now() - start));
    });
 };
