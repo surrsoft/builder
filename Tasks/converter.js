@@ -62,7 +62,7 @@ module.exports = function (grunt) {
       });
 
       paths.forEach(function (input) {
-         var parts = input.replace(/\\/g,'/').split('/');
+         var parts = input.replace(/\\/g, '/').split('/');
          var moduleName = modules ? parts[parts.length - 1] : '';
          grunt.file.recurse(input, function (abspath) {
             var ext = path.extname(abspath);

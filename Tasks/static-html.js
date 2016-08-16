@@ -159,7 +159,7 @@ module.exports = function (grunt) {
          });
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
-         grunt.fail.fatal(err);
+         grunt.fail.fatal(err, file);
       }
    });
 };
