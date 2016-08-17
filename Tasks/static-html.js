@@ -54,7 +54,8 @@ module.exports = function (grunt) {
       USER_PARAMS: userParams,
       GLOBAL_PARAMS: globalParams,
       SAVE_LAST_STATE: false,
-      ROOT: appRoot
+      ROOT: appRoot,
+      START_DIALOG: ''
    };
 
    function generateHTML(htmlTemplate, outFileName) {
@@ -66,10 +67,12 @@ module.exports = function (grunt) {
 
    function parseOpts(opts) {
       var
+         moduleName = opts.moduleName,
          webPage = opts.webPage || {},
          htmlTemplate = webPage.htmlTemplate,
          outFileName = webPage.outFileName;
       replaceOpts.WINDOW_TITLE = opts.title || '';
+      replaceOpts.START_DIALOG = moduleName || '';
 
       if (!htmlTemplate || !outFileName) {
          return;
@@ -110,6 +113,7 @@ module.exports = function (grunt) {
 
             var arrExpr = [];
             var ReturnStatement = null;
+            var moduleName = '';
 
             traverse(ast, {
                enter: function getModuleName(node) {
@@ -123,6 +127,10 @@ module.exports = function (grunt) {
 
                   if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
                      node.callee.name == 'define') {
+                     if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                        moduleName = node.arguments[0].value;
+                     }
+
                      var fnNode = null;
                      if (node.arguments[1] && node.arguments[1].type == 'FunctionExpression') {
                         fnNode = node.arguments[1].body;
@@ -144,6 +152,7 @@ module.exports = function (grunt) {
 
             if (arrExpr.length && ReturnStatement) {
                var opts = {};
+               opts.moduleName = moduleName;
                arrExpr.forEach(function (expr) {
                   try {
                      expr.left.object.name == ReturnStatement.name ? opts[expr.left.property.name] =
