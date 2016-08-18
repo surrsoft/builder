@@ -74,12 +74,14 @@ module.exports = function (grunt) {
             var ext = path.extname(abspath);
             if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                try {
-                  grunt.file.copy(abspath, transliterate(path.join(resourcesPath, moduleName, path.relative(input, abspath))));
+                  grunt.file.copy(abspath, path.join(resourcesPath, contentsModules[moduleName],
+                     transliterate(path.relative(input, abspath))));
                } catch (err) {
                   grunt.log.error(err);
                }
             } else {
-               mkSymlink(abspath, transliterate(path.join(resourcesPath, moduleName, path.relative(input, abspath))));
+               mkSymlink(abspath, path.join(resourcesPath, contentsModules[moduleName],
+                  transliterate(path.relative(input, abspath))));
             }
          });
       });
