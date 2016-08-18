@@ -26,6 +26,7 @@ module.exports = function (grunt) {
          rootPath = path.join(root, app),
          resourcesPath = path.join(rootPath, 'resources'),
          sourceFiles = grunt.file.expand({cwd: resourcesPath}, this.data),
+         contents = {},
          jsModules = {};
 
 
@@ -55,7 +56,12 @@ module.exports = function (grunt) {
       });
 
       try {
-         var contents = require(path.join(resourcesPath, 'contents.json'));
+         contents = require(path.join(resourcesPath, 'contents.json'));
+      } catch (err) {
+         grunt.log.warn('Error while requiring contents.json', err);
+      }
+
+      try {
          contents.jsModules = jsModules;
 
          if (service_mapping) {

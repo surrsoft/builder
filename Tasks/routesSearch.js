@@ -5,7 +5,7 @@ var esprima = require('esprima');
 var traverse = require('estraverse').traverse;
 var
    routesSource = {},
-   modulesList;
+   jsModules;
 
 function getRoutes(script, file) {
    var ast = esprima.parse(script);
@@ -38,7 +38,7 @@ function addToSource(file, info) {
 
 function checkInContents(key) {
    return {
-      isMasterPage: modulesList.indexOf(key.toString().replace('js!', '')) > -1,
+      isMasterPage: jsModules.indexOf(key.toString().replace('js!', '')) > -1,
       controller: key
    }
 }
@@ -186,19 +186,14 @@ module.exports = function (grunt) {
           sourceFiles = grunt.file.expand({cwd: rootPath}, this.data),
           sourcePath = path.join(rootPath, 'resources', 'routes-info.json'),
           contentsPath = path.join(rootPath, 'resources', 'contents.json'),
-          tmp,
-          jsModules,
-          modules;
+          tmp;
 
       try {
          tmp = JSON.parse(grunt.file.read(contentsPath));
          jsModules = Object.keys(tmp.jsModules);
-         modules = Object.keys(tmp.modules);
       } catch (e) {
          grunt.fail.fatal('Некорректный файл contents.json');
       }
-
-      modulesList = jsModules.concat(modules);
 
       sourceFiles.forEach(function (route) {
          var
