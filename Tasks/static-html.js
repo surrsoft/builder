@@ -41,6 +41,7 @@ module.exports = function (grunt) {
    var userParams = grunt.option('user_params') || false;
    var globalParams = grunt.option('global_params') || false;
    var appRoot = path.join(root, app);
+   var resourcesRoot = path.join(appRoot, 'resources');
 
    var replaceOpts = {
       WINDOW_TITLE: '',
@@ -175,6 +176,57 @@ module.exports = function (grunt) {
                parseOpts(opts)
             }
          });
+         console.log('Duration: ' + (Date.now() - start));
+      } catch (err) {
+         grunt.fail.fatal(err, file);
+      }
+   });
+
+   grunt.registerMultiTask('xml-deprecated', 'Convert deprecated xml', function () {
+      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача xml-deprecated.');
+      var start = Date.now();
+      var sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data);
+
+      try {
+         sourceFiles.forEach(function (file) {
+            var text = grunt.file.read(path.join(resourcesRoot, file));
+            text = replaceIncludes(text, replaceOpts);
+
+            try {
+               fs.unlinkSync(path.join(appRoot, file));
+            } catch (err) {
+               //ignore
+            }
+
+            grunt.file.write(path.join(resourcesRoot, transliterate(file.replace('.deprecated', ''))), text);
+         });
+
+         console.log('Duration: ' + (Date.now() - start));
+      } catch (err) {
+         grunt.fail.fatal(err, file);
+      }
+   });
+
+   grunt.registerMultiTask('html-deprecated', 'Convert deprecated html', function () {
+      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача html-deprecated.');
+      var start = Date.now();
+      var sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data);
+
+      try {
+         sourceFiles.forEach(function (file) {
+            var basename = path.basename(file, '.deprecated');
+            var text = grunt.file.read(path.join(resourcesRoot, file));
+            text = replaceIncludes(text, replaceOpts);
+
+            try {
+               fs.unlinkSync(path.join(resourcesRoot, file));
+            } catch (err) {
+               //ignore
+            }
+
+            grunt.file.write(path.join(appRoot, transliterate(basename)), text);
+         });
+
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
          grunt.fail.fatal(err, file);
