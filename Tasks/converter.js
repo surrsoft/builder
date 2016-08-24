@@ -37,6 +37,7 @@ module.exports = function (grunt) {
          resourcesPath = path.join(rootPath, 'resources'),
          contents = {},
          contentsModules = {},
+         xmlContents = {},
          paths;
 
       if (modules) {
@@ -72,35 +73,34 @@ module.exports = function (grunt) {
          }
          grunt.file.recurse(input, function (abspath) {
             var ext = path.extname(abspath);
+
+            if (abspath.indexOf('.xml.deprecated') > -1) {
+               var base = path.basename(abspath, '.xml.deprecated');
+               xmlContents[base] = transliterate(path.relative(input, abspath).replace('.xml.deprecated', '').replace(/\\/g, '/'));
+            }
+
             if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                try {
-                  grunt.file.copy(abspath, path.join(resourcesPath, contentsModules[moduleName],
+                  grunt.file.copy(abspath, path.join(resourcesPath, transliterate(moduleName),
                      transliterate(path.relative(input, abspath))));
                } catch (err) {
                   grunt.log.error(err);
                }
             } else {
-               mkSymlink(abspath, path.join(resourcesPath, contentsModules[moduleName],
+               mkSymlink(abspath, path.join(resourcesPath, transliterate(moduleName),
                   transliterate(path.relative(input, abspath))));
             }
          });
       });
 
-      if (Object.keys(contentsModules).length) {
-         try {
-            contents = require(path.join(resourcesPath, 'contents.json'));
-         } catch (err) {
-            grunt.log.warn('Error while requiring contents.json', err);
-         }
+      try {
+         contents.modules = Object.keys(contentsModules).length ? contentsModules : contents.modules;
+         contents.xmlContents = xmlContents;
 
-         try {
-            contents.modules = contentsModules;
-
-            grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
-            grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
-         } catch (err) {
-            grunt.fail.fatal(err);
-         }
+         grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
+         grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
+      } catch (err) {
+         grunt.fail.fatal(err);
       }
 
       console.log('Duration: ' + (Date.now() - start));
