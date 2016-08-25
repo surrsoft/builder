@@ -60,9 +60,21 @@ module.exports = function (grunt) {
          paths = [input];
       }
 
-      grunt.file.delete(resourcesPath, {
-         force: true
-      });
+      var attempt = 0;
+      function clear() {
+         try {
+            grunt.file.delete(resourcesPath, {
+               force: true
+            });
+         } catch (err) {
+            if (3 < attempt++) {
+               clear();
+            } else {
+               throw err;
+            }
+         }
+      }
+      clear();
 
       paths.forEach(function (input) {
          var parts = input.replace(/\\/g, '/').split('/');
