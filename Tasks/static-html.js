@@ -59,6 +59,8 @@ module.exports = function (grunt) {
       START_DIALOG: ''
    };
 
+   var htmlNames = {};
+
    function generateHTML(htmlTemplate, outFileName) {
       var templatePath = '';
       if (!htmlTemplate) {
@@ -82,6 +84,8 @@ module.exports = function (grunt) {
       replaceOpts.WINDOW_TITLE = opts.title || '';
       replaceOpts.START_DIALOG = moduleName || '';
 
+      htmlNames[moduleName] = outFileName + '.html';
+
       if (!outFileName) {
          return;
       } else if (!htmlTemplate) {
@@ -99,6 +103,14 @@ module.exports = function (grunt) {
       var start = Date.now();
       var sourceFiles = grunt.file.expand({cwd: appRoot}, this.data);
       var oldHtml = grunt.file.expand({cwd: appRoot}, ['*.html']);
+      var contents = {};
+
+      try {
+         contents = require(path.join(resourcesRoot, 'contents.json'));
+         htmlNames = contents.htmlNames || {};
+      } catch (err) {
+         grunt.log.warn('Error while requiring contents.json', err);
+      }
 
       if (oldHtml && oldHtml.length) {
          oldHtml.forEach(function (file) {
@@ -176,6 +188,16 @@ module.exports = function (grunt) {
                parseOpts(opts)
             }
          });
+
+         try {
+            contents.htmlNames = htmlNames;
+
+            grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(contents, null, 2));
+            grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents='+JSON.stringify(contents));
+         } catch (err) {
+            grunt.fail.fatal(err);
+         }
+
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
          grunt.fail.fatal(err, file);
@@ -211,10 +233,19 @@ module.exports = function (grunt) {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача html-deprecated.');
       var start = Date.now();
       var sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data);
+      var contents = {};
+
+      try {
+         contents = require(path.join(resourcesRoot, 'contents.json'));
+         htmlNames = contents.htmlNames || {};
+      } catch (err) {
+         grunt.log.warn('Error while requiring contents.json', err);
+      }
 
       try {
          sourceFiles.forEach(function (file) {
-            var basename = path.basename(file, '.deprecated');
+            var parts = file.split('#');
+            var basename = path.basename(parts[1] || parts[0], '.deprecated');
             var text = grunt.file.read(path.join(resourcesRoot, file));
             text = replaceIncludes(text, replaceOpts);
 
@@ -224,8 +255,21 @@ module.exports = function (grunt) {
                //ignore
             }
 
+            if (parts.length > 1) {
+               htmlNames[parts[0]] = parts[1].replace('.deprecated', '');
+            }
+
             grunt.file.write(path.join(appRoot, transliterate(basename)), text);
          });
+
+         try {
+            contents.htmlNames = htmlNames;
+
+            grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(contents, null, 2));
+            grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents='+JSON.stringify(contents));
+         } catch (err) {
+            grunt.fail.fatal(err);
+         }
 
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
