@@ -84,7 +84,7 @@ module.exports = function (grunt) {
       replaceOpts.WINDOW_TITLE = opts.title || '';
       replaceOpts.START_DIALOG = moduleName || '';
 
-      htmlNames[moduleName] = outFileName + '.html';
+      htmlNames[moduleName] = app.replace('/', '') + outFileName + '.html';
 
       if (!outFileName) {
          return;
@@ -256,7 +256,7 @@ module.exports = function (grunt) {
             }
 
             if (parts.length > 1) {
-               htmlNames[parts[0]] = parts[1].replace('.deprecated', '');
+               htmlNames[parts[0]] = app.replace('/', '') + parts[1].replace('.deprecated', '');
             }
 
             grunt.file.write(path.join(appRoot, transliterate(basename)), text);
