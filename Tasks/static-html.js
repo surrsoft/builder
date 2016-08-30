@@ -105,6 +105,8 @@ module.exports = function (grunt) {
       var oldHtml = grunt.file.expand({cwd: appRoot}, ['*.html']);
       var contents = {};
 
+      var errPath = '';
+
       try {
          contents = require(path.join(resourcesRoot, 'contents.json'));
          htmlNames = contents.htmlNames || {};
@@ -125,6 +127,7 @@ module.exports = function (grunt) {
 
       try {
          sourceFiles.forEach(function (file) {
+            errPath = file;
             var text = grunt.file.read(path.join(appRoot, file));
             var ast = parseModule(text);
 
@@ -187,6 +190,7 @@ module.exports = function (grunt) {
 
                parseOpts(opts)
             }
+            errPath = '';
          });
 
          try {
@@ -200,7 +204,7 @@ module.exports = function (grunt) {
 
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
-         grunt.fail.fatal(err, file);
+         grunt.fail.fatal(err, errPath);
       }
    });
 
@@ -209,8 +213,11 @@ module.exports = function (grunt) {
       var start = Date.now();
       var sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data);
 
+      var errPath = '';
+
       try {
          sourceFiles.forEach(function (file) {
+            errPath = file;
             var text = grunt.file.read(path.join(resourcesRoot, file));
             text = replaceIncludes(text, replaceOpts);
 
@@ -221,11 +228,12 @@ module.exports = function (grunt) {
             }
 
             grunt.file.write(path.join(resourcesRoot, transliterate(file.replace('.deprecated', ''))), text);
+            errPath = '';
          });
 
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
-         grunt.fail.fatal(err, file);
+         grunt.fail.fatal(err, errPath);
       }
    });
 
@@ -234,6 +242,8 @@ module.exports = function (grunt) {
       var start = Date.now();
       var sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data);
       var contents = {};
+
+      var errPath = '';
 
       try {
          contents = require(path.join(resourcesRoot, 'contents.json'));
@@ -244,6 +254,7 @@ module.exports = function (grunt) {
 
       try {
          sourceFiles.forEach(function (file) {
+            errPath = file;
             var parts = file.split('#');
             var basename = path.basename(parts[1] || parts[0], '.deprecated');
             var text = grunt.file.read(path.join(resourcesRoot, file));
@@ -260,6 +271,7 @@ module.exports = function (grunt) {
             }
 
             grunt.file.write(path.join(appRoot, transliterate(basename)), text);
+            errPath = '';
          });
 
          try {
@@ -273,7 +285,7 @@ module.exports = function (grunt) {
 
          console.log('Duration: ' + (Date.now() - start));
       } catch (err) {
-         grunt.fail.fatal(err, file);
+         grunt.fail.fatal(err, errPath);
       }
    });
 };
