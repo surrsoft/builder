@@ -55,7 +55,7 @@ module.exports = function (grunt) {
       USER_PARAMS: userParams,
       GLOBAL_PARAMS: globalParams,
       SAVE_LAST_STATE: false,
-      ROOT: appRoot,
+      ROOT: root,
       START_DIALOG: ''
    };
 
