@@ -88,7 +88,7 @@ module.exports = function (grunt) {
 
             if (abspath.indexOf('.xml.deprecated') > -1) {
                var base = path.basename(abspath, '.xml.deprecated');
-               xmlContents[base] = path.join(app, 'resources', transliterate(moduleName),
+               xmlContents[base] = path.join(transliterate(moduleName),
                   transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(/\\/g, '/');
             }
 
