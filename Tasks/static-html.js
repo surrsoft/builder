@@ -84,8 +84,6 @@ module.exports = function (grunt) {
       replaceOpts.WINDOW_TITLE = opts.title || '';
       replaceOpts.START_DIALOG = moduleName || '';
 
-      htmlNames[moduleName] = app.replace('/', '') + outFileName + '.html';
-
       if (!outFileName) {
          return;
       } else if (!htmlTemplate) {
@@ -93,6 +91,9 @@ module.exports = function (grunt) {
       } else if (!(htmlTemplate.indexOf('Тема Скрепка') > -1 || htmlTemplate.indexOf('Tema_Skrepka') > -1)) {
          grunt.log.warn('HTML Template is not from Tema_Skrepka(Тема Cкрепка)', htmlTemplate);
       }
+
+      htmlNames[moduleName] = app.replace('/', '') + outFileName + '.html';
+
       htmlTemplate = transliterate(htmlTemplate.replace(/\\/g, '/'));
 
       generateHTML(htmlTemplate, outFileName + '.html');
