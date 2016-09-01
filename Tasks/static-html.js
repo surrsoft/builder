@@ -37,6 +37,8 @@ function parseObjectExpression(properties) {
 module.exports = function (grunt) {
    var root = grunt.option('root') || '';
    var app = grunt.option('application') || '/';
+   app = app.indexOf('/') == 0 ? app : '/' + app;
+   app = app.lastIndexOf('/') == app.length - 1 ? app : app + '/';
    var srvPath = grunt.option('services_path') || '';
    var userParams = grunt.option('user_params') || false;
    var globalParams = grunt.option('global_params') || false;
