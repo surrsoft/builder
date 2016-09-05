@@ -38,6 +38,7 @@ module.exports = function (grunt) {
          contents = {},
          contentsModules = {},
          xmlContents = {},
+         htmlNames = {},
          paths;
 
       if (modules) {
@@ -87,9 +88,15 @@ module.exports = function (grunt) {
             var ext = path.extname(abspath);
 
             if (abspath.indexOf('.xml.deprecated') > -1) {
-               var base = path.basename(abspath, '.xml.deprecated');
-               xmlContents[base] = path.join(transliterate(moduleName),
+               var basexml = path.basename(abspath, '.xml.deprecated');
+               xmlContents[basexml] = path.join(transliterate(moduleName),
                   transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(/\\/g, '/');
+            }
+
+            if (abspath.indexOf('.html.deprecated') > -1) {
+               var basehtml = path.basename(abspath, '.deprecated');
+               var parts = basehtml.split('#');
+               htmlNames[parts[0]] = (parts[1] || parts[0]).replace('.xml.deprecated', '').replace(/\\/g, '/');
             }
 
             if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
