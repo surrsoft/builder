@@ -142,7 +142,8 @@ for file in js_files:
     if done_count % 1000 == 0:
         print('{0} *.js files processed for {1}'.format(done_count, datetime.now() - start))
 
-# TODO  можно перенести в первый walk()
+# TODO  можно перенести в первый walk(), но придется создавать в текущей деректории файлы с префиксом,
+# так как нельзя заменать исходные файлы, а при копировании учесть это
 print('\nStarting replace for *.xhtml files')
 start_xhtml = datetime.now()
 done_xhtml_count = 0
