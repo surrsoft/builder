@@ -44,6 +44,8 @@ module.exports = function(grunt) {
 
    var defaultTasks = [];
 
+   defaultTasks.push('jsModules');
+
    if (packaging) {
       defaultTasks.push('deanonymize');
    }
@@ -52,7 +54,7 @@ module.exports = function(grunt) {
       defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
    }
 
-   defaultTasks.push('jsModules', 'i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
+   defaultTasks.push('i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
 
    if (packaging) {
       defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
