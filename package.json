@@ -1,36 +1,35 @@
 {
-   "name": "sbis3-builder",
-   "description": "Grunt-based builder for SBIS3 web projects",
-   "version": "3.7.420-BUILD",
-   "author": "Oleg Elifantiev <oleg@elifantiev.ru>",
-   "contributors": [],
-   "keywords": [
-   ],
-   "dependencies": {
-      "grunt": "0.4.x",
-      "grunt-packer": "0.3.6",
-      "grunt-wsmod-packer": "1.3.0",
-      "grunt-cli": "",
-      "grunt-text-replace": "0.3.8",
-      "tensor-xmldom": "0.2.0-t2",
-      "esprima": "^2.7.0",
-      "estraverse": "^4.1.0",
-      "node-uuid": "1.4.x",
-      "grunt-cleanempty": "1.0.4",
-      "grunt-contrib-uglify": "1.0.x",
-      "grunt-contrib-cssmin": "0.14.x",
-      "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun",
-      "async": "1.5.x",
-      "mkdirp": "0.3.5"
-   },
-   "devDependencies": {
-      "mocha": "",
-      "assert": ""
-   },
-   "scripts": {
-      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
-   },
-   "engines": {
-      "node": ">=0.10"
-   }
+  "name": "sbis3-builder",
+  "description": "Grunt-based builder for SBIS3 web projects",
+  "version": "3.7.420-BUILD",
+  "author": "Dmitriy Shilov",
+  "contributors": [
+    "Artem Egorov",
+    "Artem Esin"
+  ],
+  "dependencies": {
+    "async": "2.0.1",
+    "esprima": "^3.0.0",
+    "estraverse": "^4.2.0",
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-text-replace": "^0.4.0",
+    "grunt-wsmod-packer": "2.0.0",
+    "mkdirp": "^0.5.1",
+    "node-uuid": "^1.4.7",
+    "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun",
+    "tensor-xmldom": "0.2.0-b9"
+  },
+  "devDependencies": {
+    "mocha": "",
+    "assert": ""
+  },
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
+  },
+  "engines": {
+    "node": ">=4.4"
+  }
 }

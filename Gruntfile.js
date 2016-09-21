@@ -1,74 +1,74 @@
-module.exports = function(grunt) {
-   var ver = process.versions.node;
+var path = require('path');
 
-   if (ver.split('.')[0] < 1) {
-      console.error('nodejs >= v1.x required');
-      process.exit(1);
-   }
+module.exports = function (grunt) {
+    var ver = process.versions.node;
 
-   var path = require('path');
+    if (ver.split('.')[0] < 4) {
+        console.error('nodejs >= v4.x required');
+        process.exit(1);
+    }
 
-   var logger = require('./lib/logger');
-   logger.enable(grunt);
+    var logger = require('./lib/logger');
+    logger.enable(grunt);
 
-   // Read options
-   var root = grunt.option('root') || '';
-   var app = grunt.option('application') || '';
-   var versionize = grunt.option('versionize');
-   var packaging = grunt.option('package');
+    // Read options
+    var root = grunt.option('root') || '';
+    var app = grunt.option('application') || '/';
+    var versionize = grunt.option('versionize');
+    var packaging = grunt.option('package');
 
-   // Init environment
-   var target = path.resolve(root);
-   var configBuilder = require('./lib/config-builder.js');
+    // Init environment
+    var target = path.resolve(root);
+    var application =  path.join('/', app, '/').replace('\\', '/');
+    var configBuilder = require('./lib/config-builder.js');
 
-   process.env.ROOT = target;
-   process.env.APPROOT = path.join(target, app);
-   process.env.WS = path.join(target, app, 'ws');
-   process.env.RESOURCES = path.join(target, app, 'resources');
+    process.env.ROOT = target;
+    process.env.APPROOT = app;
 
-   grunt.option('color', !!process.stdout.isTTY);
+    grunt.option('color', !!process.stdout.isTTY);
 
-   // Load tasks
-   grunt.loadNpmTasks('grunt-packer');
-   grunt.loadNpmTasks('grunt-wsmod-packer');
-   grunt.loadNpmTasks('grunt-text-replace');
-   grunt.loadNpmTasks('grunt-contrib-uglify');
-   grunt.loadNpmTasks('grunt-contrib-cssmin');
-   grunt.loadNpmTasks('grunt-cleanempty');
-   grunt.loadTasks('Tasks');
+    // Load tasks
+    grunt.loadNpmTasks('grunt-wsmod-packer');
+    grunt.loadNpmTasks('grunt-text-replace');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
-   // Init config
-   grunt.file.mkdir(target);
-   grunt.file.setBase(target);
-   grunt.initConfig(configBuilder(grunt, app));
+    grunt.loadTasks('Tasks');
 
-   var defaultTasks = [];
+    // Init config
+    grunt.file.mkdir(target);
+    grunt.file.setBase(target);
+    grunt.initConfig(configBuilder(grunt, target, application));
 
-   if (packaging) {
-      defaultTasks.push('deanonymize');
-   }
+    var defaultTasks = [];
 
-   if (typeof versionize == 'string') {
-      defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
-   }
+    defaultTasks.push('jsModules');
 
-   defaultTasks.push('jsModules', 'i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
+    if (packaging) {
+        defaultTasks.push('deanonymize');
+    }
 
-   if (packaging) {
-      defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
-   }
+    if (typeof versionize == 'string') {
+        defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
+    }
 
-   if (typeof versionize == 'string') {
-      defaultTasks.push('replace:html');
-   }
+    defaultTasks.push('i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
 
-   grunt.fail.warn = grunt.fail.fatal;
+    if (packaging) {
+        defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
+    }
 
-   grunt.registerTask('default', defaultTasks);
+    if (typeof versionize == 'string') {
+        defaultTasks.push('replace:html');
+    }
 
-   grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
+    grunt.fail.warn = grunt.fail.fatal;
+
+    grunt.registerTask('default', defaultTasks);
+
+    grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
 };
 
 if (require.main == module) {
-   console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
+    console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
 }
