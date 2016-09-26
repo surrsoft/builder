@@ -44,8 +44,6 @@ module.exports = function(grunt) {
 
    var defaultTasks = [];
 
-   defaultTasks.push('jsModules');
-
    if (packaging) {
       defaultTasks.push('deanonymize');
    }
