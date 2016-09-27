@@ -132,7 +132,7 @@ module.exports = function (grunt) {
                                     var mod = node.arguments[0].value;
                                     var parts = mod.split('!');
                                     if (parts[0] == 'js') {
-                                        jsModules[parts[1]] = path.join(app, 'resources', transliterate(moduleName),
+                                        jsModules[parts[1]] = path.join(transliterate(moduleName),
                                             transliterate(path.relative(input, abspath))).replace(/\\/g, '/');
                                     }
                                 }
