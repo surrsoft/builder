@@ -120,7 +120,7 @@ module.exports = function (grunt) {
                     var ast = parseModule(text);
 
                     if (ast instanceof Error) {
-                        ast.message += '\nPath: ' + fullPath;
+                        ast.message += '\nPath: ' + abspath;
                         return grunt.fail.fatal(ast);
                     }
 
