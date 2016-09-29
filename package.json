@@ -19,8 +19,7 @@
     "grunt-wsmod-packer": "2.0.0",
     "mkdirp": "^0.5.1",
     "node-uuid": "^1.4.7",
-    "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun",
-    "tensor-xmldom": "0.2.0-b9"
+    "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun"
   },
   "devDependencies": {
     "mocha": "",
