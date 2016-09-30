@@ -28,7 +28,8 @@ def transform_dep(dep):
         parts = dep.split('.')
         if len(parts) == 1:
             parts = parts[0].split('/')
-        parts.append(str((lambda part: part.split('!')[-1])(parts[-1])))
+        if parts[-1].find('/') == -1:
+            parts.append(str((lambda part: part.split('!')[-1])(parts[-1])))
 
         return '\'' + '/'.join(parts) + '\''
 
