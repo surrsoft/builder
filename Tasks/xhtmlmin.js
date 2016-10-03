@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = function (grunt) {
     var conditionalComments = /<!--(\[[\s\S]*?\])-->/gi,
         conditionalCommentsReplacements = /<!-#\/CC#(\d+)#->/gi,
@@ -156,12 +158,16 @@ module.exports = function (grunt) {
 
     grunt.registerMultiTask('xhtmlmin', 'minify xhtml and html', function () {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача xhtmlmin.');
-        var files = grunt.file.expand({cwd: this.data.cwd}, this.data.src);
+
+        var applicationRoot = this.data.cwd,
+            files = grunt.file.expand({cwd: applicationRoot}, this.data.src);
+
         files.forEach(function (file) {
-            var data = grunt.file.read(file, {encoding: 'utf8'});
+            var data = grunt.file.read(path.join(applicationRoot, file), {encoding: 'utf8'});
             data = minifyFile(data);
             grunt.file.write(file, data);
         });
+
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача xhtmlmin выполнена.');
     });
 };

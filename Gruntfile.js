@@ -1,4 +1,5 @@
 var path = require('path');
+var dblSlashes = /\\/g;
 
 module.exports = function (grunt) {
     var ver = process.versions.node;
@@ -8,9 +9,6 @@ module.exports = function (grunt) {
         process.exit(1);
     }
 
-    var logger = require('./lib/logger');
-    logger.enable(grunt);
-
     // Read options
     var root = grunt.option('root') || '';
     var app = grunt.option('application') || '/';
@@ -19,7 +17,8 @@ module.exports = function (grunt) {
 
     // Init environment
     var target = path.resolve(root);
-    var application =  path.join('/', app, '/').replace('\\', '/');
+    var application =  path.join('/', app, '/').replace(dblSlashes, '/');
+    var logger = require('./lib/logger')(grunt);
     var configBuilder = require('./lib/config-builder.js');
 
     process.env.ROOT = target;

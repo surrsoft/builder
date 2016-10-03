@@ -179,21 +179,23 @@ module.exports = function (grunt) {
     grunt.registerMultiTask('routsearch', 'Searching routes paths', function () {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается поиск путей роутинга.');
 
-        var target = this.data.cwd,
-            sourceFiles = grunt.file.expand({cwd: target}, this.data.src),
-            sourcePath = path.join(target, 'resources', 'routes-info.json'),
-            contentsPath = path.join(target, 'resources', 'contents.json'),
+        var root = this.data.root,
+            application = this.data.application,
+            applicationRoot = path.join(root, application),
+            sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src),
+            sourcePath = path.join(applicationRoot, 'resources', 'routes-info.json'),
+            contentsPath = path.join(applicationRoot, 'resources', 'contents.json'),
             tmp;
 
         try {
-            tmp = JSON.parse(grunt.file.read(contentsPath));
+            tmp = require(contentsPath);
             jsModules = Object.keys(tmp.jsModules);
         } catch (e) {
             grunt.fail.fatal('Некорректный файл contents.json');
         }
 
         sourceFiles.forEach(function (route) {
-            var routePath = path.join(target, route),
+            var routePath = path.join(applicationRoot, route),
                 text = grunt.file.read(routePath);
 
             if (text) {

@@ -1,9 +1,8 @@
 "use strict";
 
-var
-    path = require('path'),
-    fs = require('fs'),
-    dblSlashes = /\\/g;
+var path = require('path');
+var fs = require('fs');
+var dblSlashes = /\\/g;
 
 function getFirstLevelDirs(applicationRoot) {
     var resources = path.join(applicationRoot, 'resources'),
@@ -36,12 +35,14 @@ module.exports = function (grunt) {
     grunt.registerMultiTask('requirejsPaths', '', function () {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача requirejsPaths.');
 
-        var applicationRoot = this.data.cwd,
+        var root = this.data.root,
+            application = this.data.application,
+            applicationRoot = path.join(root, application),
             firstLvlDirs = getFirstLevelDirs(applicationRoot),
             requirejsPaths = {};
 
         firstLvlDirs.forEach(function (dir) {
-            dir = dir.replace(dblSlashes, '/');
+            dir = path.relative(root, dir).replace(dblSlashes, '/');
             requirejsPaths[dir.split('/').pop()] = dir;
         });
 
