@@ -141,16 +141,18 @@ module.exports = function (grunt) {
                     });
                 }
 
+                var dest = path.join(resourcesPath, transliterate(moduleName),
+                    transliterate(path.relative(input, abspath)));
+
                 if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                     try {
-                        grunt.file.copy(abspath, path.join(resourcesPath, transliterate(moduleName),
-                            transliterate(path.relative(input, abspath))));
+                        grunt.file.copy(abspath, dest);
+                        fs.chmodSync(dest, '0666');
                     } catch (err) {
                         grunt.log.error(err);
                     }
                 } else {
-                    mkSymlink(abspath, path.join(resourcesPath, transliterate(moduleName),
-                        transliterate(path.relative(input, abspath))));
+                    mkSymlink(abspath, dest);
                 }
             });
         });
