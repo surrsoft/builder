@@ -5,9 +5,9 @@ from shutil import copyfile, copytree
 from datetime import datetime
 from sys import argv, version_info
 
-define = compile('define\([\'"](js!)?([\.\w/]+)[\'"],\s*(\[[\s\S]*?\])?')
+define = compile('define\(\s*[\'"](js!)?([\.\w/]+)[\'"],\s*(\[[\s\S]*?\])?')
 require = compile('require\(\s*(\[[\s\S]*?\])')
-other_modules = compile('[\'"]([a-zA-Z-_:!]+)?((?<!\w)SBIS3\.[a-zA-Z0-9/_.]+)[\'"]')
+other_modules = compile('([\w_:-]+!)?((?<!\w)SBIS3\.[\w0-9/_.]+)[:\w]*')
 inputDir = argv[1] if len(argv) > 1 else './'
 outputDir = argv[2] if len(argv) > 2 else './output'
 
@@ -20,22 +20,34 @@ def is_remote(dep):
     return dep.find('http://') > -1 or dep.find('https://') > -1 or dep.find('cdn!') > -1 or dep.find('//') == 0
 
 
-def transform_dep(dep):
+def transform_dep(dep, quote='\''):
     if is_remote(dep):
-        return '\'' + dep + '\''
+        return quote + dep + quote
     else:
         dep = dep.replace('js!', '').replace('SBIS3.', '').replace('SBIS.', '').strip()
         parts = dep.split('.')
+        handler = parts[-1].split(':')
+        parts[-1] = handler[0]
+
+        if len(handler) == 2:
+            handler = ':' + handler[1]
+        else:
+            handler = ''
+
         if len(parts) == 1:
             parts = parts[0].split('/')
         if parts[-1].find('/') == -1:
             parts.append(str((lambda part: part.split('!')[-1])(parts[-1])))
 
-        return '\'' + '/'.join(parts) + '\''
+        return quote + '/'.join(parts) + handler + quote
 
 
 def mod_repl(matchobj):
-    return transform_dep(matchobj.group(0).replace('"', '').replace('\'', ''))
+    return transform_dep(matchobj.group(0).replace('"', '').replace('\'', ''), '\'')
+
+
+def mod_repl_without_quotes(matchobj):
+    return transform_dep(matchobj.group(0).replace('"', '').replace('\'', ''), '')
 
 
 start = datetime.now()
@@ -108,7 +120,7 @@ for file in js_files:
                 new_file = open(new_dest + '.js', 'wb')
 
             text = define.sub('define(\'' + '/'.join(mod) + '\', ' + deps, text)
-            text = other_modules.sub(mod_repl, text)
+            text = other_modules.sub(mod_repl_without_quotes, text)
             try:
                 new_file.write(text)
 
@@ -119,6 +131,11 @@ for file in js_files:
                     # print('EnvironmentError: ', err)
                 try:
                     copyfile(join(root, oldModuleName + '.xhtml'), new_dest + '.xhtml')
+                except IOError as err:
+                    pass
+                    # print('EnvironmentError: ', err)
+                try:
+                    copyfile(join(root, oldModuleName + '.tmpl'), new_dest + '.tmpl')
                 except IOError as err:
                     pass
                     # print('EnvironmentError: ', err)
@@ -151,7 +168,7 @@ done_xhtml_count = 0
 for root, dirs, files in walk(outputDir):
     for name in files:
         ext = splitext(name)[1]
-        if ext == '.xhtml':
+        if ext in ['.xhtml', '.tmpl']:
             try:
                 if version_info >= (3, 0, 0):
                     f = open(join(root, name), 'r', encoding="utf_8")
@@ -160,7 +177,7 @@ for root, dirs, files in walk(outputDir):
                 text = f.read()
                 f.close()
 
-                text = other_modules.sub(mod_repl, text)
+                text = other_modules.sub(mod_repl_without_quotes, text)
 
                 if version_info >= (3, 0, 0):
                     f = open(join(root, name), 'w', encoding="utf_8")
