@@ -5,6 +5,8 @@ var fs = require('fs');
 var async = require('async');
 var mkdirp = require('mkdirp');
 var transliterate = require('./../lib/utils/transliterate');
+var esprima = require('esprima');
+var traverse = require('estraverse').traverse;
 
 function mkSymlink(target, dest) {
     var link = function (target, dest) {
@@ -21,6 +23,16 @@ function mkSymlink(target, dest) {
     link(target, dest);
 }
 
+function parseModule(module) {
+    var res;
+    try {
+        res = esprima.parse(module);
+    } catch (e) {
+        res = e;
+    }
+    return res;
+}
+
 module.exports = function (grunt) {
     grunt.registerMultiTask('convert', 'transliterate paths', function () {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача конвертации ресурсов');
@@ -29,12 +41,14 @@ module.exports = function (grunt) {
         var input = grunt.option('input'),
             symlink = grunt.option('symlink'),
             modules = (grunt.option('modules') || '').replace(/"/g, ''),
+            service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
             resourcesPath = path.join(this.data.cwd, 'resources'),
             contents = {},
             contentsModules = {},
             xmlContents = {},
             htmlNames = {},
+            jsModules = {},
             paths;
 
         if (modules) {
@@ -97,16 +111,44 @@ module.exports = function (grunt) {
                     htmlNames[parts[0]] = (parts[1] || parts[0]).replace('.xml.deprecated', '').replace(/\\/g, '/');
                 }
 
+                if (abspath.indexOf('.module.js') > -1) {
+                    var text = grunt.file.read(abspath);
+                    var ast = parseModule(text);
+
+                    if (ast instanceof Error) {
+                        ast.message += '\nPath: ' + abspath;
+                        return grunt.fail.fatal(ast);
+                    }
+
+                    traverse(ast, {
+                        enter: function getModuleName(node) {
+                            if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
+                                node.callee.name == 'define') {
+                                if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                                    var mod = node.arguments[0].value;
+                                    var parts = mod.split('!');
+                                    if (parts[0] == 'js') {
+                                        jsModules[parts[1]] = path.join(transliterate(moduleName),
+                                            transliterate(path.relative(input, abspath))).replace(/\\/g, '/');
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                var dest = path.join(resourcesPath, transliterate(moduleName),
+                    transliterate(path.relative(input, abspath)));
+
                 if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                     try {
-                        grunt.file.copy(abspath, path.join(resourcesPath, transliterate(moduleName),
-                            transliterate(path.relative(input, abspath))));
+                        grunt.file.copy(abspath, dest);
+                        fs.chmodSync(dest, '0666');
                     } catch (err) {
                         grunt.log.error(err);
                     }
                 } else {
-                    mkSymlink(abspath, path.join(resourcesPath, transliterate(moduleName),
-                        transliterate(path.relative(input, abspath))));
+                    mkSymlink(abspath, dest);
                 }
             });
         });
@@ -114,6 +156,20 @@ module.exports = function (grunt) {
         try {
             contents.modules = Object.keys(contentsModules).length ? contentsModules : contents.modules;
             contents.xmlContents = xmlContents;
+            contents.jsModules = jsModules;
+
+            if (service_mapping) {
+                var srv_arr = service_mapping.trim().split(' ');
+                if (srv_arr.length % 2 == 0) {
+                    var services = {};
+                    for (var i = 0; i < srv_arr.length; i += 2) {
+                        services[srv_arr[i]] = srv_arr[i + 1];
+                    }
+                    contents.services = services;
+                } else {
+                    grunt.fail.fatal("Services list must be even!");
+                }
+            }
 
             grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
             grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
