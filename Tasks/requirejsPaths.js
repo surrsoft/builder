@@ -1,13 +1,11 @@
 "use strict";
 
-var
-    path = require('path'),
-    fs = require('fs'),
-    dblSlashes = /\\/g;
+var path = require('path');
+var fs = require('fs');
+var dblSlashes = /\\/g;
 
-function getFirstLevelDirs(rootPath) {
-    var
-        resources = path.join(rootPath, 'resources'),
+function getFirstLevelDirs(applicationRoot) {
+    var resources = path.join(applicationRoot, 'resources'),
         dirs;
 
     dirs = fs.readdirSync(resources).map(function (e) {
@@ -19,16 +17,14 @@ function getFirstLevelDirs(rootPath) {
     });
 }
 
-function replaceContents(grunt, keys, subDir) {
-    var absolutePath = path.join('./', subDir || '', 'resources/contents.json');
+function replaceContents(grunt, requirejsPaths, applicationRoot) {
+    var resourcesRoot = path.join(applicationRoot, 'resources');
     try {
-        var content = grunt.file.readJSON(absolutePath);
+        var content = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
         if (content) {
-            Object.keys(keys).forEach(function (key) {
-                content[key] = keys[key];
-            });
-            grunt.file.write(absolutePath, JSON.stringify(content, null, 2));
-            grunt.file.write(absolutePath.replace('.json', '.js'), 'contents = ' + JSON.stringify(content, null, 2));
+            content.requirejsPaths = requirejsPaths;
+            grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(content, null, 2));
+            grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents = ' + JSON.stringify(content, null, 2));
         }
     } catch (e) {
         grunt.fail.fatal('Can\'t read contents.json file - ' + e);
@@ -37,21 +33,20 @@ function replaceContents(grunt, keys, subDir) {
 
 module.exports = function (grunt) {
     grunt.registerMultiTask('requirejsPaths', '', function () {
-
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача requirejsPaths.');
 
-        var
-            firstLvlDirs = getFirstLevelDirs(path.join('.', this.data.application)),
+        var root = this.data.root,
+            application = this.data.application,
+            applicationRoot = path.join(root, application),
+            firstLvlDirs = getFirstLevelDirs(applicationRoot),
             requirejsPaths = {};
 
         firstLvlDirs.forEach(function (dir) {
-            dir = dir.replace(dblSlashes, '/');
+            dir = path.relative(root, dir).replace(dblSlashes, '/');
             requirejsPaths[dir.split('/').pop()] = dir;
         });
 
-        replaceContents(grunt, {
-            requirejsPaths: requirejsPaths
-        }, this.data.application);
+        replaceContents(grunt, requirejsPaths, applicationRoot);
 
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача requirejsPaths завершена.');
     });
