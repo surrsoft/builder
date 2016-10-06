@@ -38,16 +38,12 @@ module.exports = function (grunt) {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача конвертации ресурсов');
         var start = Date.now();
 
-        var
-            input = grunt.option('input'),
+        var input = grunt.option('input'),
             symlink = grunt.option('symlink'),
             modules = (grunt.option('modules') || '').replace(/"/g, ''),
-            root = grunt.option('root') || '',
-            app = grunt.option('application') || '',
             service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
-            rootPath = path.join(root, app),
-            resourcesPath = path.join(rootPath, 'resources'),
+            resourcesPath = path.join(this.data.cwd, 'resources'),
             contents = {},
             contentsModules = {},
             xmlContents = {},
@@ -166,7 +162,7 @@ module.exports = function (grunt) {
                 var srv_arr = service_mapping.trim().split(' ');
                 if (srv_arr.length % 2 == 0) {
                     var services = {};
-                    for (var i = 0; i < srv_arr.length; i+=2) {
+                    for (var i = 0; i < srv_arr.length; i += 2) {
                         services[srv_arr[i]] = srv_arr[i + 1];
                     }
                     contents.services = services;
