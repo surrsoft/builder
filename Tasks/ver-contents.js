@@ -9,7 +9,7 @@ module.exports = function (grunt) {
         var resourcesPath = path.join(this.data.cwd, 'resources'),
             contents = {};
         try {
-            contents = require(path.join(resourcesPath, 'contents.json'));
+            contents = grunt.file.readJSON(path.join(resourcesPath, 'contents.json'));
         } catch (err) {
             grunt.log.warn('Error while requiring contents.json', err);
         }

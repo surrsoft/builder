@@ -188,7 +188,7 @@ module.exports = function (grunt) {
             tmp;
 
         try {
-            tmp = require(contentsPath);
+            tmp = grunt.file.readJSON(contentsPath);
             jsModules = Object.keys(tmp.jsModules);
         } catch (e) {
             grunt.fail.fatal('Некорректный файл contents.json');
