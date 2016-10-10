@@ -45,7 +45,7 @@ module.exports = function (grunt) {
         defaultTasks.push('deanonymize');
     }
 
-    if (typeof versionize == 'string') {
+    if (versionize && typeof versionize == 'string') {
         defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
     }
 
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
         defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'tmplmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');
     }
 
-    if (typeof versionize == 'string') {
+    if (versionize && typeof versionize == 'string') {
         defaultTasks.push('replace:html');
     }
 
