@@ -108,7 +108,7 @@ module.exports = function (grunt) {
             replaceOpts = getReplaceOpts(root, application);
 
         try {
-            var contents = require(path.join(resourcesRoot, 'contents.json'));
+            var contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
             htmlNames = contents.htmlNames || {};
         } catch (err) {
             grunt.log.warn('Error while requiring contents.json', err);
