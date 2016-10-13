@@ -1,12 +1,16 @@
 'use strict';
 
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-extra');
 var async = require('async');
 var mkdirp = require('mkdirp');
 var transliterate = require('./../lib/utils/transliterate');
 var esprima = require('esprima');
 var traverse = require('estraverse').traverse;
+
+function prc(x, all) {
+    return Math.floor((x * 100) / all);
+}
 
 function mkSymlink(target, dest) {
     var link = function (target, dest) {
@@ -75,21 +79,19 @@ module.exports = function (grunt) {
 
         function clear() {
             try {
-                grunt.file.delete(resourcesPath, {
-                    force: true
-                });
+                fs.removeSync(resourcesPath);
             } catch (err) {
                 if (3 < attempt++) {
                     clear();
                 } else {
-                    throw err;
+                    grunt.log.error(err);
                 }
             }
         }
 
         clear();
 
-        paths.forEach(function (input) {
+        paths.forEach(function (input, i) {
             var parts = input.replace(/\\/g, '/').split('/');
             var moduleName = '';
             if (modules) {
@@ -151,6 +153,7 @@ module.exports = function (grunt) {
                     mkSymlink(abspath, dest);
                 }
             });
+            grunt.log.ok('[' + prc(i + 1, paths.length) + '%] completed!');
         });
 
         try {
