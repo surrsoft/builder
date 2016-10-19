@@ -8,6 +8,11 @@ var transliterate = require('./../lib/utils/transliterate');
 var esprima = require('esprima');
 var traverse = require('estraverse').traverse;
 
+var dblSlashes = /\\/g;
+var isXmlDeprecated = /\.xml\.deprecated$/;
+var isHtmlDeprecated = /\.html\.deprecated$/;
+var isModuleJs = /\.module\.js$/;
+
 function prc(x, all) {
     return Math.floor((x * 100) / all);
 }
@@ -92,7 +97,7 @@ module.exports = function (grunt) {
         clear();
 
         paths.forEach(function (input, i) {
-            var parts = input.replace(/\\/g, '/').split('/');
+            var parts = input.replace(dblSlashes, '/').split('/');
             var moduleName = '';
             if (modules) {
                 moduleName = parts[parts.length - 1];
@@ -101,19 +106,19 @@ module.exports = function (grunt) {
             grunt.file.recurse(input, function (abspath) {
                 var ext = path.extname(abspath);
 
-                if (abspath.indexOf('.xml.deprecated') > -1) {
+                if (isXmlDeprecated.test(abspath)) {
                     var basexml = path.basename(abspath, '.xml.deprecated');
                     xmlContents[basexml] = path.join(transliterate(moduleName),
-                        transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(/\\/g, '/');
+                        transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
                 }
 
-                if (abspath.indexOf('.html.deprecated') > -1) {
+                if (isHtmlDeprecated.test(abspath)) {
                     var basehtml = path.basename(abspath, '.deprecated');
                     var parts = basehtml.split('#');
-                    htmlNames[parts[0]] = (parts[1] || parts[0]).replace('.xml.deprecated', '').replace(/\\/g, '/');
+                    htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
                 }
 
-                if (abspath.indexOf('.module.js') > -1) {
+                if (isModuleJs.test(abspath)) {
                     var text = grunt.file.read(abspath);
                     var ast = parseModule(text);
 
@@ -131,7 +136,7 @@ module.exports = function (grunt) {
                                     var parts = mod.split('!');
                                     if (parts[0] == 'js') {
                                         jsModules[parts[1]] = path.join(transliterate(moduleName),
-                                            transliterate(path.relative(input, abspath))).replace(/\\/g, '/');
+                                            transliterate(path.relative(input, abspath))).replace(dblSlashes, '/');
                                     }
                                 }
                             }
