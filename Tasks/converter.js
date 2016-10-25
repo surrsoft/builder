@@ -165,6 +165,7 @@ module.exports = function (grunt) {
             contents.modules = Object.keys(contentsModules).length ? contentsModules : contents.modules;
             contents.xmlContents = xmlContents;
             contents.jsModules = jsModules;
+            contents.htmlNames = htmlNames;
 
             if (service_mapping) {
                 var srv_arr = service_mapping.trim().split(' ');
