@@ -89,7 +89,7 @@ module.exports = function (grunt) {
                 if (3 < attempt++) {
                     clear();
                 } else {
-                    grunt.log.error(err);
+                    grunt.fail.fatal(err);
                 }
             }
         }
