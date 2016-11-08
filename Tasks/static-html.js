@@ -39,6 +39,7 @@ module.exports = function (grunt) {
     var userParams = grunt.option('user_params') || false;
     var globalParams = grunt.option('global_params') || false;
     var htmlNames = {};
+    srvPath = srvPath.replace(/"/g, '');
 
     function getReplaceOpts(root, application) {
         return {
