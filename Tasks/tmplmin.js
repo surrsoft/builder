@@ -2,8 +2,8 @@ var path = require('path');
 
 function xmlMin(text) {
 
-   var str = text.replace(/\<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)\>/g,"");
-   return  str.replace(/>\s{0,}</g,"><");
+   var str = text.replace(/<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)>/g,"");
+   return  str.replace(/>\s{0}</g,"><");
 }
 
 module.exports = function(grunt) {
