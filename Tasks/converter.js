@@ -80,21 +80,23 @@ module.exports = function (grunt) {
             paths = [input];
         }
 
-        var attempt = 0;
+        function remove() {
+            let attempt = 3;
 
-        function clear() {
-            try {
-                fs.removeSync(resourcesPath);
-            } catch (err) {
-                if (3 < attempt++) {
-                    clear();
-                } else {
-                    grunt.fail.fatal(err);
+            (function _remove() {
+                try {
+                    fs.removeSync(resourcesPath);
+                } catch (err) {
+                    if (--attempt) {
+                        _remove();
+                    } else {
+                        grunt.fail.fatal(err);
+                    }
                 }
-            }
+            })();
         }
 
-        clear();
+        remove();
 
         paths.forEach(function (input, i) {
             var parts = input.replace(dblSlashes, '/').split('/');
