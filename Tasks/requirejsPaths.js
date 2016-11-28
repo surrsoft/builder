@@ -45,6 +45,7 @@ module.exports = function (grunt) {
             dir = path.relative(root, dir).replace(dblSlashes, '/');
             requirejsPaths[dir.split('/').pop()] = dir;
         });
+        requirejsPaths.WS = path.relative(root, path.join(applicationRoot, 'ws/')).replace(dblSlashes, '/');
 
         replaceContents(grunt, requirejsPaths, applicationRoot);
 
