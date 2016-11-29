@@ -88,7 +88,7 @@ module.exports = function (grunt) {
                     fs.removeSync(resourcesPath);
                 } catch (err) {
                     if (--attempt) {
-                        _remove();
+                        setTimeout(_remove, 1000);
                     } else {
                         grunt.fail.fatal(err);
                     }
