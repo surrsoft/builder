@@ -49,7 +49,7 @@ module.exports = function (grunt) {
         defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
     }
 
-    defaultTasks.push('i18n', 'requirejsPaths', 'collect-dependencies', 'routsearch');
+    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
     if (packaging) {
         defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'tmplmin', 'packwsmod', 'packjs', 'packcss', 'owndepspack', 'custompack');

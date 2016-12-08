@@ -42,6 +42,18 @@ function parseModule(module) {
     return res;
 }
 
+function getFirstLevelDirs(resourcesPath) {
+    var dirs;
+
+    dirs = fs.readdirSync(resourcesPath).map(function (e) {
+        return path.join(resourcesPath, e);
+    });
+
+    return dirs.filter(function (e) {
+        return fs.statSync(e).isDirectory();
+    });
+}
+
 module.exports = function (grunt) {
     grunt.registerMultiTask('convert', 'transliterate paths', function () {
         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача конвертации ресурсов');
@@ -52,12 +64,16 @@ module.exports = function (grunt) {
             modules = (grunt.option('modules') || '').replace(/"/g, ''),
             service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
-            resourcesPath = path.join(this.data.cwd, 'resources'),
+            dryRun = grunt.option('dry-run'),
+            root = this.data.root,
+            applicationRoot = this.data.cwd,
+            resourcesPath = path.join(applicationRoot, 'resources'),
             contents = {},
             contentsModules = {},
             xmlContents = {},
             htmlNames = {},
             jsModules = {},
+            requirejsPaths = {},
             paths;
 
         if (modules) {
@@ -96,21 +112,25 @@ module.exports = function (grunt) {
             })();
         }
 
-        remove();
+        if (!dryRun) remove();
 
         paths.forEach(function (input, i) {
             var parts = input.replace(dblSlashes, '/').split('/');
             var moduleName = '';
+            var tsdModuleName = '';
             if (modules) {
                 moduleName = parts[parts.length - 1];
-                contentsModules[moduleName] = transliterate(moduleName);
+                tsdModuleName = transliterate(moduleName);
+                contentsModules[moduleName] = tsdModuleName;
+
+                requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
             }
             grunt.file.recurse(input, function (abspath) {
                 var ext = path.extname(abspath);
 
                 if (isXmlDeprecated.test(abspath)) {
                     var basexml = path.basename(abspath, '.xml.deprecated');
-                    xmlContents[basexml] = path.join(transliterate(moduleName),
+                    xmlContents[basexml] = path.join(tsdModuleName,
                         transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
                 }
 
@@ -137,7 +157,7 @@ module.exports = function (grunt) {
                                     var mod = node.arguments[0].value;
                                     var parts = mod.split('!');
                                     if (parts[0] == 'js') {
-                                        jsModules[parts[1]] = path.join(transliterate(moduleName),
+                                        jsModules[parts[1]] = path.join(tsdModuleName,
                                             transliterate(path.relative(input, abspath))).replace(dblSlashes, '/');
                                     }
                                 }
@@ -146,28 +166,41 @@ module.exports = function (grunt) {
                     });
                 }
 
-                var dest = path.join(resourcesPath, transliterate(moduleName),
-                    transliterate(path.relative(input, abspath)));
+                if (!dryRun) {
+                    var dest = path.join(resourcesPath, tsdModuleName,
+                        transliterate(path.relative(input, abspath)));
 
-                if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
-                    try {
-                        grunt.file.copy(abspath, dest);
-                        fs.chmodSync(dest, '0666');
-                    } catch (err) {
-                        grunt.log.error(err);
+                    if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
+                        try {
+                            grunt.file.copy(abspath, dest);
+                            fs.chmodSync(dest, '0666');
+                        } catch (err) {
+                            grunt.log.error(err);
+                        }
+                    } else {
+                        mkSymlink(abspath, dest);
                     }
-                } else {
-                    mkSymlink(abspath, dest);
                 }
             });
             grunt.log.ok('[' + prc(i + 1, paths.length) + '%] completed!');
         });
 
         try {
-            contents.modules = Object.keys(contentsModules).length ? contentsModules : contents.modules;
+            contents.modules = contentsModules;
             contents.xmlContents = xmlContents;
             contents.jsModules = jsModules;
             contents.htmlNames = htmlNames;
+
+            if (!Object.keys(requirejsPaths).length && !modules) {
+                var firstLvlDirs = getFirstLevelDirs(resourcesPath);
+                firstLvlDirs.forEach(function (dir) {
+                    dir = path.relative(root, dir).replace(dblSlashes, '/');
+                    requirejsPaths[dir.split('/').pop()] = dir;
+                });
+            }
+            requirejsPaths.WS = 'ws/';
+
+            contents.requirejsPaths = requirejsPaths;
 
             if (service_mapping) {
                 var srv_arr = service_mapping.trim().split(' ');
