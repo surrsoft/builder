@@ -11,6 +11,7 @@
     "async": "2.0.1",
     "esprima": "^3.0.0",
     "estraverse": "^4.2.0",
+    "escodegen": "^1.8.1",
     "fs-extra": "^0.30.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
