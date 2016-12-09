@@ -304,7 +304,7 @@ module.exports = function (grunt) {
          sourceFiles = grunt.file.expand({cwd: rootPath}, this.data.src);
 
       sourceFiles.forEach(function (fPath) {
-         var fContent = grunt.file.read(fPath),
+         var fContent = grunt.file.read(path.join(rootPath, fPath)),
             packStorage = {
                modules: {},
                content: null
