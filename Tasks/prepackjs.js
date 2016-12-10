@@ -1,8 +1,8 @@
 var path = require('path');
 var fs = require('fs');
-var esprima = require('esprima');
-var replace = require('estraverse').replace;
-var escodegen = require('escodegen');
+// var esprima = require('esprima');
+// var replace = require('estraverse').replace;
+// var escodegen = require('escodegen');
 var complexPlugins = /is!|browser!|browser\?|optional!/g;
 var specialPlugins = /preload!/;
 var pluginList = ['css', 'js', 'html', 'cdn', 'browser', 'datasource', 'i18n', 'is', 'is-api', 'json', 'native-css', 'normalize', 'optional', 'order', 'preload', 'remote', 'template', 'text', 'tmpl', 'xml'];
