@@ -1,8 +1,5 @@
 var path = require('path');
 var fs = require('fs');
-// var esprima = require('esprima');
-// var replace = require('estraverse').replace;
-// var escodegen = require('escodegen');
 var complexPlugins = /is!|browser!|browser\?|optional!/g;
 var specialPlugins = /preload!/;
 var pluginList = ['css', 'js', 'html', 'cdn', 'browser', 'datasource', 'i18n', 'is', 'is-api', 'json', 'native-css', 'normalize', 'optional', 'order', 'preload', 'remote', 'template', 'text', 'tmpl', 'xml'];
@@ -10,6 +7,9 @@ var defineRegexp = /define\([\'"][\S]+?,/;
 var coreI18nName = 'Core/i18n';
 var DEPENDENCY_REPLACER = '_DEPENDENCY_REPLACER';
 var jsExtReg = /\.js$/;
+var esprima;
+var replace;
+var escodegen;
 
 var PackStorage = function () {
    this._resolvedNodes = [];
@@ -302,6 +302,10 @@ module.exports = function (grunt) {
          app = grunt.option('application') || '',
          rootPath = path.join(root, app),
          sourceFiles = grunt.file.expand({cwd: rootPath}, this.data.src);
+
+      esprima = require('esprima');
+      replace = require('estraverse').replace;
+      escodegen = require('escodegen');
 
       sourceFiles.forEach(function (fPath) {
          var fContent = grunt.file.read(path.join(rootPath, fPath)),
