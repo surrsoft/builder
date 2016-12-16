@@ -280,7 +280,12 @@ function main(text, packStorage) {
    });
 
    if (wasModified) {
-      res = escodegen.generate(ast);
+      try {
+         res = escodegen.generate(ast);
+      } catch (e) {
+         console.error('Ошибка генерации кода:', e);
+         return null;
+      }
 
       //Добавляем дефолтные вызовы define со ссылками на defineStorage, на случай, если кто-то будет звать через requirejs.
       replacedNames.forEach(function (name) {
