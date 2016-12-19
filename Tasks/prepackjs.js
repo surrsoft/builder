@@ -284,6 +284,7 @@ function main(text, packStorage) {
          res = escodegen.generate(ast);
       } catch (e) {
          console.error('Ошибка генерации кода:', e);
+         console.error(text);
          return null;
       }
 
