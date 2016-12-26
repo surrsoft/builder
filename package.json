@@ -9,6 +9,7 @@
   ],
   "dependencies": {
     "async": "2.0.1",
+    "escodegen": "^1.8.1",
     "esprima": "^3.0.0",
     "estraverse": "^4.2.0",
     "fs-extra": "^0.30.0",
@@ -18,6 +19,7 @@
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-text-replace": "^0.4.0",
     "grunt-wsmod-packer": "2.1.28",
+    "humanize": "0.0.9",
     "mkdirp": "^0.5.1",
     "node-uuid": "^1.4.7",
     "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun"
