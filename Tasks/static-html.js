@@ -313,7 +313,7 @@ module.exports = function (grunt) {
         recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
             fs.readFile(file, (err, text) => {
                 text = replaceIncludes(text.toString(), replaceOpts);
-                //fs.unlink(file, () => {});
+                fs.unlink(file, () => {});
                 _writeFile(file.replace('.deprecated', ''), text, callback);
             });
         }, function (err) {
@@ -343,7 +343,7 @@ module.exports = function (grunt) {
 
             fs.readFile(file, (err, text) => {
                 text = replaceIncludes(text.toString(), replaceOpts);
-                //fs.unlink(file, () => {});
+                fs.unlink(file, () => {});
                 _writeFile(path.join(applicationRoot, basename), text, callback);
             });
         }, function (err) {
