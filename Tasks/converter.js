@@ -1,13 +1,13 @@
 'use strict';
 
-let path = require('path');
-let fs = require('fs-extra');
-let async = require('async');
-let mkdirp = require('mkdirp');
-let transliterate = require('./../lib/utils/transliterate');
-let esprima = require('esprima');
-let traverse = require('estraverse').traverse;
-let humanize = require('humanize');
+const path = require('path');
+const fs = require('fs-extra');
+const async = require('async');
+const mkdirp = require('mkdirp');
+const transliterate = require('./../lib/utils/transliterate');
+const esprima = require('esprima');
+const traverse = require('estraverse').traverse;
+const humanize = require('humanize');
 
 const dblSlashes = /\\/g;
 const isXmlDeprecated = /\.xml\.deprecated$/;
@@ -51,7 +51,7 @@ function _mkSymlink(target, dest, cb) {
 }
 
 function _writeFile(dest, data, cb) {
-    let options = { flag: 'w' };
+    let options = {flag: 'w'};
 
     let writeFile = function (dest, data, options, cb) {
         fs.writeFile(dest, data, options, function (err) {
@@ -159,7 +159,7 @@ module.exports = function (grunt) {
 
         function recurse(tsdModuleName, origin, input, callback) {
             fs.readdir(input, function (err, files) {
-                if (!err){
+                if (!err) {
                     async.each(files, function (file, cb) {
                         let abspath = path.join(input, file);
 
@@ -192,7 +192,7 @@ module.exports = function (grunt) {
                                             let ast = parseModule(text.toString());
 
                                             if (ast instanceof Error) {
-                                                ast.message += '\nPath: ' + file;
+                                                ast.message += '\nPath: ' + abspath;
                                                 grunt.fail.fatal(err);
                                                 return cb(ast);
                                             }
@@ -211,10 +211,13 @@ module.exports = function (grunt) {
                                     }
                                 }
                             } else {
-                                console.error(err);
+                                cb(err);
                             }
                         });
                     }, function () {
+                        if (err) {
+                            console.error(err);
+                        }
                         callback();
                     });
                 } else {
