@@ -8,6 +8,8 @@ const transliterate = require('./../lib/utils/transliterate');
 const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const humanize = require('humanize');
+const spawn = require('child_process').spawn;
+const os = require('os');
 
 const dblSlashes = /\\/g;
 const isXmlDeprecated = /\.xml\.deprecated$/;
@@ -226,14 +228,14 @@ module.exports = function (grunt) {
             });
         }
 
-        function remove() {
+        function remove(dir) {
             let attempt = 1;
             let start = Date.now();
 
             (function _remove() {
                 try {
                     grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов(${attempt})`);
-                    fs.removeSync(resourcesPath);
+                    fs.removeSync(dir);
                     grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
                     main();
                 } catch (err) {
@@ -247,7 +249,38 @@ module.exports = function (grunt) {
         }
 
         if (!dryRun) {
-            remove();
+            let start = Date.now();
+            let out = resourcesPath + '___';
+
+            fs.rename(resourcesPath, out, function (err) {
+                if (!err) {
+                    grunt.log.ok(`${humanize.date('H:i:s')}: Перенос ресурсов в ${out} завершен(${(Date.now() - start) / 1000} sec)`);
+
+                    let cmd = '';
+                    let opt = {
+                        detached: true
+                    };
+
+                    if (os.platform() == 'linux') {
+                        cmd = `rm -rf ${out}`;
+                    } else {
+                        cmd = `rmdir ${out} /s /q`;
+                        opt.shell = true;
+                    }
+
+                    grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов(${cmd})`);
+
+                    spawn(cmd, [], opt).on('error', (err) => {
+                        console.error(err);
+                    }).on('close', () => {
+                        grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
+                    }).unref();
+
+                    main();
+                } else {
+                    remove(resourcesPath);
+                }
+            });
         } else {
             main();
         }
