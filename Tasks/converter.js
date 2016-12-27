@@ -140,20 +140,8 @@ module.exports = function (grunt) {
             dryRun = grunt.option('dry-run'),
             root = this.data.root,
             applicationRoot = this.data.cwd,
-            cachePath = grunt.option('cache'),
             resourcesPath = path.join(applicationRoot, 'resources');
-        let
-            input = grunt.option('input'),
-            cache = { files: {}};
-
-        if (cachePath) {
-            try {
-                cache = require(cachePath);
-            } catch(err){
-                //ignore
-            }
-            cache.files = cache.files || {};
-        }
+        let input = grunt.option('input');
 
         if (modules) {
             paths = modules.split(';');
@@ -196,20 +184,15 @@ module.exports = function (grunt) {
         }
 
         if (!dryRun) {
-            if (cache.symlink !== symlink) {
-                remove();
-            } else {
-                main();
-            }
+            remove();
         } else {
             main();
         }
 
         function main() {
             let i = 0;
-            cache.symlink = symlink;
 
-            async.eachLimit(paths, 5, function (input, callback) {
+            async.eachLimit(paths, 2, function (input, callback) {
                 let parts = input.replace(dblSlashes, '/').split('/');
                 let moduleName = '';
                 let tsdModuleName = '';
@@ -223,7 +206,6 @@ module.exports = function (grunt) {
                 }
 
                 grunt.file.recurse(input, function (abspath) {
-                    let fromCache = false;
                     if (isXmlDeprecated.test(abspath)) {
                         let basexml = path.basename(abspath, '.xml.deprecated');
                         xmlContents[basexml] = path.join(tsdModuleName,
@@ -237,45 +219,28 @@ module.exports = function (grunt) {
                     }
 
                     if (isModuleJs.test(abspath)) {
-                        let stats = fs.lstatSync(abspath);
-                        let prevData = cache.files[abspath] || {};
+                        let text = grunt.file.read(abspath);
+                        let ast = parseModule(text);
 
-                        if (prevData.mtime !== stats.mtime.getTime()) {
-                            let text = grunt.file.read(abspath);
-                            let ast = parseModule(text);
-
-                            if (ast instanceof Error) {
-                                ast.message += '\nPath: ' + abspath;
-                                return grunt.fail.fatal(ast);
-                            }
-
-                            cache.files[abspath] = {
-                                mtime: stats.mtime.getTime()
-                            };
-
-                            traverse(ast, {
-                                enter: function (node) {
-                                    let cont = getModuleName(tsdModuleName, abspath, input, node);
-                                    if (cont) {
-                                        cache.files[abspath].content = cont;
-                                    }
-                                }
-                            });
-                        } else {
-                            fromCache = true;
-                            if (cache.files[abspath].content && cache.files[abspath].content.name) {
-                                jsModules[cache.files[abspath].content.name] = cache.files[abspath].content.path;
-                            }
+                        if (ast instanceof Error) {
+                            ast.message += '\nPath: ' + abspath;
+                            return grunt.fail.fatal(ast);
                         }
+
+                        traverse(ast, {
+                            enter: function (node) {
+                                getModuleName(tsdModuleName, abspath, input, node);
+                            }
+                        });
                     }
 
-                    if (!dryRun && !fromCache) {
+                    if (!dryRun) {
                         modMap[abspath] = path.join(resourcesPath, tsdModuleName,
                             transliterate(path.relative(input, abspath)));
                     }
                 });
 
-                async.eachOfLimit(modMap, 20, function (dest, target, cb) {
+                async.eachOfLimit(modMap, 4, function (dest, target, cb) {
                     let ext = path.extname(target);
                     if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
                         copyFile(target, dest, cb);
@@ -327,7 +292,6 @@ module.exports = function (grunt) {
                     grunt.fail.fatal(err);
                 }
 
-                grunt.file.write(cachePath, JSON.stringify(cache, null, 2));
                 console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
                 done();
             });
