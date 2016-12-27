@@ -20,14 +20,13 @@ let
     xmlContents = {},
     htmlNames = {},
     jsModules = {},
-    requirejsPaths = {},
-    paths;
+    requirejsPaths = {};
 
 function prc(x, all) {
     return Math.floor((x * 100) / all);
 }
 
-function mkSymlink(target, dest, cb) {
+function _mkSymlink(target, dest, cb) {
     let link = function (target, dest, cb) {
         fs.symlink(target, dest, (err) => {
             if (err && err.code === 'ENOENT') {
@@ -51,7 +50,7 @@ function mkSymlink(target, dest, cb) {
     link(target, dest, cb);
 }
 
-function copyFile(target, dest, cb) {
+function _writeFile(dest, data, cb) {
     let options = { flag: 'w' };
 
     let writeFile = function (dest, data, options, cb) {
@@ -74,14 +73,22 @@ function copyFile(target, dest, cb) {
         });
     };
 
-    fs.readFile(target, (err, data) => {
-        if (err) {
-            console.log(`[ERROR]: ${err}`);
-            cb();
-        } else {
-            writeFile(dest, data, options, cb);
-        }
-    });
+    writeFile(dest, data, options, cb);
+}
+
+function _copyFile(target, dest, data, cb) {
+    if (data) {
+        _writeFile(dest, data, cb);
+    } else {
+        fs.readFile(target, (err, data) => {
+            if (err) {
+                console.log(`[ERROR]: ${err}`);
+                cb();
+            } else {
+                _writeFile(dest, data, cb);
+            }
+        });
+    }
 }
 
 function parseModule(module) {
@@ -94,18 +101,6 @@ function parseModule(module) {
     return res;
 }
 
-function getFirstLevelDirs(resourcesPath) {
-    let dirs;
-
-    dirs = fs.readdirSync(resourcesPath).map(function (e) {
-        return path.join(resourcesPath, e);
-    });
-
-    return dirs.filter(function (e) {
-        return fs.statSync(e).isDirectory();
-    });
-}
-
 function getModuleName(tsdModuleName, abspath, input, node) {
     if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
         node.callee.name == 'define') {
@@ -115,13 +110,8 @@ function getModuleName(tsdModuleName, abspath, input, node) {
             let mod = node.arguments[0].value;
             let parts = mod.split('!');
             if (parts[0] == 'js') {
-                let dest = path.join(tsdModuleName,
+                jsModules[parts[1]] = path.join(tsdModuleName,
                     transliterate(path.relative(input, abspath))).replace(dblSlashes, '/');
-                jsModules[parts[1]] = dest;
-                return {
-                    name: parts[1],
-                    path: dest
-                };
             }
         }
     }
@@ -138,29 +128,99 @@ module.exports = function (grunt) {
             service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
-            root = this.data.root,
             applicationRoot = this.data.cwd,
             resourcesPath = path.join(applicationRoot, 'resources');
-        let input = grunt.option('input');
 
-        if (modules) {
-            paths = modules.split(';');
+        let i = 0;
+        let paths = modules.split(';');
 
-            if (paths.length == 1 && grunt.file.isFile(paths[0])) {
-                input = paths[0];
-                try {
-                    paths = grunt.file.readJSON(input);
-                    if (!Array.isArray(paths)) {
-                        grunt.log.error('Parameter "modules" incorrect');
-                        return;
-                    }
-                } catch (e) {
-                    grunt.log.error('Parameter "modules" incorrect. Can\'t read ' + input);
+        if (paths.length == 1 && grunt.file.isFile(paths[0])) {
+            let input = paths[0];
+            try {
+                paths = grunt.file.readJSON(input);
+                if (!Array.isArray(paths)) {
+                    grunt.log.error('Parameter "modules" incorrect');
                     return;
                 }
+            } catch (e) {
+                grunt.log.error(`Parameter "modules" incorrect. Can\'t read ${input}`);
+                return;
             }
-        } else {
-            paths = [input];
+        }
+
+        function copyFile(target, dest, data, cb) {
+            let ext = path.extname(target);
+            if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
+                _copyFile(target, dest, data, cb);
+            } else {
+                _mkSymlink(target, dest, cb);
+            }
+        }
+
+        function recurse(tsdModuleName, origin, input, callback) {
+            fs.readdir(input, function (err, files) {
+                if (!err){
+                    async.each(files, function (file, cb) {
+                        let abspath = path.join(input, file);
+
+                        fs.lstat(abspath, function (err, stats) {
+                            if (!err) {
+                                if (stats.isDirectory()) {
+                                    recurse(tsdModuleName, origin, abspath, cb);
+                                } else {
+                                    let dest = path.join(resourcesPath, tsdModuleName,
+                                        transliterate(path.relative(origin, abspath)));
+
+                                    if (isXmlDeprecated.test(abspath)) {
+                                        let basexml = path.basename(abspath, '.xml.deprecated');
+                                        xmlContents[basexml] = path.join(tsdModuleName,
+                                            transliterate(path.relative(origin, abspath).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
+
+                                        if (!dryRun) {
+                                            copyFile(abspath, dest, null, cb);
+                                        }
+                                    } else if (isHtmlDeprecated.test(abspath)) {
+                                        let basehtml = path.basename(abspath, '.deprecated');
+                                        let parts = basehtml.split('#');
+                                        htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
+
+                                        if (!dryRun) {
+                                            copyFile(abspath, dest, null, cb);
+                                        }
+                                    } else if (isModuleJs.test(abspath)) {
+                                        fs.readFile(abspath, function (err, text) {
+                                            let ast = parseModule(text.toString());
+
+                                            if (ast instanceof Error) {
+                                                ast.message += '\nPath: ' + file;
+                                                grunt.fail.fatal(err);
+                                                return cb(ast);
+                                            }
+
+                                            traverse(ast, {
+                                                enter: function (node) {
+                                                    getModuleName(tsdModuleName, abspath, origin, node);
+                                                }
+                                            });
+                                            if (!dryRun) {
+                                                copyFile(abspath, dest, text, cb);
+                                            }
+                                        });
+                                    } else if (!dryRun) {
+                                        copyFile(abspath, dest, null, cb);
+                                    }
+                                }
+                            } else {
+                                console.error(err);
+                            }
+                        });
+                    }, function () {
+                        callback();
+                    });
+                } else {
+                    console.error(err);
+                }
+            });
         }
 
         function remove() {
@@ -190,64 +250,14 @@ module.exports = function (grunt) {
         }
 
         function main() {
-            let i = 0;
-
-            async.eachLimit(paths, 2, function (input, callback) {
+            async.eachLimit(paths, 1, function (input, callback) {
                 let parts = input.replace(dblSlashes, '/').split('/');
-                let moduleName = '';
-                let tsdModuleName = '';
-                let modMap = {};
-                if (modules) {
-                    moduleName = parts[parts.length - 1];
-                    tsdModuleName = transliterate(moduleName);
-                    contentsModules[moduleName] = tsdModuleName;
+                let moduleName = parts[parts.length - 1];
+                let tsdModuleName = transliterate(moduleName);
+                contentsModules[moduleName] = tsdModuleName;
+                requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
 
-                    requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
-                }
-
-                grunt.file.recurse(input, function (abspath) {
-                    if (isXmlDeprecated.test(abspath)) {
-                        let basexml = path.basename(abspath, '.xml.deprecated');
-                        xmlContents[basexml] = path.join(tsdModuleName,
-                            transliterate(path.relative(input, abspath).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
-                    }
-
-                    if (isHtmlDeprecated.test(abspath)) {
-                        let basehtml = path.basename(abspath, '.deprecated');
-                        let parts = basehtml.split('#');
-                        htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
-                    }
-
-                    if (isModuleJs.test(abspath)) {
-                        let text = grunt.file.read(abspath);
-                        let ast = parseModule(text);
-
-                        if (ast instanceof Error) {
-                            ast.message += '\nPath: ' + abspath;
-                            return grunt.fail.fatal(ast);
-                        }
-
-                        traverse(ast, {
-                            enter: function (node) {
-                                getModuleName(tsdModuleName, abspath, input, node);
-                            }
-                        });
-                    }
-
-                    if (!dryRun) {
-                        modMap[abspath] = path.join(resourcesPath, tsdModuleName,
-                            transliterate(path.relative(input, abspath)));
-                    }
-                });
-
-                async.eachOfLimit(modMap, 4, function (dest, target, cb) {
-                    let ext = path.extname(target);
-                    if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
-                        copyFile(target, dest, cb);
-                    } else {
-                        mkSymlink(target, dest, cb);
-                    }
-                }, function () {
+                recurse(tsdModuleName, input, input, function () {
                     grunt.log.ok(`[${prc(i++, paths.length)}%] ${input}`);
                     callback();
                 });
@@ -262,13 +272,6 @@ module.exports = function (grunt) {
                     contents.jsModules = jsModules;
                     contents.htmlNames = htmlNames;
 
-                    if (!Object.keys(requirejsPaths).length && !modules) {
-                        let firstLvlDirs = getFirstLevelDirs(resourcesPath);
-                        firstLvlDirs.forEach(function (dir) {
-                            dir = path.relative(root, dir).replace(dblSlashes, '/');
-                            requirejsPaths[dir.split('/').pop()] = dir;
-                        });
-                    }
                     requirejsPaths.WS = 'ws/';
 
                     contents.requirejsPaths = requirejsPaths;
