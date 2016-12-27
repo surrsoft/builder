@@ -52,7 +52,7 @@ module.exports = function (grunt) {
     defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
     if (packaging) {
-        defaultTasks.push('cssmin','uglify', 'xhtmlmin', 'tmplmin', 'packwsmod', 'packjs', 'packcss', /*'prepackjs',*/ 'owndepspack', 'custompack');
+        defaultTasks.push('cssmin','uglify', 'xhtmlmin', 'tmplmin', 'packwsmod', 'packjs', 'packcss', 'prepackjs', 'owndepspack', 'custompack');
     }
 
     if (versionize && typeof versionize == 'string') {
