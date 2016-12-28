@@ -9,7 +9,6 @@
   ],
   "dependencies": {
     "async": "2.0.1",
-    "escodegen": "^1.8.1",
     "esprima": "^3.0.0",
     "estraverse": "^4.2.0",
     "fs-extra": "^0.30.0",
