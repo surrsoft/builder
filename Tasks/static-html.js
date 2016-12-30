@@ -1,16 +1,22 @@
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-var esprima = require('esprima');
-var traverse = require('estraverse').traverse;
-var transliterate = require('./../lib/utils/transliterate');
-var replaceIncludes = require('./../lib/utils/include-replacer');
+const path = require('path');
+const fs = require('fs');
+const esprima = require('esprima');
+const traverse = require('estraverse').traverse;
+const transliterate = require('./../lib/utils/transliterate');
+const replaceIncludes = require('./../lib/utils/include-replacer');
+const humanize = require('humanize');
+const async = require('async');
+const minimatch = require('minimatch');
+const mkdirp = require('mkdirp');
 
-var cache = {};
+const dblSlashes = /\\/g;
+
+let cache = {};
 
 function parseModule(module) {
-    var res;
+    let res;
     try {
         res = esprima.parse(module);
     } catch (e) {
@@ -27,19 +33,85 @@ function findExpression(node, left) {
 }
 
 function parseObjectExpression(properties) {
-    var obj = {};
+    let obj = {};
     properties.forEach(function (prop) {
         obj[prop.key.name] = prop.value.value;
     });
     return obj;
 }
 
+function recurse(applicationRoot, input, patterns, fn, cb) {
+    fs.readdir(input, function (err, files) {
+        if (!err) {
+            async.each(files, function (file, cb) {
+                let abspath = path.join(input, file);
+
+                fs.lstat(abspath, function (err, stats) {
+                    if (!err) {
+                        if (stats.isDirectory()) {
+                            recurse(applicationRoot, abspath, patterns, fn, cb);
+                        } else {
+                            let passed = true;
+                            let tmp = path.relative(applicationRoot, abspath);
+
+                            for (let i = 0; i < patterns.length; i++) {
+                                if (!minimatch(tmp, patterns[i])) {
+                                    passed = false;
+                                    break;
+                                }
+                            }
+
+                            if (passed) {
+                                fn(abspath, cb);
+                            } else {
+                                cb();
+                            }
+                        }
+                    } else {
+                        cb(err);
+                    }
+                });
+            }, function (err) {
+                if (err) {
+                    console.error(err);
+                }
+                cb();
+            });
+        }
+    });
+}
+
+function _writeFile(dest, data, cb) {
+    let options = {flag: 'w'};
+
+    let writeFile = function (dest, data, options, cb) {
+        fs.writeFile(dest, data, options, function (err) {
+            if (err && err.code === 'ENOENT') {
+                mkdirp(path.dirname(dest), function (err) {
+                    if (!err || err.code === 'EEXIST') {
+                        writeFile(dest, data, options, cb);
+                    } else {
+                        console.log(`[ERROR]: ${err}`);
+                        cb();
+                    }
+                });
+            } else if (err) {
+                console.log(`[ERROR]: ${err}`);
+                cb();
+            } else {
+                cb();
+            }
+        });
+    };
+
+    writeFile(dest, data, options, cb);
+}
+
 module.exports = function (grunt) {
-    var srvPath = grunt.option('services_path') || '';
-    var userParams = grunt.option('user_params') || false;
-    var globalParams = grunt.option('global_params') || false;
-    var htmlNames = {};
-    srvPath = srvPath.replace(/"|'/g, '');
+    const srvPath = (grunt.option('services_path') || '').replace(/"|'/g, '');
+    const userParams = grunt.option('user_params') || false;
+    const globalParams = grunt.option('global_params') || false;
+    let htmlNames = {};
 
     function getReplaceOpts(root, application) {
         return {
@@ -59,8 +131,8 @@ module.exports = function (grunt) {
         }
     }
 
-    function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot) {
-        var templatePath = '';
+    function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot, cb) {
+        let templatePath = '';
         if (!htmlTemplate) {
             templatePath = path.join(__dirname, './../resources/index.html');
             console.log(templatePath);
@@ -68,13 +140,20 @@ module.exports = function (grunt) {
             templatePath = path.join(applicationRoot, 'resources', htmlTemplate);
         }
 
-        var text = cache[templatePath] || (cache[templatePath] = grunt.file.read(templatePath));
-        text = replaceIncludes(text, replaceOpts);
-        grunt.file.write(path.join(applicationRoot, outFileName), text);
+        if (cache[templatePath]) {
+            let text = replaceIncludes(cache[templatePath], replaceOpts);
+            _writeFile(path.join(applicationRoot, outFileName), text, cb);
+        } else {
+            fs.readFile(templatePath, (err, text) => {
+                cache[templatePath] = text.toString();
+                text = replaceIncludes(cache[templatePath], replaceOpts);
+                _writeFile(path.join(applicationRoot, outFileName), text, cb);
+            });
+        }
     }
 
-    function parseOpts(opts, application, replaceOpts, applicationRoot) {
-        var
+    function parseOpts(opts, application, replaceOpts, applicationRoot, cb) {
+        let
             moduleName = opts.moduleName,
             webPage = opts.webPage || {},
             htmlTemplate = webPage.htmlTemplate || '',
@@ -83,65 +162,68 @@ module.exports = function (grunt) {
         replaceOpts.START_DIALOG = moduleName || '';
 
         if (!outFileName) {
-            return;
+            return cb();
         } else if (!htmlTemplate) {
-            grunt.log.warn('Using default template for otput file', outFileName + '.html');
+            grunt.log.warn(`Using default template for output file ${outFileName}.html`);
         } else if (!(htmlTemplate.indexOf('Тема Скрепка') > -1 || htmlTemplate.indexOf('Tema_Skrepka') > -1)) {
             grunt.log.warn('HTML Template is not from Tema_Skrepka(Тема Cкрепка)', htmlTemplate);
         }
 
         htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
 
-        htmlTemplate = transliterate(htmlTemplate.replace(/\\/g, '/'));
+        htmlTemplate = transliterate(htmlTemplate.replace(dblSlashes, '/'));
 
-        generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot);
+        generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb);
     }
 
     grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
-        grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача static-html.');
-        var start = Date.now();
-        var root = this.data.root,
+        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача static-html.`);
+        let start = Date.now();
+        const
+            done = this.async(),
+            root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(applicationRoot, 'resources'),
-            sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src),
+            patterns = this.data.src,
             oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
             replaceOpts = getReplaceOpts(root, application);
 
+        let contents = {};
+
         try {
-            var contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
+            contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
             htmlNames = contents.htmlNames || {};
         } catch (err) {
             grunt.log.warn('Error while requiring contents.json', err);
         }
 
-        var errPath = '';
-
         if (oldHtml && oldHtml.length) {
+            let start = Date.now();
             oldHtml.forEach(function (file) {
-                var filePath = path.join(applicationRoot, file);
+                const filePath = path.join(applicationRoot, file);
                 try {
                     fs.unlinkSync(path.join(applicationRoot, file));
                 } catch (err) {
                     console.log('Can\'t delete old html: ', filePath, err);
                 }
             });
+            grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
         }
 
-        try {
-            sourceFiles.forEach(function (file) {
-                errPath = file;
-                var text = grunt.file.read(path.join(applicationRoot, file));
-                var ast = parseModule(text);
+        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
+            fs.readFile(file, (err, text) => {
+                let ast = parseModule(text.toString());
 
                 if (ast instanceof Error) {
-                    ast.message += '\nPath: ' + errPath;
-                    return grunt.fail.fatal(ast);
+                    ast.message += '\nPath: ' + file;
+                    grunt.fail.fatal(ast);
+                    return callback(ast);
                 }
 
-                var arrExpr = [];
-                var ReturnStatement = null;
-                var moduleName = '';
+                let arrExpr = [];
+                let ReturnStatement = null;
+                let moduleName = '';
 
                 traverse(ast, {
                     enter: function getModuleName(node) {
@@ -159,7 +241,7 @@ module.exports = function (grunt) {
                                 moduleName = node.arguments[0].value;
                             }
 
-                            var fnNode = null;
+                            let fnNode = null;
                             if (node.arguments[1] && node.arguments[1].type == 'FunctionExpression') {
                                 fnNode = node.arguments[1].body;
                             } else if (node.arguments[2] && node.arguments[2].type == 'FunctionExpression') {
@@ -179,22 +261,27 @@ module.exports = function (grunt) {
                 });
 
                 if (arrExpr.length && ReturnStatement) {
-                    var opts = {};
+                    let opts = {};
                     opts.moduleName = moduleName;
                     arrExpr.forEach(function (expr) {
                         try {
                             expr.left.object.name == ReturnStatement.name ? opts[expr.left.property.name] =
-                                expr.right.type == 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
-                                    : expr.right.value : false;
+                                    expr.right.type == 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
+                                        : expr.right.value : false;
                         } catch (err) {
                             grunt.log.error(err);
                         }
                     });
 
-                    parseOpts(opts, application, replaceOpts, applicationRoot)
+                    parseOpts(opts, application, replaceOpts, applicationRoot, callback);
+                } else {
+                    callback();
                 }
-                errPath = '';
             });
+        }, function (err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
 
             try {
                 contents.htmlNames = htmlNames;
@@ -205,79 +292,67 @@ module.exports = function (grunt) {
                 grunt.fail.fatal(err);
             }
 
-            console.log('Duration: ' + (Date.now() - start));
-        } catch (err) {
-            grunt.fail.fatal(err, errPath);
-        }
+            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+
+            done();
+        });
+
     });
 
     grunt.registerMultiTask('xml-deprecated', 'Convert deprecated xml', function () {
-        grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача xml-deprecated.');
-        var start = Date.now();
-        var root = this.data.root,
+        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача xml-deprecated.`);
+        const start = Date.now();
+        const
+            done = this.async(),
+            root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
-            resourcesRoot = path.join(applicationRoot, 'resources'),
-            sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data.src),
+            patterns = this.data.src,
             replaceOpts = getReplaceOpts(root, application);
 
-        var errPath = '';
-
-        try {
-            sourceFiles.forEach(function (file) {
-                errPath = file;
-                var text = grunt.file.read(path.join(resourcesRoot, file));
-                text = replaceIncludes(text, replaceOpts);
-
-                try {
-                    fs.unlinkSync(path.join(applicationRoot, file));
-                } catch (err) {
-                    //ignore
-                }
-
-                grunt.file.write(path.join(resourcesRoot, transliterate(file.replace('.deprecated', ''))), text);
-                errPath = '';
+        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
+            fs.readFile(file, (err, text) => {
+                text = replaceIncludes(text.toString(), replaceOpts);
+                fs.unlink(file, () => {});
+                _writeFile(file.replace('.deprecated', ''), text, callback);
             });
+        }, function (err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
 
-            console.log('Duration: ' + (Date.now() - start));
-        } catch (err) {
-            grunt.fail.fatal(err, errPath);
-        }
+            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+            done();
+        });
     });
 
     grunt.registerMultiTask('html-deprecated', 'Convert deprecated html', function () {
-        grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача html-deprecated.');
-        var start = Date.now();
-        var root = this.data.root,
+        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача html-deprecated.`);
+        const start = Date.now();
+        const
+            done = this.async(),
+            root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
-            resourcesRoot = path.join(applicationRoot, 'resources'),
-            sourceFiles = grunt.file.expand({cwd: resourcesRoot}, this.data.src),
+            patterns = this.data.src,
             replaceOpts = getReplaceOpts(root, application);
 
-        var errPath = '';
+        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
+            const parts = file.split('#');
+            const basename = path.basename(parts[1] || parts[0], '.deprecated');
 
-        try {
-            sourceFiles.forEach(function (file) {
-                errPath = file;
-                var parts = file.split('#');
-                var basename = path.basename(parts[1] || parts[0], '.deprecated');
-                var text = grunt.file.read(path.join(resourcesRoot, file));
-                text = replaceIncludes(text, replaceOpts);
-
-                try {
-                    fs.unlinkSync(path.join(resourcesRoot, file));
-                } catch (err) {
-                    //ignore
-                }
-
-                grunt.file.write(path.join(applicationRoot, transliterate(basename)), text);
-                errPath = '';
+            fs.readFile(file, (err, text) => {
+                text = replaceIncludes(text.toString(), replaceOpts);
+                fs.unlink(file, () => {});
+                _writeFile(path.join(applicationRoot, basename), text, callback);
             });
+        }, function (err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
 
-            console.log('Duration: ' + (Date.now() - start));
-        } catch (err) {
-            grunt.fail.fatal(err, errPath);
-        }
+            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+            done();
+        });
     });
 };
