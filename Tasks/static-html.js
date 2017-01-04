@@ -186,8 +186,7 @@ module.exports = function (grunt) {
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(applicationRoot, 'resources'),
             patterns = this.data.src,
-            oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
-            replaceOpts = getReplaceOpts(root, application);
+            oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html);
 
         let contents = {};
 
@@ -273,7 +272,7 @@ module.exports = function (grunt) {
                         }
                     });
 
-                    parseOpts(opts, application, replaceOpts, applicationRoot, callback);
+                    parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback);
                 } else {
                     callback();
                 }
@@ -307,12 +306,11 @@ module.exports = function (grunt) {
             root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
-            patterns = this.data.src,
-            replaceOpts = getReplaceOpts(root, application);
+            patterns = this.data.src;
 
         recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
             fs.readFile(file, (err, text) => {
-                text = replaceIncludes(text.toString(), replaceOpts);
+                text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
                 fs.unlink(file, () => {});
                 _writeFile(file.replace('.deprecated', ''), text, callback);
             });
@@ -334,15 +332,14 @@ module.exports = function (grunt) {
             root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
-            patterns = this.data.src,
-            replaceOpts = getReplaceOpts(root, application);
+            patterns = this.data.src;
 
         recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
             const parts = file.split('#');
             const basename = path.basename(parts[1] || parts[0], '.deprecated');
 
             fs.readFile(file, (err, text) => {
-                text = replaceIncludes(text.toString(), replaceOpts);
+                text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
                 fs.unlink(file, () => {});
                 _writeFile(path.join(applicationRoot, basename), text, callback);
             });
