@@ -145,6 +145,11 @@ module.exports = function (grunt) {
             _writeFile(path.join(applicationRoot, outFileName), text, cb);
         } else {
             fs.readFile(templatePath, (err, text) => {
+                if (err) {
+                    grunt.fail.fatal(err);
+                    return cb(err);
+                }
+
                 cache[templatePath] = text.toString();
                 text = replaceIncludes(cache[templatePath], replaceOpts);
                 _writeFile(path.join(applicationRoot, outFileName), text, cb);
@@ -212,6 +217,11 @@ module.exports = function (grunt) {
 
         recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
             fs.readFile(file, (err, text) => {
+                if (err) {
+                    grunt.fail.fatal(err);
+                    return callback(err);
+                }
+
                 let ast = parseModule(text.toString());
 
                 if (ast instanceof Error) {
@@ -310,6 +320,11 @@ module.exports = function (grunt) {
 
         recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
             fs.readFile(file, (err, text) => {
+                if (err) {
+                    grunt.fail.fatal(err);
+                    return callback(err);
+                }
+
                 text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
                 fs.unlink(file, () => {});
                 _writeFile(file.replace('.deprecated', ''), text, callback);
@@ -339,6 +354,11 @@ module.exports = function (grunt) {
             const basename = path.basename(parts[1] || parts[0], '.deprecated');
 
             fs.readFile(file, (err, text) => {
+                if (err) {
+                    grunt.fail.fatal(err);
+                    return callback(err);
+                }
+
                 text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
                 fs.unlink(file, () => {});
                 _writeFile(path.join(applicationRoot, basename), text, callback);
