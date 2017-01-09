@@ -53,7 +53,7 @@ function _mkSymlink(target, dest, cb) {
 }
 
 function _writeFile(dest, data, cb) {
-    let options = {flag: 'w'};
+    let options = {flag: 'wx'};
 
     let writeFile = function (dest, data, options, cb) {
         fs.writeFile(dest, data, options, function (err) {
@@ -66,7 +66,7 @@ function _writeFile(dest, data, cb) {
                         cb();
                     }
                 });
-            } else if (err) {
+            } else if (err && err.code !== 'EEXIST') {
                 console.log(`[ERROR]: ${err}`);
                 cb();
             } else {
