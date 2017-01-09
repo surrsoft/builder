@@ -1,6 +1,7 @@
-const fileWalker = require('./../lib/utils/FileWalker.js'),
+const fileWalker = require('./../lib/utils/FileWalker'),
     fs = require('fs'),
     path = require('path'),
+    humanize = require('humanize'),
     less = require('less');
 
 module.exports = function less1by1Task(grunt) {
@@ -8,7 +9,6 @@ module.exports = function less1by1Task(grunt) {
     grunt.registerMultiTask('less1by1', 'Компилит каждую лесску, ложит cssку рядом. Умеет в темы', function() {
 
         grunt.log.ok(`${grunt.template.today('hh:MM:ss')} : Запускается задача less1by1.`);
-        grunt.log.ok(`Текущая тема: ${grunt.option('theme')}`);
 
         let root = grunt.option('root') || '',
             app = grunt.option('application') || '',
@@ -16,13 +16,13 @@ module.exports = function less1by1Task(grunt) {
             taskDone = this.async(),
             theme = grunt.option('theme'),
             lessCompilePromises = [],
-            controlsPath = path.join(rootPath, '/resources/SBIS3.CONTROLS/themes/');
+            themesPath = path.join(rootPath, '/resources/SBIS3.CONTROLS/themes/');
 
-        if (!fs.existsSync(controlsPath)) {
-            grunt.log.ok('Сервис не использует SBIS3.CONTROLS или что-то пошло не по плану!');
-            taskDone();
-        }
-
+        // if (!fs.existsSync(controlsPath)) {
+        //     grunt.log.ok('Сервис не использует SBIS3.CONTROLS или что-то пошло не по плану!');
+        //     taskDone();
+        // }
+        grunt.log.ok(`Текущая тема: ${grunt.option('theme')}`);
 
         function handleError(err) {
             grunt.log.error(err);
@@ -32,40 +32,39 @@ module.exports = function less1by1Task(grunt) {
 
             files.forEach(function lessFilesIterator(filepath, index) {
 
-                let lessData = fs.readFileSync(filepath).toString();
-                lessCompilePromises.push(new Promise(function(resolve, reject) {
+                fs.readFile(filepath, function(readFileError, data) {
 
-                    let imports = theme ?
-                        `
-                    @import '${controlsPath}${theme}/variables';
-                    @import '${controlsPath}mixins';
+                    let lessData = data.toString();
+                    lessCompilePromises.push(new Promise(function(resolve, reject) {
+                        let imports = theme ?
+                            `
+                            @import '${themesPath}${theme}/variables';
+                            @import '${themesPath}mixins';
 
-                    ` : '';
-                    less.render(imports + lessData, {
-                        filename: filepath,
-                        cleancss: false,
-                        strictImports: true
-                    }, function writeCSS(e, output) {
+                            ` : '';
 
-                        if (e) {
-                            reject(e);
-                        }
+                        less.render(imports + lessData, {
+                                filename: filepath,
+                                cleancss: false,
+                                strictImports: true
+                            }, function writeCSS(compileLessError, output) {
 
-                        let newName = `${path.dirname(filepath)}/${path.basename(filepath, '.less')}.css`;
+                                if (compileLessError) {
+                                    reject(compileLessError);
+                                }
 
-                        try {
-                            grunt.file.write(newName, output.css);
-                        } catch (cantWriteFile) {
-                            reject(new Error(`Не могу записать файл. Ошибка: ${cantWriteFile.message}.`));
-                        }
-
-                        grunt.log.ok(`file ${filepath} successfuly compiled`);
-                        resolve('succees!');
-                    });
-                }));
+                                let newName = `${path.dirname(filepath)}/${path.basename(filepath, '.less')}.css`;
+                                fs.writeFile(newName, output.css, function writeFileCb(writeFileError) {
+                                    if (writeFileError) reject(new Error(`Не могу записать файл. Ошибка: ${writeFileError.message}.`));
+                                    grunt.log.ok(`file ${filepath} successfuly compiled`);
+                                    resolve('succees!');
+                                });
+                            }
+                        );
+                    }));
+                });
             });
-        };
-
+        }
 
         fileWalker.walkByFileExt(rootPath, '.less').then(compileLess).then(function() {
 
