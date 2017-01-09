@@ -162,7 +162,7 @@ module.exports = function (grunt) {
         function recurse(tsdModuleName, origin, input, callback) {
             fs.readdir(input, function (err, files) {
                 if (!err) {
-                    async.each(files, function (file, cb) {
+                    async.eachLimit(files, 10, function (file, cb) {
                         let abspath = path.join(input, file);
 
                         fs.lstat(abspath, function (err, stats) {
@@ -286,7 +286,7 @@ module.exports = function (grunt) {
         }
 
         function main() {
-            async.eachLimit(paths, 1, function (input, callback) {
+            async.eachSeries(paths, function (input, callback) {
                 let parts = input.replace(dblSlashes, '/').split('/');
                 let moduleName = parts[parts.length - 1];
                 let tsdModuleName = transliterate(moduleName);
