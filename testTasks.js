@@ -6,6 +6,7 @@ const spawn = require('child_process').spawn;
 
 // Аргументы командной строки
 let args = new Set([
+	'less1by1',
 	'--root=/home/local/TENSOR-CORP/ns.kochnev/test/',
     '--application=online/',
     '--theme=online'
@@ -13,13 +14,9 @@ let args = new Set([
 
 const grunt = spawn('grunt',[...args]);
 	
-grunt.stdout.on('data', (data) => {
-   console.log(`stdout: ${data}`);
- });
+grunt.stdout.pipe(process.stdout);
 
- grunt.stderr.on('data', (data) => {
-   console.error(`${data}`);
- });
+ grunt.stderr.pipe(process.stderr);
 
  grunt.on('close', (code) => {
    console.log(`child process exited with code ${code}`);
