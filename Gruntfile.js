@@ -32,6 +32,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
 
+
+
     grunt.loadTasks('Tasks');
 
     // Init config
@@ -49,7 +51,7 @@ module.exports = function (grunt) {
         defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
     }
 
-    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
+    defaultTasks.push('i18n', 'collect-dependencies', 'routsearch', 'less1by1');
 
     if (packaging) {
         defaultTasks.push('cssmin','uglify', 'xhtmlmin', 'tmplmin', 'packwsmod', 'packjs', 'packcss', 'prepackjs', 'owndepspack', 'custompack');
