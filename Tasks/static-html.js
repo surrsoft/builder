@@ -43,7 +43,7 @@ function parseObjectExpression(properties) {
 function recurse(applicationRoot, input, patterns, fn, cb) {
     fs.readdir(input, function (err, files) {
         if (!err) {
-            async.each(files, function (file, cb) {
+            async.eachLimit(files, 10, function (file, cb) {
                 let abspath = path.join(input, file);
 
                 fs.lstat(abspath, function (err, stats) {
