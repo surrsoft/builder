@@ -8,7 +8,8 @@ const fileWalker = require('./../lib/utils/FileWalker'),
 */
 function resolveThemeName(filepath) {
 
-    let s3modName = filepath.replace(/(\/resources\/)(\w+)/, '').replace('/resources/', '');
+    let regexpMathch = filepath.match(/\/resources\/([^/]+)/, ''),
+    s3modName = regexpMathch ? regexpMathch[1] : 'smth';
 
     switch (s3modName) {
         case 'Upravlenie_oblakom':
@@ -78,7 +79,7 @@ module.exports = function less1by1Task(grunt) {
                             if (output) {
                                 fs.writeFile(newName, output.css, function writeFileCb(writeFileError) {
                                     if (writeFileError) reject(new Error(`Не могу записать файл. Ошибка: ${writeFileError.message}.`));
-                                    grunt.log.ok(`file ${filepath} successfuly compiled`);
+                                    grunt.log.ok(`file ${filepath} successfuly compiled. Theme: ${theme}`);
                                     resolve('succees!');
                                 });
                             } else {
