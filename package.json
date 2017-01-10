@@ -5,7 +5,8 @@
   "author": "Dmitriy Shilov",
   "contributors": [
     "Artem Egorov",
-    "Artem Esin"
+    "Artem Esin",
+    "Nikita Kochnev"
   ],
   "dependencies": {
     "async": "2.0.1",
