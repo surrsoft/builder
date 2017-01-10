@@ -3,9 +3,8 @@
 const path = require('path');
 const fs = require('fs-extra');
 const async = require('async');
-const mkdirp = require('mkdirp');
+const helpers = require('./../lib/utils/helpers');
 const transliterate = require('./../lib/utils/transliterate');
-const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const humanize = require('humanize');
 const spawn = require('child_process').spawn;
@@ -23,85 +22,6 @@ let
     htmlNames = {},
     jsModules = {},
     requirejsPaths = {};
-
-function prc(x, all) {
-    return Math.floor((x * 100) / all);
-}
-
-function _mkSymlink(target, dest, cb) {
-    let link = function (target, dest, cb) {
-        fs.symlink(target, dest, (err) => {
-            if (err && err.code === 'ENOENT') {
-                mkdirp(path.dirname(dest), (err) => {
-                    if (!err || err.code === 'EEXIST') {
-                        link(target, dest, cb);
-                    } else {
-                        console.log(`[ERROR]: ${err}`);
-                        cb();
-                    }
-                });
-            } else if (err && err.code !== 'EEXIST') {
-                console.log(`[ERROR]: ${err}`);
-                cb();
-            } else {
-                cb();
-            }
-        });
-    };
-
-    link(target, dest, cb);
-}
-
-function _writeFile(dest, data, cb) {
-    let options = {flag: 'wx'};
-
-    let writeFile = function (dest, data, options, cb) {
-        fs.writeFile(dest, data, options, function (err) {
-            if (err && err.code === 'ENOENT') {
-                mkdirp(path.dirname(dest), function (err) {
-                    if (!err || err.code === 'EEXIST') {
-                        writeFile(dest, data, options, cb);
-                    } else {
-                        console.log(`[ERROR]: ${err}`);
-                        cb();
-                    }
-                });
-            } else if (err && err.code !== 'EEXIST') {
-                console.log(`[ERROR]: ${err}`);
-                cb();
-            } else {
-                cb();
-            }
-        });
-    };
-
-    writeFile(dest, data, options, cb);
-}
-
-function _copyFile(target, dest, data, cb) {
-    if (data) {
-        _writeFile(dest, data, cb);
-    } else {
-        fs.readFile(target, (err, data) => {
-            if (err) {
-                console.log(`[ERROR]: ${err}`);
-                cb();
-            } else {
-                _writeFile(dest, data, cb);
-            }
-        });
-    }
-}
-
-function parseModule(module) {
-    let res;
-    try {
-        res = esprima.parse(module);
-    } catch (e) {
-        res = e;
-    }
-    return res;
-}
 
 function getModuleName(tsdModuleName, abspath, input, node) {
     if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
@@ -153,79 +73,10 @@ module.exports = function (grunt) {
         function copyFile(target, dest, data, cb) {
             let ext = path.extname(target);
             if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
-                _copyFile(target, dest, data, cb);
+                helpers.copyFile(target, dest, data, cb);
             } else {
-                _mkSymlink(target, dest, cb);
+                helpers.mkSymlink(target, dest, cb);
             }
-        }
-
-        function recurse(tsdModuleName, origin, input, callback) {
-            fs.readdir(input, function (err, files) {
-                if (!err) {
-                    async.eachLimit(files, 10, function (file, cb) {
-                        let abspath = path.join(input, file);
-
-                        fs.lstat(abspath, function (err, stats) {
-                            if (!err) {
-                                if (stats.isDirectory()) {
-                                    recurse(tsdModuleName, origin, abspath, cb);
-                                } else {
-                                    let dest = path.join(resourcesPath, tsdModuleName,
-                                        transliterate(path.relative(origin, abspath)));
-
-                                    if (isXmlDeprecated.test(abspath)) {
-                                        let basexml = path.basename(abspath, '.xml.deprecated');
-                                        xmlContents[basexml] = path.join(tsdModuleName,
-                                            transliterate(path.relative(origin, abspath).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
-
-                                        if (!dryRun) {
-                                            copyFile(abspath, dest, null, cb);
-                                        }
-                                    } else if (isHtmlDeprecated.test(abspath)) {
-                                        let basehtml = path.basename(abspath, '.deprecated');
-                                        let parts = basehtml.split('#');
-                                        htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
-
-                                        if (!dryRun) {
-                                            copyFile(abspath, dest, null, cb);
-                                        }
-                                    } else if (isModuleJs.test(abspath)) {
-                                        fs.readFile(abspath, function (err, text) {
-                                            let ast = parseModule(text.toString());
-
-                                            if (ast instanceof Error) {
-                                                ast.message += '\nPath: ' + abspath;
-                                                grunt.fail.fatal(err);
-                                                return cb(ast);
-                                            }
-
-                                            traverse(ast, {
-                                                enter: function (node) {
-                                                    getModuleName(tsdModuleName, abspath, origin, node);
-                                                }
-                                            });
-                                            if (!dryRun) {
-                                                copyFile(abspath, dest, text, cb);
-                                            }
-                                        });
-                                    } else if (!dryRun) {
-                                        copyFile(abspath, dest, null, cb);
-                                    }
-                                }
-                            } else {
-                                cb(err);
-                            }
-                        });
-                    }, function () {
-                        if (err) {
-                            console.error(err);
-                        }
-                        callback();
-                    });
-                } else {
-                    console.error(err);
-                }
-            });
         }
 
         function remove(dir) {
@@ -293,8 +144,50 @@ module.exports = function (grunt) {
                 contentsModules[moduleName] = tsdModuleName;
                 requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
 
-                recurse(tsdModuleName, input, input, function () {
-                    grunt.log.ok(`[${prc(i++, paths.length)}%] ${input}`);
+                helpers.recurse(input, function (file, callback) {
+                    let dest = path.join(resourcesPath, tsdModuleName,
+                        transliterate(path.relative(input, file)));
+
+                    if (isXmlDeprecated.test(file)) {
+                        let basexml = path.basename(file, '.xml.deprecated');
+                        xmlContents[basexml] = path.join(tsdModuleName,
+                            transliterate(path.relative(input, file).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
+
+                        if (!dryRun) {
+                            copyFile(file, dest, null, callback);
+                        }
+                    } else if (isHtmlDeprecated.test(file)) {
+                        let basehtml = path.basename(file, '.deprecated');
+                        let parts = basehtml.split('#');
+                        htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
+
+                        if (!dryRun) {
+                            copyFile(file, dest, null, callback);
+                        }
+                    } else if (isModuleJs.test(file)) {
+                        fs.readFile(file, function (err, text) {
+                            let ast = helpers.parseModule(text.toString());
+
+                            if (ast instanceof Error) {
+                                ast.message += '\nPath: ' + file;
+                                grunt.fail.fatal(err);
+                                return callback(ast);
+                            }
+
+                            traverse(ast, {
+                                enter: function (node) {
+                                    getModuleName(tsdModuleName, file, input, node);
+                                }
+                            });
+                            if (!dryRun) {
+                                copyFile(file, dest, text, callback);
+                            }
+                        });
+                    } else if (!dryRun) {
+                        copyFile(file, dest, null, callback);
+                    }
+                }, function () {
+                    grunt.log.ok(`[${helpers.percentage(++i, paths.length)}%] ${input}`);
                     callback();
                 });
             }, function (err) {
@@ -325,8 +218,10 @@ module.exports = function (grunt) {
                         }
                     }
 
-                    grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
-                    grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
+                    let sorted = helpers.sortObject(contents);
+
+                    grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
+                    grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
                 } catch (err) {
                     grunt.fail.fatal(err);
                 }

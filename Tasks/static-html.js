@@ -2,28 +2,16 @@
 
 const path = require('path');
 const fs = require('fs');
-const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const transliterate = require('./../lib/utils/transliterate');
 const replaceIncludes = require('./../lib/utils/include-replacer');
+const helpers = require('./../lib/utils/helpers');
 const humanize = require('humanize');
 const async = require('async');
-const minimatch = require('minimatch');
-const mkdirp = require('mkdirp');
 
 const dblSlashes = /\\/g;
 
 let cache = {};
-
-function parseModule(module) {
-    let res;
-    try {
-        res = esprima.parse(module);
-    } catch (e) {
-        res = e;
-    }
-    return res;
-}
 
 function findExpression(node, left) {
     return node.type == 'ExpressionStatement' && node.expression.type == 'AssignmentExpression' &&
@@ -38,73 +26,6 @@ function parseObjectExpression(properties) {
         obj[prop.key.name] = prop.value.value;
     });
     return obj;
-}
-
-function recurse(applicationRoot, input, patterns, fn, cb) {
-    fs.readdir(input, function (err, files) {
-        if (!err) {
-            async.eachLimit(files, 10, function (file, cb) {
-                let abspath = path.join(input, file);
-
-                fs.lstat(abspath, function (err, stats) {
-                    if (!err) {
-                        if (stats.isDirectory()) {
-                            recurse(applicationRoot, abspath, patterns, fn, cb);
-                        } else {
-                            let passed = true;
-                            let tmp = path.relative(applicationRoot, abspath);
-
-                            for (let i = 0; i < patterns.length; i++) {
-                                if (!minimatch(tmp, patterns[i])) {
-                                    passed = false;
-                                    break;
-                                }
-                            }
-
-                            if (passed) {
-                                fn(abspath, cb);
-                            } else {
-                                cb();
-                            }
-                        }
-                    } else {
-                        cb(err);
-                    }
-                });
-            }, function (err) {
-                if (err) {
-                    console.error(err);
-                }
-                cb();
-            });
-        }
-    });
-}
-
-function _writeFile(dest, data, cb) {
-    let options = {flag: 'w'};
-
-    let writeFile = function (dest, data, options, cb) {
-        fs.writeFile(dest, data, options, function (err) {
-            if (err && err.code === 'ENOENT') {
-                mkdirp(path.dirname(dest), function (err) {
-                    if (!err || err.code === 'EEXIST') {
-                        writeFile(dest, data, options, cb);
-                    } else {
-                        console.log(`[ERROR]: ${err}`);
-                        cb();
-                    }
-                });
-            } else if (err) {
-                console.log(`[ERROR]: ${err}`);
-                cb();
-            } else {
-                cb();
-            }
-        });
-    };
-
-    writeFile(dest, data, options, cb);
 }
 
 module.exports = function (grunt) {
@@ -142,7 +63,7 @@ module.exports = function (grunt) {
 
         if (cache[templatePath]) {
             let text = replaceIncludes(cache[templatePath], replaceOpts);
-            _writeFile(path.join(applicationRoot, outFileName), text, cb);
+            helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
         } else {
             fs.readFile(templatePath, (err, text) => {
                 if (err) {
@@ -152,7 +73,7 @@ module.exports = function (grunt) {
 
                 cache[templatePath] = text.toString();
                 text = replaceIncludes(cache[templatePath], replaceOpts);
-                _writeFile(path.join(applicationRoot, outFileName), text, cb);
+                helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
             });
         }
     }
@@ -215,78 +136,82 @@ module.exports = function (grunt) {
             grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
         }
 
-        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
-            fs.readFile(file, (err, text) => {
-                if (err) {
-                    grunt.fail.fatal(err);
-                    return callback(err);
-                }
+        helpers.recurse(applicationRoot, function (file, callback) {
+            if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+                fs.readFile(file, (err, text) => {
+                    if (err) {
+                        grunt.fail.fatal(err);
+                        return callback(err);
+                    }
 
-                let ast = parseModule(text.toString());
+                    let ast = helpers.parseModule(text.toString());
 
-                if (ast instanceof Error) {
-                    ast.message += '\nPath: ' + file;
-                    grunt.fail.fatal(ast);
-                    return callback(ast);
-                }
+                    if (ast instanceof Error) {
+                        ast.message += '\nPath: ' + file;
+                        grunt.fail.fatal(ast);
+                        return callback(ast);
+                    }
 
-                let arrExpr = [];
-                let ReturnStatement = null;
-                let moduleName = '';
+                    let arrExpr = [];
+                    let ReturnStatement = null;
+                    let moduleName = '';
 
-                traverse(ast, {
-                    enter: function getModuleName(node) {
-                        if (findExpression(node, 'webPage') && node.expression.right && node.expression.right.type == 'ObjectExpression') {
-                            arrExpr.push(node.expression);
-                        }
-
-                        if (findExpression(node, 'title') && node.expression.right && node.expression.right.type == 'Literal') {
-                            arrExpr.push(node.expression);
-                        }
-
-                        if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-                            node.callee.name == 'define') {
-                            if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-                                moduleName = node.arguments[0].value;
+                    traverse(ast, {
+                        enter: function getModuleName(node) {
+                            if (findExpression(node, 'webPage') && node.expression.right && node.expression.right.type == 'ObjectExpression') {
+                                arrExpr.push(node.expression);
                             }
 
-                            let fnNode = null;
-                            if (node.arguments[1] && node.arguments[1].type == 'FunctionExpression') {
-                                fnNode = node.arguments[1].body;
-                            } else if (node.arguments[2] && node.arguments[2].type == 'FunctionExpression') {
-                                fnNode = node.arguments[2].body;
+                            if (findExpression(node, 'title') && node.expression.right && node.expression.right.type == 'Literal') {
+                                arrExpr.push(node.expression);
                             }
-                            if (fnNode) {
-                                if (fnNode.body && fnNode.body instanceof Array) {
-                                    fnNode.body.forEach(function (i) {
-                                        if (i.type == 'ReturnStatement') {
-                                            ReturnStatement = i.argument;
-                                        }
-                                    });
+
+                            if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
+                                node.callee.name == 'define') {
+                                if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                                    moduleName = node.arguments[0].value;
+                                }
+
+                                let fnNode = null;
+                                if (node.arguments[1] && node.arguments[1].type == 'FunctionExpression') {
+                                    fnNode = node.arguments[1].body;
+                                } else if (node.arguments[2] && node.arguments[2].type == 'FunctionExpression') {
+                                    fnNode = node.arguments[2].body;
+                                }
+                                if (fnNode) {
+                                    if (fnNode.body && fnNode.body instanceof Array) {
+                                        fnNode.body.forEach(function (i) {
+                                            if (i.type == 'ReturnStatement') {
+                                                ReturnStatement = i.argument;
+                                            }
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
-                });
-
-                if (arrExpr.length && ReturnStatement) {
-                    let opts = {};
-                    opts.moduleName = moduleName;
-                    arrExpr.forEach(function (expr) {
-                        try {
-                            expr.left.object.name == ReturnStatement.name ? opts[expr.left.property.name] =
-                                    expr.right.type == 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
-                                        : expr.right.value : false;
-                        } catch (err) {
-                            grunt.log.error(err);
-                        }
                     });
 
-                    parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback);
-                } else {
-                    callback();
-                }
-            });
+                    if (arrExpr.length && ReturnStatement) {
+                        let opts = {};
+                        opts.moduleName = moduleName;
+                        arrExpr.forEach(function (expr) {
+                            try {
+                                expr.left.object.name == ReturnStatement.name ? opts[expr.left.property.name] =
+                                        expr.right.type == 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
+                                            : expr.right.value : false;
+                            } catch (err) {
+                                grunt.log.error(err);
+                            }
+                        });
+
+                        parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback);
+                    } else {
+                        callback();
+                    }
+                });
+            } else {
+                callback();
+            }
         }, function (err) {
             if (err) {
                 grunt.fail.fatal(err);
@@ -294,9 +219,10 @@ module.exports = function (grunt) {
 
             try {
                 contents.htmlNames = htmlNames;
+                let sorted = helpers.sortObject(contents);
 
-                grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(contents, null, 2));
-                grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(contents));
+                grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
+                grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));
             } catch (err) {
                 grunt.fail.fatal(err);
             }
@@ -305,7 +231,6 @@ module.exports = function (grunt) {
 
             done();
         });
-
     });
 
     grunt.registerMultiTask('xml-deprecated', 'Convert deprecated xml', function () {
@@ -318,17 +243,22 @@ module.exports = function (grunt) {
             applicationRoot = path.join(root, application),
             patterns = this.data.src;
 
-        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
-            fs.readFile(file, (err, text) => {
-                if (err) {
-                    grunt.fail.fatal(err);
-                    return callback(err);
-                }
+        helpers.recurse(applicationRoot, function (file, callback) {
+            if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+                fs.readFile(file, (err, text) => {
+                    if (err) {
+                        grunt.fail.fatal(err);
+                        return callback(err);
+                    }
 
-                text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
-                fs.unlink(file, () => {});
-                _writeFile(file.replace('.deprecated', ''), text, callback);
-            });
+                    text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
+                    fs.unlink(file, () => {
+                    });
+                    helpers.writeFile(file.replace('.deprecated', ''), text, callback);
+                });
+            } else {
+                callback();
+            }
         }, function (err) {
             if (err) {
                 grunt.fail.fatal(err);
@@ -349,20 +279,24 @@ module.exports = function (grunt) {
             applicationRoot = path.join(root, application),
             patterns = this.data.src;
 
-        recurse(applicationRoot, applicationRoot, patterns, function (file, callback) {
-            const parts = file.split('#');
-            const basename = path.basename(parts[1] || parts[0], '.deprecated');
+        helpers.recurse(applicationRoot, function (file, callback) {
+            if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+                const parts = file.split('#');
+                const basename = path.basename(parts[1] || parts[0], '.deprecated');
 
-            fs.readFile(file, (err, text) => {
-                if (err) {
-                    grunt.fail.fatal(err);
-                    return callback(err);
-                }
+                fs.readFile(file, (err, text) => {
+                    if (err) {
+                        grunt.fail.fatal(err);
+                        return callback(err);
+                    }
 
-                text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
-                fs.unlink(file, () => {});
-                _writeFile(path.join(applicationRoot, basename), text, callback);
-            });
+                    text = replaceIncludes(text.toString(), getReplaceOpts(root, application));
+                    fs.unlink(file, () => {});
+                    helpers.writeFile(path.join(applicationRoot, basename), text, callback);
+                });
+            } else {
+                callback();
+            }
         }, function (err) {
             if (err) {
                 grunt.fail.fatal(err);
