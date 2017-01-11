@@ -1,3 +1,4 @@
+'use strict';
 const helpers = require('./../lib/utils/helpers'),
     fs = require('fs'),
     path = require('path'),
