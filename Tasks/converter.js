@@ -166,11 +166,11 @@ module.exports = function (grunt) {
                         }
                     } else if (isModuleJs.test(file)) {
                         fs.readFile(file, function (err, text) {
+                            grunt.log.ok('------------------------', file);
                             let ast = helpers.parseModule(text.toString());
 
                             if (ast instanceof Error) {
-                                ast.message += '\nPath: ' + file;
-                                grunt.fail.fatal(err);
+                                grunt.fail.fatal(ast, `file`);
                                 return callback(ast);
                             }
 

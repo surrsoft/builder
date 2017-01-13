@@ -24,7 +24,7 @@ module.exports = function (grunt) {
     process.env.ROOT = target;
     process.env.APPROOT = app;
 
-    grunt.option('color', !!process.stdout.isTTY);
+    grunt.option('color', process.stdout.isTTY);
 
     // Load tasks
     grunt.loadNpmTasks('grunt-wsmod-packer');
