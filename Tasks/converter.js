@@ -17,6 +17,16 @@ function prc(x, all) {
     return Math.floor((x * 100) / all);
 }
 
+function removeLeadingSlash(path) {
+    if (path) {
+        var head = path.charAt(0);
+        if (head == '/' || head == '\\') {
+            path = path.substr(1);
+        }
+    }
+    return path;
+}
+
 function mkSymlink(target, dest) {
     var link = function (target, dest) {
         try {
@@ -124,7 +134,7 @@ module.exports = function (grunt) {
                 tsdModuleName = transliterate(moduleName);
                 contentsModules[moduleName] = tsdModuleName;
 
-                requirejsPaths[tsdModuleName] = path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/');
+                requirejsPaths[tsdModuleName] = removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
             }
             grunt.file.recurse(input, function (abspath) {
                 var ext = path.extname(abspath);
@@ -199,7 +209,7 @@ module.exports = function (grunt) {
                     requirejsPaths[dir.split('/').pop()] = dir;
                 });
             }
-            requirejsPaths.WS = path.join(application, 'ws/').replace(dblSlashes, '/');
+            requirejsPaths.WS = removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
 
             contents.requirejsPaths = requirejsPaths;
 
