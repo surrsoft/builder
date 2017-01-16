@@ -55,6 +55,7 @@ module.exports = function less1by1Task(grunt) {
                     less.render(imports + lessData, {
                         filename: filepath,
                         cleancss: false,
+                        relativeUrls: true,
                         strictImports: true
                     }, function writeCSS(compileLessError, output) {
 
