@@ -23,6 +23,16 @@ let
     jsModules = {},
     requirejsPaths = {};
 
+function removeLeadingSlash(path) {
+   if (path) {
+      var head = path.charAt(0);
+      if (head == '/' || head == '\\') {
+         path = path.substr(1);
+      }
+   }
+   return path;
+}
+
 function getModuleName(tsdModuleName, abspath, input, node) {
     if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
         node.callee.name == 'define') {
@@ -50,6 +60,7 @@ module.exports = function (grunt) {
             service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
+            application = grunt.option('application') || '',
             applicationRoot = this.data.cwd,
             resourcesPath = path.join(applicationRoot, 'resources');
 
@@ -142,7 +153,7 @@ module.exports = function (grunt) {
                 let moduleName = parts[parts.length - 1];
                 let tsdModuleName = transliterate(moduleName);
                 contentsModules[moduleName] = tsdModuleName;
-                requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
+                requirejsPaths[tsdModuleName] = removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
 
                 helpers.recurse(input, function (file, callback) {
                     let dest = path.join(resourcesPath, tsdModuleName,
@@ -201,7 +212,7 @@ module.exports = function (grunt) {
                     contents.jsModules = jsModules;
                     contents.htmlNames = htmlNames;
 
-                    requirejsPaths.WS = 'ws/';
+                    requirejsPaths.WS = removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
 
                     contents.requirejsPaths = requirejsPaths;
 
