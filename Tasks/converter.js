@@ -65,6 +65,7 @@ module.exports = function (grunt) {
             service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
+            application = grunt.option('application') || '',
             root = this.data.root,
             applicationRoot = this.data.cwd,
             resourcesPath = path.join(applicationRoot, 'resources'),
@@ -123,7 +124,7 @@ module.exports = function (grunt) {
                 tsdModuleName = transliterate(moduleName);
                 contentsModules[moduleName] = tsdModuleName;
 
-                requirejsPaths[tsdModuleName] = path.join('resources', tsdModuleName).replace(dblSlashes, '/');
+                requirejsPaths[tsdModuleName] = path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/');
             }
             grunt.file.recurse(input, function (abspath) {
                 var ext = path.extname(abspath);
@@ -198,7 +199,7 @@ module.exports = function (grunt) {
                     requirejsPaths[dir.split('/').pop()] = dir;
                 });
             }
-            requirejsPaths.WS = 'ws/';
+            requirejsPaths.WS = path.join(application, 'ws/').replace(dblSlashes, '/');
 
             contents.requirejsPaths = requirejsPaths;
 
