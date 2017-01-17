@@ -49,6 +49,7 @@ module.exports = function less1by1Task(grunt) {
                         `
                             @import '${themesPath}${theme}/variables';
                             @import '${themesPath}mixins';
+                            @themeName: ${theme};
 
                             ` : '';
 
