@@ -20,7 +20,7 @@
     "grunt-wsmod-packer": "2.1.31",
     "mkdirp": "^0.5.1",
     "node-uuid": "^1.4.7",
-    "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#jsdoc-worker-rerun"
+    "sbis3-json-generator": "git+https://git.sbis.ru/root/sbis3-json-generator.git#3.7.4.230/bugfix/builder"
   },
   "devDependencies": {
     "mocha": "",
