@@ -61,6 +61,7 @@ module.exports = function (grunt) {
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
             application = grunt.option('application') || '',
+            applicationName = application.replace('/', '').replace(dblSlashes, ''),
             applicationRoot = this.data.cwd,
             resourcesPath = path.join(applicationRoot, 'resources');
 
@@ -152,6 +153,9 @@ module.exports = function (grunt) {
                 let parts = input.replace(dblSlashes, '/').split('/');
                 let moduleName = parts[parts.length - 1];
                 let tsdModuleName = transliterate(moduleName);
+               if (applicationName == tsdModuleName) {
+                  grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName)
+               }
                 contentsModules[moduleName] = tsdModuleName;
                 requirejsPaths[tsdModuleName] = removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
 
