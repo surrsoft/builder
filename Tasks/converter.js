@@ -76,6 +76,7 @@ module.exports = function (grunt) {
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
             application = grunt.option('application') || '',
+            applicationName = application.replace('/', '').replace(dblSlashes, ''),
             root = this.data.root,
             applicationRoot = this.data.cwd,
             resourcesPath = path.join(applicationRoot, 'resources'),
@@ -205,6 +206,9 @@ module.exports = function (grunt) {
             if (!Object.keys(requirejsPaths).length && !modules) {
                 var firstLvlDirs = getFirstLevelDirs(resourcesPath);
                 firstLvlDirs.forEach(function (dir) {
+                    if (applicationName == dir) {
+                        grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + dir)
+                    }
                     dir = path.relative(root, dir).replace(dblSlashes, '/');
                     requirejsPaths[dir.split('/').pop()] = dir;
                 });
