@@ -45,7 +45,7 @@ module.exports = function (grunt) {
                 grunt.fail.fatal(err);
             }
 
-            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+            console.log(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);
             done();
         });
     });
