@@ -187,11 +187,11 @@ module.exports = function (grunt) {
                         }
                     } else if (isModuleJs.test(file)) {
                         fs.readFile(file, function (err, text) {
-                            grunt.log.ok('------------------------', file);
                             let ast = helpers.parseModule(text.toString());
 
                             if (ast instanceof Error) {
-                                grunt.fail.fatal(ast, `file`);
+                                console.log(`------------------------ Bad file: ${file}`, ast);
+                                grunt.fail.fatal(file, ast);
                                 return callback(ast);
                             }
 
