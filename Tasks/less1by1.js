@@ -6,7 +6,8 @@ const helpers = require('./../lib/utils/helpers'),
     less = require('less'),
     getModuleNameRegExp = new RegExp('\/resources\/([^/]+)'),
     DEFAULT_THEME = 'online',
-    themes = ['online', 'carry', 'presto']
+    themes = ['online', 'carry', 'presto'],
+    dblSlashes = /\\/g;
 /**
  @workaround Временно ресолвим текущую тему по названию модуля.
 */
@@ -30,7 +31,8 @@ function resolveThemeName(filepath) {
 }
 
 function itIsControl(path) {
-  return ~path.indexOf('SBIS3.CONTROLS/components');
+  let truePath = path.replace(dblSlashes, '/');
+  return ~truePath.indexOf('SBIS3.CONTROLS/components');
 }
 
 module.exports = function less1by1Task(grunt) {
@@ -87,7 +89,7 @@ module.exports = function less1by1Task(grunt) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
                   let theme = resolveThemeName(filepath)
                     if (itIsControl(filepath)) {
-                      
+
                       for (let themeName of themes) {
                         processLessFile(data, filepath, readFileError, themeName, true)
                       }
