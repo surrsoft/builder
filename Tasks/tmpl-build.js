@@ -40,7 +40,7 @@ module.exports = function (grunt) {
             let tclosureStr = '';
             if (tclosure) {
                 deps.push('Core/tmpl/js/tclosure');
-                tclosureStr = 'var tclosure=deps[2]';
+                tclosureStr = 'var tclosure=deps[2];';
             }
 
             async.eachOfLimit(nodes, 50, function (value, fullName, callback) {
