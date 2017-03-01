@@ -42,6 +42,9 @@ module.exports = function less1by1Task(grunt) {
    themesPath = path.join(rootPath, '/resources/SBIS3.CONTROLS/themes/');
 
   function processLessFile(data, filePath, error, theme, itIsControl) {
+    if (!data) {
+      return;
+    }
     let lessData = data.toString(),
         imports = theme ?
         `
@@ -68,7 +71,7 @@ module.exports = function less1by1Task(grunt) {
         }
         let newName = `${path.dirname(filePath)}/${path.basename(filePath, '.less')}${suffix}.css`;
         if (output) {
-            fs.writeFile(newName, output.css, function writeFileCb(writeFileError) {
+            fs.writeFile(newName, output.css, {flag: 'wx'}, function writeFileCb(writeFileError) {
                 if (writeFileError) grunt.log.ok(`Не могу записать файл. Ошибка: ${writeFileError.message}.`);
                 grunt.log.ok(`file ${filePath} successfuly compiled. Theme: ${theme}`);
             });
@@ -85,7 +88,7 @@ module.exports = function less1by1Task(grunt) {
 
         helpers.recurse(rootPath, function(filepath, cb) {
 
-            if (helpers.validateFile(filepath, ['**/*.less'])) {
+            if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
                   let theme = resolveThemeName(filepath)
                     if (itIsControl(filepath)) {
