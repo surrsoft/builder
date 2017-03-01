@@ -88,7 +88,7 @@ module.exports = function less1by1Task(grunt) {
 
         helpers.recurse(rootPath, function(filepath, cb) {
 
-            if (helpers.validateFile(filepath, ['**/resources/**/*.less', '**/ws/**/*.less'])) {
+            if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
                   let theme = resolveThemeName(filepath)
                     if (itIsControl(filepath)) {
