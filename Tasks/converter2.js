@@ -14,7 +14,6 @@ const dblSlashes = /\\/g;
 const isXmlDeprecated = /\.xml\.deprecated$/;
 const isHtmlDeprecated = /\.html\.deprecated$/;
 const isModuleJs = /\.module\.js$/;
-const QUOTES = /"|'/g;
 
 let
     contents = {},
@@ -25,29 +24,13 @@ let
     requirejsPaths = {};
 
 function removeLeadingSlash(path) {
-   if (path) {
-      var head = path.charAt(0);
-      if (head == '/' || head == '\\') {
-         path = path.substr(1);
-      }
-   }
-   return path;
-}
-
-function getModuleName(tsdModuleName, abspath, input, node) {
-    if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-        node.callee.name == 'define') {
-        //noinspection JSAnnotator
-        if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-            //noinspection JSAnnotator
-            let mod = node.arguments[0].value;
-            let parts = mod.split('!');
-            if (parts[0] == 'js') {
-                jsModules[parts[1]] = path.join(tsdModuleName,
-                    transliterate(path.relative(input, abspath))).replace(dblSlashes, '/');
-            }
+    if (path) {
+        var head = path.charAt(0);
+        if (head == '/' || head == '\\') {
+            path = path.substr(1);
         }
     }
+    return path;
 }
 
 module.exports = function (grunt) {
@@ -57,8 +40,8 @@ module.exports = function (grunt) {
         const done = this.async();
         const
             symlink = !!grunt.option('symlink'),
-            modules = (grunt.option('modules') || '').replace(QUOTES, ''),
-            service_mapping = (grunt.option('service_mapping') || '').replace(QUOTES, ''),
+            modules = (grunt.option('modules') || '').replace(/"/g, ''),
+            service_mapping = grunt.option('service_mapping') || false,
             i18n = !!grunt.option('index-dict'),
             dryRun = grunt.option('dry-run'),
             application = grunt.option('application') || '',
@@ -196,16 +179,33 @@ module.exports = function (grunt) {
                                 return callback(ast);
                             }
 
+                            let mark = false;
+
                             traverse(ast, {
                                 enter: function (node) {
-                                    getModuleName(tsdModuleName, file, input, node);
+                                    if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
+                                        node.callee.name == 'define') {
+                                        if (!mark) {
+                                            mark = true;
+                                            //noinspection JSAnnotator
+                                            if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                                                //noinspection JSAnnotator
+                                                let mod = node.arguments[0].value;
+                                                let parts = mod.split('!');
+                                                if (parts[0] == 'js') {
+                                                    if (!dryRun) {
+                                                        copyFile(file, dest, text, callback);
+                                                    } else {
+                                                        callback();
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            grunt.fail.fatal(`Multiple defines detected: ${file}`);
+                                        }
+                                    }
                                 }
                             });
-                            if (!dryRun) {
-                                copyFile(file, dest, text, callback);
-                            } else {
-                                callback();
-                            }
                         });
                     } else if (!dryRun) {
                         copyFile(file, dest, null, callback);
