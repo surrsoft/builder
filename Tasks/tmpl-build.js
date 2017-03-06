@@ -51,7 +51,7 @@ module.exports = function (grunt) {
                         result = ['var templateFunction = '];
 
                     if (value.amd) {
-                        return callback();
+                        return setImmediate(callback);
                     }
 
                     let conf = {config: config, filename: filename};
@@ -115,7 +115,7 @@ module.exports = function (grunt) {
                         });
                     });
                 } else {
-                    callback();
+                    setImmediate(callback);
                 }
             }, function (err) {
                 if (err) {
