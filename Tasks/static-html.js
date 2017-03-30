@@ -49,7 +49,7 @@ module.exports = function (grunt) {
             SAVE_LAST_STATE: false,
             ROOT: root,
             START_DIALOG: ''
-        }
+        };
     }
 
     function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot, cb) {
@@ -93,9 +93,10 @@ module.exports = function (grunt) {
             grunt.log.warn(`Using default template for output file ${outFileName}.html`);
         } else if (!(htmlTemplate.indexOf('Тема Скрепка') > -1 || htmlTemplate.indexOf('Tema_Skrepka') > -1)) {
             // Не гадим в логи
-            if (!this.IAllreadyToldIt) {
+
+            if (!cache.IAllreadyToldIt) {
                 grunt.log.warn('HTML Template is not from Tema_Skrepka(Тема Cкрепка)', htmlTemplate);
-                this.IAllreadyToldIt = true;    
+                cache.IAllreadyToldIt = true;    
             }
             
         }
