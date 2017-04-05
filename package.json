@@ -24,7 +24,7 @@
     "minimatch": "^3.0.3",
     "mkdirp": "^0.5.1",
     "node-uuid": "^1.4.7",
-    "sbis3-json-generator": "git+ssh://git.sbis.ru/root/sbis3-json-generator.git#3.7.4.230/bugfix/builder"
+    "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/jsdoc.git#3.7.4.230/bugfix/builder"
   },
   "devDependencies": {
     "mocha": "",
