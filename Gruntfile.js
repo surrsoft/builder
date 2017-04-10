@@ -51,11 +51,16 @@ module.exports = function (grunt) {
 
     defaultTasks.push('i18n', 'collect-dependencies', 'routsearch', 'less1by1');
 
+    //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
     if (packaging) {
-        defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build', 'packwsmod', 'packjs', 'packcss',/* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
+        defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
+        if (versionize && typeof versionize == 'string') {
+            defaultTasks.push('replace:html');
+        }
+        defaultTasks.push('packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
     }
 
-    if (versionize && typeof versionize == 'string') {
+    if (!packaging && versionize && typeof versionize == 'string') {
         defaultTasks.push('replace:html');
     }
 
