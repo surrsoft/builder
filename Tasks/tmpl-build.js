@@ -40,7 +40,7 @@ module.exports = function (grunt) {
             let tclosureStr = '';
             if (tclosure) {
                 deps.push('Core/tmpl/js/tclosure');
-                tclosureStr = 'var tclosure=deps[2];';
+                tclosureStr = 'var tclosure=deps[0];';
             }
 
             async.eachOfLimit(nodes, 50, function (value, fullName, callback) {
@@ -62,6 +62,8 @@ module.exports = function (grunt) {
                             return callback();
                         }
 
+                        var templateRender = Object.create(tmpl);
+
                         let original = html;
                         html = stripBOM(html);
 
@@ -69,17 +71,26 @@ module.exports = function (grunt) {
                             return callback();
                         }
 
-                        tmpl.getComponents(html).forEach(function (dep) {
+                        templateRender.getComponents(html).forEach(function (dep) {
                             _deps.push(dep);
                         });
 
-                        tmpl.template(html, resolverControls, conf).handle(function (traversed) {
+                        templateRender.template(html, resolverControls, conf).handle(function (traversed) {
                             try {
                                 if (traversed.__newVersion === true) {
                                     /**
                                      * Новая версия рендера, для шаблонизатора. В результате функция в строке.
                                      */
-                                    result.push(tmpl.func(traversed, conf).toString() + ';');
+                                    let tmplFunc = templateRender.func(traversed, conf);
+                                    result.push(tmplFunc.toString() + ';');
+                                    result.push('templateFunction.includedFunctions = {');
+                                    Object.keys(tmplFunc.includedFunctions).forEach(function (elem, index, array) {
+                                        result.push('"' + elem + '": ' + tmplFunc.includedFunctions[elem]);
+                                        if (index !== array.length - 1) {
+                                            result.push(',');
+                                        }
+                                    });
+                                    result.push('};');
                                 } else {
                                     result.push('function loadTemplateData(data, attributes) {');
                                     result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' + fullName + '"}, attributes);};');
@@ -89,13 +100,15 @@ module.exports = function (grunt) {
                                 result.push('templateFunction.toJSON = function() {return {$serialized$: "func", module: "' + fullName + '"}};');
                                 result.push('return templateFunction;');
 
-                                let depsStr = 'var _deps = {};',
-                                    i = tclosure ? 3 : 2;
+                                _deps.splice(0, 2);
+                                let
+                                    depsStr = 'var _deps = {};',
+                                    i = tclosure ? 1 : 0;
                                 for (; i < _deps.length; i++) {
                                     depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
                                 }
 
-                                let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);var tmpl=deps[0];var config=deps[1];${tclosureStr + depsStr + result.join('')}});`;
+                                let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
                                 fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
                                     fs.writeFile(fullPath, data, function (err) {
