@@ -62,17 +62,20 @@ module.exports = function less1by1Task(grunt) {
     }, function writeCSS(compileLessError, output) {
 
         if (compileLessError) {
-            grunt.log.ok(compileLessError);
+
+            grunt.log.error(`${compileLessError.message} in file: ${compileLessError.filename} on line: ${compileLessError.line}`);
         }
         let suffix = '';
 
         if (itIsControl) {
-          suffix = ( theme === DEFAULT_THEME ) ? '' : `__${theme}`
+          suffix = ( theme === DEFAULT_THEME ) ? '' : `__${theme}`;
         }
         let newName = `${path.dirname(filePath)}/${path.basename(filePath, '.less')}${suffix}.css`;
         if (output) {
             fs.writeFile(newName, output.css, {flag: 'wx'}, function writeFileCb(writeFileError) {
-                if (writeFileError) grunt.log.ok(`Не могу записать файл. Ошибка: ${writeFileError.message}.`);
+                if (writeFileError) {
+                    grunt.log.ok(`Не могу записать файл. Ошибка: ${writeFileError.message}.`);
+            }
                 grunt.log.ok(`file ${filePath} successfuly compiled. Theme: ${theme}`);
             });
         }
@@ -90,15 +93,15 @@ module.exports = function less1by1Task(grunt) {
 
             if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
-                  let theme = resolveThemeName(filepath)
+                  let theme = resolveThemeName(filepath);
                     if (itIsControl(filepath)) {
 
                       for (let themeName of themes) {
-                        processLessFile(data, filepath, readFileError, themeName, true)
+                        processLessFile(data, filepath, readFileError, themeName, true);
                       }
                     }
                     else {
-                      processLessFile(data, filepath, readFileError, theme, false)
+                      processLessFile(data, filepath, readFileError, theme, false);
                     }
 
                 });
