@@ -115,7 +115,7 @@ $ws = (function(){
          appRoot: '/',
          resourceRoot: '/resources/',
          wsRoot: '/ws/',
-         defaultServiceUrl: '/service/sbis-rpc-service300.dll',
+         defaultServiceUrl: '/service/',
          debug: window && window.location.hash.indexOf('dbg') > 0,
          saveLastState: true,
          checkSessionCookie: true,
@@ -4256,7 +4256,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} object Название объекта бизнес-логики.
     * @param {String} methodName Имя метода.
     * @param {Object} params Параметры. Различные параметры в зависимости от метода.
-    * @param {String} url ссылка на service, если не задано, то смотрим на сервис по умолчанию: '/service/sbis-rpc-service300.dll'
+    * @param {String} url ссылка на service, если не задано, то смотрим на сервис по умолчанию: '/service/'
     * @param {Object} useGET Создать GET-запрос. Важно, на нашем сервере есть ограничение по длине запроса, так что пользоваться этим параметром нужно на свой страх и риск.
     * Важно учесть параметр "fileDownloadToken" - он будет добавлен, если не передан.
     * Метод saveToFile при формировании запроса передает в метод бизнес-логики ещё один параметр к перечисленным в
