@@ -43,12 +43,12 @@ module.exports = function (grunt) {
             APPLICATION_ROOT: application,
             SBIS_ROOT: application + 'ws/',
             RESOURCE_ROOT: application + 'resources/',
-            SERVICES_PATH: srvPath || application + 'service/sbis-rpc-service300.dll',
+            SERVICES_PATH: srvPath || application + 'service/',
             USER_PARAMS: userParams,
             GLOBAL_PARAMS: globalParams,
-            SAVE_LAST_STATE: false,
-            ROOT: root,
-            START_DIALOG: ''
+            SAVE_LAST_STATE: false: root,
+            START_DIALOG: '',
+            ROOT
         };
     }
 
