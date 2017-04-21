@@ -46,9 +46,9 @@ module.exports = function (grunt) {
             SERVICES_PATH: srvPath || application + 'service/',
             USER_PARAMS: userParams,
             GLOBAL_PARAMS: globalParams,
-            SAVE_LAST_STATE: false: root,
-            START_DIALOG: '',
-            ROOT
+            SAVE_LAST_STATE: false,
+            ROOT: root,
+            START_DIALOG: ''
         };
     }
 
