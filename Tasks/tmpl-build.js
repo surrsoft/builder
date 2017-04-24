@@ -10,6 +10,10 @@ const dblSlashes = /\\/g;
 const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
 
+function setBuildToYellow() {
+    console.log('resources error');
+    console.log('Critical ERROR occured while building tmpl or xhtml!')
+}
 function resolverControls(path) {
     return `tmpl!${path}`;
 }
@@ -59,6 +63,7 @@ module.exports = function (grunt) {
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
+                            setBuildToYellow();
                             return callback();
                         }
 
@@ -122,10 +127,12 @@ module.exports = function (grunt) {
                                 });
                             } catch (err) {
                                 console.log(err, fullName, fullPath);
+                                setBuildToYellow();
                                 callback();
                             }
                         }, function (err) {
                             console.log(err, fullName, fullPath);
+                            setBuildToYellow();
                             callback();
                         });
                     });
@@ -174,6 +181,7 @@ module.exports = function (grunt) {
                 fs.readFile(fullPath, 'utf8', function (err, html) {
                     if (err) {
                         console.log(`Potential 404 error: ${err}`);
+                        setBuildToYellow();
                         return callback();
                     }
 
@@ -207,6 +215,7 @@ module.exports = function (grunt) {
                         });
                     } catch (err) {
                         console.log(err, fullName, fullPath);
+                        setBuildToYellow();
                         callback();
                     }
                 });
