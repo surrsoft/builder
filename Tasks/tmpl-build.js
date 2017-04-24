@@ -11,8 +11,8 @@ const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
 
 function setBuildToYellow() {
-    console.log('resources error');
-    console.log('Critical ERROR occured while building tmpl or xhtml!')
+    grunt.log.warn('resources error');
+    grunt.log.warn('Critical ERROR occured while building tmpl or xhtml!')
 }
 function resolverControls(path) {
     return `tmpl!${path}`;
