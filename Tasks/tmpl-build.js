@@ -58,7 +58,7 @@ module.exports = function (grunt) {
                         return setImmediate(callback);
                     }
 
-                    let conf = {config: config, filename: filename};
+                    let conf = {config: config, filename: filename, fromBuilderTmpl: true};
 
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
