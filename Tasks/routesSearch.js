@@ -8,15 +8,22 @@ var
     jsModules;
 
 function getRoutes(script, file) {
-    var ast = esprima.parse(script);
-    traverse(ast, {
-        enter: function (node) {
-            //Ищем оператор =
-            if (node.type == 'AssignmentExpression' && node.operator == '=') {
-                parseAssignment(node.left, node.right, file);
+    try {
+        var ast = esprima.parse(script);
+        traverse(ast, {
+            enter: function (node) {
+                //Ищем оператор =
+                if (node.type == 'AssignmentExpression' && node.operator == '=') {
+                    parseAssignment(node.left, node.right, file);
+                }
             }
-        }
-    });
+        });
+    }
+    catch(e) {
+        grunt.fail.fatal(`Routes-search: ERROR while parsing file: ${file}
+        Message: ${e.message}`);
+    }
+
 }
 
 function addToSource(file, info) {
