@@ -63,7 +63,7 @@ module.exports = function less1by1Task(grunt) {
 
         if (compileLessError) {
 
-            grunt.log.error(`${compileLessError.message} in file: ${compileLessError.filename} on line: ${compileLessError.line}`);
+            grunt.log.ok(`${compileLessError.message} in file: ${compileLessError.filename} on line: ${compileLessError.line}`);
         }
         let suffix = '';
 
