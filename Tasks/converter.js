@@ -158,7 +158,7 @@ module.exports = function (grunt) {
                             let ast = helpers.parseModule(text.toString());
 
                             if (ast instanceof Error) {
-                                console.log(`------------------------ Bad file: ${file}`, ast);
+                                grunt.log.error(`[ERROR]: Syntax error in the file: ${file}`, ast);
                                 grunt.fail.fatal(file, ast);
                                 return callback(ast);
                             }
