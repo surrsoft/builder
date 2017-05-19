@@ -90,7 +90,7 @@ module.exports = function (grunt) {
         if (!outFileName) {
             return cb();
         } else if (!htmlTemplate) {
-            grunt.log.warn(`Using default template for output file ${outFileName}.html`);
+            grunt.log.ok(`Using default template for output file ${outFileName}.html`);
         }
 
         htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
