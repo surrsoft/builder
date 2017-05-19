@@ -91,14 +91,6 @@ module.exports = function (grunt) {
             return cb();
         } else if (!htmlTemplate) {
             grunt.log.warn(`Using default template for output file ${outFileName}.html`);
-        } else if (!(htmlTemplate.indexOf('Тема Скрепка') > -1 || htmlTemplate.indexOf('Tema_Skrepka') > -1)) {
-            // Не гадим в логи
-
-            if (!cache.IAllreadyToldIt) {
-                grunt.log.warn('HTML Template is not from Tema_Skrepka(Тема Cкрепка)', htmlTemplate);
-                cache.IAllreadyToldIt = true;    
-            }
-            
         }
 
         htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
