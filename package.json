@@ -18,7 +18,7 @@
     "grunt-contrib-cssmin": "^1.0.2",
     "grunt-contrib-uglify": "2.1.0",
     "grunt-text-replace": "^0.4.0",
-    "grunt-wsmod-packer": "2.3.32",
+    "grunt-wsmod-packer": "2.3.33",
     "humanize": "0.0.9",
     "less": "^2.7.2",
     "minimatch": "^3.0.3",
