@@ -62,7 +62,7 @@ module.exports = function (grunt) {
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
-                            warnTmplBuild();
+                            warnTmplBuild(err);
                             return callback();
                         }
 
@@ -178,7 +178,7 @@ module.exports = function (grunt) {
                 fs.readFile(fullPath, 'utf8', function (err, html) {
                     if (err) {
                         console.log(`Potential 404 error: ${err}`);
-                        setBuildToYellow();
+                        warnTmplBuild(err);
                         return callback();
                     }
 
@@ -211,8 +211,7 @@ module.exports = function (grunt) {
                             });
                         });
                     } catch (err) {
-                        console.log(err, fullName, fullPath);
-                        setBuildToYellow();
+                        warnTmplBuild(err, fullName, fullPath);
                         callback();
                     }
                 });
