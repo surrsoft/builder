@@ -10,9 +10,8 @@ const dblSlashes = /\\/g;
 const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
 
-function setBuildToYellow() {
-    grunt.log.warn('resources error');
-    grunt.log.warn('Critical ERROR occured while building tmpl or xhtml!')
+function warnTmplBuild(err, fullName, fullPath) {
+    grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
 }
 function resolverControls(path) {
     return `tmpl!${path}`;
@@ -63,7 +62,7 @@ module.exports = function (grunt) {
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
-                            setBuildToYellow();
+                            warnTmplBuild();
                             return callback();
                         }
 
@@ -126,13 +125,11 @@ module.exports = function (grunt) {
                                     });
                                 });
                             } catch (err) {
-                                console.log(err, fullName, fullPath);
-                                setBuildToYellow();
+                                warnTmplBuild(err, fullName, fullPath);
                                 callback();
                             }
                         }, function (err) {
-                            console.log(err, fullName, fullPath);
-                            setBuildToYellow();
+                            warnTmplBuild(err, fullName, fullPath);
                             callback();
                         });
                     });
