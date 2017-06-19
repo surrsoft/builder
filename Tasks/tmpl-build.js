@@ -87,17 +87,20 @@ module.exports = function (grunt) {
                                      */
                                     let tmplFunc = templateRender.func(traversed, conf);
                                     result.push(tmplFunc.toString() + ';');
-                                    /*Сократим размер пакета, т.к. функции сейчас генерируются в опциях
+
                                     if (tmplFunc.includedFunctions) {
                                         result.push('templateFunction.includedFunctions = {');
+                                        /*Сократим размер пакета, т.к. функции сейчас генерируются в опциях
+                                        Но оставим определение, т.к. возможны обращения к свойству внутри WS
                                         Object.keys(tmplFunc.includedFunctions).forEach(function (elem, index, array) {
                                             result.push('"' + elem + '": ' + tmplFunc.includedFunctions[elem]);
                                             if (index !== array.length - 1) {
                                                 result.push(',');
                                             }
                                         });
+                                        */
                                         result.push('};');
-                                    }*/
+                                    }
                                 } else {
                                     result.push('function loadTemplateData(data, attributes) {');
                                     result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' + fullName + '"}, attributes);};');
