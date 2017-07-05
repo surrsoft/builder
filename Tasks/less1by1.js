@@ -6,7 +6,7 @@ const helpers = require('./../lib/utils/helpers'),
     less = require('less'),
     getModuleNameRegExp = new RegExp('\/resources\/([^/]+)'),
     DEFAULT_THEME = 'online',
-    themes = ['online', 'carry', 'presto'],
+    themes = ['online', 'carry', 'presto', 'carrynew', 'prestonew'],
     dblSlashes = /\\/g;
 /**
  @workaround Временно ресолвим текущую тему по названию модуля.
