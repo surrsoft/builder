@@ -53,9 +53,7 @@ module.exports = function (grunt) {
                         _deps = JSON.parse(JSON.stringify(deps)),
                         result = ['var templateFunction = '];
 
-                    if (value.amd) {
-                        return setImmediate(callback);
-                    }
+
 
                     let conf = {config: config, filename: filename, fromBuilderTmpl: true};
 
@@ -182,7 +180,7 @@ module.exports = function (grunt) {
                 fs.readFile(fullPath, 'utf8', function (err, html) {
                     if (err) {
                         console.log(`Potential 404 error: ${err}`);
-                        warnTmplBuild(err);
+                        warnTmplBuild(err, fullName, fullPath);
                         return callback();
                     }
 
