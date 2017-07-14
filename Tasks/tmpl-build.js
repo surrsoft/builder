@@ -52,7 +52,9 @@ module.exports = function (grunt) {
                         fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
                         _deps = JSON.parse(JSON.stringify(deps)),
                         result = ['var templateFunction = '];
-
+                    if (value.amd) {
+                        return setImmediate(callback);
+                    }
 
 
                     let conf = {config: config, filename: filename, fromBuilderTmpl: true};
