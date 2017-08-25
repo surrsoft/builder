@@ -10,6 +10,7 @@ const argv           = require('yargs').argv;
 const esprima        = require('esprima');
 const estraverse     = require('estraverse');
 const assign         = require('object-assign');
+const translit       = require('../lib/utils/transliterate');
 // const applySourceMap = require('vinyl-sourcemaps-apply');
 
 /* SUB TASKS */
@@ -36,8 +37,6 @@ module.exports = opts => {
             if (file.isNull() || !('.js' === path.extname(file.relative))) return cb(null, file);
             if (file.isStream()) return cb(new PluginError('gulp-sbis-traverse', 'Streaming not supported'));
             if (!opts.acc) return cb(new PluginError('gulp-sbis-traverse', 'acc option is required'));
-            // if (!opts.acc.contents) return cb(new PluginError('gulp-sbis-traverse', 'contents option is required'));
-            // console.log('gulp-sbis-traverse: file.path ===', file.path);
             let ast;
             try {
                 ast = esprima.parse(file.contents.toString('utf8'));
@@ -78,7 +77,8 @@ module.exports = opts => {
             ].every(glob => minimatch(file.path, glob));
 
             let collectDeps = [
-                '**/{Модули интерфейса,ws}/**/*.js',
+                // '**/{Модули интерфейса,ws}/**/*.js',
+                '**/*.js',
                 '!**/*.test.js',
                 '!**/*.routes.js',
                 '!**/*.worker.js',
@@ -88,11 +88,24 @@ module.exports = opts => {
             ].every(glob => minimatch(file.path, glob)) && !/ws[\/\\]lib[\/\\]Control[\/\\]\w+[\/\\]demo[\/\\]/i.test(file.path);
             if (collectDeps) needCollectDependencies = true;
 
-            let routesearch = minimatch(file.path, '**/{Модули интерфейса,ws}/**/*.routes.js');
+            // let routesearch = minimatch(file.path, '**/{Модули интерфейса,ws}/**/*.routes.js');
+            let routesearch = minimatch(file.path, '**/*.routes.js');
             if (routesearch) {
                 opts.acc.markAsRoute(file.path);
                 opts.acc.addAst(file.path, ast);
                 needRouteSearch = true;
+            }
+            let accFile = opts.acc.getFile(file.path);
+
+            if (!accFile) { // А ВДРУГ...
+                accFile = {
+                    __WS: /[\/\\]ws[\/\\]/i.test(file.path),
+                    base: file.base + '',
+                    path: file.path + '',
+                    relative: file.relative + '',
+                    dest: /[\/\\]ws[\/\\]/i.test(file.path) ? path.join(argv.root, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
+                    contents: file.contents.toString('utf8')
+                };
             }
 
             estraverse.traverse(ast, {
@@ -129,7 +142,7 @@ module.exports = opts => {
                                 base: file.base,
                                 relative: file.relative,
                                 path: file.path,
-                                dest: opts.acc.getFile(file.path).dest
+                                dest: accFile.dest
                             }
                         })
                     }
@@ -157,7 +170,7 @@ module.exports = opts => {
                 });
             }*/
 
-            if (isDeanonymize && opts.acc.getFile(file.path).__anonymous) {
+            if (isDeanonymize && accFile && accFile.__anonymous) {
                 needDeanonymize = true;
                 return cb(null);
             }

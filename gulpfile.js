@@ -66,7 +66,7 @@ const argv = yargs
     .help()
     .argv;
 
-let since     = 1;
+let since = 1;
 try {
     since = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'lastmtime.json'))).lastmtime;
 } catch (err) {
@@ -79,6 +79,7 @@ gulp.task('ws-copy', function () {
 });
 
 gulp.task('build', require('./gulpTasksV2/index'));
+
 // FIXME: самое первое что надо делать - это копировать WS !!!!
 // gulp  --root=C:/projects/test_builder/public/grunt_distr --application=// --modules="C:/projects/test_builder/modules.json" --service_mapping="PHPRPC /tel/service/index.php catalogServiceUrl http://etodelo.ru/service/ specifications /specifications/service/ sppServiceUrl http://ea1-crm-sphinx-dev/spp/service/ Классификатор /class/service/"
 gulp.task('default', gulp.series('ws-copy', 'build'));

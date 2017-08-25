@@ -5,6 +5,7 @@ const path           = require('path');
 const through2       = require('through2');
 const gutil          = require('gulp-util');
 const PluginError    = gutil.PluginError;
+const VFile          = require('vinyl');
 const less           = require('less');
 const minimatch      = require('minimatch');
 const argv           = require('yargs').argv;
@@ -34,7 +35,8 @@ module.exports = opts => {
         function (file, enc, cb) {
             if (file.isStream()) return cb(new PluginError('gulp-sbis-less', 'Streaming not supported'));
             // if (!opts.acc) return cb(new PluginError('gulp-sbis-less', 'acc option is required'));
-            if (!minimatch(file.path, '**/{Модули интерфейса,ws}/**/*.less')) return cb(null, file);
+            // if (!minimatch(file.path, '**/{Модули интерфейса,ws}/**/*.less')) return cb(null, file);
+            if (!minimatch(file.path, '**/*.less')) return cb(null, file);
 
             if (file.sourceMap) opts.sourcemap = true;
 
@@ -44,6 +46,7 @@ module.exports = opts => {
             if (itIsControl(file.path)) {
                 for (let themeName of themes) {
                     files.push({
+                        __WS: file.__WS || false,
                         base: file.base,
                         path: file.path,
                         contents: file.contents + '',
@@ -62,7 +65,7 @@ module.exports = opts => {
                 let promises = [];
                 for (let i = 0, l = files.length; i < l; i++) {
                     promises.push(new Promise((resolve, reject) => {
-                        processLessFile(files[i], files[i].themeName, true, resolve);
+                        processLessFile(files[i], files[i].themeName, true, resolve, this);
                     }));
                 }
                 Promise.all(promises).then(() => {
@@ -103,8 +106,7 @@ function itIsControl (path) {
 }
 
 // processLessFile(file.contents.toString('utf8'), file.path, themeName, true);
-function processLessFile(file, theme, itIsControl, cb) {
-
+function processLessFile(file, theme, itIsControl, cb, ctx) {
     let vars        = path.join(themesPath, theme, 'variables');
     let mixins      = path.join(themesPath, 'mixins');
     let lessData    = file.contents + '';
@@ -125,10 +127,9 @@ function processLessFile(file, theme, itIsControl, cb) {
 
         if (compileLessError) {
             let message = `${compileLessError.message} in file: ${compileLessError.filename} on line: ${compileLessError.line}`;
-            // FIXME: постоянно ошибки !!!
+            // FIXME: постоянно ошибки, возможно это нормально !!!
             // return cb(new PluginError('gulp-sbis-less', message));
-            gutil.log('gulp-sbis-less: ' + message);
-            // console.log('\n\nimports =', imports)
+            if (!ctx) gutil.log('gulp-sbis-less: ' + message);
             return cb(null, file);
         }
 
@@ -136,7 +137,18 @@ function processLessFile(file, theme, itIsControl, cb) {
 
         if (itIsControl) suffix = ( theme === DEFAULT_THEME ) ? '' : `__${theme}`;
         file.path = gutil.replaceExtension(file.path, suffix + '.css');
-        file.contents = new Buffer(output.css); // output.css ???
+        file.contents = new Buffer(output.css);
+
+        if (ctx) {
+            ctx.push(new VFile({
+                // cwd base path contents
+                __WS: file.__WS || false,
+                base: file.base,
+                path: file.path,
+                contents: file.contents
+            }));
+            return cb();
+        }
         /*if (output.sourcemap) {
             output.sourcemap.file = file.relative;
             output.sourcemap.sources = output.sourcemap.sources.map(function (source) {

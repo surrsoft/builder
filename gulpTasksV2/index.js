@@ -80,11 +80,13 @@ module.exports = () => {
 
     if (global.__CHANGED__) {
         src  = global.__CHANGED__;
+        // FIXME: в исходниках нет Модули интерфейса
         base = /.+Модули\sинтерфейса/i.exec(global.__CHANGED__)[0];
     }
 
     if (global.__ADD__) {
         src   = global.__ADD__;
+        // FIXME: в исходниках нет Модули интерфейса
         base  = /.+Модули\sинтерфейса/i.exec(global.__ADD__)[0];
         since = 1;
     }

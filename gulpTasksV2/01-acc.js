@@ -47,12 +47,13 @@ let deanonymizeData = {
     badRequireDeps: {}
 };
 let routesInfo = {};
+let packwsmod;
 
 try {
     // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
     contents = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'contents.json')));
 } catch (err) {
-    console.error(err);
+    console.warn(err);
 }
 if (argv.service_mapping) {
     let srv_arr = argv.service_mapping.trim().split(' ');
@@ -67,18 +68,24 @@ if (argv.service_mapping) {
 try {
     moduleDependencies = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'module-dependencies.json')));
 } catch (err) {
-    console.error(err);
+    console.warn(err);
 }
 try {
     deanonymizeData = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'deanonymizeData.json')));
 } catch (err) {
-    console.error(err);
+    console.warn(err);
 }
 
 try {
     routesInfo = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'routes-info.json')));
 } catch (err) {
-    console.error(err);
+    console.warn(err);
+}
+
+try {
+    packwsmod = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'packwsmod.json')));
+} catch (err) {
+    console.warn(err);
 }
 
 let modulesPaths = JSON.parse(fs.readFileSync(argv.modules));
@@ -103,11 +110,15 @@ let graph = new DepGraph();
 
 let globPattern = patternFromModulesArr(modulesPaths, []);
 let wsPattern   = path.join(argv.root, argv.application, 'ws/**/*.*');
+// path.join(argv.root, argv.application, 'ws/**/*.*')
 gutil.log('START CREATING ACC');
 let filesArr = glob.sync(globPattern);
 let wsArr    = glob.sync(wsPattern);
 for (let i = 0, l = filesArr.length; i < l; i++) _acc[filesArr[i]]  = null;
-for (let i = 0, l = wsArr.length; i < l; i++)    _acc[wsArr[i]]     = null;
+for (let i = 0, l = wsArr.length; i < l; i++)    {
+    if (wsArr[i].endsWith('.gz')) continue;
+    _acc[wsArr[i]]     = null;
+}
 gutil.log('CREATING ACC DONE');
 
 module.exports = opts => {
@@ -160,26 +171,24 @@ module.exports = opts => {
             if (file.isStream()) return cb(new PluginError('gulp-sbis-acc', 'Streaming not supported'));
             if (opts.modules instanceof Error) return cb(new PluginError('gulp-sbis-acc', opts.modules.message));
 
-            if (file.path.indexOf(wsPath) == 0) file.__WS = true;
+            if (file.path.indexOf(wsPath) >= 0) file.__WS = true;
 
             let mtime = new Date(file.stat.mtime).getTime();
             if (mtime > since) since = mtime;
 
             let filePath = isUnixSep ? file.path : file.path.replace(/\\/g, '/');
 
-            if (filePath in _acc) {
-                _acc[filePath] = {
-                    __WS: file.__WS || false,
-                    cwd: file.cwd + '',
-                    base: file.base + '',
-                    path: file.path + '',
-                    relative: file.relative + '',
-                    dest: file.__WS ? path.join(argv.root, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
-                    contents: opts.ext.some(ext => ext === path.extname(file.relative)) ? file.contents.toString('utf8') : null
-                    // isNew: true,
-                };
-                // _acc[_acc[filePath].dest] = _acc[filePath];
-            }
+            _acc[filePath] = {
+                __WS: file.__WS || false,
+                cwd: file.cwd + '',
+                base: file.base + '',
+                path: file.path + '',
+                relative: file.relative + '',
+                dest: file.__WS ? path.join(argv.root, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
+                contents: opts.ext.some(ext => ext === path.extname(file.relative)) ? file.contents.toString('utf8') : null
+                // isNew: true,
+            };
+            // if (filePath in _acc) {}
 
             cb(null, file);
         },
@@ -234,6 +243,7 @@ Object.defineProperty(module.exports, 'deanonymizeData', {
 module.exports.modules      = modulesPaths;
 module.exports.graph        = graph;
 module.exports.routesInfo   = routesInfo;
+
 
 module.exports.markAsAnonymous = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
@@ -305,6 +315,7 @@ module.exports.remove = filePath => {
     delete _acc[_filePathAcc];
 
     // DELETE FROM CONTENTS.jsModules
+    // FIXME: в исходниках нет Модули интерфейса
     let _filePathContents = /.+Модули\sинтерфейса[\/\\](.+)/i.exec(_filePath)[1];
         _filePathContents = translit(_filePathContents).replace(/\\/g, '/');
     for (let jsModule in contents.jsModules) {
@@ -339,13 +350,31 @@ module.exports.add = newPath => {
 
 module.exports.loadFile = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
-    let base        = /.+Модули\sинтерфейса|.+sbis3-builder/i.exec(filePath);
-    let relative    = /.+Модули\sинтерфейса[\/\\](.+)[\/\\]?|.+sbis3-builder[\/\\](.+)[\/\\]?/i.exec(filePath);
+    let base, relative;
+    modulesPaths.forEach(m => {
+        if (filePath.startsWith(m)) {
+            base = path.join(m, '../');
+            let re = new RegExp(m + '[/\]?(.+)');
+            relative = (re.exec(filePath))[1]
+        }
+    });
+
+    if (!base) {
+        if (/[\/\\]ws[\/\\]/i.test(filePath)) {
+            base = argv['ws-path'];
+            let re = new RegExp(argv['ws-path'] + '[/\]?(.+)');
+            relative = (re.exec(filePath))[1]
+        }
+    }
+    // let base        = /.+Модули\sинтерфейса|.+sbis3-builder/i.exec(filePath);
+    // let relative    = /.+Модули\sинтерфейса[\/\\](.+)[\/\\]?|.+sbis3-builder[\/\\](.+)[\/\\]?/i.exec(filePath);
     _acc[filePath] = {
         cwd: process.cwd(),
-        base: base[0],
+        // base: base[0],
+        base: base,
         path: filePath,
-        relative: relative[1],
+        // relative: relative[1],
+        relative: relative,
         contents: fs.readFileSync(filePath) + ''
     };
 };
@@ -379,9 +408,19 @@ module.exports.addContentsJsModule = (moduleName, fileRelative) => {
 
 module.exports.addContentsHtmlNames = (k, v) => { contents.htmlNames[k] = v; };
 
+
+let parsepackwsmod = false;
+module.exports.packwsmod = packwsmod;
+Object.defineProperty(module.exports, 'parsepackwsmod', {
+    enumerable: false,
+    configurable: false,
+    get: function () { return parsepackwsmod; },
+    set: function (v) { parsepackwsmod = v; }
+});
 module.exports.addContentsXmlDeprecated = (k, v) => {
     v = v.replace(/^[\/\\]{0,1}resources[\/\\]{0,1}/i, '');
     contents.xmlContents[k] = v;
+    parsepackwsmod = true;
 };
 
 module.exports.addContentsHtmlDeprecated = (k, v) => { contents.htmlNames[k] = v; };
@@ -411,11 +450,13 @@ function patternFromModulesArr (modules, ext) {
     let _result   = '';
 
     modules.forEach(m => {
-        let baseKey = /.+Модули\sинтерфейса/i.exec(m);
-        if (Array.isArray(baseKey)) _base[path.normalize(baseKey[0])] = true;
+        // let baseKey = /.+Модули\sинтерфейса/i.exec(m);
+        let baseKey = /(.+[\/\\])([A-Za-zА-Яа-я_0-9\s\-\.]{1,100})$/i.exec(m);
+        if (Array.isArray(baseKey)) _base[path.normalize(baseKey[1])] = true;
 
-        let relativeKey = /.+Модули\sинтерфейса[\/\\](.+)[\/\\]?/i.exec(m);
-        if (Array.isArray(relativeKey) && relativeKey.length >= 2) _relative[path.normalize(relativeKey[1])] = true;
+        // let relativeKey = /.+Модули\sинтерфейса[\/\\](.+)[\/\\]?/i.exec(m);
+        let relativeKey = baseKey;
+        if (Array.isArray(relativeKey) && relativeKey.length >= 3) _relative[path.normalize(baseKey[2])] = true;
     });
 
     if (Object.keys(_base).length > 1) {
