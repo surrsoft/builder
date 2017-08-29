@@ -163,8 +163,8 @@ module.exports = opts => {
                         opts.acc.packwsmod.cache      = cache;
                         opts.acc.packwsmod.configTemp = configTemp;
                         let packwsmodJSON = new VFile({
-                            base: path.join(argv.root, 'resources'),
-                            path: path.join(argv.root, 'resources', 'packwsmod.json'),
+                            base: path.join(argv.root, argv.application, 'resources'),
+                            path: path.join(argv.root, argv.application, 'resources', 'packwsmod.json'),
                             contents: new Buffer(JSON.stringify(opts.acc.packwsmod))
                         });
                         packwsmodJSON.__MANIFEST__ = true;

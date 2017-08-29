@@ -61,7 +61,7 @@ module.exports = () => {
     let since = 1;
 
     try {
-        since = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'lastmtime.json'))).lastmtime;
+        since = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'lastmtime.json'))).lastmtime;
     } catch (err) {
         // gutil.log(err);
     }
@@ -167,30 +167,30 @@ module.exports = () => {
         }))
         .pipe(gulp.dest(file => {
             if (file.__WS) {
-                return path.join(argv.root, 'ws');
+                return path.join(argv.root, argv.application, 'ws');
             } else if (file.__MANIFEST__) {
-                return path.join(argv.root, 'resources');
+                return path.join(argv.root, argv.application, 'resources');
             } else if (file.__STATIC__) {
                 return path.join(argv.root, argv.application);
             } else {
                 file.base = translit(file.base);
                 file.path = translit(file.path);
-                return path.join(argv.root, 'resources'/*, translit(path.basename(file.base))*/)
+                return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
         }))
         // .pipe(packwsmod({ acc: acc }))
         .pipe(gulpif(file => !(/\.original\.[xhtmltp]{3,5}$/i.test(file.path)), gzip({ threshold: 1024, gzipOptions: { level: 9 } })))
         .pipe(gulpif(file => '.gz' == path.extname(file.path), gulp.dest(file => {
             if (file.__WS) {
-                return path.join(argv.root, 'ws');
+                return path.join(argv.root, argv.application, 'ws');
             } else if (file.__MANIFEST__) {
-                return path.join(argv.root, 'resources');
+                return path.join(argv.root, argv.application, 'resources');
             } else if (file.__STATIC__) {
                 return path.join(argv.root, argv.application);
             } else {
                 file.base = translit(file.base);
                 file.path = translit(file.path);
-                return path.join(argv.root, 'resources'/*, translit(path.basename(file.base))*/)
+                return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
         })));
 };

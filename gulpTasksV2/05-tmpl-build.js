@@ -106,8 +106,8 @@ function execute (opts, cb, ctx) {
         executePaths = [];
         let moduleDependenciesJSON = new VFile({
             // cwd base path contents
-            base: path.join(argv.root, 'resources'),
-            path: path.join(argv.root, 'resources', 'module-dependencies.json'),
+            base: path.join(argv.root, argv.application, 'resources'),
+            path: path.join(argv.root, argv.application, 'resources', 'module-dependencies.json'),
             contents: new Buffer(opts.acc.graph.toJSON())
         });
         moduleDependenciesJSON.__MANIFEST__ = true;

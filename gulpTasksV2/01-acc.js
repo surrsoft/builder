@@ -51,7 +51,7 @@ let packwsmod;
 
 try {
     // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
-    contents = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'contents.json')));
+    contents = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'contents.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -66,24 +66,24 @@ if (argv.service_mapping) {
 }
 
 try {
-    moduleDependencies = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'module-dependencies.json')));
+    moduleDependencies = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'module-dependencies.json')));
 } catch (err) {
     console.warn(err);
 }
 try {
-    deanonymizeData = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'deanonymizeData.json')));
-} catch (err) {
-    console.warn(err);
-}
-
-try {
-    routesInfo = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'routes-info.json')));
+    deanonymizeData = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'deanonymizeData.json')));
 } catch (err) {
     console.warn(err);
 }
 
 try {
-    packwsmod = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'packwsmod.json')));
+    routesInfo = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'routes-info.json')));
+} catch (err) {
+    console.warn(err);
+}
+
+try {
+    packwsmod = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmod.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -184,7 +184,7 @@ module.exports = opts => {
                 base: file.base + '',
                 path: file.path + '',
                 relative: file.relative + '',
-                dest: file.__WS ? path.join(argv.root, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
+                dest: file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
                 contents: opts.ext.some(ext => ext === path.extname(file.relative)) ? file.contents.toString('utf8') : null
                 // isNew: true,
             };
@@ -196,8 +196,8 @@ module.exports = opts => {
             if (since) {
                 let lastmtimeJSON = new VFile({
                     // cwd base path contents
-                    base: path.join(argv.root, 'resources'),
-                    path: path.join(argv.root, 'resources', 'lastmtime.json'),
+                    base: path.join(argv.root, argv.application, 'resources'),
+                    path: path.join(argv.root, argv.application, 'resources', 'lastmtime.json'),
                     contents: new Buffer(JSON.stringify({ lastmtime: since + 100 }))
                 });
                 lastmtimeJSON.__MANIFEST__ = true;
@@ -209,8 +209,8 @@ module.exports = opts => {
                 for (let k in _acc) _contents[k] = null;
                 let accJSON = new VFile({
                     // cwd base path contents
-                    base: path.join(argv.root, 'resources'),
-                    path: path.join(argv.root, 'resources', 'acc.json'),
+                    base: path.join(argv.root, argv.application, 'resources'),
+                    path: path.join(argv.root, argv.application, 'resources', 'acc.json'),
                     contents: new Buffer(JSON.stringify(_contents))
                 });
                 accJSON.__MANIFEST__ = true;

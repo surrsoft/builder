@@ -68,14 +68,14 @@ const argv = yargs
 
 let since = 1;
 try {
-    since = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'lastmtime.json'))).lastmtime;
+    since = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application,  'resources', 'lastmtime.json'))).lastmtime;
 } catch (err) {
     gutil.log(err);
 }
 
 gulp.task('ws-copy', function () {
     return gulp.src(path.join(argv['ws-path'], './**/*.*'), { since: since })
-        .pipe(gulp.dest(path.join(argv.root, 'ws')));
+        .pipe(gulp.dest(path.join(argv.root, argv.application, 'ws')));
 });
 
 gulp.task('build', require('./gulpTasksV2/index'));

@@ -103,7 +103,7 @@ module.exports = opts => {
                     base: file.base + '',
                     path: file.path + '',
                     relative: file.relative + '',
-                    dest: /[\/\\]ws[\/\\]/i.test(file.path) ? path.join(argv.root, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
+                    dest: /[\/\\]ws[\/\\]/i.test(file.path) ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
                     contents: file.contents.toString('utf8')
                 };
             }
@@ -248,33 +248,33 @@ module.exports = opts => {
             }
             let contentsJSON = new VFile({
                 // cwd base path contents
-                base: path.join(argv.root, 'resources'),
-                path: path.join(argv.root, 'resources', 'contents.json'),
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'contents.json'),
                 contents: new Buffer(JSON.stringify(opts.acc.contents))
             });
             let contentsJS = new VFile({
                 // cwd base path contents
-                base: path.join(argv.root, 'resources'),
-                path: path.join(argv.root, 'resources', 'contents.js'),
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'contents.js'),
                 contents: new Buffer('contents=' + JSON.stringify(opts.acc.contents))
             });
             let deanonymizeData = new VFile({
                 // cwd base path contents
-                base: path.join(argv.root, 'resources'),
-                path: path.join(argv.root, 'resources', 'deanonymizeData.json'),
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'deanonymizeData.json'),
                 contents: new Buffer(JSON.stringify(opts.acc.deanonymizeData))
 
             });
             let moduleDependenciesJSON = new VFile({
                 // cwd base path contents
-                base: path.join(argv.root, 'resources'),
-                path: path.join(argv.root, 'resources', 'module-dependencies.json'),
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'module-dependencies.json'),
                 contents: new Buffer(opts.acc.graph.toJSON())
             });
             let routesInfoJSON = new VFile({
                 // cwd base path contents
-                base: path.join(argv.root, 'resources'),
-                path: path.join(argv.root, 'resources', 'routes-info.json'),
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'routes-info.json'),
                 contents: new Buffer(JSON.stringify(opts.acc.routesInfo))
             });
             contentsJSON.__MANIFEST__               = true;
