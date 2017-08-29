@@ -98,7 +98,8 @@ function generateHTML (htmlTemplate, outFileName, replaceOpts, /*applicationRoot
         templatePath = path.join(__dirname, '../../resources/index.html'); // FIXME !!!!!: проверить в грунте __dirname
         opts.acc.add(templatePath);
     } else {
-        templatePath = path.join(opts.file.base, htmlTemplate);
+        // templatePath = path.join(opts.file.base, htmlTemplate);
+        templatePath = opts.acc.loadFileByRelative(htmlTemplate);
     }
     let text;
     if (opts.acc.containsPath(templatePath)) {

@@ -22,6 +22,7 @@ const uglify                = require('gulp-uglify');
 const minify                = require('gulp-babel-minify');
 const cssnano               = require('gulp-cssnano');
 const gzip                  = require('gulp-gzip');
+const chmod                 = require('gulp-chmod');
 
 const argv                  = require('yargs').argv;
 
@@ -67,9 +68,9 @@ module.exports = () => {
 
     let src = modulesPaths.map(p => p + path.sep + '**' + path.sep + '*.*');
         src.push(path.join(argv.root, argv.application, 'ws/**/*.*'));
-    // TODO: считывать весь WS ???
-    src.push('!' + path.join(argv.root, argv.application, 'ws/**/node_modules/**/*.js'));
-    src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.gz'));
+        // TODO: считывать весь WS ???
+        src.push('!' + path.join(argv.root, argv.application, 'ws/**/node_modules/**/*.js'));
+        src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.gz'));
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.test.js'));
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.routes.js'));
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.worker.js'));
@@ -147,6 +148,23 @@ module.exports = () => {
                 return path.join(argv.root, argv.application);
             }
         })))*/
+        .pipe(chmod({
+            owner: {
+                read: true,
+                write: true,
+                execute: true
+            },
+            group: {
+                read: true,
+                write: true,
+                execute: true
+            },
+            others: {
+                read: true,
+                write: true,
+                execute: true
+            }
+        }))
         .pipe(gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, 'ws');

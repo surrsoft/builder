@@ -354,7 +354,7 @@ module.exports.loadFile = filePath => {
     modulesPaths.forEach(m => {
         if (filePath.startsWith(m)) {
             base = path.join(m, '../');
-            let re = new RegExp(m + '[/\]?(.+)');
+            let re = new RegExp(m.replace(/\//g, '[\\/\\\\]').replace(/\(/g, '\\(').replace(/\)/g, '\\)') + '[\\/\\\\]?(.+)');
             relative = (re.exec(filePath))[1]
         }
     });
@@ -362,7 +362,7 @@ module.exports.loadFile = filePath => {
     if (!base) {
         if (/[\/\\]ws[\/\\]/i.test(filePath)) {
             base = argv['ws-path'];
-            let re = new RegExp(argv['ws-path'] + '[/\]?(.+)');
+            let re = new RegExp(argv['ws-path'] + '[\\/\\\\]?(.+)');
             relative = (re.exec(filePath))[1]
         }
     }
@@ -377,6 +377,58 @@ module.exports.loadFile = filePath => {
         relative: relative,
         contents: fs.readFileSync(filePath) + ''
     };
+};
+
+module.exports.loadFileByRelative = relativePath => {
+
+    // relativePath = isUnixSep ? relativePath : relativePath.replace(/\\/g, '/');
+    relativePath = relativePath.replace(/[\/\\]/g, '.');
+    relativePath = relativePath.replace(/\s/g, '\\s');
+    let fullPath, base, relative;
+    let re = new RegExp(relativePath + '$', 'i');
+
+    for (let p in _acc) {
+        // if (p.endsWith('grayTheme_newAccrodion.html')) {
+        //     console.log('\np=', p);
+        //     process.exit(0)
+        //
+        // }
+        if (re.test(p)) {
+            fullPath = p;
+            break;
+        }
+    }
+
+    if (fullPath) {
+        modulesPaths.forEach(m => {
+            if (fullPath.startsWith(m)) {
+                base = path.join(m, '../');
+                let re = new RegExp(m.replace(/\//g, '[\\/\\\\]').replace(/\(/g, '\\(').replace(/\)/g, '\\)') + '[\\/\\\\]?(.+)');
+                relative = (re.exec(fullPath))[1]
+            }
+        });
+    }
+
+    if (!base) {
+        if (fullPath && /[\/\\]ws[\/\\]/i.test(fullPath)) {
+            base = argv['ws-path'];
+            let re = new RegExp(argv['ws-path'] + '[/\]?(.+)');
+            relative = (re.exec(fullPath))[1]
+        }
+    }
+    // let base        = /.+Модули\sинтерфейса|.+sbis3-builder/i.exec(filePath);
+    // let relative    = /.+Модули\sинтерфейса[\/\\](.+)[\/\\]?|.+sbis3-builder[\/\\](.+)[\/\\]?/i.exec(filePath);
+    _acc[fullPath] = {
+        cwd: process.cwd(),
+        // base: base[0],
+        base: base,
+        path: fullPath,
+        // relative: relative[1],
+        relative: relative,
+        contents: fs.readFileSync(fullPath) + ''
+    };
+
+    return fullPath;
 };
 
 module.exports.getFile = filePath => {
@@ -444,6 +496,20 @@ module.exports.hasPath = filePath => {
 
 module.exports.clear = () => { for (let key in _acc) _acc[key] = null; };
 
+function patternFromModulesArr (modules) {
+    let res = '{';
+    let l = modules.length;
+    modules.forEach((m, i) => {
+        res += m;
+        if ((l - 1) == i) {
+            res += '}/**/*.*'
+        } else {
+            res += ',';
+        }
+    });
+    return res;
+}
+/*
 function patternFromModulesArr (modules, ext) {
     let _base     = {};
     let _relative = {};
@@ -482,7 +548,7 @@ function patternFromModulesArr (modules, ext) {
             }
         }
         _result += '}' + path.sep + '**' + path.sep + '*.*';
-        /*_result += '}' + path.sep + '**' + path.sep + '*{';
+        /!*_result += '}' + path.sep + '**' + path.sep + '*{';
 
         for (let i = 0, l = ext.length; i < l; i++) {
             if (_result.endsWith('{')) {
@@ -491,10 +557,10 @@ function patternFromModulesArr (modules, ext) {
                 _result += (',' + ext[i]);
             }
         }
-        _result += '}';*/
+        _result += '}';*!/
     } else if (Object.keys(_relative).length === 1) {
         _result += path.sep + Object.keys(_relative)[0] + path.sep + '**' + path.sep + '*.*';
-        /*_result += path.sep + Object.keys(_relative)[0] + path.sep + '**' + path.sep + '*{';
+        /!*_result += path.sep + Object.keys(_relative)[0] + path.sep + '**' + path.sep + '*{';
         for (let i = 0, l = ext.length; i < l; i++) {
             if (_result.endsWith('{')) {
                 _result += ext[i];
@@ -502,8 +568,8 @@ function patternFromModulesArr (modules, ext) {
                 _result += (',' + ext[i]);
             }
         }
-        _result += '}';*/
+        _result += '}';*!/
     }
 
     return _result;
-}
+}*/

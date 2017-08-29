@@ -41,6 +41,7 @@
     "gulp-babel-minify": "^0.2.0",
     "gulp-cached": "^1.1.1",
     "gulp-changed": "^3.1.0",
+    "gulp-chmod": "^2.0.0",
     "gulp-clean-css": "^3.4.2",
     "gulp-cli": "github:gulpjs/gulp-cli",
     "gulp-cssnano": "^2.1.2",
