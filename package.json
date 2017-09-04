@@ -26,7 +26,8 @@
     "mkdirp": "^0.5.1",
     "node-uuid": "^1.4.7",
     "object-assign": "^4.1.1",
-    "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#3.7.5.150/bugfix/builder"
+    "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#3.7.5.150/bugfix/builder",
+    "semver": "^5.4.1"
   },
   "devDependencies": {
     "assert": "",
