@@ -461,7 +461,7 @@ module.exports.addContentsJsModule = (moduleName, fileRelative) => {
 module.exports.addContentsHtmlNames = (k, v) => { contents.htmlNames[k] = v; };
 
 
-let parsepackwsmod = false;
+let parsepackwsmod;
 module.exports.packwsmod = packwsmod;
 Object.defineProperty(module.exports, 'parsepackwsmod', {
     enumerable: false,
@@ -469,6 +469,7 @@ Object.defineProperty(module.exports, 'parsepackwsmod', {
     get: function () { return parsepackwsmod; },
     set: function (v) { parsepackwsmod = v; }
 });
+
 module.exports.addContentsXmlDeprecated = (k, v) => {
     v = v.replace(/^[\/\\]{0,1}resources[\/\\]{0,1}/i, '');
     contents.xmlContents[k] = v;

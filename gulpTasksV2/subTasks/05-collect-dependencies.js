@@ -277,7 +277,7 @@ function getModulePath (dep, plugin) {
         }
     } catch (e) {
         if ((plugin != 'optional') && (dep.fullName != 'bootup') && (dep.fullName != 'native-css')) {
-            gutil.log(e + errMes);
+            // gutil.log(e + errMes);
         }
     }
 
