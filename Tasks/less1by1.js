@@ -23,8 +23,6 @@ function resolveThemeName(filepath) {
             return 'presto';
         case 'sbis.ru':
             return 'sbisru';
-        case 'plugin':
-            return 'plugin';
         case 'Retail':
             return 'carry';
         default:
