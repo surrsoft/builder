@@ -73,8 +73,6 @@ try {
     gutil.log(err);
 }
 
-// gulp.task('test123', require('./gulpTasksV2/test'));
-
 gulp.task('ws-copy', function () {
     return gulp.src(path.join(argv['ws-path'], './**/*.*'), { since: since })
         .pipe(gulp.dest(path.join(argv.root, argv.application, 'ws')));

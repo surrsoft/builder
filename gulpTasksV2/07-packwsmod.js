@@ -13,17 +13,14 @@ const assign         = require('object-assign');
 const applySourceMap = require('vinyl-sourcemaps-apply');
 const packInOrder = require('grunt-wsmod-packer/tasks/lib/packInOrder.js');
 var dom = require('tensor-xmldom');
-
-// var xmldom = require('tensor-xmldom');
 var domParser = new dom.DOMParser();
-// var parser = new xmldom.DOMParser();
 const domHelpers = require('grunt-wsmod-packer/lib/domHelpers.js');
 
 var cache = {};
 var configTemp = {};
 cache[argv.application] = {};
 configTemp[argv.application] = {};
-let domCache = {};
+
 var grabFailedModule = /Original\smessage:\sModule\s([\w\.]+)\sis\snot\sdefined/;
 var jsFilter = /^js!|^js$/;
 
@@ -70,10 +67,6 @@ var complexControls = {
 };*/
 // dg = modDeps.getDependencyGraph(applicationRoot);
 // packHTML(grunt, dg, htmlFiles, packageHome, root, application, taskDone);
-let packageHome = path.join(argv.root, argv.application, 'resources/packer/modules');
-
-let __STATIC__ = [];
-let __files = [];
 module.exports = opts => {
     opts = assign({}, {
         acc: null
@@ -84,20 +77,44 @@ module.exports = opts => {
             if (file.isStream()) return cb(new PluginError('gulp-sbis-packwsmod', 'Streaming not supported'));
             if (!opts.acc) return cb(new PluginError('gulp-sbis-packwsmod', 'acc option is required'));
 
-            // return cb(null, file);
+            return cb(null, file);
 
-            if (!file.__STATIC__/* || '.html' !== path.extname(file.path)*/) return cb(null, file);
-            // console.log('***\nfile.__STATIC__ =', file.__STATIC__)
+            if (!file.__STATIC__) return cb(null, file);
+            if ('.html' !== path.extname(file.path)) return cb(null, file);
             if (file.sourceMap) opts.sourcemap = true;
 
-            __STATIC__.push(new VFile({
-                base: file.base,
-                path: file.path,
-                contents: Buffer.from(file.contents + ''),
-                __STATIC__: true
-            }));
+            var dom = domHelpers.domify(file.contents.toString('utf8')),
+                divs = dom.getElementsByTagName('div'),
+                jsTarget = dom.getElementById('ws-include-components'),
+                cssTarget = dom.getElementById('ws-include-css'),
+                htmlPath = htmlFile.split('/'),
+                htmlName = htmlPath[htmlPath.length-1];
 
-            return cb(null, file)
+            var themeNameFromDOM = domHelpers.resolveThemeByWsConfig(dom);
+            if (jsTarget || cssTarget) {
+                let startNodes = getStartNodes(divs, argv.application);
+                packInOrder(opts.graph, startNodes, argv.root, path.join(argv.root, argv.application), false, function (err, filesToPack) {
+                    if (err) {
+                        gutil.log(err);
+                        return cb(null, file);
+                    }
+
+                    filesToPack.js = generatePackage(filesToPack, 'js', packageHome, argv.root);
+                    filesToPack.css = generatePackage(filesToPack, 'css', packageHome, argv.root);
+
+                    // пропишем в HTML
+                    insertAllDependenciesToDocument(filesToPack, 'js', jsTarget);
+                    insertAllDependenciesToDocument(filesToPack, 'css', cssTarget);
+
+                    console.log('htmlFile ==', htmlFile);
+                    file.contents = Buffer.from(domHelpers.stringify(dom));
+                    cb(null, file);
+                    // grunt.file.write(htmlFile, domHelpers.stringify(dom));
+
+                }, null, htmlName, themeNameFromDOM);
+            }
+
+
         },
         function (cb) {
             const ctx       = this;
@@ -106,18 +123,11 @@ module.exports = opts => {
 
             if (!opts.acc.parsepackwsmod) return cb();
 
-            if (__files.length) {
-                for (let f of __files) {
-                    this.push(f);
-                }
-
-                __files = [];
-            }
             let xmlContents = opts.acc.contents.xmlContents;
             for (let k in xmlContents) {
                 cache[argv.application][k]       = [];
                 configTemp[argv.application][k]  = [];
-                let fileContent = fs.readFileSync(path.join(argv.root/*, argv.application*/, 'resources', xmlContents[k] + '.xml'));
+                let fileContent = fs.readFileSync(path.join(argv.root, argv.application, 'resources', xmlContents[k] + '.xml'));
                 let resDom      = domParser.parseFromString(fileContent.toString(), 'text/html');
                 let divs        = resDom.getElementsByTagName('div');
                 for (var i = 0, l = divs.length; i < l; i++) {
@@ -160,102 +170,19 @@ module.exports = opts => {
                         packwsmodJSON.__MANIFEST__ = true;
                         ctx.push(packwsmodJSON);
                         opts.acc.parsepackwsmod = false;
-                    })
-                    .then(() => {
-                        if (__STATIC__.length) {
-                            return Promise.all(__STATIC__.map(file => packwsmod(file, opts))).then(files => {
-                                files.forEach(f => {
-                                    ctx.push(f)
-                                });
-                                __STATIC__ = [];
-                                cb();
-                            });
-                        } else {
-                            cb();
-                        }
+                        cb();
                     });
             } else {
-                if (__STATIC__.length) {
-                    return Promise.all(__STATIC__.map(file => packwsmod(file, opts))).then(files => {
-                        files.forEach(f => {
-                            ctx.push(f)
-                        });
-                        __STATIC__ = [];
-                        cb();
-
-                    });
-                } else {
-                    cb();
-                }
+                cb();
             }
 
         }
     )
 };
 
-function packwsmod (file, opts) {
-    return new Promise((resolve, reject) => {
-        var dom = domParser.parseFromString(file.contents.toString('utf8')),
-            divs = dom.getElementsByTagName('div'),
-            jsTarget = dom.getElementById('ws-include-components'),
-            cssTarget = dom.getElementById('ws-include-css'),
-            htmlPath = file.path.split('/'),
-            htmlName = htmlPath[htmlPath.length-1];
-
-        // console.log('dom =', dom)
-        // console.log('jsTarget || cssTarget =', jsTarget || cssTarget)
-        var themeNameFromDOM = domHelpers.resolveThemeByWsConfig(dom);
-
-        // console.log('themeNameFromDOM =', themeNameFromDOM)
-        // process.exit(0)
-        if (jsTarget || cssTarget) {
-            let startNodes = getStartNodes(divs, argv.application);
-            // console.log('startNodes =', startNodes); // [ 'js!SBIS3.BUH.ZPL.AccrualDoc' ]
-            // process.exit(0)
-
-            // packInOrder(opts.acc.graph, startNodes, argv.root, path.join(argv.root, argv.application), false, function (err, filesToPack) {}, null, htmlName, themeNameFromDOM)
-            packInOrder(opts.acc.graph, startNodes, argv.root, path.join(argv.root, argv.application), false, function (err, filesToPack) {
-                if (err) {
-                    gutil.log('\nОШИБКА:');
-                    gutil.log(err);
-                    // return reject(err);
-                }
-                if (!filesToPack) return resolve(file);
-
-                filesToPack.js = generatePackage(filesToPack, 'js', packageHome, argv.root);
-                filesToPack.css = generatePackage(filesToPack, 'css', packageHome, argv.root);
-                // console.log('filesToPack.js =', filesToPack.js);
-                // console.log('filesToPack.css =', filesToPack.css);
-
-                // пропишем в HTML <script data-pack-name="ws-mods-js" type="text/javascript" src="/resources/packer/modules/614c99481ffc24c1ca33071743980862.js"></script>
-                insertAllDependenciesToDocument(filesToPack, 'js', jsTarget);
-                insertAllDependenciesToDocument(filesToPack, 'css', cssTarget);
-
-                // console.log('htmlFile ==', htmlFile);
-                // process.exit(0)
-                let contents = domHelpers.stringify(dom);
-                if (file.path.endsWith('AccrualDoc.html')) {
-                    fs.writeFileSync('C:/projects/test_builder/public/grunt_distr/test_wsmod/AccrualDocOrigin.html', file.contents + '');
-                    fs.writeFileSync('C:/projects/test_builder/public/grunt_distr/test_wsmod/AccrualDoc.html', contents);
-                    // console.log('\nEXIT 2')
-                    // process.exit(0)
-                }
-                file.contents = Buffer.from(contents);
-                // console.log('file.path =', file.path)
-                // console.log('file.contents =', file.contents + '')
-                // cb(null, file);
-                // grunt.file.write(htmlFile, domHelpers.stringify(dom));
-                resolve(file)
-
-            }, null, htmlName, themeNameFromDOM);
-        }
-
-    });
-}
-function getDeps (application, template) {
+module.exports.getDeps = function (application, template) {
     return cache[argv.application] && cache[argv.application][template] || [];
-}
-module.exports.getDeps = getDeps;
+};
 
 function _resolveType (args) {
     let typename    = args.typename;
@@ -395,6 +322,57 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
     return [retval.mass, functionsPaths];
 }
 
+/*function packFiles (dg, htmlFileset, packageHome, root, application, taskDone) {
+    gutil.log("Packing dependencies of " + htmlFileset.length + " files...");
+    async.eachLimit(htmlFileset, 1, function (htmlFile, done) {
+        try {
+
+            var dom = domHelpers.domify(htmlFile),
+                divs = dom.getElementsByTagName('div'),
+                jsTarget = dom.getElementById('ws-include-components'),
+                cssTarget = dom.getElementById('ws-include-css'),
+                htmlPath = htmlFile.split('/'),
+                htmlName = htmlPath[htmlPath.length-1];
+
+            var themeNameFromDOM = domHelpers.resolveThemeByWsConfig(dom);
+            if (jsTarget || cssTarget) {
+                var startNodes = getStartNodes(divs, application);
+
+                packInOrder(dg, startNodes, root, path.join(root, application), false, function (err, filesToPack) {
+                    if (err) {
+                        done(err);
+                    } else {
+                        filesToPack.js = generatePackage(grunt, filesToPack, 'js', packageHome, root);
+                        filesToPack.css = generatePackage(grunt, filesToPack, 'css', packageHome, root);
+
+                        // пропишем в HTML
+                        insertAllDependenciesToDocument(filesToPack, 'js', jsTarget);
+                        insertAllDependenciesToDocument(filesToPack, 'css', cssTarget);
+
+                        grunt.file.write(htmlFile, domHelpers.stringify(dom));
+                        done();
+                    }
+                }, null, htmlName, themeNameFromDOM);
+            } else {
+                grunt.log.debug("No any packing target in '" + htmlFile + "'");
+                done();
+            }
+        } catch (err) {
+            if (typeof err == 'string') {
+                err = new Error(err);
+            }
+            grunt.fail.warn("ERROR! Failed to process '" + htmlFile + "'!\n" + err.message + "\n" + err.stack + "\n", ERROR_PACKING_FAILED);
+            done(err);
+        }
+    }, function (err) {
+        if (err) {
+            taskDone(err);
+        } else {
+            taskDone();
+        }
+    });
+}*/
+
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
     var type2attr = {
         'js': 'src',
@@ -441,15 +419,9 @@ function generatePackage(filesToPack, ext, packageTarget, siteRoot) {
             var packedFileName = path.join(packageTarget, packageName);
 
             // #! this.push
-            // grunt.file.write(packedFileName, file);
-            __files.push(new VFile({
-                base: path.join(argv.root, argv.application, 'resources'),
-                path: path.join(argv.root, argv.application, path.relative(argv.root, packedFileName)),
-                contents: new Buffer(file + '')
-            }));
-            console.log('path.relative(argv.root, packedFileName) ==', path.relative(argv.root, packedFileName));
+            grunt.file.write(packedFileName, file);
 
-            return path.relative(argv.root, packedFileName);
+            return path.relative(siteRoot, packedFileName);
         });
     } else {
         return '';
@@ -496,7 +468,7 @@ function getStartNodeByTemplate(templateName, application) {
         startNodes.push(templateName);
     } else {
         // Иначе получим зависимости для данного шаблона
-        deps = getDeps(null, templateName);
+        deps = module.exports.getDeps(null, templateName);
         // дополним ранее собранные
         startNodes = startNodes.concat(deps
             .map(function (dep) {

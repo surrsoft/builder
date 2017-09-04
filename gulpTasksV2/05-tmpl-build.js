@@ -194,11 +194,11 @@ function task (file, opts, nodesRevert) {
                         contents: data
                     });
                 } catch (err) {
-                    // gutil.log(err);
+                    gutil.log(err);
                     resolve();
                 }
             }, function (err) {
-                // gutil.log(err);
+                gutil.log(err);
                 resolve();
             });
         });
