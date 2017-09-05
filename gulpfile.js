@@ -55,7 +55,7 @@ const argv = yargs
         },
         'index-dict': {
             describe: 'i18n (локализация)',
-            type: 'boolean'
+            type: 'string'
         }
     })
     .demandOption(['root', 'modules'], 'задача должна запускаться с опциями `root` и `modules`')
