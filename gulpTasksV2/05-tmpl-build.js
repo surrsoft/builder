@@ -91,7 +91,8 @@ function execute (opts, cb, ctx) {
                 let newFile = new VFile({
                     base: file.base,
                     path: file.path,
-                    contents: Buffer.from(file.contents)
+                    contents: Buffer.from(file.contents + ''),
+                    __TMPL__: true
                 });
                 newFile.__WS = file.__WS || false;
                 ctx.push(newFile);
@@ -194,11 +195,11 @@ function task (file, opts, nodesRevert) {
                         contents: data
                     });
                 } catch (err) {
-                    gutil.log(err);
+                    // gutil.log(err);
                     resolve();
                 }
             }, function (err) {
-                gutil.log(err);
+                // gutil.log(err);
                 resolve();
             });
         });

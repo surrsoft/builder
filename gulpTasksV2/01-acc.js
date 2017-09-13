@@ -47,7 +47,8 @@ let deanonymizeData = {
     badRequireDeps: {}
 };
 let routesInfo = {};
-let packwsmod;
+let packwsmod = {};
+let packwsmodContents = {};
 
 try {
     // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
@@ -83,7 +84,8 @@ try {
 }
 
 try {
-    packwsmod = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmod.json')));
+    packwsmod           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmod.json')));
+    packwsmodContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmodContents.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -177,18 +179,24 @@ module.exports = opts => {
             if (mtime > since) since = mtime;
 
             let filePath = isUnixSep ? file.path : file.path.replace(/\\/g, '/');
+            let dest = file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative));
 
+            if (['.styl', '.less', '.scss', '.sass'].some(ext => path.extname(dest) === ext)) {
+                dest = gutil.replaceExtension(dest, '.css');
+            }
+            /*file.__stat = {
+                mtime: file.stat.mtime,
+                atime: file.stat.atime
+            };*/
             _acc[filePath] = {
                 __WS: file.__WS || false,
                 cwd: file.cwd + '',
                 base: file.base + '',
                 path: file.path + '',
                 relative: file.relative + '',
-                dest: file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative)),
+                dest: dest,
                 contents: opts.ext.some(ext => ext === path.extname(file.relative)) ? file.contents.toString('utf8') : null
-                // isNew: true,
             };
-            // if (filePath in _acc) {}
 
             cb(null, file);
         },
@@ -380,7 +388,6 @@ module.exports.loadFile = filePath => {
 };
 
 module.exports.loadFileByRelative = relativePath => {
-
     // relativePath = isUnixSep ? relativePath : relativePath.replace(/\\/g, '/');
     relativePath = relativePath.replace(/[\/\\]/g, '.');
     relativePath = relativePath.replace(/\s/g, '\\s');
@@ -398,7 +405,6 @@ module.exports.loadFileByRelative = relativePath => {
             break;
         }
     }
-
     if (fullPath) {
         modulesPaths.forEach(m => {
             if (fullPath.startsWith(m)) {
@@ -443,9 +449,40 @@ module.exports.getFileByDest = destPath => {
     let file;
     if ('string' === typeof destPath) {
         destPath = destPath.replace(/[\/\\]/g, path.sep);
+        // console.log('destPath =', destPath)
         for (let fp in _acc) {
             if (_acc[fp] && _acc[fp].dest && _acc[fp].dest == destPath) {
                 file = _acc[fp];
+                break;
+            }
+        }
+    }
+
+    return file;
+};
+
+module.exports.getFileByRelativeDest = destPath => {
+    let file;
+    if ('string' === typeof destPath) {
+        destPath = destPath.replace(/[\/\\]/g, path.sep);
+        for (let fp in _acc) {
+            if (_acc[fp] && _acc[fp].dest && _acc[fp].dest.endsWith(destPath)) {
+                file = _acc[fp];
+                break;
+            }
+        }
+    }
+
+    return file;
+};
+
+module.exports.getFilePathByRelativeDest = destPath => {
+    let file;
+    if ('string' === typeof destPath) {
+        destPath = destPath.replace(/[\/\\]/g, path.sep);
+        for (let fp in _acc) {
+            if (_acc[fp] && _acc[fp].dest && _acc[fp].dest.endsWith(destPath)) {
+                file = _acc[fp].path;
                 break;
             }
         }
@@ -461,18 +498,22 @@ module.exports.addContentsJsModule = (moduleName, fileRelative) => {
 module.exports.addContentsHtmlNames = (k, v) => { contents.htmlNames[k] = v; };
 
 
-let parsepackwsmod = false;
-module.exports.packwsmod = packwsmod;
-Object.defineProperty(module.exports, 'parsepackwsmod', {
+// let parsepackwsmod = true;
+module.exports.packwsmod    = packwsmod;
+module.exports.packwsmodContents = packwsmodContents;
+module.exports.packwsmodXML = null;
+
+/*Object.defineProperty(module.exports, 'parsepackwsmod', {
     enumerable: false,
     configurable: false,
     get: function () { return parsepackwsmod; },
     set: function (v) { parsepackwsmod = v; }
-});
+});*/
+
 module.exports.addContentsXmlDeprecated = (k, v) => {
     v = v.replace(/^[\/\\]{0,1}resources[\/\\]{0,1}/i, '');
     contents.xmlContents[k] = v;
-    parsepackwsmod = true;
+    // parsepackwsmod = true;
 };
 
 module.exports.addContentsHtmlDeprecated = (k, v) => { contents.htmlNames[k] = v; };

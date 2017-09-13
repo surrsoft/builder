@@ -129,7 +129,7 @@ function processLessFile(file, theme, itIsControl, cb, ctx) {
             let message = `${compileLessError.message} in file: ${compileLessError.filename} on line: ${compileLessError.line}`;
             // FIXME: постоянно ошибки, возможно это нормально !!!
             // return cb(new PluginError('gulp-sbis-less', message));
-            if (!ctx) gutil.log('gulp-sbis-less: ' + message);
+            // if (!ctx) gutil.log('gulp-sbis-less: ' + message);
             return cb(null, file);
         }
 
