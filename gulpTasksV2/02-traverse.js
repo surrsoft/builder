@@ -37,6 +37,7 @@ module.exports = opts => {
             if (file.isNull() || !('.js' === path.extname(file.relative))) return cb(null, file);
             if (file.isStream()) return cb(new PluginError('gulp-sbis-traverse', 'Streaming not supported'));
             if (!opts.acc) return cb(new PluginError('gulp-sbis-traverse', 'acc option is required'));
+            if (file.path.endsWith('core-edo' + path.sep + 'builder.js')) return cb(null, file);
             let ast;
             try {
                 ast = esprima.parse(file.contents.toString('utf8'));
@@ -277,6 +278,7 @@ module.exports = opts => {
                 path: path.join(argv.root, argv.application, 'resources', 'routes-info.json'),
                 contents: new Buffer(JSON.stringify(opts.acc.routesInfo))
             });
+
             contentsJSON.__MANIFEST__               = true;
             contentsJS.__MANIFEST__                 = true;
             deanonymizeData.__MANIFEST__            = true;
@@ -285,22 +287,36 @@ module.exports = opts => {
 
             if (Array.isArray(files) && files.length) {
                 files.forEach(file => {
+                    let dest = path.join(argv.root, argv.application, path.relative(file.base, file.path));
                     let newFile = new VFile({
                         base: file.base,
                         path: file.path,
                         contents: Buffer.from(file.contents),
+                        __stat: file.__stat,
+                        dest: dest,
                         __STATIC__: true
                     });
                     this.push(newFile);
+
+                    opts.acc.packwsmodContents[dest] = file.contents + '';
                 });
                 files = [];
             }
+
+            let packwsmodContentsJSON = new VFile({
+                // cwd base path contents
+                base: path.join(argv.root, argv.application, 'resources'),
+                path: path.join(argv.root, argv.application, 'resources', 'packwsmodContents.json'),
+                contents: new Buffer(JSON.stringify(opts.acc.packwsmodContents))
+            });
+            packwsmodContentsJSON.__MANIFEST__ = true;
 
             this.push(contentsJSON);
             this.push(contentsJS);
             this.push(deanonymizeData);
             this.push(moduleDependenciesJSON);
             this.push(routesInfoJSON);
+            this.push(packwsmodContentsJSON);
             cb();
         }
     )
