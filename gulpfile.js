@@ -82,18 +82,7 @@ try {
 
 gulp.task('ws-copy', function () {
     return gulp.src(path.join(argv['ws-path'], './**/*.*'), { since: since })
-        .pipe(through2.obj(function (file, enc, cb) {
-            file.__stat = {
-                mtime: file.stat.mtime,
-                atime: file.stat.atime
-            };
-            cb(null, file);
-        }))
-        .pipe(gulp.dest(path.join(argv.root, argv.application, 'ws')))
-        .pipe(through2.obj(function (file, enc, cb) {
-            fs.utimesSync(path.join(argv.root, argv.application, 'ws', file.relative), file.__stat.atime, file.__stat.mtime);
-            cb(null);
-        }));
+        .pipe(gulp.dest(path.join(argv.root, argv.application, 'ws')));
 });
 
 gulp.task('build', require('./gulpTasksV2/index'));
