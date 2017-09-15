@@ -60,7 +60,9 @@ let packageHome = path.join(argv.root, argv.application, 'resources/packer/modul
 
 let __STATIC__        = [];
 let __packages__      = [];
-let __filesToPack__   = [];
+let __packwsmod__     = [];
+let __packjs__        = [];
+let __packcss__       = [];
 
 
 module.exports = opts => {
@@ -79,7 +81,27 @@ module.exports = opts => {
 
             let ext = path.extname(path.basename(file.path));
             if ((ext == '.css' || ext == '.js') || file.__TMPL__) {
-                __filesToPack__.push({
+
+                if ('.css' === ext) {
+                    __packcss__.push({
+                        base: file.base + '',
+                        path: file.path + '',
+                        dest: file.dest + '',
+                        contents: Buffer.from(file.contents + ''),
+                        __WS: file.__WS || false,
+                        __TMPL__: file.__TMPL__ || false
+                    });
+                } else {
+                    __packjs__.push({
+                        base: file.base + '',
+                        path: file.path + '',
+                        dest: file.dest + '',
+                        contents: Buffer.from(file.contents + ''),
+                        __WS: file.__WS || false,
+                        __TMPL__: file.__TMPL__ || false
+                    });
+                }
+                __packwsmod__.push({
                     base: file.base + '',
                     path: file.path + '',
                     dest: file.dest + '',
@@ -110,7 +132,7 @@ module.exports = opts => {
             let prog        = 0;
             let promises    = [];
 
-            if (!__filesToPack__.length && !__STATIC__.length) return cb();
+            if (!__packwsmod__.length && !__STATIC__.length) return cb();
             let xmlContents = opts.acc.contents.xmlContents;
             for (let k in xmlContents) {
                 cache[argv.application][k]       = [];
@@ -140,18 +162,20 @@ module.exports = opts => {
                 need2bundle[__STATIC__[i].dest] = true;
             }
 
+            // packjscss
+
             mainLoop:
-            for (let i = 0, l = __filesToPack__.length; i < l; i++) {
-                let ext = path.extname(__filesToPack__[i].path).substring(1);
+            for (let i = 0, l = __packwsmod__.length; i < l; i++) {
+                let ext = path.extname(__packwsmod__[i].path).substring(1);
                 for (let staticPath in opts.acc.packwsmod) {
                     if (need2bundle[staticPath]) continue mainLoop;
                     for (let ii = 0, ll = opts.acc.packwsmod[staticPath][ext].length; ii < ll; ii++) {
                         let moduleMeta = opts.acc.packwsmod[staticPath][ext][ii];
-                        if (!__filesToPack__[i].dest || __filesToPack__[i].dest == 'undefined') {
-                            __filesToPack__[i].dest = path.join(argv.root, argv.application, 'ws', path.relative(__filesToPack__[i].base, __filesToPack__[i].path));
+                        if (!__packwsmod__[i].dest || __packwsmod__[i].dest == 'undefined') {
+                            __packwsmod__[i].dest = path.join(argv.root, argv.application, 'ws', path.relative(__packwsmod__[i].base, __packwsmod__[i].path));
                         }
                         if (!moduleMeta.fullPath) continue;
-                        if (__filesToPack__[i].dest.replace(/[\\]/g, '/').endsWith(moduleMeta.fullPath.replace(/[\\]/g, '/'))) {
+                        if (__packwsmod__[i].dest.replace(/[\\]/g, '/').endsWith(moduleMeta.fullPath.replace(/[\\]/g, '/'))) {
                             need2bundle[staticPath] = true;
                             continue mainLoop;
                         }
@@ -210,8 +234,7 @@ module.exports = opts => {
                     packwsmodJSON.__MANIFEST__ = true;
                     ctx.push(packwsmodJSON);
                     cb();
-
-            });
+                });
 
         }
     )

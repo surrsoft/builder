@@ -25,7 +25,8 @@ const removeLeadingSlash    = function removeLeadingSlash(path) {
     return path;
 };
 // const applySourceMap        = require('vinyl-sourcemaps-apply');
-const wsPath    = path.join(argv.root, argv.application, 'ws' + path.sep);
+// const wsPath    = path.join(argv.root, argv.application, 'ws' + path.sep);
+const wsPath    = path.join(argv['ws-path']);
 const isUnixSep = path.sep === '/';
 let since       = 0;
 // let _acc        = null;
@@ -46,9 +47,11 @@ let deanonymizeData = {
     anonymous: {},
     badRequireDeps: {}
 };
-let routesInfo = {};
-let packwsmod = {};
-let packwsmodContents = {};
+let routesInfo          = {};
+let packwsmod           = {};
+let packwsmodContents   = {};
+let packjscss           = {};
+let packjscssContents   = {};
 
 try {
     // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
@@ -86,6 +89,13 @@ try {
 try {
     packwsmod           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmod.json')));
     packwsmodContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmodContents.json')));
+} catch (err) {
+    console.warn(err);
+}
+
+try {
+    packjscss           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscss.json')));
+    packjscssContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscssContents.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -173,7 +183,11 @@ module.exports = opts => {
             if (file.isStream()) return cb(new PluginError('gulp-sbis-acc', 'Streaming not supported'));
             if (opts.modules instanceof Error) return cb(new PluginError('gulp-sbis-acc', opts.modules.message));
 
-            if (file.path.indexOf(wsPath) >= 0) file.__WS = true;
+            if (~file.path.indexOf(wsPath)) {
+                file.path = path.join(argv.root, argv.application, 'ws', file.relative);
+                file.base = path.join(argv.root, argv.application, 'ws');
+                file.__WS = true;
+            }
 
             let mtime = new Date(file.stat.mtime).getTime();
             if (mtime > since) since = mtime;
@@ -499,9 +513,12 @@ module.exports.addContentsHtmlNames = (k, v) => { contents.htmlNames[k] = v; };
 
 
 // let parsepackwsmod = true;
-module.exports.packwsmod    = packwsmod;
-module.exports.packwsmodContents = packwsmodContents;
-module.exports.packwsmodXML = null;
+module.exports.packwsmod            = packwsmod;
+module.exports.packwsmodContents    = packwsmodContents;
+module.exports.packwsmodXML         = null;
+
+module.exports.packjscss            = packjscss;
+module.exports.packjscssContents    = packjscssContents;
 
 /*Object.defineProperty(module.exports, 'parsepackwsmod', {
     enumerable: false,

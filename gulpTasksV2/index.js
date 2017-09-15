@@ -20,6 +20,7 @@ const through2              = require('through2').obj;
 const gzip                  = require('gulp-gzip');
 const chmod                 = require('gulp-chmod');
 const argv                  = require('yargs').argv;
+const glob                  = require('glob');
 
 /*  HELPERS  */
 const translit              = require('./../lib/utils/transliterate');
@@ -54,10 +55,17 @@ module.exports = () => {
     }
 
     let src = modulesPaths.map(p => p + path.sep + '**' + path.sep + '*.*');
-        src.push(path.join(argv.root, argv.application, 'ws/**/*.*'));
+    src.push(path.join(argv['ws-path'], './**/*.*'));
+    src.push('!' + path.join(argv['ws-path'], './**/node_modules/**/*.js'));
+    src.push('!' + path.join(argv['ws-path'], './**/*.gz'));
+        // src.push(path.join(argv.root, argv.application, 'ws/**/*.*'));
+        // src = src.concat(wsIgnore);
+
         // TODO: считывать весь WS ???
-        src.push('!' + path.join(argv.root, argv.application, 'ws/**/node_modules/**/*.js'));
-        src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.gz'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/node_modules/**/*.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.gz'));
+
+
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.test.js'));
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.routes.js'));
     // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.worker.js'));
@@ -157,12 +165,8 @@ module.exports = () => {
                 return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
         }))
-        .pipe(through2(function (file, enc, cb) {
-            if (file.__WS) fs.utimesSync(path.join(argv.root, argv.application, 'ws', file.relative), since > 1 ? since / 1000 : since, since > 1 ? since / 1000 : since);
-            cb(null, file);
-        }))
         .pipe(gulpif(file => !(/\.original\.[xhtmltp]{3,5}$/i.test(file.path)), gzip({ threshold: 1024, gzipOptions: { level: 9 } })))
-        .pipe(gulpif(file => '.gz' == path.extname(file.path), combiner(gulp.dest(file => {
+        .pipe(gulpif(file => '.gz' == path.extname(file.path), gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');
             } else if (file.__MANIFEST__) {
@@ -174,8 +178,5 @@ module.exports = () => {
                 file.path = translit(file.path);
                 return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
-        }), through2(function (file, enc, cb) {
-            if (file.__WS) fs.utimesSync(path.join(argv.root, argv.application, 'ws', file.relative), since > 1 ? since / 1000 : since, since > 1 ? since / 1000 : since);
-            cb(null);
-        }))));
+        })));
 };
