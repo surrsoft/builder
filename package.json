@@ -34,6 +34,6 @@
     "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
   },
   "engines": {
-    "node": ">=4.4"
+    "node": ">=6"
   }
 }
