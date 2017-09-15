@@ -151,7 +151,7 @@ module.exports = () => {
                 execute: true
             }
         }))
-        .pipe(packwsmod({ acc: acc }))
+        // .pipe(packwsmod({ acc: acc }))
         .pipe(gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');
