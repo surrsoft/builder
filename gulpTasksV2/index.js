@@ -28,11 +28,11 @@ const translit              = require('./../lib/utils/transliterate');
 /*  TASKS  */
 const acc        = require('./01-acc');
 const traverse   = require('./02-traverse');
-const deprecated = require('./03-deprecated');
+// const deprecated = require('./03-deprecated');
 const less       = require('./04-less');
 const tmplBuild  = require('./05-tmpl-build');
 const tmplMin    = require('./06-tmpl-min');
-const packwsmod  = require('./07-packwsmod');
+const pack       = require('./07-pack');
 
 Error.stackTraceLimit = Infinity;
 
@@ -94,7 +94,7 @@ module.exports = () => {
     return gulp.src(src, { since: since, base: base })
         .pipe(acc({ modules: modulesPaths }))
         .pipe(traverse({ acc: acc }))
-        .pipe(deprecated({ acc: acc }))
+        // .pipe(deprecated({ acc: acc }))
         .pipe(less())
         .pipe(tmplBuild({ acc: acc }))
         .pipe(tmplMin())
@@ -151,7 +151,7 @@ module.exports = () => {
                 execute: true
             }
         }))
-        // .pipe(packwsmod({ acc: acc }))
+        // .pipe(pack({ acc: acc }))
         .pipe(gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');
@@ -165,7 +165,10 @@ module.exports = () => {
                 return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
         }))
-        .pipe(gulpif(file => !(/\.original\.[xhtmltp]{3,5}$/i.test(file.path)), gzip({ threshold: 1024, gzipOptions: { level: 9 } })))
+        .pipe(gulpif(file => {
+            if (file.__STATIC__) return false;
+            return !(/\.original\.[xhtmltp]{3,5}$/i.test(file.path));
+        }, gzip({ threshold: 1024, gzipOptions: { level: 9 } })))
         .pipe(gulpif(file => '.gz' == path.extname(file.path), gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');

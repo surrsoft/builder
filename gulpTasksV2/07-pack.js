@@ -9,14 +9,16 @@ const VFile          = require('vinyl');
 const minimatch      = require('minimatch');
 const argv           = require('yargs').argv;
 const assign         = require('object-assign');
+const translit       = require('../lib/utils/transliterate');
 // const applySourceMap = require('vinyl-sourcemaps-apply');
-const packInOrder = require('grunt-wsmod-packer/tasks/lib/packInOrder.js');
-var dom = require('tensor-xmldom');
+const packInOrder   = require('grunt-wsmod-packer/tasks/lib/packInOrder.js');
+const dom           = require('tensor-xmldom');
 
-// var xmldom = require('tensor-xmldom');
+const domHelpers    = require('grunt-wsmod-packer/lib/domHelpers.js'); // FIXME: :)))
+
+const packCSS       = require('grunt-wsmod-packer/tasks/lib/packCSS').gruntPackCSS;
+const cssHelpers    = require('grunt-wsmod-packer/lib/cssHelpers');
 const domParser = new dom.DOMParser();
-// var parser = new xmldom.DOMParser();
-const domHelpers = require('grunt-wsmod-packer/lib/domHelpers.js');
 
 let cache                        = {};
     cache[argv.application]      = {};
@@ -63,6 +65,7 @@ let __packages__      = [];
 let __packwsmod__     = [];
 let __packjs__        = [];
 let __packcss__       = [];
+let __packjscss__     = [];
 
 
 module.exports = opts => {
@@ -79,10 +82,22 @@ module.exports = opts => {
 
             if (file.sourceMap) opts.sourcemap = true;
 
+            if (!file.dest) {
+                file.dest = file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative));
+            }
+
             let ext = path.extname(path.basename(file.path));
             if ((ext == '.css' || ext == '.js') || file.__TMPL__) {
+                __packjscss__.push({
+                    base: file.base + '',
+                    path: file.path + '',
+                    dest: file.dest + '',
+                    contents: Buffer.from(file.contents + ''),
+                    __WS: file.__WS || false,
+                    __TMPL__: file.__TMPL__ || false
+                });
 
-                if ('.css' === ext) {
+                /*if ('.css' === ext) {
                     __packcss__.push({
                         base: file.base + '',
                         path: file.path + '',
@@ -100,7 +115,7 @@ module.exports = opts => {
                         __WS: file.__WS || false,
                         __TMPL__: file.__TMPL__ || false
                     });
-                }
+                }*/
                 __packwsmod__.push({
                     base: file.base + '',
                     path: file.path + '',
@@ -109,11 +124,11 @@ module.exports = opts => {
                     __WS: file.__WS || false,
                     __TMPL__: file.__TMPL__ || false
                 });
-                return cb(null, file);
             }
 
             if (file.__STATIC__) {
                 if (!file.dest in opts.acc.packwsmod) opts.acc.packwsmod[file.dest] = {};
+                if (!file.dest in opts.acc.packjscss) opts.acc.packjscss[file.dest] = {};
 
                 __STATIC__.push({
                     base: file.base + '',
@@ -128,6 +143,8 @@ module.exports = opts => {
             return cb(null, file);
         },
         function (cb) {
+            if (!global.__STATIC__done) return cb();
+
             const ctx       = this;
             let prog        = 0;
             let promises    = [];
@@ -161,14 +178,27 @@ module.exports = opts => {
             for (let i = 0, l = __STATIC__.length; i < l; i++) {
                 need2bundle[__STATIC__[i].dest] = true;
             }
+            mainLoop1:
+            for (let i = 0, l = __packjscss__.length; i < l; i++) {
+                let ext = path.extname(__packjscss__[i].path).substring(1); // 'css' 'js'
+                for (let staticPath in opts.acc.packjscss) {
+                    if (need2bundle[staticPath]) continue mainLoop1;
+                    if (!Array.isArray(opts.acc.packjscss[staticPath][ext])) opts.acc.packjscss[staticPath][ext] = [];
+                    for (let ii = 0, ll = opts.acc.packjscss[staticPath][ext].length; ii < ll; ii++) {
+                        let filePath = opts.acc.packjscss[staticPath][ext][ii];
+                        if (__packjscss__[i].dest.replace(/[\\]/g, '/') == filePath.replace(/[\\]/g, '/')) {
+                            need2bundle[staticPath] = true;
+                            continue mainLoop1;
+                        }
+                    }
+                }
+            }
 
-            // packjscss
-
-            mainLoop:
+            mainLoop2:
             for (let i = 0, l = __packwsmod__.length; i < l; i++) {
                 let ext = path.extname(__packwsmod__[i].path).substring(1);
                 for (let staticPath in opts.acc.packwsmod) {
-                    if (need2bundle[staticPath]) continue mainLoop;
+                    if (need2bundle[staticPath]) continue mainLoop2;
                     for (let ii = 0, ll = opts.acc.packwsmod[staticPath][ext].length; ii < ll; ii++) {
                         let moduleMeta = opts.acc.packwsmod[staticPath][ext][ii];
                         if (!__packwsmod__[i].dest || __packwsmod__[i].dest == 'undefined') {
@@ -177,11 +207,13 @@ module.exports = opts => {
                         if (!moduleMeta.fullPath) continue;
                         if (__packwsmod__[i].dest.replace(/[\\]/g, '/').endsWith(moduleMeta.fullPath.replace(/[\\]/g, '/'))) {
                             need2bundle[staticPath] = true;
-                            continue mainLoop;
+                            continue mainLoop2;
                         }
                     }
                 }
             }
+
+
 
             Promise.all(promises)
                 .then(result => {
@@ -217,7 +249,37 @@ module.exports = opts => {
                         }, opts);
                     })).then(staticFiles => {
                         staticFiles.forEach(sFile => {
-                            ctx.push(new VFile(sFile))
+
+                            fs.writeFileSync(sFile.dest, sFile.contents + '');
+                            // ctx.push(new VFile(sFile));
+                            // packjs
+                            function packerJS(htmlDest, files) {
+                                return [files.map(function (js) {
+                                    let ext = path.extname(js).substring(1); // 'js'
+                                    if (!opts.acc.packjscss[htmlDest]) opts.acc.packjscss[htmlDest] = {};
+                                    if (!opts.acc.packjscss[htmlDest][ext]) opts.acc.packjscss[htmlDest][ext] = [];
+                                    opts.acc.packjscss[htmlDest][ext].push(js);
+                                    return fs.readFileSync(js);
+                                }).join(';\n')];
+                            }
+
+                            function packerCSS(htmlDest, files, root) {
+                                return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(function (css) {
+                                    let ext = path.extname(css).substring(1); // 'js'
+                                    if (!opts.acc.packjscss[htmlDest]) opts.acc.packjscss[htmlDest] = {};
+                                    if (!opts.acc.packjscss[htmlDest][ext]) opts.acc.packjscss[htmlDest][ext] = [];
+                                    opts.acc.packjscss[htmlDest][ext].push(css);
+                                    return cssHelpers.rebaseUrls(root, css, fs.readFileSync(css));
+                                }).join('\n')));
+                            }
+
+                            let packageHome = path.join(argv.root, argv.application, 'resources/packer/js');
+
+                            domHelpers.package([sFile.dest], argv.root, packageHome, collectorJS, packerJS.bind(this, sFile.dest), nodeProducerJS, 'js');
+
+                            packageHome = path.join(argv.root, argv.application, 'resources/packer/css');
+                            domHelpers.package([sFile.dest], argv.root, packageHome, collectorCSS, packerCSS.bind(this, sFile.dest), getTargetNodeCSS, 'css');
+
                         });
                         __packages__.forEach(pFile => {
                             ctx.push(new VFile(pFile))
@@ -231,8 +293,16 @@ module.exports = opts => {
                         contents: new Buffer(JSON.stringify(opts.acc.packwsmod))
                     });
 
+                    let packjscssJSON = new VFile({
+                        base: path.join(argv.root, argv.application, 'resources'),
+                        path: path.join(argv.root, argv.application, 'resources', 'packjscss.json'),
+                        contents: new Buffer(JSON.stringify(opts.acc.packjscss))
+                    });
+
                     packwsmodJSON.__MANIFEST__ = true;
+                    packjscssJSON.__MANIFEST__ = true;
                     ctx.push(packwsmodJSON);
+                    ctx.push(packjscssJSON);
                     cb();
                 });
 
@@ -241,8 +311,124 @@ module.exports = opts => {
 };
 const getMeta = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 // const packer = require('./packer');
-
 // var commonPackage = require('grunt-wsmod-packer/lib/commonPackage.js');
+
+
+// PACKCSS
+
+function collectorCSS(dom) {
+    var links = dom.getElementsByTagName('link'),
+        files = [],
+        elements = [],
+        before, link, href, packName, rel, media;
+    for (var i = 0, l = links.length; i < l; i++) {
+        link = links[i];
+        packName = link.getAttribute('data-pack-name');
+
+        // data-pack-name='skip' == skip this css from packing
+        if (packName == 'skip')
+            continue;
+
+        href = links[i].getAttribute('href');
+        rel = links[i].getAttribute('rel');
+        media = links[i].getAttribute('media') || 'screen';
+
+        // stylesheet, has href ends with .css and not starts with http or //, media is screen
+        if (href && rel == 'stylesheet' && media == 'screen' &&
+            href.indexOf('http') !== 0 &&
+            href.indexOf('//') !== 0 &&
+            href.indexOf('.css') !== href.length - 3) {
+            files.push(href);
+            elements.push(link);
+            before = link.nextSibling;
+        }
+    }
+
+    return [{
+        files: files,
+        nodes: elements,
+        before: before
+    }];
+}
+
+
+
+function getTargetNodeCSS(dom, path) {
+    return domHelpers.mkDomNode(dom, 'link', {
+        rel: 'stylesheet',
+        href: '/' + path.replace(/\\/g, '/')
+    });
+}
+
+// PACKCSS END
+
+// PACKJS
+function collectorJS(dom) {
+    var defId = 0,
+        scripts = dom.getElementsByTagName('script'),
+        packs = {},
+        script, link, packName, pack, lastPackName, type;
+
+    for (var i = 0, l = scripts.length; i < l; i++) {
+        script = scripts[i];
+        packName = script.getAttribute('data-pack-name') || "unset";
+        type = script.getAttribute('type') || 'text/javascript';
+        link = script.getAttribute('src');
+
+        // inline script will split package
+        // type other than text/javascript will split package
+        // data-pack-name='skip' == skip this script from packing, ignore it at all, don't split package
+        if (!link || type !== 'text/javascript' || packName == 'skip') {
+            defId++;
+            continue;
+        }
+
+        if (lastPackName && lastPackName != packName) {
+            defId++;
+        }
+
+        lastPackName = packName;
+        packName = packName + defId;
+
+        // ends with .js and not starts with http and not starts with // (schema-less urls)
+        if (link.indexOf('.js') == link.length - 3 &&
+            link.indexOf('http') !== 0 &&
+            link.indexOf('//') !== 0) {
+
+            pack = packs[packName] || (packs[packName] = {
+                    files: [],
+                    nodes: [],
+                    before: null
+                });
+
+            pack.files.push(link);
+            pack.nodes.push(script);
+            pack.before = script.nextSibling;
+        } else {
+            // any other script will split package
+            defId++;
+        }
+    }
+
+    return Object.keys(packs).map(function (k) {
+        return packs[k];
+    });
+}
+
+
+
+function nodeProducerJS(dom, path) {
+    var script = domHelpers.mkDomNode(dom, 'script', {
+        type: 'text/javascript',
+        charset: 'utf-8',
+        src: '/' + path.replace(/\\/g, '/')
+    });
+    script.textContent = " ";
+    return script;
+}
+
+// end of PACKJS
+
 
 function packwsmod (file, opts) {
     return new Promise((resolve, reject) => {
@@ -389,6 +575,7 @@ function packwsmod (file, opts) {
                             contents: Buffer.from(domHelpers.stringify(dom)),
                             base: path.join(argv.root, argv.application),
                             path: file.dest,
+                            dest: file.dest,
                             __STATIC__: true
                         });
                     }

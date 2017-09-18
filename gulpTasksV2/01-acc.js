@@ -95,7 +95,7 @@ try {
 
 try {
     packjscss           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscss.json')));
-    packjscssContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscssContents.json')));
+    // packjscssContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscssContents.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -518,7 +518,7 @@ module.exports.packwsmodContents    = packwsmodContents;
 module.exports.packwsmodXML         = null;
 
 module.exports.packjscss            = packjscss;
-module.exports.packjscssContents    = packjscssContents;
+// module.exports.packjscssContents    = packjscssContents;
 
 /*Object.defineProperty(module.exports, 'parsepackwsmod', {
     enumerable: false,
