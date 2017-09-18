@@ -159,12 +159,13 @@ module.exports = opts => {
                     moduleName: staticHtmlData.moduleName
                 });
             }
-            if (file.path.endsWith('.xml.deprecated')) {
+            // TODO: не нашел ни одного файла *.html.deprecated, навверное уже не актуально...
+            /*if (file.path.endsWith('.xml.deprecated')) {
                 staticHtml.xmlDeprecated({
                     acc: opts.acc,
                     file: file
                 });
-            } /*else if (file.path.endsWith('.html.deprecated')) { // TODO: не нашел ни одного файла *.html.deprecated, навверное уже не актуально...
+            } else if (file.path.endsWith('.html.deprecated')) {
                 staticHtml.htmlDeprecated({
                     acc: opts.acc,
                     file: file
@@ -298,7 +299,8 @@ module.exports = opts => {
                     });
                     this.push(newFile);
 
-                    opts.acc.packwsmodContents[dest] = file.contents + '';
+                    opts.acc.packwsmodContents[dest]    = file.contents + '';
+                    opts.acc.packjscss[dest]            = {};
                 });
                 files = [];
             }
@@ -318,6 +320,8 @@ module.exports = opts => {
             this.push(routesInfoJSON);
             this.push(packwsmodContentsJSON);
             cb();
+            global.__STATIC__done = true;
+
         }
     )
 };
