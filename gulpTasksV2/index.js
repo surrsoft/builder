@@ -8,21 +8,11 @@ const fs                    = require('fs');
 const path                  = require('path');
 const minimatch             = require('minimatch');
 const gulp                  = require('gulp');
-// const gutil                 = require('gulp-util');
-// const notify                = require('gulp-notify');
-const combiner              = require('stream-combiner2').obj;
 const gulpif                = require('gulp-if');
 const through2              = require('through2').obj;
-// const stylus                = require('gulp-stylus');
-// const uglify                = require('gulp-uglify');
-// const minify                = require('gulp-babel-minify');
-// const cssnano               = require('gulp-cssnano');
 const gzip                  = require('gulp-gzip');
 const chmod                 = require('gulp-chmod');
 const argv                  = require('yargs').argv;
-const glob                  = require('glob');
-
-/*  HELPERS  */
 const translit              = require('./../lib/utils/transliterate');
 
 /*  TASKS  */
@@ -51,7 +41,7 @@ module.exports = () => {
     try {
         since = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'lastmtime.json'))).lastmtime;
     } catch (err) {
-        // gutil.log(err);
+        // console.error(err);
     }
 
     let src = modulesPaths.map(p => p + path.sep + '**' + path.sep + '*.*');
@@ -60,80 +50,77 @@ module.exports = () => {
     src.push('!' + path.join(argv['ws-path'], './**/*.gz'));
         // src.push(path.join(argv.root, argv.application, 'ws/**/*.*'));
         // src = src.concat(wsIgnore);
-
         // TODO: считывать весь WS ???
         // src.push('!' + path.join(argv.root, argv.application, 'ws/**/node_modules/**/*.js'));
         // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.gz'));
-
-
-    // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.test.js'));
-    // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.routes.js'));
-    // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.worker.js'));
-    // src.push('!' + path.join(argv.root, argv.application, 'ws/**/design/**/*.js'));
-    // src.push('!' + path.join(argv.root, argv.application, 'ws/**/service/**/*.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.test.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.routes.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/*.worker.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/design/**/*.js'));
+        // src.push('!' + path.join(argv.root, argv.application, 'ws/**/service/**/*.js'));
 
     let base;
 
-    if (global.__CHANGED__) {
+    if (global.__CHANGED__) { // ТОЛЬКО ДЛЯ WATCHER-a
         src  = global.__CHANGED__;
         // FIXME: в исходниках нет Модули интерфейса
         base = /.+Модули\sинтерфейса/i.exec(global.__CHANGED__)[0];
     }
 
-    if (global.__ADD__) {
+    if (global.__ADD__) {  // ТОЛЬКО ДЛЯ WATCHER-a
         src   = global.__ADD__;
         // FIXME: в исходниках нет Модули интерфейса такой вариант канает только для дистриба
         base  = /.+Модули\sинтерфейса/i.exec(global.__ADD__)[0];
         since = 1;
     }
 
-    if (global.__UNLINKED__) {
+    if (global.__UNLINKED__) {  // ТОЛЬКО ДЛЯ WATCHER-a
         // FIXME: в исходниках нет Модули интерфейса такой вариант канает только для дистриба
     }
 
     return gulp.src(src, { since: since, base: base })
         .pipe(acc({ modules: modulesPaths }))
         .pipe(traverse({ acc: acc }))
-        // .pipe(deprecated({ acc: acc }))
+        // .pipe(deprecated({ acc: acc })) // Таска deprecated - задепрекейчена :)))
         .pipe(less())
         .pipe(tmplBuild({ acc: acc }))
         .pipe(tmplMin())
-        // .pipe(gulpif(file => file.__TMPL__ || path.extname(file.path) == '.js', uglify()))
-        // .pipe(gulpif(file => {
-        //     return [
-        //             '**/*.{js,hdl}',
-        //             '!**/*.min.js',
-        //             '!**/*.routes.js',
-        //             '!**/*.worker.js',
-        //             '!**/*.test.js',
-        //             '!**/design/**/*.js',
-        //             '!**/data-providers/*.js',
-        //             '!**/node_modules/**/*.js',
-        //             '!**/inside.tensor.js',
-        //             '!**/online.sbis.js',
-        //             '!**/service/**/*.js'
-        //         ].every(glob => minimatch(file.path, glob)) || file.__TMPL__;
-        // }, minify({
-        //     mangle: {
-        //         except: ['define']
-        //     },
-        //     deadcode: true,
-        //     mergeVars: true,
-        //     propertyLiterals: false,
-        //     numericLiterals: false,
-        //     simplifyComparisons: false,
-        //     flipComparisons: false,
-        //     evaluate: false
-        // }))) // babel-minify
-        // .pipe(gulpif(file => {
-        //     return [
-        //         '**/*.css',
-        //         '!**/*.min.css',
-        //         '!**/design/**/*.css',
-        //         '!**/node_modules/**/*.css',
-        //         '!**/service/**/*.css'
-        //     ].every(glob => minimatch(file.path, glob));
-        // }, cssnano()))
+        /*.pipe(gulpif(file => file.__TMPL__ || path.extname(file.path) == '.js', uglify()))
+        .pipe(gulpif(file => {
+            return [
+                    '**!/!*.{js,hdl}',
+                    '!**!/!*.min.js',
+                    '!**!/!*.routes.js',
+                    '!**!/!*.worker.js',
+                    '!**!/!*.test.js',
+                    '!**!/design/!**!/!*.js',
+                    '!**!/data-providers/!*.js',
+                    '!**!/node_modules/!**!/!*.js',
+                    '!**!/inside.tensor.js',
+                    '!**!/online.sbis.js',
+                    '!**!/service/!**!/!*.js'
+                ].every(glob => minimatch(file.path, glob)) || file.__TMPL__;
+        }, minify({
+            mangle: {
+                except: ['define']
+            },
+            deadcode: true,
+            mergeVars: true,
+            propertyLiterals: false,
+            numericLiterals: false,
+            simplifyComparisons: false,
+            flipComparisons: false,
+            evaluate: false
+        }))) // babel-minify
+        .pipe(gulpif(file => {
+            return [
+                '**!/!*.css',
+                '!**!/!*.min.css',
+                '!**!/design/!**!/!*.css',
+                '!**!/node_modules/!**!/!*.css',
+                '!**!/service/!**!/!*.css'
+            ].every(glob => minimatch(file.path, glob));
+        }, cssnano()))*/
         .pipe(chmod({
             owner: {
                 read: true,
