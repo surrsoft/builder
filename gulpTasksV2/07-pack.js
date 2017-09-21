@@ -1,5 +1,3 @@
-// 'use strict';
-
 const fs             = require('fs');
 const path           = require('path');
 const through2       = require('through2');
@@ -9,16 +7,17 @@ const VFile          = require('vinyl');
 const minimatch      = require('minimatch');
 const argv           = require('yargs').argv;
 const assign         = require('object-assign');
+const loaders        = require('./loaders');
+
 const translit       = require('../lib/utils/transliterate');
-// const applySourceMap = require('vinyl-sourcemaps-apply');
+const getMeta        = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
+const commonPackage  = require('grunt-wsmod-packer/lib/commonPackage.js');
 const packInOrder   = require('grunt-wsmod-packer/tasks/lib/packInOrder.js');
-const dom           = require('tensor-xmldom');
-
 const domHelpers    = require('grunt-wsmod-packer/lib/domHelpers.js'); // FIXME: :)))
-
 const packCSS       = require('grunt-wsmod-packer/tasks/lib/packCSS').gruntPackCSS;
 const cssHelpers    = require('grunt-wsmod-packer/lib/cssHelpers');
-const domParser = new dom.DOMParser();
+const dom           = require('tensor-xmldom');
+const domParser     = new dom.DOMParser();
 
 let cache                        = {};
     cache[argv.application]      = {};
@@ -63,8 +62,8 @@ let packageHome = path.join(argv.root, argv.application, 'resources/packer/modul
 let __STATIC__        = [];
 let __packages__      = [];
 let __packwsmod__     = [];
-let __packjs__        = [];
-let __packcss__       = [];
+// let __packjs__        = [];
+// let __packcss__       = [];
 let __packjscss__     = [];
 
 
@@ -97,25 +96,6 @@ module.exports = opts => {
                     __TMPL__: file.__TMPL__ || false
                 });
 
-                /*if ('.css' === ext) {
-                    __packcss__.push({
-                        base: file.base + '',
-                        path: file.path + '',
-                        dest: file.dest + '',
-                        contents: Buffer.from(file.contents + ''),
-                        __WS: file.__WS || false,
-                        __TMPL__: file.__TMPL__ || false
-                    });
-                } else {
-                    __packjs__.push({
-                        base: file.base + '',
-                        path: file.path + '',
-                        dest: file.dest + '',
-                        contents: Buffer.from(file.contents + ''),
-                        __WS: file.__WS || false,
-                        __TMPL__: file.__TMPL__ || false
-                    });
-                }*/
                 __packwsmod__.push({
                     base: file.base + '',
                     path: file.path + '',
@@ -287,6 +267,14 @@ module.exports = opts => {
                     });
                 })
                 .then(() => {
+                    // packowndeps
+                    return new Promise((resolve, reject) => {
+                        let jsFilesDest = __packjscss__.filter(f => f.path.endsWith('.js')).map(v => v.dest);
+                        packOwnDeps(opts.acc.graph, jsFilesDest, resolve);
+                    });
+
+                })
+                .then(() => {
                     let packwsmodJSON = new VFile({
                         base: path.join(argv.root, argv.application, 'resources'),
                         path: path.join(argv.root, argv.application, 'resources', 'packwsmod.json'),
@@ -309,10 +297,128 @@ module.exports = opts => {
         }
     )
 };
-const getMeta = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 // const packer = require('./packer');
 // var commonPackage = require('grunt-wsmod-packer/lib/commonPackage.js');
+function packOwnDeps (dg, jsFilesDest, taskDone) {
+    const applicationRoot   = path.join(argv.root, argv.application);
+    let allModules          = getAllModules(dg, applicationRoot).filter(m => jsFilesDest.some(v => v == m.fullPath));
+    let promises            = [];
 
+    for (let i = 0, l = allModules.length; i < l; i++) {
+        let item                = allModules[i];
+        let loadedDependencies  = [];
+
+        for (let ii = 0, ll = item.deps.length; ii < ll; ii++) {
+            let dep = item.deps[ii];
+            if (dep.plugin != 'js') console.log('dep.plugin =', dep.plugin);
+            loadedDependencies.push(loaders[dep.plugin](dep, argv.root));
+            // commonPackage.getLoader(dep.plugin)(dep, root, done);
+        }
+
+        promises.push(Promise.all(loadedDependencies)
+            .then(function (item, data) {
+                fs.writeFileSync(
+                    item.tempPath,
+                    data.reduce((res, modContent) => res + (res ? '\n' : '') + modContent, '')
+                );
+                return item;
+            }.bind(this, item))
+            .then(item => {
+                fs.writeFileSync(item.fullPath.replace(/(\.js)$/, '.original$1'), fs.readFileSync(item.fullPath));
+                fs.writeFileSync(item.fullPath, fs.readFileSync(item.tempPath));
+                fs.unlinkSync(item.tempPath);
+            }));
+    }
+
+    return Promise.all(promises).then(taskDone);
+}
+
+
+function getAllModules(dg) {
+    const applicationRoot = path.join(argv.root, argv.application);
+
+    return dg.getNodes()
+        .map(getMeta)
+        .filter(function onlyJS(node) {
+            return node.plugin == 'js';
+        })
+        .map(function setFullPath(node) {
+            node.fullPath = path.join(applicationRoot, dg.getNodeMeta(node.fullName).path);
+            node.amd = dg.getNodeMeta(node.fullName).amd;
+            return node;
+        })
+        .map(function setTempPath(node) {
+            node.tempPath = node.fullPath.replace(/(?:\.module)?\.js$/, '.modulepack.js');
+            return node;
+        })
+        .filter(function excludePacked(node) {
+            return !fs.existsSync(node.tempPath);
+        })
+        .map(function getDependencies(node) {
+            node.deps = dg.getDependenciesFor(node.fullName)
+                .map(getMeta)
+                .filter(function excludeEmptyDependencies(dep) {
+                    var res = false;
+                    if (dep.plugin == 'is') {
+                        if (dep.moduleYes) {
+                            res = dg.getNodeMeta(dep.moduleYes.fullName);
+                        }
+                        if (res && dep.moduleNo) {
+                            res = dg.getNodeMeta(dep.moduleNo.fullName);
+                        }
+                    } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+                        res = dg.getNodeMeta(dep.moduleIn.fullName);
+                    } else {
+                        res = dg.getNodeMeta(dep.fullName);
+                    }
+                    return res && res.path;
+                })
+                .filter(function excludeI18N(dep) {
+                    return dep.plugin != 'i18n' && dep.plugin != 'css';
+                })
+                .filter(function excludeNonOwnDependencies(dep) {
+                    var ownDeps = false;
+                    if (dep.plugin == 'is') {
+                        if (dep.moduleYes) {
+                            ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleYes.fullName);
+                        }
+                        if (dep.moduleNo) {
+                            ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleNo.fullName);
+                        }
+                    } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+                        ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleIn.fullName);
+                    } else {
+                        ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.fullName);
+                    }
+                    return ownDeps;
+                })
+                .map(function setFullPath(dep) {
+                    if (dep.plugin == 'is') {
+                        if (dep.moduleYes) {
+                            dep.moduleYes.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleYes.fullName).path);
+                            dep.moduleYes.amd = dg.getNodeMeta(dep.moduleYes.fullName).amd;
+                        }
+                        if (dep.moduleNo) {
+                            dep.moduleNo.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleNo.fullName).path);
+                            dep.moduleNo.amd = dg.getNodeMeta(dep.moduleNo.fullName).amd;
+                        }
+                    } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+                        dep.moduleIn.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleIn.fullName).path);
+                        dep.moduleIn.amd = dg.getNodeMeta(dep.moduleIn.fullName).amd;
+                    } else {
+                        dep.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.fullName).path);
+                        dep.amd = dg.getNodeMeta(dep.fullName).amd;
+                    }
+                    return dep;
+                })
+                // Add self
+                .concat(node);
+            return node;
+        })
+        .filter(function withDependencies(node) {
+            return node.deps.length > 1;
+        });
+}
 
 // PACKCSS
 
@@ -787,6 +893,9 @@ function generatePackage(filesToPack, ext, packageTarget, siteRoot) {
         return '';
     }
 }
+
+
+
 
 function getStartNodes(divs, application) {
     var startNodes = [],
