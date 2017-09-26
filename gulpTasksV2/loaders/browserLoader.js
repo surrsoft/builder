@@ -8,6 +8,9 @@ const isLoader          = require('./isLoader');
 const browserLoader     = require('./browserLoader');
 const cssLoader         = require('./cssLoader');
 const i18nLoader        = require('./i18nLoader');
+const textLoader        = require('./textLoader');
+
+// TODO: optionalLoader, baseTextLoader, xmlLoader (хотя собралось и без них...)
 
 const loaders = {
     js              : jsLoader,
@@ -19,13 +22,14 @@ const loaders = {
     browser         : browserLoader,
     css             : cssLoader,
     'native-css'    : cssLoader,
-    i18n            : i18nLoader
+    i18n            : i18nLoader,
+    text            : textLoader
 };
 
 const if_condition = 'if(typeof window !== "undefined")';
 
 module.exports = function (module, base) {
-    console.log('module.moduleIn.plugin =', module.moduleIn.plugin);
+    console.log('browserLoader')
     return loaders[module.moduleIn.plugin](module.moduleIn, base)
         .then(res => {
             if (!res) return '';

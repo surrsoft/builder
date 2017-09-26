@@ -12,6 +12,7 @@ const loaders        = require('./loaders');
 const translit       = require('../lib/utils/transliterate');
 const getMeta        = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 const commonPackage  = require('grunt-wsmod-packer/lib/commonPackage.js');
+// const customPackage  = require('grunt-wsmod-packer/tasks/lib/customPackage.js');
 const packInOrder   = require('grunt-wsmod-packer/tasks/lib/packInOrder.js');
 const domHelpers    = require('grunt-wsmod-packer/lib/domHelpers.js'); // FIXME: :)))
 const packCSS       = require('grunt-wsmod-packer/tasks/lib/packCSS').gruntPackCSS;
@@ -275,6 +276,31 @@ module.exports = opts => {
 
                 })
                 .then(() => {
+                    if (!global.__DEV__) {
+                        let configsArray = [];
+
+                        for (let k in opts.acc.custompack) {
+                            let packageName = path.basename(k);
+                            let cfgContent  = JSON.parse(opts.acc.custompack[k]);
+                            if (cfgContent instanceof Array) {
+                                for (var i = 0; i < cfgContent.length; i++) {
+                                    let cfgObj          = cfgContent[i];
+                                    cfgObj.packageName  = packageName;
+                                    cfgObj.configNum    = i + 1;
+                                    configsArray.push(cfgObj);
+                                }
+                            } else {
+                                cfgContent.packageName = packageName;
+                                configsArray.push(cfgContent)
+                            }
+                        }
+
+                        return Promise.all(configsArray.map(custompack.bind(this, opts.acc.graph)))
+                    } else {
+                        return true;
+                    }
+                })
+                .then(() => {
                     let packwsmodJSON = new VFile({
                         base: path.join(argv.root, argv.application, 'resources'),
                         path: path.join(argv.root, argv.application, 'resources', 'packwsmod.json'),
@@ -299,6 +325,117 @@ module.exports = opts => {
 };
 // const packer = require('./packer');
 // var commonPackage = require('grunt-wsmod-packer/lib/commonPackage.js');
+
+function custompack (dg, cfg) {
+    const applicationRoot   = path.join(argv.root, argv.application);
+    let orderQueue          = getOrderQueue(dg, cfg, applicationRoot);
+
+    // Не будем портить оригинальный файл.
+    let outputFile = getOutputFile(cfg.output, applicationRoot, dg);
+    let promises = [];
+
+    if (fs.existsSync(outputFile) && !fs.existsSync(originalPath(outputFile))) {
+        fs.writeFileSync(originalPath(outputFile), fs.readFileSync(outputFile));
+        let loadedDependencies = [];
+        if (orderQueue && orderQueue.length) {
+            for (let ii = 0, ll = orderQueue.length; ii < ll; ii++) {
+                let dep = orderQueue[ii];
+                if (dep.plugin == 'tmpl') continue;
+                loadedDependencies.push(loaders[dep.plugin](dep, argv.root));
+            }
+            promises.push(Promise.all(loadedDependencies)
+                .then(function (outputFile, data) {
+                    try {
+                        fs.writeFileSync(
+                            outputFile,
+                            data.reduce((res, modContent) => res + (res ? '\n' : '') + modContent, '')
+                        );
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    return outputFile;
+                }.bind(this, outputFile)))
+        }
+
+    }
+    if (!promises.length) return Promise.resolve();
+    return Promise.all(promises);
+}
+
+function getOrderQueue(dg, cfg, applicationRoot) {
+    var modules = findAllModules(dg, cfg.modules);
+    var include = generateRegExp(cfg.include);
+    var exclude = generateRegExp(cfg.exclude);
+
+    var orderQueue = dg.getLoadOrder(modules);
+
+    return commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot)
+        .filter(function (module) {
+            return include ? include.test(module.fullName) : true;
+        })
+        .filter(function (module) {
+            return exclude ? !exclude.test(module.fullName) : true;
+        });
+}
+
+function findAllModules(dg, modules) {
+    var nodes = dg.getNodes();
+    var regexp = generateRegExp(modules);
+
+    return nodes.filter(function (node) {
+        return regexp.test(node);
+    });
+}
+
+function generateRegExp(modules) {
+    var regexpStr = '';
+
+    if (!modules || !modules.length) {
+        return null;
+    }
+
+    modules.forEach(function (module) {
+        if (typeof module !== 'string') return;
+
+        if (module.indexOf('*') > -1) {
+            regexpStr += (regexpStr ? '|' : '') + '(' + escapeRegExpWithoutAsterisk(module) + ')';
+        } else {
+            regexpStr += (regexpStr ? '|' : '') + '(' + escapeRegExp(module) + '$)';
+        }
+    });
+
+    return new RegExp(regexpStr);
+}
+
+function escapeRegExpWithoutAsterisk(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\+\?\.\\\^\$\|]/g, "\\$&").replace('*', '.*');
+}
+
+function escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+function originalPath(path) {
+    return path.indexOf('.original.') > -1 ? path : path.replace(/(\.js)$/, '.original$1');
+}
+
+function getOutputFile(output, applicationRoot, dg) {
+    let outputFile;
+
+    if (output.indexOf('/resources') > -1) {
+        outputFile = output;
+    } else if (output.indexOf('js!') > -1) {
+        outputFile = dg.getNodeMeta(output).path;
+    }
+
+    if (!outputFile) {
+        throw new Error('Параметр output должен начинаться с /resources или быть именем модуля js!*. Текущий output: ' + output);
+    }
+
+    return path.join(applicationRoot, outputFile).replace(/\\/g, '/');
+}
+
 function packOwnDeps (dg, jsFilesDest, taskDone) {
     const applicationRoot   = path.join(argv.root, argv.application);
     let allModules          = getAllModules(dg, applicationRoot).filter(m => jsFilesDest.some(v => v == m.fullPath));
@@ -310,7 +447,6 @@ function packOwnDeps (dg, jsFilesDest, taskDone) {
 
         for (let ii = 0, ll = item.deps.length; ii < ll; ii++) {
             let dep = item.deps[ii];
-            if (dep.plugin != 'js') console.log('dep.plugin =', dep.plugin);
             loadedDependencies.push(loaders[dep.plugin](dep, argv.root));
             // commonPackage.getLoader(dep.plugin)(dep, root, done);
         }

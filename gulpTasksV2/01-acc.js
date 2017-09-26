@@ -51,7 +51,8 @@ let routesInfo          = {};
 let packwsmod           = {};
 let packwsmodContents   = {};
 let packjscss           = {};
-let packjscssContents   = {};
+// let packjscssContents   = {};
+let custompack          = {};
 
 try {
     // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
@@ -94,8 +95,14 @@ try {
 }
 
 try {
-    packjscss           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscss.json')));
+    packjscss = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscss.json')));
     // packjscssContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscssContents.json')));
+} catch (err) {
+    console.warn(err);
+}
+
+try {
+    custompack = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'custompack.json')));
 } catch (err) {
     console.warn(err);
 }
@@ -192,16 +199,21 @@ module.exports = opts => {
             let mtime = new Date(file.stat.mtime).getTime();
             if (mtime > since) since = mtime;
 
+
             let filePath = isUnixSep ? file.path : file.path.replace(/\\/g, '/');
             let dest = file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative));
 
             if (['.styl', '.less', '.scss', '.sass'].some(ext => path.extname(dest) === ext)) {
                 dest = gutil.replaceExtension(dest, '.css');
             }
-            /*file.__stat = {
-                mtime: file.stat.mtime,
-                atime: file.stat.atime
-            };*/
+
+            if (dest.endsWith('.package.json')) {
+                custompack[dest] = file.contents + '';
+
+
+
+            }
+
             _acc[filePath] = {
                 __WS: file.__WS || false,
                 cwd: file.cwd + '',
@@ -518,6 +530,7 @@ module.exports.packwsmodContents    = packwsmodContents;
 module.exports.packwsmodXML         = null;
 
 module.exports.packjscss            = packjscss;
+module.exports.custompack           = custompack;
 // module.exports.packjscssContents    = packjscssContents;
 
 /*Object.defineProperty(module.exports, 'parsepackwsmod', {

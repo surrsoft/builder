@@ -1,3 +1,3 @@
-/**
- * Created by km.aleksandrov on 18.08.2017.
- */
+'use strict';
+
+const genJsDoc = require('./../jsDoc/generateJsDoc');

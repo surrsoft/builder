@@ -8,8 +8,9 @@ const isLoader          = require('./isLoader');
 const browserLoader     = require('./browserLoader');
 const cssLoader         = require('./cssLoader');
 const i18nLoader        = require('./i18nLoader');
+const textLoader        = require('./textLoader');
 
-// TODO: optionalLoader, textLoader, baseTextLoader, xmlLoader (хотя собралось и без них...)
+// TODO: optionalLoader, baseTextLoader, xmlLoader (хотя собралось и без них...)
 
 module.exports = {
     js              : jsLoader,
@@ -21,5 +22,6 @@ module.exports = {
     browser         : browserLoader,
     css             : cssLoader,
     'native-css'    : cssLoader,
-    i18n            : i18nLoader
+    i18n            : i18nLoader,
+    text            : textLoader
 };

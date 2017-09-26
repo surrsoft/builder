@@ -138,7 +138,7 @@ module.exports = () => {
                 execute: true
             }
         }))
-        // .pipe(pack({ acc: acc }))
+        .pipe(pack({ acc: acc }))
         .pipe(gulp.dest(file => {
             if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');

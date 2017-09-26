@@ -5,10 +5,15 @@ const esprima        = require('esprima');
 const estraverse     = require('estraverse');
 
 module.exports = function (module, base) {
-    let res         = fs.readFileSync(module.fullPath);
+    let res;
+    try {
+        res = fs.readFileSync(module.fullPath);
+    } catch (err) {
+        console.error(err);
+    }
     let amd         = module.amd;
     let anonymous   = false;
-
+    console.log('jsLoader');
     return new Promise((resolve, reject) => {
         if (amd) {
             return resolve(res);

@@ -13,6 +13,9 @@ module.exports = function (module, base) {
         }
 
         // return resolve('define("' + module.fullName + '", function() {return ' + res + ';});');
-        return resolve(`define("${module.fullName}", function() {return ${res};});`);
+
+        return resolve(`define("${module.fullName}", function() {return ${res ? res : ''};});`);
+
+        // 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});'
     });
 };

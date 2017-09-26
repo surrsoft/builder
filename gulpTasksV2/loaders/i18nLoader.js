@@ -2,7 +2,7 @@
 
 module.exports = function (module, base) {
     let deps = ['Core/i18n'], json = [], css = [], jsonLang = [], cssLang = [];
-
+    console.log('i18nLoader');
     let availableLangs = Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
     return new Promise((resolve, reject) => {
