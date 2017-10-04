@@ -194,6 +194,8 @@ module.exports = opts => {
                 file.path = path.join(argv.root, argv.application, 'ws', file.relative);
                 file.base = path.join(argv.root, argv.application, 'ws');
                 file.__WS = true;
+            } else {
+                if (path.sep == '/') file.base = path.join(file.base, '../');
             }
 
             let mtime = new Date(file.stat.mtime).getTime();

@@ -29,7 +29,6 @@ const loaders = {
 const if_condition = 'if(typeof window !== "undefined")';
 
 module.exports = function (module, base) {
-    console.log('browserLoader')
     return loaders[module.moduleIn.plugin](module.moduleIn, base)
         .then(res => {
             if (!res) return '';

@@ -10,7 +10,6 @@ module.exports = function (module, base) {
     } catch (err) {
         console.error(err);
     }
-    console.log('htmlXhtmlLoader');
     return new Promise((resolve, reject) => {
         if (module.amd && res) {
             return resolve(res);

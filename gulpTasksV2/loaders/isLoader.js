@@ -29,7 +29,6 @@ const loaders = {
 module.exports = function (module, base) {
     let if_condition    = 'if(%c)';
     let else_condition  = 'else';
-    console.log('isLoader');
     if (module.moduleFeature === 'browser') {
         if_condition = if_condition.replace('%c', 'typeof window !== "undefined"');
     }

@@ -13,7 +13,6 @@ module.exports = function (module, base) {
     }
     let amd         = module.amd;
     let anonymous   = false;
-    console.log('jsLoader');
     return new Promise((resolve, reject) => {
         if (amd) {
             return resolve(res);
