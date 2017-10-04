@@ -7,7 +7,6 @@ module.exports = function (module, base, done, themeName) {
     let suffix = themeName ? '__' + themeName : '';
     let modulePath = module.fullPath;
     if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) modulePath = modulePath.slice(0, -4) + suffix + '.css';
-
     return new Promise((resolve, reject) => {
         fs.readFile(modulePath, (err, res) => {
             if (err) {

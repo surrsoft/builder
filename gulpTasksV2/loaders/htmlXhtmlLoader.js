@@ -4,8 +4,12 @@ const fs = require('fs');
 
 module.exports = function (module, base) {
     let deps    = ['Core/helpers/random-helpers'];
-    let res     = fs.readFileSync(module.fullPath);
-
+    let res;
+    try {
+        res = fs.readFileSync(module.fullPath);
+    } catch (err) {
+        console.error(err);
+    }
     return new Promise((resolve, reject) => {
         if (module.amd && res) {
             return resolve(res);

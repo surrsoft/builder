@@ -152,9 +152,9 @@ function getDependenciesForI18N (opts, mod) {
                 var countryPath = path.join(mod.fullPath, 'lang', country, country + '.css');
                 var countryModule = 'native-css!' + path.relative(resourceRoot, countryPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
 
-                console.log('cssPath ==', cssPath);
-                console.log('countryPath ==', countryPath);
-                console.log('dictPath ==', dictPath);
+                // console.log('cssPath ==', cssPath);
+                // console.log('countryPath ==', countryPath);
+                // console.log('dictPath ==', dictPath);
 
                 if (fs.existsSync(cssPath)) {
                     deps.push({plugin: 'native-css', fullPath: cssPath, fullName: cssModule});
