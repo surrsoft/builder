@@ -6,7 +6,7 @@ const helpers = require('./../lib/utils/helpers');
 const humanize = require('humanize');
 const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');
-const UglifyJS = require("uglify-js");
+
 const dblSlashes = /\\/g;
 const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
@@ -217,12 +217,6 @@ module.exports = function (grunt) {
                         template = DoT.template(html, config);
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
-
-                        try {
-                            data = UglifyJS.minify(data);
-                        } catch (err) {
-                            grunt.log.warn(err);
-                        }
 
                         fs.writeFile(fullPath.replace(isHTML, '.original$1'), original, function () {
                             fs.writeFile(fullPath, data, function (err) {
