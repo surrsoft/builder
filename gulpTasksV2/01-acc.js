@@ -42,12 +42,29 @@ let contents    = { // manifest
     }
 };
 
+let modulesContents = {
+};
+
+function contentsBlank () {
+    return {
+        modules: {},
+        xmlContents: {},
+        htmlNames: {},
+        jsModules: {},
+        services: {},
+        requirejsPaths: {
+            WS: removeLeadingSlash(path.join(argv.application, 'ws'))
+        }
+    }
+}
+
 let moduleDependencies  = { nodes: {}, links: {} };
 let deanonymizeData = {
     anonymous: {},
     badRequireDeps: {}
 };
 let routesInfo          = {};
+let modulesRoutesInfo   = {};
 let packwsmod           = {};
 let packwsmodContents   = {};
 let packjscss           = {};
@@ -203,17 +220,53 @@ module.exports = opts => {
 
 
             let filePath = isUnixSep ? file.path : file.path.replace(/\\/g, '/');
-            let dest = file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application,  'resources', translit(file.relative));
+            let dest = file.__WS ? path.join(argv.root, argv.application, 'ws', file.relative) : path.join(argv.root, argv.application, 'resources', translit(file.relative));
 
             if (['.styl', '.less', '.scss', '.sass'].some(ext => path.extname(dest) === ext)) {
                 dest = gutil.replaceExtension(dest, '.css');
             }
 
+            if (!file.__WS) {
+                // if (!contents.modules[moduleNS]) contents.modules[moduleNS] = moduleNS;
+                // if (!contents.requirejsPaths[moduleNS]) contents.requirejsPaths[moduleNS]
+                let module = translit(file.relative.split(/[\\/]/)[0]);
+                if (!modulesContents[module]) {
+                    try {
+                        modulesContents[module] = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', module, 'contents.json')));
+                    } catch (err) {
+                        modulesContents[module]                 = contentsBlank();
+                        modulesContents[module].modules         = contents.modules;
+                        modulesContents[module].requirejsPaths  = contents.requirejsPaths;
+                        modulesContents[module].services        =  contents.services;
+                    }
+                }
+                if (!modulesRoutesInfo[module]) {
+                    try {
+                        modulesRoutesInfo[module] = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', module, 'routes-info.json')));
+                    } catch (err) {
+                        modulesRoutesInfo[module] = {};
+                    }
+                }
+            } else {
+                try {
+                    modulesContents.ws = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'ws', 'contents.json')));
+                } catch (err) {
+                    modulesContents.ws                  = contentsBlank();
+                    modulesContents.ws.modules          = contents.modules;
+                    modulesContents.ws.requirejsPaths   = contents.requirejsPaths;
+                    modulesContents.ws.services         =  contents.services;
+                }
+                if (!modulesRoutesInfo.ws) {
+                    try {
+                        modulesRoutesInfo.ws = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'ws', 'routes-info.json')));
+                    } catch (err) {
+                        modulesRoutesInfo.ws = {};
+                    }
+                }
+            }
+
             if (dest.endsWith('.package.json')) {
                 custompack[dest] = file.contents + '';
-
-
-
             }
 
             _acc[filePath] = {
@@ -270,6 +323,8 @@ Object.defineProperty(module.exports, 'contents', {
     get: function () { return contents; }
 });
 
+module.exports.modulesContents = modulesContents;
+
 Object.defineProperty(module.exports, 'deanonymizeData', {
     enumerable: false,
     configurable: false,
@@ -279,6 +334,7 @@ Object.defineProperty(module.exports, 'deanonymizeData', {
 module.exports.modules      = modulesPaths;
 module.exports.graph        = graph;
 module.exports.routesInfo   = routesInfo;
+module.exports.modulesRoutesInfo = modulesRoutesInfo;
 
 
 module.exports.markAsAnonymous = filePath => {

@@ -7,6 +7,7 @@ const translit      = require('../../lib/utils/transliterate');
 
 exports.traverse = opts => {
     let node = opts.node;
+    let file = opts.file;
 
     if (node.type == 'AssignmentExpression' && node.operator == '=') {
         if (node.left.type == 'MemberExpression' && node.left.object && node.left.object.name == 'module' && node.left.property && node.left.property.name == 'exports') {
@@ -121,6 +122,22 @@ function addToSource (opts, info) {
             isMasterPage: info.isMasterPage,
             controller: info.controller
         };
+
+        let file = opts.file;
+        if (!file.__WS) {
+            let module = translit(file.relative.split(/[\\/]/)[0]);
+            opts.acc.modulesRoutesInfo[module][routePath] = {};
+            opts.acc.modulesRoutesInfo[module][routePath][info.url] = {
+                isMasterPage: info.isMasterPage,
+                controller: info.controller
+            };
+        } else {
+            opts.acc.modulesRoutesInfo.ws[routePath] = {};
+            opts.acc.modulesRoutesInfo.ws[routePath][info.url] = {
+                isMasterPage: info.isMasterPage,
+                controller: info.controller
+            };
+        }
     } else if (info.url in opts.acc.routesInfo[routePath]) {
         // FIXME: при инкрементальной сборке валимся сюда иногда
         // throw Error(opts.file.path + ': обнаружено неоднократное переопределение контроллера для урла ' + info.url);
@@ -130,6 +147,19 @@ function addToSource (opts, info) {
             isMasterPage: info.isMasterPage,
             controller: info.controller
         };
+        let file = opts.file;
+        if (!file.__WS) {
+            let module = translit(file.relative.split(/[\\/]/)[0]);
+            opts.acc.modulesRoutesInfo[module][routePath][info.url] = {
+                isMasterPage: info.isMasterPage,
+                controller: info.controller
+            };
+        } else {
+            opts.acc.modulesRoutesInfo.ws[routePath][info.url] = {
+                isMasterPage: info.isMasterPage,
+                controller: info.controller
+            };
+        }
     }
 }
 
