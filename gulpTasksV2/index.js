@@ -141,7 +141,7 @@ module.exports = () => {
         .pipe(pack({ acc: acc }))
         .pipe(gulp.dest(file => {
             if (file.__MODULE_MANIFEST__) {
-                return file.__WS ? path.join(argv.root, argv.application, 'ws') : path.join(argv.root, argv.application, 'resources');
+                return file.__WS ? path.join(argv.root, argv.application) : path.join(argv.root, argv.application, 'resources');
             } else if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');
             } else if (file.__MANIFEST__) {
@@ -160,7 +160,7 @@ module.exports = () => {
         }, gzip({ threshold: 1024, gzipOptions: { level: 9 } })))
         .pipe(gulpif(file => '.gz' == path.extname(file.path), gulp.dest(file => {
             if (file.__MODULE_MANIFEST__) {
-                return file.__WS ? path.join(argv.root, argv.application, 'ws') : path.join(argv.root, argv.application, 'resources');
+                return file.__WS ? path.join(argv.root, argv.application) : path.join(argv.root, argv.application, 'resources');
             } else if (file.__WS) {
                 return path.join(argv.root, argv.application, 'ws');
             } else if (file.__MANIFEST__) {
