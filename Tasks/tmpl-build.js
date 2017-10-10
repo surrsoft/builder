@@ -6,7 +6,7 @@ const helpers = require('./../lib/utils/helpers');
 const humanize = require('humanize');
 const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');
-
+const UglifyJS = require('uglify-js');
 const dblSlashes = /\\/g;
 const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
@@ -126,8 +126,10 @@ module.exports = function (grunt) {
                                     for (; i < _deps.length; i++) {
                                         depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
                                     }
-
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
+
+                                    let result = UglifyJS.minify(data);
+                                    if (!result.error && result.code) data = result.code;
 
                                     fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
                                         fs.writeFile(fullPath, data, function (err) {
@@ -217,6 +219,9 @@ module.exports = function (grunt) {
                         template = DoT.template(html, config);
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
+
+                        let result = UglifyJS.minify(data);
+                        if (!result.error && result.code) data = result.code;
 
                         fs.writeFile(fullPath.replace(isHTML, '.original$1'), original, function () {
                             fs.writeFile(fullPath, data, function (err) {
