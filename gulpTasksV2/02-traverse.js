@@ -113,7 +113,7 @@ module.exports = opts => {
                 enter: function (node) {
                     if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
                         if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-                            if (isModuleJs) contentsIsModuleJs({ acc: opts.acc, node: node, contents: opts.acc.contents, file: { base: file.base, relative: file.relative } });
+                            if (isModuleJs) contentsIsModuleJs({ acc: opts.acc, node: node, contents: opts.acc.contents, file: { base: file.base, relative: file.relative, __WS: file.__WS } });
                         }
                     }
 
@@ -123,7 +123,7 @@ module.exports = opts => {
                             node: node,
                             contents: opts.acc.contents,
                             data: staticHtmlData,
-                            file: { base: file.base, relative: file.relative }
+                            file: { base: file.base, relative: file.relative, __WS: file.__WS }
                         });
                     }
 
@@ -131,7 +131,7 @@ module.exports = opts => {
                         deanonymize.anonymousCheck({
                             acc: opts.acc,
                             node: node,
-                            file: { base: file.base, relative: file.relative, path: file.path }
+                            file: { base: file.base, relative: file.relative, path: file.path, __WS: file.__WS }
                         })
                     }
 
@@ -142,6 +142,7 @@ module.exports = opts => {
                             file: {
                                 base: file.base,
                                 relative: file.relative,
+                                __WS: file.__WS,
                                 path: file.path,
                                 dest: accFile.dest
                             }
@@ -155,7 +156,7 @@ module.exports = opts => {
                 files = staticHtml.execute({
                     acc: opts.acc,
                     data: staticHtmlData,
-                    file: { base: file.base, relative: file.relative },
+                    file: { base: file.base, relative: file.relative, __WS: file.__WS },
                     moduleName: staticHtmlData.moduleName
                 });
             }
@@ -233,6 +234,7 @@ module.exports = opts => {
                                     node: node,
                                     acc: opts.acc,
                                     file: {
+                                        __WS: _acc[accPath].__WS,
                                         base: _acc[accPath].base,
                                         relative: _acc[accPath].relative,
                                         path: _acc[accPath].path,
@@ -279,6 +281,71 @@ module.exports = opts => {
                 path: path.join(argv.root, argv.application, 'resources', 'routes-info.json'),
                 contents: new Buffer(JSON.stringify(opts.acc.routesInfo))
             });
+
+            for (let _module in opts.acc.modulesContents) {
+                if ('ws' != _module) {
+                    let contentsJSON = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application, 'resources'),
+                        path: path.join(argv.root, argv.application, 'resources', _module, 'contents.json'),
+                        contents: new Buffer(JSON.stringify(opts.acc.modulesContents[_module]))
+                    });
+                    let contentsJS = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application, 'resources'),
+                        path: path.join(argv.root, argv.application, 'resources', _module, 'contents.js'),
+                        contents: new Buffer('contents=' + JSON.stringify(opts.acc.modulesContents[_module]))
+                    });
+                    contentsJSON.__MODULE_MANIFEST__ = true;
+                    contentsJS.__MODULE_MANIFEST__   = true;
+                    this.push(contentsJSON);
+                    this.push(contentsJS);
+                } else {
+                    let contentsJSON = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application),
+                        path: path.join(argv.root, argv.application, _module, 'contents.json'),
+                        contents: new Buffer(JSON.stringify(opts.acc.modulesContents[_module])),
+                        __WS: true
+                    });
+                    let contentsJS = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application),
+                        path: path.join(argv.root, argv.application, _module, 'contents.js'),
+                        contents: new Buffer('contents=' + JSON.stringify(opts.acc.modulesContents[_module])),
+                        __WS: true
+                    });
+                    contentsJSON.__MODULE_MANIFEST__ = true;
+                    contentsJS.__MODULE_MANIFEST__   = true;
+                    this.push(contentsJSON);
+                    this.push(contentsJS);
+                }
+
+            }
+
+            for (let _module in opts.acc.modulesRoutesInfo) {
+                if ('ws' != _module) {
+                    let routesInfoJSON = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application, 'resources'),
+                        path: path.join(argv.root, argv.application, 'resources', _module, 'routes-info.json'),
+                        contents: new Buffer(JSON.stringify(opts.acc.modulesRoutesInfo[_module]))
+                    });
+
+                    routesInfoJSON.__MODULE_MANIFEST__   = true;
+                    this.push(routesInfoJSON);
+                } else {
+                    let routesInfoJSON = new VFile({
+                        // cwd base path contents
+                        base: path.join(argv.root, argv.application),
+                        path: path.join(argv.root, argv.application, _module, 'routes-info.json'),
+                        contents: new Buffer(JSON.stringify(opts.acc.modulesRoutesInfo[_module])),
+                        __WS: true
+                    });
+                    routesInfoJSON.__MODULE_MANIFEST__   = true;
+                    this.push(routesInfoJSON);
+                }
+            }
 
             contentsJSON.__MANIFEST__               = true;
             contentsJS.__MANIFEST__                 = true;

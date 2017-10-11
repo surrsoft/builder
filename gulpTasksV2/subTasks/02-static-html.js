@@ -3,7 +3,7 @@
 const path              = require('path');
 const gutil             = require('gulp-util');
 const argv              = require('yargs').argv;
-// const translit          = require('../../lib/utils/transliterate');
+const translit = require('../../lib/utils/transliterate');
 // const replaceIncludes   = require('../../lib/utils/include-replacer');
 
 let files = [];
@@ -55,7 +55,7 @@ exports.execute = opts => {
         }
     });
 
-    parseOpts(opts, argv.application, getReplaceOpts(argv.root, argv.application)/*, path.join(argv.root, argv.application)*/);
+    parseOpts(opts, argv.application, getReplaceOpts(argv.root, argv.application), opts.file);
 
     return files;
 };
@@ -74,7 +74,7 @@ exports.htmlDeprecated = opts => {
     // helpers.writeFile(path.join(applicationRoot, basename), text, callback);
 };
 
-function parseOpts (opts, application, replaceOpts/*, applicationRoot*/) {
+function parseOpts (opts, application, replaceOpts, file) {
     let moduleName      = opts.moduleName;
     let webPage         = opts.webPage || {};
     let htmlTemplate    = webPage.htmlTemplate || '';
@@ -87,6 +87,12 @@ function parseOpts (opts, application, replaceOpts/*, applicationRoot*/) {
     if (!htmlTemplate) gutil.log(`Using default template for output file ${outFileName}.html`);
 
     opts.acc.addContentsHtmlNames(moduleName, application.replace('/', '') + outFileName + '.html');
+    if (!file.__WS) {
+        let module = translit(file.relative.split(/[\\/]/)[0]);
+        opts.acc.modulesContents[module].htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
+    } else {
+        opts.acc.modulesContents.ws.htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
+    }
 
     generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, /*applicationRoot, */opts/*, cb*/);
 }
