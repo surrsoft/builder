@@ -128,8 +128,8 @@ module.exports = function (grunt) {
                                     }
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
-                                    let result = UglifyJS.minify(data);
-                                    if (!result.error && result.code) data = result.code;
+                                    let minified = UglifyJS.minify(data);
+                                    if (!minified.error && minified.code) data = minified.code;
 
                                     fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
                                         fs.writeFile(fullPath, data, function (err) {
@@ -220,8 +220,8 @@ module.exports = function (grunt) {
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
 
-                        let result = UglifyJS.minify(data);
-                        if (!result.error && result.code) data = result.code;
+                        let minified = UglifyJS.minify(data);
+                        if (!minified.error && minified.code) data = minified.code;
 
                         fs.writeFile(fullPath.replace(isHTML, '.original$1'), original, function () {
                             fs.writeFile(fullPath, data, function (err) {
