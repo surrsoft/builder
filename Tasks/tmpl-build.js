@@ -128,9 +128,12 @@ module.exports = function (grunt) {
                                     }
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
-                                    let minified = UglifyJS.minify(data);
-                                    if (!minified.error && minified.code) data = minified.code;
-
+                                   try {
+                                      let minified = UglifyJS.minify(data);
+                                      if (!minified.error && minified.code) data = minified.code;
+                                   } catch (minerr) {
+                                      grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
+                                   }
                                     fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
                                         fs.writeFile(fullPath, data, function (err) {
                                             if (!err) {
