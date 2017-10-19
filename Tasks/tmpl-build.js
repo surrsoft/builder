@@ -128,7 +128,6 @@ module.exports = function (grunt) {
                                     }
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
-
                                    try {
                                       let minified = UglifyJS.minify(data);
                                       if (!minified.error && minified.code) data = minified.code;
