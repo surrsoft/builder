@@ -57,7 +57,7 @@ module.exports = function (grunt) {
         if (versionize && typeof versionize == 'string') {
             defaultTasks.push('replace:html');
         }
-        defaultTasks.push('packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
+        defaultTasks.push('packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip', 'splitResources');
     }
 
     if (!packaging && versionize && typeof versionize == 'string') {
