@@ -1,4 +1,5 @@
 'use strict';
+
 const
    fs = require('fs'),
    humanize = require('humanize'),
@@ -48,7 +49,6 @@ module.exports = function splitResourcesTask(grunt) {
       rootPath = path.join(root, app),
       moduleDepPath = path.join(rootPath, '/resources/module-dependencies.json'),
       routesPath = path.join(rootPath, '/resources/routes-info.json'),
-      contentsJsPath = path.join(rootPath, '/resources/contents.js'),
       contentsJsonPath = path.join(rootPath, '/resources/contents.json');
 
 
@@ -118,7 +118,7 @@ module.exports = function splitResourcesTask(grunt) {
          try {
             result[nameModule][option][key] = data[option][key];
          } catch(err) {
-            grunt.fail.fatal(`Не смог корекrтно разобрать опцию из contents.json. Опция: ${data[option][key]}`)
+            grunt.fail.fatal(`Не смог корекктно разобрать опцию из contents.json. Опция: ${data[option][key]}`)
          }
       });
 
@@ -160,11 +160,10 @@ module.exports = function splitResourcesTask(grunt) {
       return result;
    }
 
-   function splitContents() {
+   function splitContents(fullContents) {
       let
          nameModule,
-         splitContents = {},
-         fullContents = JSON.parse(fs.readFileSync(contentsJsonPath));
+         splitContents = {};
 
       Object.keys(fullContents.modules).forEach(function(module) {
          nameModule = fullContents.modules[module];
@@ -225,18 +224,64 @@ module.exports = function splitResourcesTask(grunt) {
       return splitModuleDep;
    }
 
+   function splitPreloadUrls(modules) {
+
+      let
+         regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/,
+         preloadUrls = {},
+         matchs,
+         modulePreload,
+         preload,
+         nameModules;
+
+      Object.keys(modules).forEach(function(module) {
+         nameModules = modules[module];
+         nameModules = nameModules.match(regExp)[1];
+
+         if (!nameModules || nameModules == 'ws') {
+            return;
+         }
+         try {
+            modulePreload = fs.readFileSync(path.join(rootPath, '/resources/' + nameModules + '/' + nameModules + '.s3mod'), {encoding: 'utf8'});
+         } catch(err) {
+            grunt.log.warn(`Не смог прочитать файл ${path.join(rootPath, '/resources/' + nameModules + '/' + nameModules + '.s3mod')}`);
+         }
+
+         matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
+
+         if(matchs) {
+            matchs = matchs[2];
+         } else {
+            return;
+         }
+
+         preload = matchs.match(/[\"|\'][\w\?\=\.\#\/\-\&А-я]*[\"|\']/g);
+         preloadUrls[nameModules] = [];
+
+         preload.forEach(function(value) {
+            preloadUrls[nameModules].push(value.replace(/['|"]/g, ''));
+         });
+
+      });
+
+      return preloadUrls;
+   }
+
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
+
+      let fullContents = JSON.parse(fs.readFileSync(contentsJsonPath));
 
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
 
       writeFileInModules(splitRoutes(), 'routes-info.json');
 
-      let splitCont = splitContents();
+      let splitCont = splitContents(fullContents);
       writeFileInModules(splitCont, 'contents.json');
       writeFileInModules(splitCont, 'contents.js');
 
       writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
 
+      writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
 
       grunt.log.ok(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена.`);
 
