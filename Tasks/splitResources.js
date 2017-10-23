@@ -186,6 +186,17 @@ module.exports = function splitResourcesTask(grunt) {
       return splitContents;
    }
 
+   function splitModuleDependencies() {
+      let
+         nameModule,
+         splitModuleDep = {},
+         fullModuleDep = JSON.parse(fs.readFileSync(moduleDepPath));
+
+
+
+
+   }
+
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
 
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
