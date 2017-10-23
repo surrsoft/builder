@@ -12,7 +12,7 @@ if (path.sep == '/') {
    pathSep = '\\\\';
 }
 
-const regExpRouting = new RegExp("(?:resources" + pathSep + ")([\\w\\-\\.]*)(?:" + pathSep + ")|(ws)(?:" + pathSep +")");
+const regExpRouting = new RegExp("(?:resources" + pathSep + ")([\\w\\-\\.\\)\\(]*)(?:\\s*|" + pathSep + ")|(ws)(?:\\s*|" + pathSep +")");
 
 function getNameModule(path) {
    let match = path.match(regExpRouting);
@@ -58,12 +58,7 @@ module.exports = function splitResourcesTask(grunt) {
 
       Object.keys(data).forEach(function(nameModule) {
 
-         if (nameModule != 'ws') {
-            pathModule = path.join(rootPath, '/resources/' + nameModule + '/' + name);
-         } else {
-            pathModule = path.join(rootPath, nameModule + '/' + name);
-         }
-         pathModule = path.normalize(pathModule);
+         pathModule = path.normalize(path.join(rootPath, '/resources/' + nameModule + '/' + name));
 
          try {
             if (name != 'contents.js') {
@@ -86,8 +81,12 @@ module.exports = function splitResourcesTask(grunt) {
          Object.keys(fullRoutes).forEach(function (routes) {
             nameModule = getNameModule(routes);
 
-            if (nameModule == null) {
+            if (!nameModule) {
                grunt.fail.fatal(`Не смог разобрать корректно путь роутинга ${routes}`);
+            }
+
+            if (nameModule == 'ws') {
+               return;
             }
 
             if (!splitRoutes[nameModule]) {
@@ -111,12 +110,15 @@ module.exports = function splitResourcesTask(grunt) {
             return;
          } else {
             nameModule = data[option][key].match(regExp)[1];
+            if (nameModule == 'ws') {
+               return;
+            }
          }
 
          try {
             result[nameModule][option][key] = data[option][key];
          } catch(err) {
-            grunt.fail.fatal(`Жопа Ж ${data[option][key]}`)
+            grunt.fail.fatal(`Не смог корекrтно разобрать опцию из contents.json. Опция: ${data[option][key]}`)
          }
       });
 
@@ -131,6 +133,9 @@ module.exports = function splitResourcesTask(grunt) {
       Object.keys(data.htmlNames).forEach(function(key) {
          nameModule = key.replace('js!', '');
          nameModule = data.jsModules[nameModule].match(/[\w\-\.]*/)[0];
+         if (nameModule == 'ws') {
+            return;
+         }
          result[nameModule].htmlNames[key] = data.htmlNames[key];
       });
 
@@ -141,6 +146,10 @@ module.exports = function splitResourcesTask(grunt) {
       let
          regExp = new RegExp("(" + name + ")(\\.)"),
          result = {};
+
+      if (name == 'ws') {
+         return;
+      }
 
       Object.keys(data).forEach(function(dist) {
          if(isNeededValue(regExp ,dist)) {
@@ -156,9 +165,6 @@ module.exports = function splitResourcesTask(grunt) {
          nameModule,
          splitContents = {},
          fullContents = JSON.parse(fs.readFileSync(contentsJsonPath));
-
-      //TODO колстыль чтобы при разборе requirejsPaths не валилась сборка так как ws не модуль
-      fullContents.modules.ws = "ws";
 
       Object.keys(fullContents.modules).forEach(function(module) {
          nameModule = fullContents.modules[module];
@@ -192,9 +198,31 @@ module.exports = function splitResourcesTask(grunt) {
          splitModuleDep = {},
          fullModuleDep = JSON.parse(fs.readFileSync(moduleDepPath));
 
+      Object.keys(fullModuleDep.nodes).forEach(function(node) {
+         if (fullModuleDep.nodes[node].path) {
+            nameModule = getNameModule(fullModuleDep.nodes[node].path);
+         } else {
+            grunt.log.warn(`Не нашёл путь до модуля:  ${node}`);
+            return;
+         }
 
+         if (!nameModule || nameModule == 'ws') {
+            return;
+         }
 
+         if (!splitModuleDep[nameModule]) {
+            splitModuleDep[nameModule] = {
+               nodes:{},
+               links:{}
+            }
+         }
 
+         splitModuleDep[nameModule].nodes[node] = fullModuleDep.nodes[node];
+         splitModuleDep[nameModule].links[node] = fullModuleDep.links[node];
+
+      });
+
+      return splitModuleDep;
    }
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
@@ -207,6 +235,7 @@ module.exports = function splitResourcesTask(grunt) {
       writeFileInModules(splitCont, 'contents.json');
       writeFileInModules(splitCont, 'contents.js');
 
+      writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
 
 
       grunt.log.ok(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена.`);
