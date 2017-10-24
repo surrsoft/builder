@@ -70,7 +70,7 @@ module.exports = function splitResourcesTask(grunt) {
          } catch(err) {
             grunt.fail.fatal(`Не смог записать файл: ${pathModule}`);
          }
-      })
+      });
    }
 
    function getOptionModule(data, splitData, option) {
@@ -82,7 +82,7 @@ module.exports = function splitResourcesTask(grunt) {
       if (option == 'jsModules') {
          regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;
       } else {
-         regExp = /^(?:resources\/|ws\/)?(.*)$/;
+         regExp = /(?:[\s\S]\/)(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;//^(?:resources\/|ws\/)?(.*)$/;
       }
 
       Object.keys(data[option]).forEach(function(key) {
@@ -274,24 +274,15 @@ module.exports = function splitResourcesTask(grunt) {
                return;
             }
 
-            fs.readdir(path.join(rootPath, '/resources/' + nameModules), function (err, files) {
-               if (err) {
-                  grunt.log.warn(`Не смог найти дмректорию ${path.join(rootPath, '/resources/' + nameModules)}
-                          ${err.stack}`);
+            let allFiles = fs.readdirSync(path.join(rootPath, '/resources/' + nameModules));
+            allFiles.some(function(file) {
+               if (file.indexOf('.s3mod') > -1) {
+                  pathsmod = path.join(rootPath, '/resources/' + nameModules + '/' + file)
+                  return true;
                }
-
-               files.some(function(file) {
-                  if (~file.indexOf('.s3mod')) {
-                     pathsmod = path.join(rootPath, '/resources/' + nameModules + '/' + file + '.s3mod)
-                     try {
-                        modulePreload = fs.readFileSync(pathsmod, {encoding: 'utf8'});
-                     } catch(err) {
-                        grunt.log.warn(`Не смог прочитать файл ${pathsmod}`);
-                     }
-                     return true;
-                  };
-               });
             });
+
+            modulePreload = fs.readFileSync(pathsmod, {encoding: 'utf8'});
 
             matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
 
@@ -310,7 +301,7 @@ module.exports = function splitResourcesTask(grunt) {
 
          });
       } catch(err) {
-         grunt.fail.fatal("Ошибка при обработке preload_urls.json.\n Имя модуля: " + pathsmod+ "\n" + err.stack );
+         grunt.fail.fatal("Ошибка при обработке preload_urls.json.\n Имя модуля: " + pathsmod + "\n" + err.stack );
       }
 
       return preloadUrls;
@@ -333,12 +324,13 @@ module.exports = function splitResourcesTask(grunt) {
       writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
       grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена`);
 
-      fs.readFile(preloadUrlsPath, function (err) {
-         if (!err) {
-            writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
-            grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена`);
-         }
-      });
+      try {
+         fs.readFileSync(preloadUrlsPath)
+         writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
+         grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена`);
+      } catch(err) {
+
+      }
 
       grunt.log.ok(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена.`);
    });
