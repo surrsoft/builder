@@ -77,12 +77,12 @@ module.exports = function splitResourcesTask(grunt) {
       let
          regExp,
          result = splitData,
-         nameModule
+         nameModule;
 
       if (option == 'jsModules') {
          regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;
       } else {
-         regExp = /(?:[\s\S]\/)(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;//^(?:resources\/|ws\/)?(.*)$/;
+         regExp = /^(?:.*)+?(?:resources\/|ws\/)(.*)$/;
       }
 
       Object.keys(data[option]).forEach(function(key) {
@@ -90,7 +90,7 @@ module.exports = function splitResourcesTask(grunt) {
             return;
          } else {
             nameModule = data[option][key].match(regExp)[1];
-            if (nameModule == 'ws') {
+            if (nameModule === '') {
                return;
             }
          }
@@ -206,7 +206,8 @@ module.exports = function splitResourcesTask(grunt) {
          });
 
          splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
-         splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
+         //Почему-то не работает, но я узнаю почему!!!
+         //splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
          splitContents = getOptionHtmlNames(fullContents, splitContents);
       } catch(err) {
          grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack );
