@@ -50,6 +50,7 @@ module.exports = function splitResourcesTask(grunt) {
       moduleDepPath = path.join(rootPath, '/resources/module-dependencies.json'),
       routesPath = path.join(rootPath, '/resources/routes-info.json'),
       contentsJsonPath = path.join(rootPath, '/resources/contents.json');
+      grunt.log.ok(rootPath);
 
 
    function writeFileInModules(data, name) {
@@ -101,9 +102,15 @@ module.exports = function splitResourcesTask(grunt) {
 
    function getOptionModule(data, splitData, option) {
       let
-         regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/,
+         regExp,
          result = splitData,
          nameModule
+
+      if (option == 'jsModules') {
+         regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;
+      } else {
+         regExp = /(?:[\s\S]\/)(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/;
+      }
 
       Object.keys(data[option]).forEach(function(key) {
          if (option && option == 'dictionary') {
@@ -118,7 +125,7 @@ module.exports = function splitResourcesTask(grunt) {
          try {
             result[nameModule][option][key] = data[option][key];
          } catch(err) {
-            grunt.fail.fatal(`Не смог корекктно разобрать опцию из contents.json. Опция: ${data[option][key]}`)
+            grunt.fail.fatal(`Не смог корекктно разобрать опцию из contents.json. Опция:${option} Модуль: ${data[option][key]}`)
          }
       });
 
@@ -227,12 +234,13 @@ module.exports = function splitResourcesTask(grunt) {
    function splitPreloadUrls(modules) {
 
       let
-         regExp = /(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/,
+         regExp = /(?:[\s\S]\/)(?:resources\/)?([\w\-\.\)\(]*)([\.|\s|\/]*)/,
          preloadUrls = {},
          matchs,
          modulePreload,
          preload,
          nameModules;
+
 
       Object.keys(modules).forEach(function(module) {
          nameModules = modules[module];
