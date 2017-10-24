@@ -49,8 +49,8 @@ module.exports = function splitResourcesTask(grunt) {
       rootPath = path.join(root, app),
       moduleDepPath = path.join(rootPath, '/resources/module-dependencies.json'),
       routesPath = path.join(rootPath, '/resources/routes-info.json'),
+      preloadUrlsPath = path.join(rootPath, '/resources/preload_urls.json'),
       contentsJsonPath = path.join(rootPath, '/resources/contents.json');
-      grunt.log.ok(rootPath);
 
 
    function writeFileInModules(data, name) {
@@ -148,23 +148,27 @@ module.exports = function splitResourcesTask(grunt) {
          splitRoutes = {},
          fullRoutes = JSON.parse(fs.readFileSync(routesPath));
 
-      Object.keys(fullRoutes).forEach(function (routes) {
-         nameModule = getNameModule(routes);
+      try {
+         Object.keys(fullRoutes).forEach(function (routes) {
+            nameModule = getNameModule(routes);
 
-         if (!nameModule) {
-            grunt.fail.fatal(`Не смог разобрать корректно путь роутинга ${routes}`);
-         }
+            if (!nameModule) {
+               grunt.fail.fatal(`Не смог разобрать корректно путь роутинга ${routes}`);
+            }
 
-         if (nameModule == 'ws') {
-            return;
-         }
+            if (nameModule == 'ws') {
+               return;
+            }
 
-         if (!splitRoutes[nameModule]) {
-            splitRoutes[nameModule] = {};
-         }
+            if (!splitRoutes[nameModule]) {
+               splitRoutes[nameModule] = {};
+            }
 
-         splitRoutes[nameModule][routes] = fullRoutes[routes];
-      });
+            splitRoutes[nameModule][routes] = fullRoutes[routes];
+         });
+      } catch(err) {
+         grunt.fail.fatal("Ошибка при обработке routes-info.json.\n Имя модуля: " + nameModule + "\n" + err.stack );
+      }
 
       return splitRoutes;
    }
@@ -176,28 +180,37 @@ module.exports = function splitResourcesTask(grunt) {
          nameModule,
          splitContents = {};
 
-      Object.keys(fullContents.modules).forEach(function(module) {
-         nameModule = fullContents.modules[module];
-         splitContents[nameModule] = {
-            htmlNames: {},
-            jsModules: {},
-            modules: {},
-            requirejsPaths: {},
-            services: fullContents.services,
-            xmlContents: fullContents.xmlContents,
-         }
+      try {
+         Object.keys(fullContents.modules).forEach(function(module) {
+            nameModule = fullContents.modules[module];
 
-         splitContents[nameModule].modules[module] = nameModule;
-         if (fullContents.dictionary) {
-            splitContents[nameModule].availableLanguage = fullContents.availableLanguage;
-            splitContents[nameModule].defaultLanguage = fullContents.defaultLanguage;
-            splitContents[nameModule].dictionary = getOptionDictionary(fullContents.dictionary, nameModule);
-         }
-      });
+            if (nameModule === 'ws/') {
+               return;
+            }
 
-      splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
-      splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
-      splitContents = getOptionHtmlNames(fullContents, splitContents);
+            splitContents[nameModule] = {
+               htmlNames: {},
+               jsModules: {},
+               modules: {},
+               requirejsPaths: {},
+               services: fullContents.services,
+               xmlContents: fullContents.xmlContents,
+            }
+
+            splitContents[nameModule].modules[module] = nameModule;
+            if (fullContents.dictionary) {
+               splitContents[nameModule].availableLanguage = fullContents.availableLanguage;
+               splitContents[nameModule].defaultLanguage = fullContents.defaultLanguage;
+               splitContents[nameModule].dictionary = getOptionDictionary(fullContents.dictionary, nameModule);
+            }
+         });
+
+         splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
+         splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
+         splitContents = getOptionHtmlNames(fullContents, splitContents);
+      } catch(err) {
+         grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack );
+      }
 
       return splitContents;
    }
@@ -235,9 +248,8 @@ module.exports = function splitResourcesTask(grunt) {
 
          });
       } catch (err) {
-         grunt.fail.fatal("Ошибка при обработке module-dependencies.json\n Имя модуля: " + nameModule)
+         grunt.fail.fatal("Ошибка при обработке module-dependencies.json.\n Имя модуля: " + nameModule + "\n" + err.stack );
       }
-
       return splitModuleDep;
    }
 
@@ -253,50 +265,53 @@ module.exports = function splitResourcesTask(grunt) {
          preload,
          nameModules;
 
+      try {
+         Object.keys(modules).forEach(function(module) {
+            nameModules = modules[module];
+            nameModules = nameModules.match(regExp)[1];
 
-      Object.keys(modules).forEach(function(module) {
-         nameModules = modules[module];
-         nameModules = nameModules.match(regExp)[1];
-
-         if (!nameModules || nameModules == 'ws') {
-            return;
-         }
-
-         fs.readdir(path.join(rootPath, '/resources/' + nameModules), function (err, files) {
-            if (err) {
-               grunt.log.warn(`Не смог найти дмректорию ${path.join(rootPath, '/resources/' + nameModules)}
-                          ${err.stack}`);
+            if (!nameModules || nameModules == 'ws') {
+               return;
             }
 
-            files.some(function(file) {
-               if (~file.indexOf('.s3mod')) {
-                  pathsmod = path.join(rootPath, '/resources/' + nameModules + '/' + file + '.s3mod)
-                  try {
-                     modulePreload = fs.readFileSync(pathsmod, {encoding: 'utf8'});
-                  } catch(err) {
-                     grunt.log.warn(`Не смог прочитать файл ${pathsmod}`);
-                  }
-                  return true;
-               };
+            fs.readdir(path.join(rootPath, '/resources/' + nameModules), function (err, files) {
+               if (err) {
+                  grunt.log.warn(`Не смог найти дмректорию ${path.join(rootPath, '/resources/' + nameModules)}
+                          ${err.stack}`);
+               }
+
+               files.some(function(file) {
+                  if (~file.indexOf('.s3mod')) {
+                     pathsmod = path.join(rootPath, '/resources/' + nameModules + '/' + file + '.s3mod)
+                     try {
+                        modulePreload = fs.readFileSync(pathsmod, {encoding: 'utf8'});
+                     } catch(err) {
+                        grunt.log.warn(`Не смог прочитать файл ${pathsmod}`);
+                     }
+                     return true;
+                  };
+               });
             });
+
+            matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
+
+            if(matchs) {
+               matchs = matchs[2];
+            } else {
+               return;
+            }
+
+            preload = matchs.match(/[\"|\'][\w\?\=\.\#\/\-\&А-я]*[\"|\']/g);
+            preloadUrls[nameModules] = [];
+
+            preload.forEach(function(value) {
+               preloadUrls[nameModules].push(value.replace(/['|"]/g, ''));
+            });
+
          });
-
-         matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
-
-         if(matchs) {
-            matchs = matchs[2];
-         } else {
-            return;
-         }
-
-         preload = matchs.match(/[\"|\'][\w\?\=\.\#\/\-\&А-я]*[\"|\']/g);
-         preloadUrls[nameModules] = [];
-
-         preload.forEach(function(value) {
-            preloadUrls[nameModules].push(value.replace(/['|"]/g, ''));
-         });
-
-      });
+      } catch(err) {
+         grunt.fail.fatal("Ошибка при обработке preload_urls.json.\n Имя модуля: " + pathsmod+ "\n" + err.stack );
+      }
 
       return preloadUrls;
    }
@@ -308,16 +323,20 @@ module.exports = function splitResourcesTask(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
 
       writeFileInModules(splitRoutes(), 'routes-info.json');
+      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена`);
 
       let splitCont = splitContents(fullContents);
       writeFileInModules(splitCont, 'contents.json');
       writeFileInModules(splitCont, 'contents.js');
+      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена`);
 
       writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
+      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена`);
 
-      fs.readFile(contentsJsonPath, function (err) {
+      fs.readFile(preloadUrlsPath, function (err) {
          if (!err) {
             writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
+            grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена`);
          }
       });
 
