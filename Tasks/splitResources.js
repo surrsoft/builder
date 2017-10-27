@@ -46,8 +46,8 @@ function getName(path, isResources, isRootApp, sep) {
 }
 
 module.exports = function splitResourcesTask(grunt) {
-   let
-      rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
+   const NAME_DIR_STATIC_HTML = 'static_templates';
+   let rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
 
    function getPath(nameFile, nameModule, isResources) {
       let newPath;
@@ -314,6 +314,7 @@ module.exports = function splitResourcesTask(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
 
       let
+         listPathStaticHtml = {},
          nameModules,
          pathContents,
          contents;
@@ -338,11 +339,13 @@ module.exports = function splitResourcesTask(grunt) {
             nameHtml;
 
          if (staticHtml.length !== 0) {
+            fs.mkdir(getPath(NAME_DIR_STATIC_HTML, nameModules));
             staticHtml.forEach(function(Html) {
                try {
                   nameHtml = getName(contents.htmlNames[Html], false, true);
                   contentsHtml = fs.readFileSync(getPath(nameHtml), {encoding: 'utf8'});
-                  fs.writeFileSync(getPath(nameHtml, nameModules), contentsHtml);
+                  fs.writeFileSync(getPath(NAME_DIR_STATIC_HTML + "/" + nameHtml, nameModules), contentsHtml);
+                  listPathStaticHtml[nameHtml] = nameModules + "/" + NAME_DIR_STATIC_HTML + "/" + nameHtml;
                } catch(err) {
                   grunt.fail.fatal("Не смог найти файл" + nameHtml + ".\n" + err.stack );
                }
@@ -351,6 +354,8 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
       });
+
+      fs.writeFileSync(getPath('static_templates.json', undefined, true), JSON.stringify(listPathStaticHtml, undefined, 2));
    }
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
