@@ -230,7 +230,13 @@ module.exports = function splitResourcesTask(grunt) {
          fullModuleDep;
 
       //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core
-      fullModuleDepCont = fullModuleDepCont.replace(/"ws\\/g, '"resources\\\\WS.Core\\');
+      let replaceStr;
+      if (path.sep === '\\') {
+         replaceStr = '"resources\\\\WS.Core\\';
+      } else {
+         replaceStr = '"resources/WS.Core/';
+      }
+      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStr);
       fullModuleDep = JSON.parse(fullModuleDepCont);
 
       try {
