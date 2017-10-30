@@ -46,7 +46,6 @@ function getName(path, isResources, isRootApp, sep) {
 }
 
 module.exports = function splitResourcesTask(grunt) {
-   const NAME_DIR_STATIC_HTML = 'static_templates';
    let rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
 
    function getPath(nameFile, nameModule, isResources) {
@@ -227,7 +226,12 @@ module.exports = function splitResourcesTask(grunt) {
       let
          nameModule,
          splitModuleDep = {},
-         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
+         fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
+         fullModuleDep;
+
+      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core
+      fullModuleDepCont = fullModuleDepCont.replace(/"ws\\/g, '"resources\\\\WS.Core\\');
+      fullModuleDep = JSON.parse(fullModuleDepCont);
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
@@ -314,7 +318,6 @@ module.exports = function splitResourcesTask(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
 
       let
-         listPathStaticHtml = {},
          nameModules,
          pathContents,
          contents;
@@ -334,28 +337,26 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          let
+            listPathStaticHtml = {},
             staticHtml = Object.keys(contents.htmlNames),
             contentsHtml,
             nameHtml;
 
          if (staticHtml.length !== 0) {
-            fs.mkdir(getPath(NAME_DIR_STATIC_HTML, nameModules));
             staticHtml.forEach(function(Html) {
                try {
                   nameHtml = getName(contents.htmlNames[Html], false, true);
                   contentsHtml = fs.readFileSync(getPath(nameHtml), {encoding: 'utf8'});
-                  fs.writeFileSync(getPath(NAME_DIR_STATIC_HTML + "/" + nameHtml, nameModules), contentsHtml);
-                  listPathStaticHtml[nameHtml] = nameModules + "/" + NAME_DIR_STATIC_HTML + "/" + nameHtml;
+                  fs.writeFileSync(getPath(nameHtml, nameModules), contentsHtml);
+                  listPathStaticHtml[nameHtml] = nameModules + "/" + nameHtml;
                } catch(err) {
                   grunt.fail.fatal("Не смог найти файл" + nameHtml + ".\n" + err.stack );
                }
             });
-
+            fs.writeFileSync(getPath('static_templates.json', nameModules), JSON.stringify(listPathStaticHtml, undefined, 2));
          }
 
       });
-
-      fs.writeFileSync(getPath('static_templates.json', undefined, true), JSON.stringify(listPathStaticHtml, undefined, 2));
    }
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
