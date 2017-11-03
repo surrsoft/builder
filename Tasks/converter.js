@@ -6,7 +6,6 @@ const async = require('async');
 const helpers = require('./../lib/utils/helpers');
 const transliterate = require('./../lib/utils/transliterate');
 const traverse = require('estraverse').traverse;
-const escodegen = require('escodegen');
 const humanize = require('humanize');
 
 const dblSlashes = /\\/g;
@@ -156,10 +155,7 @@ module.exports = function (grunt) {
                         }
                     } else if (isModuleJs.test(file)) {
                         fs.readFile(file, function (err, text) {
-                            let ast = helpers.parseModule(text.toString(), {
-                                loc: true,
-                                source: file
-                            });
+                            let ast = helpers.parseModule(text.toString());
 
                             if (ast instanceof Error) {
                                 grunt.log.error(`[ERROR]: Syntax error in the file: ${file}`, ast);
@@ -173,15 +169,6 @@ module.exports = function (grunt) {
                                 }
                             });
                             if (!dryRun) {
-                                let sourceMap = escodegen.generate(ast, {
-                                    sourceMap: true,
-                                    sourceMapRoot: null,
-                                    sourceContent: text,
-                                    sourceMapWithCode: false // Get both code and source map
-                                }).toString();
-
-                                text = text + '\n//# sourceMappingURL='+ file + '.map';
-                                copyFile(file, file + '.map', sourceMap, ()=>{});
                                 copyFile(file, dest, text, callback);
                             } else {
                                 callback();
