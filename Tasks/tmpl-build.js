@@ -129,7 +129,7 @@ module.exports = function (grunt) {
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
                                    try {
-                                      let minified = UglifyJS.minify(data);
+                                      let minified = UglifyJS.minify(data, { mangle: { eval: true } });
                                       if (!minified.error && minified.code) data = minified.code;
                                    } catch (minerr) {
                                       grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
