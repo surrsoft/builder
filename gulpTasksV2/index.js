@@ -83,8 +83,8 @@ module.exports = () => {
         .pipe(traverse({ acc: acc }))
         // .pipe(deprecated({ acc: acc })) // Таска deprecated - задепрекейчена :)))
         .pipe(less())
-        .pipe(tmplBuild({ acc: acc }))
-        .pipe(tmplMin())
+        // .pipe(tmplBuild({ acc: acc }))
+        // .pipe(tmplMin())
         /*.pipe(gulpif(file => file.__TMPL__ || path.extname(file.path) == '.js', uglify()))
         .pipe(gulpif(file => {
             return [
@@ -138,7 +138,7 @@ module.exports = () => {
                 execute: true
             }
         }))
-        .pipe(pack({ acc: acc }))
+        // .pipe(pack({ acc: acc }))
         .pipe(gulp.dest(file => {
             if (file.__MODULE_MANIFEST__) {
                 return file.__WS ? path.join(argv.root, argv.application) : path.join(argv.root, argv.application, 'resources');
