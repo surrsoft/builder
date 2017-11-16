@@ -52,7 +52,7 @@ module.exports = function (grunt) {
         };
     }
 
-    function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot, cb) {
+    function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot, cb, inclReplace) {
         let templatePath = '';
         if (!htmlTemplate) {
             templatePath = path.join(__dirname, './../resources/index.html');
@@ -62,7 +62,7 @@ module.exports = function (grunt) {
         }
 
         if (cache[templatePath]) {
-            let text = replaceIncludes(cache[templatePath], replaceOpts);
+            let text = replaceIncludes(cache[templatePath], replaceOpts, inclReplace);
             helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
         } else {
             fs.readFile(templatePath, (err, text) => {
@@ -72,13 +72,13 @@ module.exports = function (grunt) {
                 }
 
                 cache[templatePath] = text.toString();
-                text = replaceIncludes(cache[templatePath], replaceOpts);
+                text = replaceIncludes(cache[templatePath], replaceOpts, inclReplace);
                 helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
             });
         }
     }
 
-    function parseOpts(opts, application, replaceOpts, applicationRoot, cb) {
+    function parseOpts(opts, application, replaceOpts, applicationRoot, cb, inclReplace) {
         let
             moduleName = opts.moduleName,
             webPage = opts.webPage || {},
@@ -97,7 +97,7 @@ module.exports = function (grunt) {
 
         htmlTemplate = transliterate(htmlTemplate.replace(dblSlashes, '/'));
 
-        generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb);
+        generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb, inclReplace);
     }
 
     grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
@@ -110,7 +110,8 @@ module.exports = function (grunt) {
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(applicationRoot, 'resources'),
             patterns = this.data.src,
-            oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html);
+            oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
+            inclReplace =  (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
 
         let contents = {};
 
@@ -202,7 +203,7 @@ module.exports = function (grunt) {
                             }
                         });
 
-                        parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback);
+                        parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback, inclReplace);
                     } else {
                         callback();
                     }
