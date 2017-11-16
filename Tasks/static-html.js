@@ -113,8 +113,6 @@ module.exports = function (grunt) {
             oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
             inclReplace =  (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
 
-        console.log(inclReplace);
-
         let contents = {};
 
         try {
