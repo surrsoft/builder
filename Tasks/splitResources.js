@@ -224,6 +224,7 @@ module.exports = function splitResourcesTask(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
       let
+         existFile,
          nameModule,
          splitModuleDep = {},
          fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
@@ -241,6 +242,14 @@ module.exports = function splitResourcesTask(grunt) {
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
+            existFile = fs.existsSync(getPath(fullModuleDep.nodes[node].path));
+            if (!existFile) {
+               if (node.indexOf('/cdn/') === -1) {
+                  grunt.log.warn(`Не нашёл данный модуль ${node},\n по указанному пути ${fullModuleDep.nodes[node].path}`);
+               }
+               return;
+            }
+
             if (fullModuleDep.nodes[node].path) {
                nameModule = getName(fullModuleDep.nodes[node].path, true, false, path.sep);
             } else {
@@ -382,11 +391,9 @@ module.exports = function splitResourcesTask(grunt) {
       writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
       grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена.`);
 
-      try {
-         fs.readFileSync(getPath('preload_urls.json', undefined, true))
+      if(fs.existsSync(getPath('preload_urls.json', undefined, true))) {
          writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
          grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена.`);
-      } catch(err) {
       }
 
       slpitStaticHtml(fullContents.requirejsPaths);
