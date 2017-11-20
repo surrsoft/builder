@@ -34,6 +34,69 @@ function stripBOM(x) {
     return x;
 }
 
+var jsonLoaded = false;
+function readAllJSON(directory) {
+    /**
+     * Вычитывает файл со свойствами контрола
+     * @param {String} file - название контрола
+     */
+    function readPropertiesJSON(fileObj) {
+        var properties = {};
+        var modPath = path.join(fileObj.path, fileObj.file);
+
+        if (fs.existsSync(modPath)) {
+            try {
+
+                properties = require(modPath);// grunt.file.readJSON(modPath);
+            } catch (e) {
+                console.error('Can\'t read ' + modPath);
+                // grunt.log.error('Can\'t read ' + modPath);
+            }
+        }
+        return properties;
+    }
+
+    // List all files in a directory in Node.js recursively in a synchronous fashion
+    var walkSync = function (dir, filelist) {
+        var path = path || require('path');
+        var fs = fs || require('fs'),
+            files = fs.readdirSync(dir);
+        filelist = filelist || [];
+        files.forEach(function (file) {
+            if (fs.statSync(path.join(dir, file)).isDirectory()) {
+                filelist = walkSync(path.join(dir, file), filelist);
+            }
+            else {
+                filelist.push({path: dir, file: file});
+            }
+        });
+        return filelist;
+    };
+
+    if (!jsonLoaded) {
+
+        var files = walkSync(directory);
+
+        var componentsProperties = [],
+            tmpProperties;
+        files.forEach(function (fileObj) {
+            var fileName = fileObj.file.replace(/\.json$/g, '');
+            tmpProperties = readPropertiesJSON(fileObj);
+            if (tmpProperties.properties &&
+                tmpProperties.properties["ws-config"] &&
+                tmpProperties.properties["ws-config"].options) {
+
+                componentsProperties[fileName] = tmpProperties;
+            }
+        });
+
+        jsonLoaded = componentsProperties;
+        return componentsProperties;
+    } else {
+        return jsonLoaded;
+    }
+}
+
 module.exports = function (grunt) {
     grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', function () {
         grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача tmpl-build.`);
@@ -47,6 +110,10 @@ module.exports = function (grunt) {
             nodes = mDeps.nodes;
 
         let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
+
+        const
+            jsonOutput = path.join(__dirname, '../../../../jsDoc-json-cache');
+        const componentsProperties = readAllJSON(jsonOutput);
 
         global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
             let tclosureStr = '';
@@ -66,7 +133,7 @@ module.exports = function (grunt) {
                     }
 
 
-                    let conf = {config: config, filename: filename, fromBuilderTmpl: true};
+                    let conf = {config: config, filename: filename, fromBuilderTmpl: true, createResultDictionary: true, componentsProperties: componentsProperties};
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
@@ -88,7 +155,8 @@ module.exports = function (grunt) {
                                 _deps.push(dep);
                             });
 
-                            templateRender.template(html, resolverControls, conf).handle(function (traversed) {
+                            templateRender.template(html, resolverControls, conf).handle(function (traversedObj) {
+                                const traversed = traversedObj.astResult;
                                 try {
                                     if (traversed.__newVersion === true) {
                                         /**
