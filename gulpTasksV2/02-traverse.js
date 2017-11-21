@@ -42,7 +42,7 @@ module.exports = opts => {
             try {
                 ast = esprima.parse(file.contents.toString('utf8'));
             } catch (err) {
-                cb(err);
+                return cb(new PluginError('gulp-sbis-traverse', `Error in file ${file.path}: ${err.message}`))
             }
 
             let isModuleJs = /\.module\.js$/.test(file.relative);
