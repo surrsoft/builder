@@ -45,10 +45,6 @@ module.exports = function (grunt) {
 
         let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
 
-        const cache = grunt.option('json-cache').replace(/"/g, '');
-        const jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
-        const componentsProperties = tmplLocalizator.readAllJSON(jsonOutput);
-
         global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
             let tclosureStr = '';
             if (tclosure) {
@@ -67,7 +63,7 @@ module.exports = function (grunt) {
                     }
 
 
-                    let conf = {config: config, filename: filename, fromBuilderTmpl: true, createResultDictionary: true, componentsProperties: componentsProperties};
+                    let conf = {config: config, filename: filename, fromBuilderTmpl: true};
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
