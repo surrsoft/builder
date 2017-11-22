@@ -7,6 +7,7 @@ const humanize = require('humanize');
 const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');
 const UglifyJS = require('uglify-js');
+const tmplLocalizator = require('./../lib/i18n/tmplLocalizator');
 const dblSlashes = /\\/g;
 const isTMPL = /(\.tmpl)$/;
 const isHTML = /(\.x?html)$/;
@@ -20,10 +21,6 @@ function errorTmplBuild(err, fullName, fullPath) {
     ---------File name: ${fullName}
     ---------File path: ${fullPath}`);
     grunt.fail.fatal(err);
-}
-
-function resolverControls(path) {
-    return `tmpl!${path}`;
 }
 
 function stripBOM(x) {
@@ -48,6 +45,10 @@ module.exports = function (grunt) {
 
         let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
 
+        const cache = grunt.option('json-cache').replace(/"/g, '');
+        const jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
+        const componentsProperties = tmplLocalizator.readAllJSON(jsonOutput);
+
         global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
             let tclosureStr = '';
             if (tclosure) {
@@ -66,7 +67,7 @@ module.exports = function (grunt) {
                     }
 
 
-                    let conf = {config: config, filename: filename, fromBuilderTmpl: true};
+                    let conf = {config: config, filename: filename, fromBuilderTmpl: true, createResultDictionary: true, componentsProperties: componentsProperties};
                     fs.readFile(fullPath, 'utf8', function (err, html) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
@@ -88,7 +89,8 @@ module.exports = function (grunt) {
                                 _deps.push(dep);
                             });
 
-                            templateRender.template(html, resolverControls, conf).handle(function (traversed) {
+                            tmplLocalizator.parseTmpl(grunt, html, filename).addCallback(function (traversedObj) {
+                                const traversed = traversedObj.astResult;
                                 try {
                                     if (traversed.__newVersion === true) {
                                         /**
@@ -128,12 +130,12 @@ module.exports = function (grunt) {
                                     }
                                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
-                                   try {
-                                      let minified = UglifyJS.minify(data);
-                                      if (!minified.error && minified.code) data = minified.code;
-                                   } catch (minerr) {
-                                      grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
-                                   }
+                                    try {
+                                        let minified = UglifyJS.minify(data);
+                                        if (!minified.error && minified.code) data = minified.code;
+                                    } catch (minerr) {
+                                        grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
+                                    }
                                     fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
                                         fs.writeFile(fullPath, data, function (err) {
                                             if (!err) {
@@ -146,7 +148,7 @@ module.exports = function (grunt) {
                                     warnTmplBuild(err, fullPath);
                                     callback();
                                 }
-                            }, function (err) {
+                            }).addErrback(function (err) {
                                 warnTmplBuild(err, fullPath);
                                 callback();
                             });
