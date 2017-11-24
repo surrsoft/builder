@@ -178,6 +178,7 @@ module.exports = function (grunt) {
         grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача xhtml-build.`);
         let start = Date.now();
         const
+            oldToNew = require('../resources/old_to_new.json'),
             done = this.async(),
             root = this.data.root,
             application = this.data.application,
@@ -218,6 +219,20 @@ module.exports = function (grunt) {
                         }
 
                         template = DoT.template(html, config);
+
+                        //TODO на время переходного периода при отказе от contents.json
+                       /* При компиляции из xhtml в js у нас билдяться со старыми именами и в результате по новому имени
+                       шаблон уже не доступен. Поэтому здесь проверяем, чтобы старые имена не были заюзаны. Для этого
+                       создали список модулей которые подверглись переименованию и проверяем есть ли данный шаблон в списке.
+                        https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
+                        */
+                        let
+                           nameNotPlugin = fullName.substr(fullName.lastIndexOf('!') + 1),
+                           plugin = fullName.substr(0, fullName.lastIndexOf('!') + 1);
+
+                        if (oldToNew.hasOwnProperty(nameNotPlugin)) {
+                           fullName = plugin + oldToNew[nameNotPlugin];
+                        }
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
 
