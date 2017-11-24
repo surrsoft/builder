@@ -228,13 +228,19 @@ module.exports = function (grunt) {
                         */
                         let
                            nameNotPlugin = fullName.substr(fullName.lastIndexOf('!') + 1),
-                           plugin = fullName.substr(0, fullName.lastIndexOf('!') + 1);
+                           plugin = fullName.substr(0, fullName.lastIndexOf('!') + 1),
+                           secondName;
+
 
                         if (oldToNew.hasOwnProperty(nameNotPlugin)) {
-                           fullName = plugin + oldToNew[nameNotPlugin];
+                           secondName = plugin + oldToNew[nameNotPlugin];
                         }
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
+
+                        if (secondName) {
+                           data += `define("${secondName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${secondName}"}};return f;});`;
+                        }
 
                         let minified = UglifyJS.minify(data);
                         if (!minified.error && minified.code) data = minified.code;
@@ -243,6 +249,9 @@ module.exports = function (grunt) {
                             fs.writeFile(fullPath, data, function (err) {
                                 if (!err) {
                                     nodes[fullName].amd = true;
+                                    if (nodes[secondName]) {
+                                       nodes[secondName].amd = true;
+                                    }
                                 }
                                 callback(err, fullName, fullPath);
                             });
