@@ -35,7 +35,7 @@
     "escodegen": "^1.9.0",
     "esutils": "^2.0.2",
     "glob": "^7.1.2",
-    "gulp": "gulpjs/gulp#4.0",
+    "gulp": "^3.9.1",
     "gulp-babel-minify": "^0.2.0",
     "gulp-chmod": "^2.0.0",
     "gulp-cli": "1.4.0",
