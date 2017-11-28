@@ -38,7 +38,7 @@
     "gulp": "gulpjs/gulp#4.0",
     "gulp-babel-minify": "^0.2.0",
     "gulp-chmod": "^2.0.0",
-    "gulp-cli": "github:gulpjs/gulp-cli",
+    "gulp-cli": "git+https://github.com/gulpjs/gulp-cli" ,
     "gulp-cssnano": "^2.1.2",
     "gulp-gzip": "^1.4.0",
     "gulp-if": "^2.0.2",
