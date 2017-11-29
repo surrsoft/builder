@@ -207,6 +207,9 @@ module.exports = function splitResourcesTask(grunt) {
                splitContents[nameModule].defaultLanguage = fullContents.defaultLanguage;
                splitContents[nameModule].dictionary = getOptionDictionary(fullContents.dictionary, nameModule);
             }
+            if(fullContents.buildnumber) {
+               splitContents[nameModule].buildnumber = fullContents.buildnumber;
+            }
          });
 
          splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
