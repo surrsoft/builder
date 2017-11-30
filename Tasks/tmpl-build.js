@@ -233,13 +233,29 @@ module.exports = function (grunt) {
 
 
                         if (oldToNew.hasOwnProperty(nameNotPlugin)) {
-                           secondName = plugin + oldToNew[nameNotPlugin];
+                           if (oldToNew[nameNotPlugin] !== nameNotPlugin) {
+                              secondName = plugin + oldToNew[nameNotPlugin];
+                           }
                         }
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
 
                         if (secondName) {
-                           data += `define("${secondName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${secondName}"}};return f;});`;
+                            let
+                               jsPath = fullPath.replace('.xhtml', '.js'),
+                               jsModule = fs.readFileSync(jsPath);
+
+                            data += `define("${secondName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${secondName}"}};return f;});`;
+
+                            //TODO костыль на время переходного периода при отказе от contents.json
+                           /*
+                            В резудьтате отказа от плагина js! и переименования модулей возникла гонка,
+                             require дефайнит и модуль и шаблон под одним именем, но так как в шаблоне нет js модуля он
+                             считает что модуля по данному имени нет. Временным решением принято дефайнить js в шаблоне,
+                             что бы если первым прелит шаблон моудль был найден.
+                            https://online.sbis.ru/opendoc.html?guid=bcedfcf8-494d-451e-92f9-d9144e11ecac
+                            */
+                            data += jsModule;
                         }
 
                         let minified = UglifyJS.minify(data);
