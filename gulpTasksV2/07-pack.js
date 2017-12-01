@@ -143,7 +143,7 @@ module.exports = opts => {
                     if (div.getAttribute('wsControl') == 'true') {
                         let configAttr = div.getElementsByTagName('configuration')[0];
                         if (configAttr) {
-                            let typename = global.$ws.single.ClassMapper.getClassMapping(div.getAttribute('type'));
+                            let typename = global.requirejs('Deprecated/ClassMapper').getClassMapping(div.getAttribute('type'));
                             promises.push(_resolveType({
                                 typename: typename,
                                 k: k,
@@ -839,7 +839,8 @@ function _resolveType (args) {
     return resolveType(typename/*, configAttr*/).then(classCtor => {
         var config = parseConfiguration(configAttr, false);
         var baseConfig = resolveOptions(classCtor);
-        var finalConfig = global.$ws.core.merge(baseConfig, config[0]);
+        let coreMerge = global.requirejs('Core/core-merge');
+        var finalConfig = coreMerge(baseConfig, config[0]);
 
         if (isComplexControl(classCtor)) {
             configTemp[argv.application][res].push({
@@ -852,7 +853,8 @@ function _resolveType (args) {
 }
 function resolveOptions(ctor) {
     if (ctor) {
-        return $ws.core.merge(
+        let coreMerge = global.requirejs('Core/core-merge');
+        return coreMerge(
             resolveOptions(ctor.superclass && ctor.superclass.$constructor),
             ctor.prototype.$protected && ctor.prototype.$protected._options || {},
             { clone: true });
@@ -1113,14 +1115,16 @@ function resolveType (type, configAttr) {
         className = p[p.length - 1];
     }
 
-    if (className in $ws._const.jsCoreModules || className in $ws._const.jsModules) {
+    let _const = global.requirejs('Core/constants');
+    if (className in _const.jsCoreModules || className in _const.jsModules) {
         moduleName = className;
     } else {
         moduleName = "SBIS3.CORE." + className;
     }
 
     return new Promise((resolve, reject) => {
-        $ws.requireModule(moduleName).addCallbacks(function (modArray) {
+        let moduleStubs = global.requirejs('Core/moduleStubs');
+        moduleStubs.requireModule(moduleName).addCallbacks(function (modArray) {
             return resolve(modArray[0]);
         }, function (e) {
             e.message = "Don't know how to load " + type + ". Resolved class is " + className + ". Resolved module is " + moduleName + ". Original message: " + e.message +
@@ -1156,7 +1160,8 @@ function _addTemplateDependencies(service, template, knownContainers) {
 }
 
 function _addDependency(store, dependency) {
-    dependency = global.$ws.single.ClassMapper.getClassMapping(dependency);
+    let ClassMapper = global.requirejs('Deprecated/ClassMapper');
+    dependency = ClassMapper.getClassMapping(dependency);
 
     if (store.indexOf(dependency) == -1) {
         store.push(dependency);

@@ -382,14 +382,13 @@ module.exports.addAst = (filePath, ast) => {
 
 module.exports.fillAnonymous = filePath => { deanonymizeData.anonymous[filePath] = 1; };
 
-module.exports.fillBadRequireDeps = deps => {
+module.exports.fillBadRequireDeps = (deps, filePath) => {
     if (Array.isArray(deps)) {
         for (let i = 0, l = deps.length; i < l; i++) {
-            deanonymizeData.badRequireDeps[deps[i]] = 1;
+            deanonymizeData.badRequireDeps[deps[i]] = (filePath || 1);
         }
     } else {
-        deanonymizeData.badRequireDeps[deps] = 1;
-
+        deanonymizeData.badRequireDeps[deps] = (filePath || 1);
     }
 };
 

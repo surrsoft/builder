@@ -20,6 +20,7 @@ const path          = require('path');
 const gulp          = require('gulp');
 const watch 	    = require('gulp-watch');
 const gutil         = require('gulp-util');
+const chmod         = require('gulp-chmod');
 const through2      = require('through2');
 
 const acc           = require('./gulpTasksV2/01-acc');
@@ -58,6 +59,10 @@ const argv = yargs
         'index-dict': {
             describe: 'i18n (локализация)',
             type: 'boolean'
+        },
+        'json-cache': {
+            describe: 'словарь переводов в формате JSON',
+            type: 'string'
         }
     })
     .demandOption(['root', 'modules'], 'задача должна запускаться с опциями `root` и `modules`')
@@ -82,6 +87,23 @@ try {
 
 gulp.task('ws-copy', function () {
     return gulp.src(path.join(argv['ws-path'], './**/*.*'), { since: since })
+        .pipe(chmod({
+            owner: {
+                read: true,
+                write: true,
+                execute: true
+            },
+            group: {
+                read: true,
+                write: true,
+                execute: true
+            },
+            others: {
+                read: true,
+                write: true,
+                execute: true
+            }
+        }))
         .pipe(gulp.dest(path.join(argv.root, argv.application, 'ws')));
 });
 

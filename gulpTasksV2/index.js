@@ -24,6 +24,7 @@ const tmplBuild  = require('./05-tmpl-build');
 const tmplMin    = require('./06-tmpl-min');
 const pack       = require('./07-pack');
 
+
 Error.stackTraceLimit = Infinity;
 
 let modulesPaths = fs.readFileSync(argv.modules);
@@ -83,7 +84,7 @@ module.exports = () => {
         .pipe(traverse({ acc: acc }))
         // .pipe(deprecated({ acc: acc })) // Таска deprecated - задепрекейчена :)))
         .pipe(less())
-        // .pipe(tmplBuild({ acc: acc }))
+        .pipe(tmplBuild({ acc: acc }))
         // .pipe(tmplMin())
         /*.pipe(gulpif(file => file.__TMPL__ || path.extname(file.path) == '.js', uglify()))
         .pipe(gulpif(file => {
