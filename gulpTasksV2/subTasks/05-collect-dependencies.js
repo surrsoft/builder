@@ -4,9 +4,6 @@ const path           = require('path');
 const gutil          = require('gulp-util');
 const argv           = require('yargs').argv;
 
-// process.env.APPROOT  = argv.application;
-// process.env.ROOT     = path.resolve(argv.root);
-// require('grunt-wsmod-packer/lib/node-ws')();
 let inited = false;
 
 let jsCoreModules, jsModules, modules, rjsPaths, i18n, availableLangs, requirejsPathResolver;
@@ -23,13 +20,14 @@ let modulesDeps = {};
 let errMes;
 
 let init = () => {
-    jsCoreModules           = map(global.$ws._const.jsCoreModules, addRoot(path.join(argv.root, argv.application, 'ws')));
-    jsModules               = map(global.$ws._const.jsModules, addRoot(argv.root));
+    let _const              =  global.requirejs('Core/constants');
+    jsCoreModules           = map(_const.jsCoreModules, addRoot(path.join(argv.root, argv.application, 'ws')));
+    jsModules               = map(_const.jsModules, addRoot(argv.root));
     modules                 = merge(jsCoreModules, jsModules);
     rjsPaths                = global.requirejs.s.contexts['_'].config.paths || {};
     i18n                    = global.requirejs('Core/i18n');
     availableLangs          = Object.keys(i18n.getAvailableLang());
-    requirejsPathResolver  = global.requirejs('Core/pathResolver');
+    requirejsPathResolver   = global.requirejs('Core/pathResolver');
     inited = true;
 };
 
@@ -44,16 +42,7 @@ exports.traverse = (opts) => {
             if (node.arguments[1].type == 'ArrayExpression') {
                 modulesDeps[node.arguments[0].value].deps = getDependencies(opts, node.arguments[1].elements);
             }
-        }/* else if (node.arguments[0].type == 'ArrayExpression' || node.arguments[0].type == 'FunctionExpression') {
-            if (!second) ++firstAnon;
-            if (second) ++secondAnon;
-            // gutil.log('Ignore anonymous define %s', opts.file.path);
-            return;
         } else {
-            gutil.log('Fail parse %s', opts.file.path);
-            return;
-        }*/
-        else {
             return;
         }
         modulesDeps[node.arguments[0].value].meta = getMeta(node.arguments[0].value);
@@ -66,7 +55,7 @@ exports.traverse = (opts) => {
 
         modulesDeps[node.arguments[0].value].deps = addI18NDep(meta, modulesDeps[node.arguments[0].value].deps);
 
-        errMes = `\n-------- Parent module: "${node.arguments[0].value}"; Parent path: "${opts.file.path}"`;
+        errMes = `-------- Parent module: "${node.arguments[0].value}"; Parent path: "${opts.file.path}"`;
 
         if (needToRegister) {
             opts.acc.graph.registerNode(node.arguments[0].value, {
@@ -78,9 +67,6 @@ exports.traverse = (opts) => {
 };
 
 exports.execute = opts => {
-    /*process.env.APPROOT  = argv.application;
-    process.env.ROOT     = path.resolve(argv.root);
-    require('grunt-wsmod-packer/lib/node-ws')();*/
     for (let mod in modulesDeps) {
         modulesDeps[mod].deps = modulesDeps[mod].deps.map(registerDependencyMayBe.bind(undefined, opts));
         opts.acc.graph.addDependencyFor(mod, modulesDeps[mod].deps);
@@ -152,10 +138,6 @@ function getDependenciesForI18N (opts, mod) {
                 var countryPath = path.join(mod.fullPath, 'lang', country, country + '.css');
                 var countryModule = 'native-css!' + path.relative(resourceRoot, countryPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
 
-                // console.log('cssPath ==', cssPath);
-                // console.log('countryPath ==', countryPath);
-                // console.log('dictPath ==', dictPath);
-
                 if (fs.existsSync(cssPath)) {
                     deps.push({plugin: 'native-css', fullPath: cssPath, fullName: cssModule});
                 }
@@ -214,7 +196,7 @@ function registerNodeMaybe(opts, dep, plugin) {
 
         try {
             pathToModule = getModulePath(dep, plugin);
-        } catch(e) {
+        } catch (e) {
             // ловим эксепшн из pathResolver, чтобы не хламить сборку
         }
 
@@ -258,10 +240,9 @@ function getModulePath (dep, plugin) {
         pathToModule = pathToModule ? path.normalize(pathToModule).replace(dblSlashes, '/').replace(/resources[\/\\]resources[\/\\]/, 'resources/') : '';
 
         if (pathToModule) {
-            pathToModule = global.requirejs.toUrl(pathToModule);
             let ext = path.extname(pathToModule).substr(1);
             if (!ext || (dep.plugin == 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
-                if (dep.plugin == 'html') {
+                /*if (dep.plugin == 'html') {
                     ext = 'xhtml';
                 } else if (dep.plugin == 'i18n') {
                     ext = '';
@@ -271,13 +252,50 @@ function getModulePath (dep, plugin) {
                     ext = 'js';
                 } else {
                     ext = dep.plugin;
+                }*/
+                switch(dep.plugin) {
+                    case 'html':
+                        ext = 'xhtml';
+                        break;
+                    case 'i18n':
+                        ext = '';
+                        break;
+                    case 'native-css':
+                        ext = 'css';
+                        break;
+                    default:
+                        if (!dep.plugin) {
+                            ext = 'js';
+                        } else {
+                            ext = dep.plugin;
+                        }
+                        break;
                 }
                 pathToModule = pathToModule + (ext ? ('.' + ext) : '');
             }
+            pathToModule = global.requirejs.toUrl(pathToModule);
+
+            /**
+             * Если какие-то файлы локализации присутствуют, оставляем путь до папки верхнего уровня,
+             * чтобы в i18nLoader найти в ней словари для всех доступных языков.
+             */
+            if (dep.plugin == 'i18n') {
+                pathToModule = pathToModule.split('lang/')[0];
+            }
+
+            /**
+             * Если плагин optional и сформированного пути не существует, тогда нету смысла помещать
+             * данный путь в module dependencies
+             */
+            if (plugin == 'optional') {
+                if (!fs.existsSync(pathToModule)) {
+                    return '';
+                }
+            }
         }
     } catch (e) {
-        if ((plugin != 'optional') && (dep.fullName != 'bootup') && (dep.fullName != 'native-css')) {
-            // gutil.log(e + errMes);
+        if ((plugin != 'optional') && !rjsPaths[dep.fullName]) {
+            gutil.log(e)
         }
     }
 

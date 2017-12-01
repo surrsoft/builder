@@ -1,19 +1,20 @@
 'use strict';
 
-const fs             = require('fs');
-const path           = require('path');
-const through2       = require('through2');
-const gutil          = require('gulp-util');
-const PluginError    = gutil.PluginError;
-const VFile          = require('vinyl');
-const argv           = require('yargs').argv;
-const assign         = require('object-assign');
-const translit       = require('../lib/utils/transliterate');
-const applySourceMap = require('vinyl-sourcemaps-apply');
+const fs              = require('fs');
+const path            = require('path');
+const through2        = require('through2');
+const gutil           = require('gulp-util');
+const PluginError     = gutil.PluginError;
+const argv            = require('yargs').argv;
+const UglifyJS        = require('uglify-js');
+const assign          = require('object-assign');
+const translit        = require('../lib/utils/transliterate');
+const applySourceMap  = require('vinyl-sourcemaps-apply');
+let tmplLocalizator;
+const oldToNew        = require('../resources/old_to_new.json');
 // const dblSlashes = /\\/g;
 let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
-let tmpl, config, tclosure, tclosureStr;
-// let attempt = 0;
+let tmpl, config, tclosure, tclosureStr, doT;
 
 let executePaths = [];
 
@@ -24,6 +25,8 @@ module.exports = opts => {
 
     return through2.obj(
         function (file, enc, cb) {
+            if (!tmplLocalizator) tmplLocalizator = require('./../lib/i18n/tmplLocalizator');
+
             if (file.isStream()) return cb(new PluginError('gulp-sbis-tmpl-build', 'Streaming not supported'));
             if (!opts.acc) return cb(new PluginError('gulp-sbis-tmpl-build', 'acc option is required'));
             if (!['.tmpl', '.html', '.xhtml'].some(ext => ext == path.extname(file.path))) return cb(null, file);
@@ -41,6 +44,8 @@ module.exports = opts => {
             // process.env.ROOT     = path.resolve(argv.root);
             // require('grunt-wsmod-packer/lib/node-ws')();
             let ctx = this;
+            doT = global.requirejs('Core/js-template-doT');
+
             if (!tclosureStr) {
                 global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (_tmpl, _config, _tclosure) {
                     tclosureStr = '';
@@ -51,17 +56,17 @@ module.exports = opts => {
                         tclosureStr = 'var tclosure=deps[0];';
                     }
 
-                    execute(opts, cb, ctx);
+                    execute(opts, ctx, cb);
                 })
             } else {
-                execute(opts, cb, ctx);
+                execute(opts, ctx, cb);
             }
 
         }
     )
 };
 
-function execute (opts, cb, ctx) {
+function execute (opts, ctx, cb) {
     if (!executePaths.length) return cb();
 
     if (!tclosureStr) return cb(new PluginError('gulp-sbis-tmpl-build', 'global.requirejs Did not work'));
@@ -72,7 +77,7 @@ function execute (opts, cb, ctx) {
      return cb(new PluginError('gulp-sbis-tmpl-build', 'global.requirejs Did not work'));
      }*/
 
-    // FIXME: тут возможны тормоза при dev-watch
+    // TODO: тут возможны тормоза при dev-watch
     let graphJSON   = JSON.parse(opts.acc.graph.toJSON());
     let nodes       = graphJSON.nodes;
 
@@ -86,9 +91,9 @@ function execute (opts, cb, ctx) {
     for (let i = 0, l = executePaths.length; i < l; i++) {
         let file = opts.acc.getFile(executePaths[i]);
         promises.push(
-            task(file, opts, nodesRevert).then(file => {
+            task({file, opts, nodesRevert}).then(file => {
                 if (!file) return true;
-                let newFile = new VFile({
+                let newFile = new gutil.File({
                     base: file.base,
                     path: file.path,
                     contents: Buffer.from(file.contents + ''),
@@ -97,7 +102,7 @@ function execute (opts, cb, ctx) {
                 newFile.__WS = file.__WS || false;
                 ctx.push(newFile);
             }, err => {
-                console.error('ОШИБКА:', err);
+                gutil.log('gulp-sbis-tmpl-build: Error', err);
                 return true;
             })
         );
@@ -105,7 +110,7 @@ function execute (opts, cb, ctx) {
     }
     Promise.all(promises).then(() => {
         executePaths = [];
-        let moduleDependenciesJSON = new VFile({
+        let moduleDependenciesJSON = new gutil.File({
             // cwd base path contents
             base: path.join(argv.root, argv.application, 'resources'),
             path: path.join(argv.root, argv.application, 'resources', 'module-dependencies.json'),
@@ -121,7 +126,7 @@ function execute (opts, cb, ctx) {
     });
 }
 
-function task (file, opts, nodesRevert) {
+function task ({file, opts, nodesRevert}) {
     if (!file) return Promise.resolve();
 
     let filename;
@@ -138,24 +143,19 @@ function task (file, opts, nodesRevert) {
 
         let _deps   = JSON.parse(JSON.stringify(deps));
         let result  = ['var templateFunction = '];
-        let conf    = { config: config, filename: filename, fromBuilderTmpl: true };
+        let conf    = { config, filename, fromBuilderTmpl: true };
 
         let templateRender = Object.create(tmpl);
 
-        let html = file.contents + ''/*.toString('utf8')*/;
-
-        html = stripBOM(html);
+        let html = stripBOM(file.contents + '');// original
 
         return new Promise((resolve, reject) => {
-            if (html.indexOf('define') == 0) {
-                return resolve();
-            }
+            if (html.indexOf('define') == 0) return resolve();
 
-            templateRender.getComponents(html).forEach(function (dep) {
-                _deps.push(dep);
-            });
+            templateRender.getComponents(html).forEach(dep => { _deps.push(dep); });
 
-            templateRender.template(html, resolverControls, conf).handle(function (traversed) {
+            tmplLocalizator.parseTmpl(null, html, filename).addCallback(function (traversedObj) {
+                const traversed = traversedObj.astResult;
                 try {
                     if (traversed.__newVersion === true) {
                         /**
@@ -166,6 +166,14 @@ function task (file, opts, nodesRevert) {
 
                         if (tmplFunc.includedFunctions) {
                             result.push('templateFunction.includedFunctions = {');
+                            /*Сократим размер пакета, т.к. функции сейчас генерируются в опциях
+                            Но оставим определение, т.к. возможны обращения к свойству внутри WS
+                            Object.keys(tmplFunc.includedFunctions).forEach(function (elem, index, array) {
+                                result.push('"' + elem + '": ' + tmplFunc.includedFunctions[elem]);
+                                if (index !== array.length - 1) {
+                                    result.push(',');
+                                }
+                            });*/
                             result.push('};');
                         }
                     } else {
@@ -184,9 +192,14 @@ function task (file, opts, nodesRevert) {
                     for (; i < _deps.length; i++) {
                         depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
                     }
-
                     let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
+                    try {
+                        let minified = UglifyJS.minify(data, { mangle: { eval: true } });
+                        if (!minified.error && minified.code) data = minified.code;
+                    } catch (err) {
+                        warning(err, file.path);
+                    }
                     opts.acc.graph.markNodeAsAMD(fullName);
                     resolve({
                         __WS: file.__WS || false,
@@ -195,33 +208,114 @@ function task (file, opts, nodesRevert) {
                         contents: data
                     });
                 } catch (err) {
-                    // gutil.log(err);
+                    warning(err, file.path);
                     resolve();
                 }
-            }, function (err) {
-                // gutil.log(err);
+            }).addErrback(function (err) {
+                warning(err, file.path);
                 resolve();
             });
+            /////
+            // templateRender.template(html, resolverControls, conf).handle(function (traversed) {
+            //     try {
+            //         if (traversed.__newVersion === true) {
+            //             /**
+            //              * Новая версия рендера, для шаблонизатора. В результате функция в строке.
+            //              */
+            //             let tmplFunc = templateRender.func(traversed, conf);
+            //             result.push(tmplFunc.toString() + ';');
+            //
+            //             if (tmplFunc.includedFunctions) {
+            //                 result.push('templateFunction.includedFunctions = {');
+            //                 result.push('};');
+            //             }
+            //         } else {
+            //             result.push('function loadTemplateData(data, attributes) {');
+            //             result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' + fullName + '"}, attributes);};');
+            //         }
+            //
+            //         result.push('templateFunction.stable = true;');
+            //         result.push('templateFunction.toJSON = function() {return {$serialized$: "func", module: "' + fullName + '"}};');
+            //         result.push('return templateFunction;');
+            //
+            //         _deps.splice(0, 2);
+            //         let
+            //             depsStr = 'var _deps = {};',
+            //             i = tclosure ? 1 : 0;
+            //         for (; i < _deps.length; i++) {
+            //             depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
+            //         }
+            //
+            //         let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
+            //
+            //         opts.acc.graph.markNodeAsAMD(fullName);
+            //         resolve({
+            //             __WS: file.__WS || false,
+            //             base: file.base,
+            //             path: file.path,
+            //             contents: data
+            //         });
+            //     } catch (err) {
+            //         // gutil.log(err);
+            //         resolve();
+            //     }
+            // }, function (err) {
+            //     // gutil.log(err);
+            //     resolve();
+            // });
         });
     } else {
-        let html = file.contents + '';
-        html = stripBOM(html);
+        /*let nodes = graphJSON.nodes;
+
+         nodes = {
+             "js!ACS": {
+             "path": "resources\\ACS\\ACS.module.js",
+             "amd": true
+             }
+         }
+         nodesRevert =  {
+                            "resources\\ACS\\ACS.module.js": "js!ACS"
+                        }
+        let nodesRevert = {};
+        for (let k in nodes) {
+            if (k.startsWith('tmpl!') || k.startsWith('html!')) nodesRevert[nodes[k].path] = k;
+        }*/
+        let html = stripBOM(file.contents + '');
         let config, template;
 
         return new Promise((resolve, reject) => {
-            if (html.indexOf('define') == 0) {
-                return resolve();
-            }
+            if (html.indexOf('define') == 0) return resolve();
 
             try {
-                config = global.$ws.doT.getSettings();
+                config = doT.getSettings();
 
-                // FIXME: что это? откуда это?
+                // FIXME: что это? откуда это? кто-нибудь сможет мне объяснить?
                 if (module.encode) config.encode = config.interpolate;
 
-                template = $ws.doT.template(html, config);
+                template = doT.template(html, config);
+
+                let nameNotPlugin = fullName.substr(fullName.lastIndexOf('!') + 1),
+                    plugin        = fullName.substr(0, fullName.lastIndexOf('!') + 1),
+                    secondName;
+
+
+                if (oldToNew.hasOwnProperty(nameNotPlugin)) {
+                    secondName = plugin + oldToNew[nameNotPlugin];
+                }
 
                 let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
+
+                if (secondName) {
+                    data += `define("${secondName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${secondName}"}};return f;});`;
+                }
+
+                try {
+                    let minified = UglifyJS.minify(data);
+                    if (!minified.error && minified.code) data = minified.code;
+                } catch (err) {
+                    warning(err, file.path);
+                }
+
 
                 opts.acc.graph.markNodeAsAMD(fullName);
                 resolve({
@@ -231,7 +325,7 @@ function task (file, opts, nodesRevert) {
                     contents: data
                 });
             } catch (err) {
-                gutil.log(err);
+                gutil.log(`gulp-sbis-tmpl-build:`, `${err.message}, in file: ${file.path}`);
                 resolve();
             }
         })
@@ -247,6 +341,6 @@ function stripBOM (x) {
     return x;
 }
 
-function resolverControls(path) {
-    return `tmpl!${path}`;
+function warning (err, filePath) {
+    gutil.log(gutil.colors.black.bgYellow(`gulp-sbis-tmpl-build:`), `${err.message}, in file: ${filePath}`);
 }

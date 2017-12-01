@@ -160,18 +160,6 @@ module.exports = opts => {
                     moduleName: staticHtmlData.moduleName
                 });
             }
-            // TODO: не нашел ни одного файла *.html.deprecated, навверное уже не актуально...
-            /*if (file.path.endsWith('.xml.deprecated')) {
-                staticHtml.xmlDeprecated({
-                    acc: opts.acc,
-                    file: file
-                });
-            } else if (file.path.endsWith('.html.deprecated')) {
-                staticHtml.htmlDeprecated({
-                    acc: opts.acc,
-                    file: file
-                });
-            }*/
 
             if (isDeanonymize && accFile && accFile.__anonymous) {
                 needDeanonymize = true;
@@ -185,8 +173,9 @@ module.exports = opts => {
             // require('grunt-wsmod-packer/lib/node-ws')();
 
             // FIXME: из-за JSON.parse(JSON.stringify(opts.acc.contents) теряется 1 сек при watcher-е это типа костыль иммутабельности, инача $ws изменить значение т.к. передаем по ссылке
-            global.$ws.core.loadContents(JSON.parse(JSON.stringify(opts.acc.contents)), false, { service: argv.application });
-
+            // global.$ws.core.loadContents(JSON.parse(JSON.stringify(opts.acc.contents)), false, { service: argv.application });
+            let loadContents =  global.requirejs('Core/load-contents');
+                loadContents(JSON.parse(JSON.stringify(opts.acc.contents)), false, { service: argv.application });
             if (needDeanonymize) {
                 deanonymize.execute({ acc: opts.acc });
                 let _acc = opts.acc.acc;
