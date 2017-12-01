@@ -1,11 +1,11 @@
 'use strict';
 
 module.exports = function (module, base) {
-    let deps = ['Core/i18n'], json = [], css = [], jsonLang = [], cssLang = [];
+    let deps = ['Core/i18n'], _const = global.requirejs('Core/constants'), json = [], css = [], jsonLang = [], cssLang = [];
     let availableLangs = Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
     return new Promise((resolve, reject) => {
-        if (!availableLangs || ($ws && !$ws._const.defaultLanguage) || !module.deps.length) {
+        if (!availableLangs || (_const && !_const.defaultLanguage) || !module.deps.length) {
             return resolve('define("' + module.fullName + '", ["Core/i18n"], function(i18n) {return i18n.rk.bind(i18n);});');
         }
 

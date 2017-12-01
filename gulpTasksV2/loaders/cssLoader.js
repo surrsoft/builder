@@ -72,7 +72,7 @@ function onlyForIE10AndAbove (f) {
         if (err) {
             f(err);
         } else {
-            f(null, 'if(typeof window !== "undefined" && window.atob && !$.cookie("thmname")){' + res + '}');
+            f(null, 'if(typeof window !== "undefined" && window.atob && document.cookie.indexOf("thmname") === -1){' + res + '}');
         }
     }
 }

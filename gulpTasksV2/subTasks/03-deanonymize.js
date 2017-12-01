@@ -10,20 +10,6 @@ const translit          = require('../../lib/utils/transliterate');
 const getMeta           = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 const reIsRemote        = /^http[s]?:|^\/\//i;
 
-/*if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
-    if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-        fillBadRequireDeps(badRequireDeps, node.arguments[1].elements)
-    } else if (node.arguments[0].type == 'ArrayExpression') {
-        anonymous[path.relative(root, fullPath)] = 1;
-        fillBadRequireDeps(badRequireDeps, node.arguments[0].elements);
-    } else if (node.arguments[0].type == 'FunctionExpression') {
-        anonymous[path.relative(root, fullPath)] = 1;
-    }
-    /!*if (Object.keys(anonymous).length) {
-     console.log('anonymous ===', anonymous)
-     process.exit(0)
-     }*!/
-}*/
 
 exports.anonymousCheck = opts => {
     if (!opts.node || !opts.acc) return;
@@ -69,10 +55,7 @@ function fillBadRequireDeps(opts, deps) {
             return dep && dep.indexOf('/') > -1;
         });
 
-    opts.acc.fillBadRequireDeps(deps);
-    /*deps.forEach(function (dep) {
-        opts.acc.fillBadRequireDeps(dep);
-    });*/
+    opts.acc.fillBadRequireDeps(deps, opts.file.path);
 }
 
 exports.execute = opts => {
@@ -86,7 +69,33 @@ function findNames(opts, root) {
     let keys                    = Object.keys(opts.acc.deanonymizeData.badRequireDeps);
     let requirejsPathResolver   = global.requirejs('Core/pathResolver');
 
+    function resolvePluginsWithParameters(module) {
+        var
+            pluginsToResolveInBuilder = {
+                'html!encode=true': 'html!',
+                'is!browser': ''
+            },
+            parts = module.split('?');
+
+        for (var i = 0; i < parts.length; i++) {
+            var
+                currentPart = parts[i],
+                pluginsInCurrentPath = currentPart.split('!'),
+                currentPluginWithParameter;
+            if (pluginsInCurrentPath.length > 2) {
+                currentPluginWithParameter = [pluginsInCurrentPath.pop(), pluginsInCurrentPath.pop()].reverse().join('!');
+            } else {
+                currentPluginWithParameter = currentPart;
+            }
+            if (pluginsToResolveInBuilder.hasOwnProperty(currentPluginWithParameter)) {
+                parts[i] = currentPart.replace(currentPluginWithParameter, pluginsToResolveInBuilder[currentPluginWithParameter]);
+            }
+        }
+        return parts.join('');
+    }
+
     function resolveName(dep) {
+        dep = resolvePluginsWithParameters(dep);
         let moduleAndPath = dep.trim().split('/'),
             module = moduleAndPath.shift(),
             pathToFile = moduleAndPath.join('/'),
@@ -100,9 +109,6 @@ function findNames(opts, root) {
                     let modulePathTranslited = translit(opts.acc.modules[i]);
                     if (modulePathTranslited.endsWith(module)) resolvePath = path.join(modulePathTranslited, pathToFile);
                 }
-                /*opts.acc.modules.forEach(modulePath => {
-                    if (translit(modulePath).endsWith(module)) resolvePath = path.join(translit(modulePath), pathToFile);
-                });*/
             }
         } else if (dep.indexOf('!') > -1) {
             let moduleAndPlugin = module.split('!'),
@@ -149,7 +155,6 @@ function findNames(opts, root) {
 }
 
 function deanonymize (foundNames, opts) {
-    // let jsFiles = Object.keys(foundNames);
     let acc     = opts.acc.acc;
     for (let file in acc) {
         if (acc[file] && acc[file].__anonymous) {
