@@ -227,35 +227,49 @@ module.exports = function (grunt) {
                         https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
                         */
                         let
+                           needPushJs = false,
                            nameNotPlugin = fullName.substr(fullName.lastIndexOf('!') + 1),
                            plugin = fullName.substr(0, fullName.lastIndexOf('!') + 1),
+                           jsPath,
+                           jsModule,
                            secondName;
 
 
-                        if (oldToNew.hasOwnProperty(nameNotPlugin)) {
-                           if (oldToNew[nameNotPlugin] !== nameNotPlugin) {
-                              secondName = plugin + oldToNew[nameNotPlugin];
-                           }
+                        for (var name in oldToNew) {
+                            if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
+                               secondName = fullName;
+                               nameNotPlugin = oldToNew[name];
+                               fullName = plugin + oldToNew[name];
+                               break;
+                            }
+                            if (oldToNew[name] === nameNotPlugin && nameNotPlugin !== name) {
+                               secondName = plugin + name;
+                               break;
+                            }
+                        }
+
+                        if (nodes.hasOwnProperty(nameNotPlugin)) {
+                           needPushJs = true;
+                           jsPath = path.join(applicationRoot, nodes[nameNotPlugin].path).replace(dblSlashes, '/');
+                           jsModule = fs.readFileSync(jsPath);
                         }
 
                         let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
 
                         if (secondName) {
-                            let
-                               jsPath = fullPath.replace('.xhtml', '.js'),
-                               jsModule = fs.readFileSync(jsPath);
+                           data += `define("${secondName}",["require"],function(require){require("${fullName}");});`;
+                        }
 
-                            data += `define("${secondName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${secondName}"}};return f;});`;
-
-                            //TODO костыль на время переходного периода при отказе от contents.json
-                           /*
-                            В резудьтате отказа от плагина js! и переименования модулей возникла гонка,
-                             require дефайнит и модуль и шаблон под одним именем, но так как в шаблоне нет js модуля он
-                             считает что модуля по данному имени нет. Временным решением принято дефайнить js в шаблоне,
-                             что бы если первым прелит шаблон моудль был найден.
-                            https://online.sbis.ru/opendoc.html?guid=bcedfcf8-494d-451e-92f9-d9144e11ecac
-                            */
-                            data += jsModule;
+                       //TODO костыль на время переходного периода при отказе от contents.json
+                        /*
+                         В резудьтате отказа от плагина js! и переименования модулей возникла гонка,
+                         require дефайнит и модуль, и шаблон под одним именем, но так как в шаблоне нет js модуля он
+                         считает, что модуля по данному имени нет. Временным решением принято дефайнить js в шаблоне,
+                         чтобы если первым прелетит шаблон, модуль был найден.
+                         https://online.sbis.ru/opendoc.html?guid=bcedfcf8-494d-451e-92f9-d9144e11ecac
+                         */
+                        if (needPushJs) {
+                           data += jsModule;
                         }
 
                         let minified = UglifyJS.minify(data);
