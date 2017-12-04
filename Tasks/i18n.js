@@ -16,7 +16,7 @@ module.exports = function (grunt) {
         grunt.option('make-dict') && createResultDict(grunt, ++taskCount && done);
 
         grunt.option('prepare-xhtml') && prepareXHTML(grunt, this.data, ++taskCount && done);
-
+        //Приводит повторяющиеся ключи в словарях к единому значению
         grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
 
         grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, ++taskCount && done);
