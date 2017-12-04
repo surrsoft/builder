@@ -17,7 +17,7 @@ module.exports = function (grunt) {
 
         grunt.option('prepare-xhtml') && prepareXHTML(grunt, this.data, ++taskCount && done);
 
-        grunt.option('index-dict') && normalizeKeyDict(grunt, this.data);
+        grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
 
         grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, ++taskCount && done);
 
