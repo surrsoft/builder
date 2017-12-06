@@ -233,14 +233,19 @@ module.exports = function splitResourcesTask(grunt) {
          fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
          fullModuleDep;
 
-      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core
-      let replaceStr;
+      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
+      let
+         replaceStrDeprect,
+         replaceStrCore;
       if (path.sep === '\\') {
-         replaceStr = '"resources\\\\WS.Core\\';
+         replaceStrDeprect = '"resources\\\\WS.Deprecated\\';
+         replaceStrCore = '"resources\\\\WS.Core\\';
       } else {
-         replaceStr = '"resources/WS.Core/';
+         replaceStrDeprect = '"resources/WS.Deprecated/';
+         replaceStrCore = '"resources/WS.Core/';
       }
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStr);
+      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
       fullModuleDep = JSON.parse(fullModuleDepCont);
 
       try {
