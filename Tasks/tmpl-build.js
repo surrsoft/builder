@@ -8,9 +8,9 @@ const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');
 const UglifyJS = require('uglify-js');
 const tmplLocalizator = require('./../lib/i18n/tmplLocalizator');
+const oldToNew = require('../resources/old_to_new.json');
 const dblSlashes = /\\/g;
-const isTMPL = /(\.tmpl)$/;
-const isHTML = /(\.x?html)$/;
+const extFile = /(\.tmpl|\.x?html)$/;
 
 function warnTmplBuild(err, fullPath) {
     grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
@@ -29,6 +29,97 @@ function stripBOM(x) {
     }
 
     return x;
+}
+/**
+ * Создаёт шаблон в зависимости от типа шаблона (tmpl, xhtml, html)
+ * @param {String} nameModule - имя шаблона
+ * @param {String} contents - конент для вствки в тело define
+ * @param {String} original - оригинальный файл
+ * @param {Object} nodes - список всех узлов из module-dependencies.json
+ * @param {String} applicationRoot - путь до сревиса
+ * @param {Function} callback - функция коллбэк
+ * @param {Object} deps - список зависмостей для вставки в зависимости define
+ */
+function creatTemplate(nameModule, contents, original, nodes, applicationRoot, callback, deps) {
+   let
+      fullPath = path.join(applicationRoot, nodes[nameModule].path).replace(dblSlashes, '/'),
+      nameNotPlugin = nameModule.substr(nameModule.lastIndexOf('!') + 1),
+      plugin = nameModule.substr(0, nameModule.lastIndexOf('!') + 1),
+      needPushJs = false,
+      data,
+      jsPath,
+      jsModule,
+      secondName;
+
+
+   //TODO на время переходного периода при отказе от contents.json
+    /* При компиляции из xhtml в js у нас билдяться со старыми именами и в результате по новому имени
+     шаблон уже не доступен. Поэтому здесь проверяем, чтобы старые имена не были заюзаны. Для этого
+     создали список модулей которые подверглись переименованию и проверяем есть ли данный шаблон в списке.
+     https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
+     */
+   for (var name in oldToNew) {
+      if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
+         secondName = nameModule;
+         nameNotPlugin = oldToNew[name];
+         nameModule = plugin + oldToNew[name];
+         break;
+      }
+      if (oldToNew[name] === nameNotPlugin && nameNotPlugin !== name) {
+         secondName = plugin + name;
+         break;
+      }
+   }
+
+   if (nodes.hasOwnProperty(nameNotPlugin)) {
+      needPushJs = true;
+      jsPath = path.join(applicationRoot, nodes[nameNotPlugin].path).replace(dblSlashes, '/');
+      jsModule = fs.readFileSync(jsPath);
+   }
+
+   if (plugin.indexOf('html!') > -1) {
+      data = `define("${nameModule}",function(){var f=${contents};f.toJSON=function(){return {$serialized$:"func", module:"${nameModule}"}};return f;});`;
+   } else if (plugin.indexOf('tmpl!') > -1) {
+      data = `define("${nameModule}",${JSON.stringify(deps)},function(){var deps=Array.prototype.slice.call(arguments);${contents}});`;
+   }
+
+   if (secondName) {
+      data += `define("${secondName}",["require"],function(require){require("${nameModule}");});`;
+   }
+
+
+   //TODO костыль на время переходного периода при отказе от contents.json
+    /*
+     В резудьтате отказа от плагина js! и переименования модулей возникла гонка,
+     require дефайнит и модуль, и шаблон под одним именем, но так как в шаблоне нет js модуля он
+     считает, что модуля по данному имени нет. Временным решением принято дефайнить js в шаблоне,
+     чтобы если первым прелетит шаблон, модуль был найден.
+     https://online.sbis.ru/opendoc.html?guid=bcedfcf8-494d-451e-92f9-d9144e11ecac
+     */
+   if (needPushJs) {
+      data += jsModule;
+   }
+
+   try {
+      let minified = UglifyJS.minify(data, { mangle: { eval: true } });
+      if (!minified.error && minified.code) {
+         data = minified.code;
+      }
+   } catch (minerr) {
+      grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
+   }
+
+   fs.writeFile(fullPath.replace(extFile, '.original$1'), original, function () {
+      fs.writeFile(fullPath, data, function (err) {
+         if (!err) {
+            nodes[nameModule].amd = true;
+            if (nodes[secondName]) {
+               nodes[secondName].amd = true;
+            }
+         }
+         callback(err, nameModule, fullPath);
+      });
+   });
 }
 
 module.exports = function (grunt) {
@@ -52,8 +143,8 @@ module.exports = function (grunt) {
                 tclosureStr = 'var tclosure=deps[0];';
             }
 
-            async.eachOfLimit(nodes, 50, function (value, fullName, callback) {
-                if (fullName.indexOf('tmpl!') == 0) {
+            async.eachOfLimit(nodes, 25, function (value, fullName, callback) {
+                if (fullName.indexOf('tmpl!') === 0) {
                     let filename = value.path.replace(dblSlashes, '/'),
                         fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
                         _deps = JSON.parse(JSON.stringify(deps)),
@@ -76,7 +167,7 @@ module.exports = function (grunt) {
                         let original = html;
                         html = stripBOM(html);
 
-                        if (html.indexOf('define') == 0) {
+                        if (html.indexOf('define') === 0) {
                             return callback();
                         }
 
@@ -97,15 +188,6 @@ module.exports = function (grunt) {
 
                                         if (tmplFunc.includedFunctions) {
                                             result.push('templateFunction.includedFunctions = {');
-                                            /*Сократим размер пакета, т.к. функции сейчас генерируются в опциях
-                                             Но оставим определение, т.к. возможны обращения к свойству внутри WS
-                                             Object.keys(tmplFunc.includedFunctions).forEach(function (elem, index, array) {
-                                             result.push('"' + elem + '": ' + tmplFunc.includedFunctions[elem]);
-                                             if (index !== array.length - 1) {
-                                             result.push(',');
-                                             }
-                                             });
-                                             */
                                             result.push('};');
                                         }
                                     } else {
@@ -124,22 +206,11 @@ module.exports = function (grunt) {
                                     for (; i < _deps.length; i++) {
                                         depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
                                     }
-                                    let data = `define("${fullName}",${JSON.stringify(_deps)},function(){var deps=Array.prototype.slice.call(arguments);${tclosureStr + depsStr + result.join('')}});`;
 
-                                   try {
-                                      let minified = UglifyJS.minify(data, { mangle: { eval: true } });
-                                      if (!minified.error && minified.code) data = minified.code;
-                                   } catch (minerr) {
-                                      grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
-                                   }
-                                    fs.writeFile(fullPath.replace(isTMPL, '.original$1'), original, function () {
-                                        fs.writeFile(fullPath, data, function (err) {
-                                            if (!err) {
-                                                nodes[fullName].amd = true;
-                                            }
-                                            callback(err, fullName, fullPath);
-                                        });
-                                    });
+                                    let contents = tclosureStr + depsStr + result.join('');
+
+                                    creatTemplate(fullName, contents, original, nodes, applicationRoot, callback, _deps);
+
                                 } catch (err) {
                                     warnTmplBuild(err, fullPath);
                                     callback();
@@ -178,7 +249,6 @@ module.exports = function (grunt) {
         grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача xhtml-build.`);
         let start = Date.now();
         const
-            oldToNew = require('../resources/old_to_new.json'),
             done = this.async(),
             root = this.data.root,
             application = this.data.application,
@@ -187,7 +257,7 @@ module.exports = function (grunt) {
             nodes = mDeps.nodes;
 
         async.eachOfLimit(nodes, 20, function (value, fullName, callback) {
-            if (fullName.indexOf('html!') == 0) {
+            if (fullName.indexOf('html!') === 0) {
                 let filename = value.path.replace(dblSlashes, '/'),
                     fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/');
 
@@ -205,7 +275,7 @@ module.exports = function (grunt) {
                     let original = html;
                     html = stripBOM(html);
 
-                    if (html.indexOf('define') == 0) {
+                    if (html.indexOf('define') === 0) {
                         return callback();
                     }
 
@@ -220,72 +290,10 @@ module.exports = function (grunt) {
 
                         template = DoT.template(html, config);
 
-                        //TODO на время переходного периода при отказе от contents.json
-                       /* При компиляции из xhtml в js у нас билдяться со старыми именами и в результате по новому имени
-                       шаблон уже не доступен. Поэтому здесь проверяем, чтобы старые имена не были заюзаны. Для этого
-                       создали список модулей которые подверглись переименованию и проверяем есть ли данный шаблон в списке.
-                        https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
-                        */
-                        let
-                           needPushJs = false,
-                           nameNotPlugin = fullName.substr(fullName.lastIndexOf('!') + 1),
-                           plugin = fullName.substr(0, fullName.lastIndexOf('!') + 1),
-                           jsPath,
-                           jsModule,
-                           secondName;
+                        let contents = template.toString().replace(/[\n\r]/g, '');
 
+                        creatTemplate(fullName, contents, original, nodes, applicationRoot, callback);
 
-                        for (var name in oldToNew) {
-                            if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
-                               secondName = fullName;
-                               nameNotPlugin = oldToNew[name];
-                               fullName = plugin + oldToNew[name];
-                               break;
-                            }
-                            if (oldToNew[name] === nameNotPlugin && nameNotPlugin !== name) {
-                               secondName = plugin + name;
-                               break;
-                            }
-                        }
-
-                        if (nodes.hasOwnProperty(nameNotPlugin)) {
-                           needPushJs = true;
-                           jsPath = path.join(applicationRoot, nodes[nameNotPlugin].path).replace(dblSlashes, '/');
-                           jsModule = fs.readFileSync(jsPath);
-                        }
-
-                        let data = `define("${fullName}",function(){var f=${template.toString().replace(/[\n\r]/g, '')};f.toJSON=function(){return {$serialized$:"func", module:"${fullName}"}};return f;});`;
-
-                        if (secondName) {
-                           data += `define("${secondName}",["require"],function(require){require("${fullName}");});`;
-                        }
-
-                       //TODO костыль на время переходного периода при отказе от contents.json
-                        /*
-                         В резудьтате отказа от плагина js! и переименования модулей возникла гонка,
-                         require дефайнит и модуль, и шаблон под одним именем, но так как в шаблоне нет js модуля он
-                         считает, что модуля по данному имени нет. Временным решением принято дефайнить js в шаблоне,
-                         чтобы если первым прелетит шаблон, модуль был найден.
-                         https://online.sbis.ru/opendoc.html?guid=bcedfcf8-494d-451e-92f9-d9144e11ecac
-                         */
-                        if (needPushJs) {
-                           data += jsModule;
-                        }
-
-                        let minified = UglifyJS.minify(data);
-                        if (!minified.error && minified.code) data = minified.code;
-
-                        fs.writeFile(fullPath.replace(isHTML, '.original$1'), original, function () {
-                            fs.writeFile(fullPath, data, function (err) {
-                                if (!err) {
-                                    nodes[fullName].amd = true;
-                                    if (nodes[secondName]) {
-                                       nodes[secondName].amd = true;
-                                    }
-                                }
-                                callback(err, fullName, fullPath);
-                            });
-                        });
                     } catch (err) {
                         warnTmplBuild(err, fullPath);
                         callback();
