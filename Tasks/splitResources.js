@@ -233,7 +233,7 @@ module.exports = function splitResourcesTask(grunt) {
          fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
          fullModuleDep;
 
-      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core
+      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
       let
          replaceStrDeprect,
          replaceStrCore;
