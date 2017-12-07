@@ -1,7 +1,7 @@
 {
   "name": "sbis3-builder",
   "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
-  "version": "3.17.350-BUILD",
+  "version": "3.17.310",
   "author": "Dmitriy Shilov",
   "contributors": [
     "Artem Egorov",
@@ -19,7 +19,7 @@
     "grunt-contrib-cssmin": "^1.0.2",
     "grunt-contrib-uglify": "2.1.0",
     "grunt-text-replace": "^0.4.0",
-    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.350",
+    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.310",
     "humanize": "0.0.9",
     "less": "^2.7.2",
     "minimatch": "^3.0.3",
@@ -36,7 +36,7 @@
     "escodegen": "^1.9.0",
     "esutils": "^2.0.2",
     "glob": "^7.1.2",
-    "gulp": "git+ssh://git@git.sbis.ru:sbis/gulp4.git#master",
+    "gulp": "git+ssh://git@git.sbis.ru:root/gulp4.git#master",
     "gulp-babel-minify": "^0.2.0",
     "gulp-chmod": "^2.0.0",
     "gulp-cli": "1.4.0",
