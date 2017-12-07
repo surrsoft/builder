@@ -143,7 +143,7 @@ module.exports = function (grunt) {
                 tclosureStr = 'var tclosure=deps[0];';
             }
 
-            async.eachOfLimit(nodes, 10, function (value, fullName, callback) {
+            async.eachOfLimit(nodes, 25, function (value, fullName, callback) {
                 if (fullName.indexOf('tmpl!') === 0) {
                     let filename = value.path.replace(dblSlashes, '/'),
                         fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
