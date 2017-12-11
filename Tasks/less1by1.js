@@ -4,15 +4,16 @@ const helpers = require('./../lib/utils/helpers'),
     path = require('path'),
     humanize = require('humanize'),
     less = require('less'),
-    getModuleNameRegExp = new RegExp('\/resources\/([^/]+)'),
+    getModuleNameRegExp = /^resources[\/\\]([^\/\\]+)/,
     DEFAULT_THEME = 'online',
     themes = ['online', 'carry', 'presto', 'carrynew', 'prestonew'],
+    applicationRoot = path.join(process.env.ROOT, process.env.APPROOT),
     dblSlashes = /\\/g;
 /**
  @workaround Временно ресолвим текущую тему по названию модуля.
 */
 function resolveThemeName(filepath) {
-
+    filepath = filepath.replace(applicationRoot, '');
     let regexpMathch = filepath.match(getModuleNameRegExp, ''),
         s3modName = regexpMathch ? regexpMathch[1] : 'smth';
 
