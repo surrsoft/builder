@@ -16,7 +16,7 @@
     "grunt-contrib-cssmin": "^1.0.2", 
     "grunt-contrib-uglify": "2.1.0", 
     "grunt-text-replace": "^0.4.0", 
-    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.310", 
+    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.320", 
     "humanize": "0.0.9", 
     "less": "^2.7.2", 
     "minimatch": "^3.0.3", 
@@ -67,5 +67,5 @@
   "scripts": {
     "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
   }, 
-  "version": "3.17.310-BUILD"
+  "version": "3.17.320-BUILD"
 }
