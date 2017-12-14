@@ -10,13 +10,24 @@ const helpers = require('./../lib/utils/helpers'),
     applicationRoot = path.join(process.env.ROOT, process.env.APPROOT),
     dblSlashes = /\\/g;
 /**
+ * подкладываем логи , чтобы понять что происходит на никсовой тачке и почему там
+ * портятся стили, а в винде всё в порядке.
+ */
+var logs = '';
+
+/**
  @workaround Временно ресолвим текущую тему по названию модуля.
 */
 function resolveThemeName(filepath) {
     filepath = filepath.replace(applicationRoot, '');
+    if (filepath.indexOf('Retail') !== -1) {
+        logs += `\nРезолвим тему для ${filepath}`;
+    }
     let regexpMathch = filepath.match(getModuleNameRegExp, ''),
         s3modName = regexpMathch ? regexpMathch[1] : 'smth';
-
+    if (filepath.indexOf('Retail') !== -1) {
+        logs += `\nТема: ${filepath}`;
+    }
     switch (s3modName) {
         case 'Upravlenie_oblakom':
             return 'cloud';
@@ -54,8 +65,10 @@ module.exports = function less1by1Task(grunt) {
             @themeName: ${theme};
 
             ` : '';
-
-    less.render(imports + lessData, {
+      if (filePath.indexOf('Retail') !== -1) {
+          logs += `\nimports получился таким: ${imports}`;
+      }
+      less.render(imports + lessData, {
         filename: filePath,
         cleancss: false,
         relativeUrls: true,
@@ -94,15 +107,20 @@ module.exports = function less1by1Task(grunt) {
 
             if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
-                  let theme = resolveThemeName(filepath);
+                    if (filepath.indexOf('Retail') !== -1) {
+                        logs += `\nПрочитали файл ${filepath}`;
+                    }
+                    let theme = resolveThemeName(filepath);
+                    if (filepath.indexOf('Retail') !== -1) {
+                        logs += `\nitIsControl: ${itIsControl(filepath)}`;
+                    }
                     if (itIsControl(filepath)) {
-
-                      for (let themeName of themes) {
-                        processLessFile(data, filepath, readFileError, themeName, true);
-                      }
+                        for (let themeName of themes) {
+                            processLessFile(data, filepath, readFileError, themeName, true);
+                        }
                     }
                     else {
-                      processLessFile(data, filepath, readFileError, theme, false);
+                        processLessFile(data, filepath, readFileError, theme, false);
                     }
 
                 });
@@ -110,6 +128,7 @@ module.exports = function less1by1Task(grunt) {
             cb();
         }, function() {
             grunt.log.ok(`${humanize.date('H:i:s')} : Задача less1by1 выполнена.`);
+            grunt.file.write(path.join(applicationRoot, 'resources', 'less-logs.txt'), logs);
             taskDone();
         });
 
