@@ -67,6 +67,8 @@ module.exports = function (grunt) {
         let i = 0;
         let paths = modules.split(';');
 
+        //сохраняем файл modules.json вручную, поскольку он временный
+        grunt.file.write(path.join(resourcesPath, 'modules.json'), JSON.stringify(paths, null, 3));
         if (paths.length == 1 && grunt.file.isFile(paths[0])) {
             let input = paths[0];
             try {
@@ -154,6 +156,7 @@ module.exports = function (grunt) {
                             callback();
                         }
                     } else if (isModuleJs.test(file)) {
+                        grunt.log.ok('Читаем js-модуль по пути: ' + file);
                         fs.readFile(file, function (err, text) {
                             let ast = helpers.parseModule(text.toString());
 
