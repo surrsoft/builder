@@ -22,7 +22,6 @@ const traverse   = require('./02-traverse');
 const less       = require('./04-less');
 const tmplBuild  = require('./05-tmpl-build');
 const tmplMin    = require('./06-tmpl-min');
-const i18n       = require('./07-i18n');
 const pack       = require('./07-pack');
 
 
@@ -85,7 +84,7 @@ module.exports = () => {
         .pipe(traverse({ acc: acc }))
         // .pipe(deprecated({ acc: acc })) // Таска deprecated - задепрекейчена :)))
         .pipe(less())
-        // .pipe(tmplBuild({ acc: acc }))
+        .pipe(tmplBuild({ acc: acc }))
         // .pipe(tmplMin())
         /*.pipe(gulpif(file => file.__TMPL__ || path.extname(file.path) == '.js', uglify()))
         .pipe(gulpif(file => {
@@ -156,7 +155,6 @@ module.exports = () => {
                 return path.join(argv.root, argv.application, 'resources'/*, translit(path.basename(file.base))*/)
             }
         }))
-        .pipe(i18n({}))
         .pipe(gulpif(file => {
             if (file.__STATIC__) return false;
             return !(/\.original\.[xhtmltp]{3,5}$/i.test(file.path));

@@ -119,7 +119,13 @@ module.exports = function splitResourcesTask(grunt) {
 
       Object.keys(data.htmlNames).forEach(function(key) {
          nameModule = key.replace('js!', '');
-         nameModule = getName(data.jsModules[nameModule], false, false);
+         if (data.jsModules[nameModule]) {
+            nameModule = getName(data.jsModules[nameModule], false, false);
+         } else if(nameModule){
+            nameModule = getName(nameModule, false, false);
+         } else {
+            throw new Error(`Не смог найти модуль: ${nameModule} для статической страницы ${key}`);
+         }
 
          if (!nameModule) {
             return;
@@ -217,7 +223,7 @@ module.exports = function splitResourcesTask(grunt) {
          //splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
          splitContents = getOptionHtmlNames(fullContents, splitContents);
       } catch(err) {
-         grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack );
+         grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack);
       }
 
       return splitContents;

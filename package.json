@@ -1,7 +1,7 @@
 {
   "name": "sbis3-builder",
   "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
-  "version": "3.17.310",
+  "version": "3.17.350-BUILD",
   "author": "Dmitriy Shilov",
   "contributors": [
     "Artem Egorov",
@@ -16,20 +16,20 @@
     "fs-extra": "^0.30.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
-    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.17.350",
     "grunt-contrib-uglify": "2.1.0",
     "grunt-text-replace": "^0.4.0",
-    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.310",
+    "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.350",
     "humanize": "0.0.9",
     "less": "^2.7.2",
     "minimatch": "^3.0.3",
     "mkdirp": "^0.5.1",
-    "node-mkdirp": "0.0.1",
     "node-uuid": "^1.4.7",
     "object-assign": "^4.1.1",
     "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#master",
     "semver": "^5.4.1"
   },
+
   "devDependencies": {
     "assert": "",
     "autoprefixer": "^7.1.1",
@@ -66,6 +66,7 @@
   "engines": {
     "node": ">=6"
   },
+
   "scripts": {
     "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
   }
