@@ -5,7 +5,6 @@
 
 var fs = require('fs');
 var UglifyJS = require('uglify-js');
-var chalk = require('chalk');
 var path = require('path');
 
 module.exports = function uglifyJsTask(grunt) {
@@ -14,7 +13,7 @@ module.exports = function uglifyJsTask(grunt) {
             getAvailableFiles = function (filesArray) {
                 return filesArray.filter(function (filepath) {
                     if (!grunt.file.exists(filepath)) {
-                        grunt.log.warn('Source file ' + chalk.cyan(filepath) + ' not found');
+                        grunt.log.warn('Source file ' + filepath + ' not found');
                         return false;
                     }
                     return true;
@@ -30,7 +29,7 @@ module.exports = function uglifyJsTask(grunt) {
         this.files.forEach(function (currentFile) {
             var availableFiles = getAvailableFiles(currentFile.src);
             if (availableFiles.length === 0) {
-                grunt.log.warn('Destination ' + chalk.cyan(currentFile.dest) + ' not written because src files were empty.');
+                grunt.log.warn('Destination ' + currentFile.dest + ' not written because src files were empty.');
                 return;
             }
             availableFiles.forEach(function(file) {
