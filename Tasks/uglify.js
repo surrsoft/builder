@@ -21,13 +21,11 @@ module.exports = function uglifyJsTask(grunt) {
                 });
             },
             /**
-             * Опция inclReplace является специфической, и передаётся при сборке сервисов исключительно
-             * на Сервисе Представлений. Она нам здесь необходима лишь для того, чтобы не генерировать
-             * sourceMaps и не сохранять рядом с минифицированным файлом оригинал для сервисов на Препроцессоре.
-             * Для этих целей там присутствует папка debug
+             * Опция isPresentationService описывает, Препроцессор или Сервис Представлений мы используем.
+             * Она нам пригодится, чтобы на Препроцессоре не генерить SourceMaps, поскольку в целях отладки
+             * там присутствует /debug
              */
-            inclReplace =  (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
-
+            isPresentationService =  grunt.file.exists(path.join(process.env.ROOT, 'resources', 'WS.Core'));
         // Iterate over all src-dest file pairs.
         this.files.forEach(function (currentFile) {
             var availableFiles = getAvailableFiles(currentFile.src);
@@ -47,7 +45,7 @@ module.exports = function uglifyJsTask(grunt) {
                             eval: true
                         }
                     };
-                if (inclReplace) {
+                if (isPresentationService) {
                     fs.writeFileSync(sourceJSPath, data);
                     minifyOptions.sourceMap = {
                         url: path.basename(sourceMapPath)
@@ -65,7 +63,7 @@ module.exports = function uglifyJsTask(grunt) {
                     grunt.log.warn(`Error while minifiing js! ${minerr.message}, in file: ${fullPath}`);
                 }
                 fs.writeFileSync(currentPath, data.code);
-                if (inclReplace) {
+                if (isPresentationService) {
                     fs.writeFileSync(sourceMapPath, data.map);
                 }
                 grunt.log.ok(`File ${currentPath} successfully minified`);
