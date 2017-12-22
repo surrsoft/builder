@@ -100,15 +100,6 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
       data += jsModule;
    }
 
-   try {
-      let minified = UglifyJS.minify(data, { mangle: { eval: true } });
-      if (!minified.error && minified.code) {
-         data = minified.code;
-      }
-   } catch (minerr) {
-      grunt.log.warn(`resources error. An ERROR occurred while minifying template! ${minerr.message}, in file: ${fullPath}`);
-   }
-
    fs.writeFile(fullPath.replace(extFile, '.original$1'), original, function () {
       fs.writeFile(fullPath, data, function (err) {
          if (!err) {
