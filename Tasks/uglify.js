@@ -20,6 +20,12 @@ module.exports = function uglifyJsTask(grunt) {
                     return true;
                 });
             },
+            /**
+             * Опция inclReplace является специфической, и передаётся при сборке сервисов исключительно
+             * на Сервисе Представлений. Она нам здесь необходима лишь для того, чтобы не генерировать
+             * sourceMaps и не сохранять рядом с минифицированным файлом оригинал для сервисов на Препроцессоре.
+             * Для этих целей там присутствует папка debug
+             */
             inclReplace =  (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
 
         // Iterate over all src-dest file pairs.
