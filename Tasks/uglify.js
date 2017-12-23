@@ -3,9 +3,11 @@
  * Created by fa.kolbeshin on 21.12.2017.
  */
 
-var fs = require('fs');
-var UglifyJS = require('uglify-js');
-var path = require('path');
+var
+    fs = require('fs'),
+    UglifyJS = require('uglify-js'),
+    humanize = require('humanize'),
+    path = require('path');
 
 module.exports = function uglifyJsTask(grunt) {
     grunt.registerMultiTask('uglify', 'Задача минификации JS', function() {
