@@ -56,7 +56,11 @@ module.exports = function (grunt) {
         if (versionize && typeof versionize == 'string') {
             defaultTasks.push('replace:html');
         }
-        defaultTasks.push('packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'uglify', 'gzip');
+        /**
+         * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
+         * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
+         */
+        defaultTasks.push('uglify', 'packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
     }
 
     if (!packaging && versionize && typeof versionize == 'string') {
