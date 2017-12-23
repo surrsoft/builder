@@ -80,7 +80,10 @@ module.exports = function uglifyJsTask(grunt) {
             async.setImmediate(function(){
                 done();
             });
-        }, function() {
+        }, function(err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
             grunt.log.ok(`${humanize.date('H:i:s')} : Задача uglify выполнена.`);
             taskDone();
         });
