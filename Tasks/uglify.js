@@ -12,6 +12,7 @@ var
 module.exports = function uglifyJsTask(grunt) {
     grunt.registerMultiTask('uglify', 'Задача минификации JS', function() {
         grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача uglify.`);
+        const done = this.async();
         var
             getAvailableFiles = function (filesArray) {
                 return filesArray.filter(function (filepath) {
@@ -71,11 +72,6 @@ module.exports = function uglifyJsTask(grunt) {
                 grunt.log.ok(`File ${currentPath} successfully minified`);
             });
         });
-    }, function (err) {
-        if (err) {
-            grunt.fail.fatal(err);
-        }
-
         grunt.log.ok(`${humanize.date('H:i:s')} : Задача uglify выполнена.`);
         done();
     });
