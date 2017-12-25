@@ -48,7 +48,7 @@ module.exports = function uglifyJsTask(grunt) {
                      * если минифицируется обычная js-ка, то передаём правильный набор опций для
                      * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
                      */
-                    minifyOptions = !data.match(/define\("(tmpl!|html!)"/) ? {
+                    minifyOptions = !data.match(/define\("(tmpl!|html!)/) ? {
                         compress: {
                             sequences: true,
                             properties: false,
