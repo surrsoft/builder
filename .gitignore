@@ -2,3 +2,4 @@ node_modules
 .idea
 .vscode
 xunit-result.xml
+package-lock.json
