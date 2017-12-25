@@ -29,7 +29,6 @@ module.exports = function (grunt) {
     // Load tasks
     grunt.loadNpmTasks('grunt-wsmod-packer');
     grunt.loadNpmTasks('grunt-text-replace');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
 
     grunt.loadTasks('Tasks');
@@ -53,11 +52,15 @@ module.exports = function (grunt) {
 
     //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
     if (packaging) {
-        defaultTasks.push('cssmin', 'uglify', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
+        defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
         if (versionize && typeof versionize == 'string') {
             defaultTasks.push('replace:html');
         }
-        defaultTasks.push('packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
+        /**
+         * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
+         * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
+         */
+        defaultTasks.push('uglify', 'packwsmod', 'packjs', 'packcss', /* 'prepackjs',*/ 'owndepspack', 'custompack', 'gzip');
     }
 
     if (!packaging && versionize && typeof versionize == 'string') {
