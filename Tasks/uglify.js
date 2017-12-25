@@ -44,11 +44,31 @@ module.exports = function uglifyJsTask(grunt) {
                     sourceJSPath = currentPath.replace(/\.js$/, '.source.js'),
                     sourceMapPath = `${currentPath}.map`,
                     dataObject = {},
-                    minifyOptions = {
-                        mangle: {
-                            eval: true
+                    /**
+                     * если минифицируется обычная js-ка, то передаём правильный набор опций для
+                     * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
+                     */
+                    minifyOptions = !data.match(/define\("(tmpl!|html!)/) ? {
+                        compress: {
+                            sequences: true,
+                            properties: false,
+                            dead_code: true,
+                            drop_debugger: true,
+                            conditionals: false,
+                            comparisons: false,
+                            evaluate: false,
+                            booleans: false,
+                            loops: false,
+                            unused: false,
+                            hoist_funs: false,
+                            if_return: false,
+                            join_vars: true,
+                            cascade: false,
+                            warnings: true,
+                            negate_iife: false,
+                            keep_fargs: true
                         }
-                    };
+                    } : { mangle: { eval: true } };
                 if (isPresentationService) {
                     fs.writeFileSync(sourceJSPath, data);
                     minifyOptions.sourceMap = {
