@@ -4,6 +4,7 @@ const fs                    = require('fs');
 const path                  = require('path');
 const through2              = require('through2');
 const gutil                 = require('gulp-util');
+const nlog                  = require('../lib/logger-native');
 const PluginError           = gutil.PluginError;
 const VFile                 = require('vinyl');
 const argv                  = require('yargs').argv;
@@ -24,12 +25,33 @@ const removeLeadingSlash    = function removeLeadingSlash(path) {
     }
     return path;
 };
-// const applySourceMap        = require('vinyl-sourcemaps-apply');
-// const wsPath    = path.join(argv.root, argv.application, 'ws' + path.sep);
+
+/*
+    1. Инициализация манифестов (нужны для инкрментальной сборки)
+        1.1 contents.{json,js}
+        1.2 module-dependencies.json
+        1.3 deanonymizeData.json
+        1.4 routes-info.json
+        1.5 packwsmod.json
+        1.6 packwsmodContents.json (в нем хранятся исходные состояния html-файлов, которые располагаются рядом с папкой resources)
+        1.7 packjscss.json (содержит дерево зависимостей пакетов тасок packjs и packcss)
+        1.8 custompack.json (содержит дерево зависимостей пакетов таски custompack)
+    2. Инициализация графа зависимостей
+    3. Инициализация аккумулятора
+    4. Файлы которые нужно хранить в памяти до окончания сборки
+    5. Сохранение манифестов
+        5.1 contents.{json,js}
+        5.2 module-dependencies.json
+        5.3 deanonymizeData.json
+        5.4 routes-info.json
+        5.5 packwsmod.json
+        5.6 packwsmodContents.json
+        5.7 packjscss.json
+        5.8 custompack.json
+*/
 const wsPath    = path.join(argv['ws-path']);
 const isUnixSep = path.sep === '/';
 let since       = 0;
-// let _acc        = null;
 let _acc        = {};
 let contents    = { // manifest
     modules: {},
@@ -72,10 +94,10 @@ let packjscss           = {};
 let custompack          = {};
 
 try {
-    // _acc            = JSON.parse(fs.readFileSync(path.join(argv.root, 'resources', 'acc.json')));
+    // 1.1 contents.{json,js}
     contents = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'contents.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 if (argv.service_mapping) {
     let srv_arr = argv.service_mapping.trim().split(' ');
@@ -83,45 +105,51 @@ if (argv.service_mapping) {
         contents.services = contents.services || {};
         for (let i = 0, l = srv_arr.length; i < l; i += 2) contents.services[srv_arr[i]] = srv_arr[i + 1];
     } else {
-        console.error('Services list must be even!');
+        nlog.error('Services list must be even!');
     }
 }
 
 try {
+    // 1.2 module-dependencies.json
     moduleDependencies = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'module-dependencies.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 try {
+    // 1.3 deanonymizeData.json
     deanonymizeData = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'deanonymizeData.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 
 try {
+    // 1.4 routes-info.json
     routesInfo = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'routes-info.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 
 try {
+    // 1.5 packwsmod.json
     packwsmod           = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmod.json')));
+    // 1.6 packwsmodContents.json
     packwsmodContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packwsmodContents.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 
 try {
+    // 1.7 packjscss.json
     packjscss = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscss.json')));
-    // packjscssContents   = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'packjscssContents.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 
 try {
+    // 1.8 custompack.json
     custompack = JSON.parse(fs.readFileSync(path.join(argv.root, argv.application, 'resources', 'custompack.json')));
 } catch (err) {
-    console.warn(err);
+    nlog.warn(err);
 }
 
 let modulesPaths = JSON.parse(fs.readFileSync(argv.modules));
@@ -139,15 +167,16 @@ for (let i = 0, l = modulesPaths.length; i < l; i++) {
     if (!contents.requirejsPaths[moduleNS]) contents.requirejsPaths[moduleNS] = removeLeadingSlash(path.join(argv.application, 'resources', moduleNS)).replace(/\\/g,'/');
 }
 
+// 2. Инициализация графа зависимостей
 let graph = new DepGraph();
     graph.fromJSON(moduleDependencies);
 
 
-
+// 3. Инициализация аккумулятора
+// Составляем список файлов, которые будут участвовать в сборке
 let globPattern = patternFromModulesArr(modulesPaths, []);
 let wsPattern   = path.join(argv.root, argv.application, 'ws/**/*.*');
-// path.join(argv.root, argv.application, 'ws/**/*.*')
-gutil.log('START CREATING ACC');
+nlog.info('START CREATING ACC');
 let filesArr = glob.sync(globPattern);
 let wsArr    = glob.sync(wsPattern);
 for (let i = 0, l = filesArr.length; i < l; i++) _acc[filesArr[i]]  = null;
@@ -155,11 +184,11 @@ for (let i = 0, l = wsArr.length; i < l; i++)    {
     if (wsArr[i].endsWith('.gz')) continue;
     _acc[wsArr[i]]     = null;
 }
-gutil.log('CREATING ACC DONE');
+nlog.info('CREATING ACC DONE');
 
 module.exports = opts => {
     opts = assign({}, {
-        // файлы, контент которых сохранять в аккумуляторе (JS и tmpl обязательно, остальные пока не проверял...)
+        // 4. Файлы которые нужно хранить в памяти до окончания сборки
         ext: ['.js', '.tmpl', '.html', '.xhtml']
     }, opts);
 
@@ -269,6 +298,7 @@ module.exports = opts => {
                 custompack[dest] = file.contents + '';
             }
 
+            // сохраняем ВСЕ файлы в аккумуляторе (контент сохраняется только для файлов, которые перечислены в пункте 4)
             _acc[filePath] = {
                 __WS: file.__WS || false,
                 cwd: file.cwd + '',
@@ -311,6 +341,7 @@ module.exports = opts => {
     );
 };
 
+// даём доступ только на чтение содержимого аккумулятора другим таскам
 Object.defineProperty(module.exports, 'acc', {
     enumerable: false,
     configurable: false,
@@ -332,46 +363,37 @@ Object.defineProperty(module.exports, 'deanonymizeData', {
 });
 
 module.exports.modules      = modulesPaths;
-module.exports.graph        = graph;
+module.exports.graph        = graph; // даём к графу зависимостей другим таскам
 module.exports.routesInfo   = routesInfo;
 module.exports.modulesRoutesInfo = modulesRoutesInfo;
 
-
+// делает пометку у файла, что он является анонимным т.е. это модуль без имени. define([deps...],function(deps...){})
 module.exports.markAsAnonymous = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
 
     if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__anonymous = true;
 };
-
+// убирает пометку у файла, что он является анонимным
+// это нужно при сохранении манифеста acc, когда всем анонимным модулям уже проставили имена на основании их пути
 module.exports.unMarkAsAnonymous = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
 
     if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__anonymous = false;
 };
 
+// помечает файл в аккумуляторе как файл роутинга
+// на основании этой метки запускается суб-таска 06-routes-search, которая генерирует routes-info.json
 module.exports.markAsRoute = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
 
     if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__route = true;
 };
-
+// снимает метку с файла в аккумуляторе что он является роутингом
 module.exports.unMarkAsRoute = filePath => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
 
     if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__route = false;
 };
-
-/*module.exports.markAsTmplBuild = filePath => {
-    filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
-
-    if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__tmplbuild = true;
-};
-
-module.exports.unMarkAsTmplBuild = filePath => {
-    filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
-
-    if ((filePath in _acc) && _acc[filePath]) _acc[filePath].__tmplbuild = false;
-};*/
 
 module.exports.addAst = (filePath, ast) => {
     filePath = isUnixSep ? filePath : filePath.replace(/\\/g, '/');
@@ -392,12 +414,15 @@ module.exports.fillBadRequireDeps = (deps, filePath) => {
     }
 };
 
+// можем вручную добавить файлу в аккумуляторе контент, например если тип этого файла не был указан в пункте 4
+// или если требуется подгрузить файл при инкрементальной сборке или паковке
 module.exports.setFileContents = (filePath, text) => {
     let _filePath = filePath.substring();
     let _filePathAcc = isUnixSep ? _filePath : _filePath.replace(/\\/g, '/');
     if (_acc[_filePathAcc]) _acc[_filePathAcc].contents = text;
 };
 
+// удаляет файл из манифестов, требуется при инкрементальной сборке, точнее инкрементальном удалении файлов
 module.exports.remove = filePath => {
     let _filePath = filePath.substring();
 
@@ -418,6 +443,7 @@ module.exports.remove = filePath => {
     // TODO: удалять из графа и всех зависимостей contents (возможно и физически из public)
 };
 
+// добавляет файл в аккумулятор по исходному пути до файла
 module.exports.add = newPath => {
     let filePath = newPath.substring();
 
@@ -469,7 +495,7 @@ module.exports.loadFile = filePath => {
         contents: fs.readFileSync(filePath) + ''
     };
 };
-
+// добавляет файл в аккумулятор по realtive пути до файла (используется только при построении html-файлов в таске 02-static)
 module.exports.loadFileByRelative = relativePath => {
     // relativePath = isUnixSep ? relativePath : relativePath.replace(/\\/g, '/');
     relativePath = relativePath.replace(/[\/\\]/g, '.');
@@ -520,6 +546,7 @@ module.exports.loadFileByRelative = relativePath => {
     return fullPath;
 };
 
+// достает файл из аккумулятора по исходному пути до файла (не важно unix-путь или win-путь)
 module.exports.getFile = filePath => {
     if ('string' === typeof filePath) {
         let _filePath = filePath.substring();
@@ -528,11 +555,11 @@ module.exports.getFile = filePath => {
     }
 };
 
+// достает файл из аккумулятора по конечному пути до файла (имеется ввиду путь, который resources/...)
 module.exports.getFileByDest = destPath => {
     let file;
     if ('string' === typeof destPath) {
         destPath = destPath.replace(/[\/\\]/g, path.sep);
-        // console.log('destPath =', destPath)
         for (let fp in _acc) {
             if (_acc[fp] && _acc[fp].dest && _acc[fp].dest == destPath) {
                 file = _acc[fp];
@@ -543,7 +570,8 @@ module.exports.getFileByDest = destPath => {
 
     return file;
 };
-
+// достает файл из аккумулятора по конечному пути до файла (имеется ввиду путь, который resources/... но может быть без префикса resources)
+// это нигде не используется, но возможно пригодится
 module.exports.getFileByRelativeDest = destPath => {
     let file;
     if ('string' === typeof destPath) {
@@ -559,6 +587,7 @@ module.exports.getFileByRelativeDest = destPath => {
     return file;
 };
 
+// если мы хотим узнать путь до исходника, зная путь до сконвертированного файла
 module.exports.getFilePathByRelativeDest = destPath => {
     let file;
     if ('string' === typeof destPath) {
@@ -581,26 +610,17 @@ module.exports.addContentsJsModule = (moduleName, fileRelative) => {
 module.exports.addContentsHtmlNames = (k, v) => { contents.htmlNames[k] = v; };
 
 
-// let parsepackwsmod = true;
 module.exports.packwsmod            = packwsmod;
 module.exports.packwsmodContents    = packwsmodContents;
 module.exports.packwsmodXML         = null;
 
 module.exports.packjscss            = packjscss;
 module.exports.custompack           = custompack;
-// module.exports.packjscssContents    = packjscssContents;
 
-/*Object.defineProperty(module.exports, 'parsepackwsmod', {
-    enumerable: false,
-    configurable: false,
-    get: function () { return parsepackwsmod; },
-    set: function (v) { parsepackwsmod = v; }
-});*/
 
 module.exports.addContentsXmlDeprecated = (k, v) => {
     v = v.replace(/^[\/\\]{0,1}resources[\/\\]{0,1}/i, '');
     contents.xmlContents[k] = v;
-    // parsepackwsmod = true;
 };
 
 module.exports.addContentsHtmlDeprecated = (k, v) => { contents.htmlNames[k] = v; };
