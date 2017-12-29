@@ -8,7 +8,10 @@ var
     UglifyJS = require('uglify-js'),
     humanize = require('humanize'),
     path = require('path'),
-    async = require('async');
+    async = require('async'),
+    jsEXT = /\.js$/,
+    tmplEXT = /\.tmpl$/,
+    xhtmlEXT = /\.xhtml$/;
 
 module.exports = function uglifyJsTask(grunt) {
     grunt.registerMultiTask('uglify', 'Задача минификации JS', function() {
@@ -41,9 +44,9 @@ module.exports = function uglifyJsTask(grunt) {
                 var
                     currentPath = path.normalize(file),
                     data = fs.readFileSync(currentPath, 'utf8'),
-                    sourceJSPath = currentPath.replace(/\.js$/, '.source.js'),
-                    sourceMapPath = `${currentPath}.map`,
                     dataObject = {},
+                    currentEXT = currentPath.match(jsEXT) ? jsEXT : currentPath.match(tmplEXT) ? tmplEXT : xhtmlEXT,
+                    currentEXTString = currentEXT.toString(),
                     /**
                      * если минифицируется обычная js-ка, то передаём правильный набор опций для
                      * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
@@ -68,15 +71,27 @@ module.exports = function uglifyJsTask(grunt) {
                             negate_iife: false,
                             keep_fargs: true
                         }
-                    } : { mangle: { eval: true } };
+                    } : { mangle: { eval: true } },
+                    sourceJSPath, sourceMapPath;
+
+                currentEXTString = currentEXTString.slice(2, currentEXTString.length - 2);
+                /**
+                 * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
+                 */
+                if (currentEXTString !== '.js' && !fs.existsSync(currentPath.replace(currentEXT, `.original${currentEXTString}`))) {
+                    grunt.log.ok('Generated template for ' + currentPath + 'doesnt exists. Skipped.');
+                    return;
+                }
                 if (isPresentationService) {
+                    sourceJSPath = currentPath.replace(currentEXT, `.source${currentEXTString}`);
+                    sourceMapPath = `${currentPath}.map`;
                     fs.writeFileSync(sourceJSPath, data);
                     minifyOptions.sourceMap = {
                         url: path.basename(sourceMapPath)
                     };
 
                 }
-                dataObject[path.basename(sourceJSPath)] = data;
+                dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = data;
 
                 try {
                     let minified = UglifyJS.minify(dataObject, minifyOptions);
