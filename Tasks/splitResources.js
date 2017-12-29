@@ -221,7 +221,9 @@ module.exports = function splitResourcesTask(grunt) {
          splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
          //Почему-то не работает, но я узнаю почему!!!Или нет(
          //splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
-         splitContents = getOptionHtmlNames(fullContents, splitContents);
+         if (fullContents.htmlNames) {
+            splitContents = getOptionHtmlNames(fullContents, splitContents);
+         }
       } catch(err) {
          grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack);
       }
