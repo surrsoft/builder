@@ -127,8 +127,8 @@ module.exports = function splitResourcesTask(grunt) {
             throw new Error(`Не смог найти модуль: ${nameModule} для статической страницы ${key}`);
          }
 
-         if (!nameModule) {
-            return;
+         if (!result[nameModule]) {
+            throw new Error('Модуль' + nameModule + 'по ключу' + key + 'не найден');
          }
          result[nameModule].htmlNames[key] = data.htmlNames[key];
       });
@@ -218,12 +218,15 @@ module.exports = function splitResourcesTask(grunt) {
             }
          });
 
+         nameModule = null;
          splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
          //Почему-то не работает, но я узнаю почему!!!Или нет(
          //splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
-         splitContents = getOptionHtmlNames(fullContents, splitContents);
+         if (fullContents.htmlNames) {
+            splitContents = getOptionHtmlNames(fullContents, splitContents);
+         }
       } catch(err) {
-         grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + nameModule + "\n" + err.stack);
+         grunt.fail.fatal("Ошибка при обработке contents.json.\n Имя модуля: " + (nameModule || err) + "\n" + err.stack);
       }
 
       return splitContents;
