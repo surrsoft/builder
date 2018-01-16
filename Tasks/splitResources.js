@@ -265,22 +265,24 @@ module.exports = function splitResourcesTask(grunt) {
          replaceStrCore = '"' + resourcesDir + '/WS.Core/';
       }
 
-      Object.keys(modDepend.nodes).forEach(function(name) {
-         let pathModule = modDepens.nodes[name].path;
-         pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-         pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
+      Object.keys(modDepends.nodes).forEach(function(name) {
+         let pathModule = modDepends.nodes[name].path;
 
-         if (fs.existsSync(getPath(pathModule))) {
-            fullModuleDep.nodes[name] = modDepens.nodes[name];
-            fullModuleDep.links[name] = modDepens.links[name];
+         if (pathModule.match(/\"ws[\\|/]/g)) {
+            pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+            pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
+
+            if (fs.existsSync(getPath(pathModule))) {
+               fullModuleDep.nodes[name] = modDepends.nodes[name];
+               fullModuleDep.links[name] = modDepends.links[name];
+            }
          }
 
-
+         fullModuleDep.nodes[name] = modDepends.nodes[name];
+         fullModuleDep.links[name] = modDepends.links[name];
       });
 
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
-      fullModuleDep = JSON.parse(fullModuleDepCont);
+      return fullModuleDep;
    }
 
    function splitModuleDependencies() {
@@ -290,7 +292,9 @@ module.exports = function splitResourcesTask(grunt) {
          existFile,
          nameModule,
          splitModuleDep = {},
-         fullModuleDep = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true))));
+         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
+
+      fullModuleDep = replaceWsInModDepend(fullModuleDep);
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
