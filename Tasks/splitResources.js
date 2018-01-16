@@ -4,8 +4,22 @@ const
    fs = require('fs'),
    humanize = require('humanize'),
    path = require('path'),
+   constants = global.requirejs('Core/constants'),
    helpers = require('../lib/helpers');
 
+
+function deleteSlash (str, lead, final) {
+   let result = str;
+
+   if (lead) {
+      result = result[0] === '/' ? result.substring(1) : result;
+   }
+   if (final) {
+      result = result[result.length - 1] === '/' ? result.substring(0, result.length - 2) : result;
+   }
+
+   return result;
+}
 
 function isNeededValue(key, value) {
    let matchs = value.match(key);
@@ -35,7 +49,7 @@ function getName(path, isResources, isRootApp, sep) {
    }
 
    if (isResources) {
-      let index = splitPath.indexOf('resources');
+      let index = splitPath.indexOf(deleteSlash(constants.resourceRoot, true, true));
       if (index === -1) {
          return '';
       }
@@ -53,9 +67,9 @@ module.exports = function splitResourcesTask(grunt) {
       let newPath;
 
       if (isResources) {
-         newPath = path.join(rootPath, '/resources/' + nameFile);
+         newPath = path.join(rootPath, constants.resourceRoot + nameFile);
       } else if (nameModule) {
-         newPath = path.join(rootPath, '/resources/' + nameModule + '/' + nameFile);
+         newPath = path.join(rootPath, constants.resourceRoot + nameModule + '/' + nameFile);
       } else {
          newPath = path.join(rootPath, '/' + nameFile);
       }
@@ -234,6 +248,45 @@ module.exports = function splitResourcesTask(grunt) {
       return splitContents;
    }
 
+   //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
+   function replaceWsInModDepend(modDepends) {
+      let
+         resourcesDir = deleteSlash(constants.resourceRoot, true, true),
+         replaceStrDeprect,
+         replaceStrCore,
+         fullModuleDep = {
+            nodes: {},
+            links: {}
+         };
+
+      if (path.sep === '\\') {
+         replaceStrDeprect = '"' + resourcesDir + '\\\\WS.Deprecated\\';
+         replaceStrCore = '"' + resourcesDir + '\\\\WS.Core\\';
+      } else {
+         replaceStrDeprect = '"' + resourcesDir + '/WS.Deprecated/';
+         replaceStrCore = '"' + resourcesDir + '/WS.Core/';
+      }
+
+      Object.keys(modDepends.nodes).forEach(function(name) {
+         let pathModule = modDepends.nodes[name].path;
+
+         if (pathModule.match(/\"ws[\\|/]/g)) {
+            pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+            pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
+
+            if (fs.existsSync(getPath(pathModule))) {
+               fullModuleDep.nodes[name] = modDepends.nodes[name];
+               fullModuleDep.links[name] = modDepends.links[name];
+            }
+         }
+
+         fullModuleDep.nodes[name] = modDepends.nodes[name];
+         fullModuleDep.links[name] = modDepends.links[name];
+      });
+
+      return fullModuleDep;
+   }
+
    function splitModuleDependencies() {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
@@ -241,23 +294,9 @@ module.exports = function splitResourcesTask(grunt) {
          existFile,
          nameModule,
          splitModuleDep = {},
-         fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
-         fullModuleDep;
+         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
 
-      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
-      let
-         replaceStrDeprect,
-         replaceStrCore;
-      if (path.sep === '\\') {
-         replaceStrDeprect = '"resources\\\\WS.Deprecated\\';
-         replaceStrCore = '"resources\\\\WS.Core\\';
-      } else {
-         replaceStrDeprect = '"resources/WS.Deprecated/';
-         replaceStrCore = '"resources/WS.Core/';
-      }
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
-      fullModuleDep = JSON.parse(fullModuleDepCont);
+      fullModuleDep = replaceWsInModDepend(fullModuleDep);
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
@@ -365,7 +404,7 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          try {
-            pathContents = path.join(rootPath, '/resources/' + nameModules + '/contents.json');
+            pathContents = path.join(rootPath, constants.resourceRoot + nameModules + '/contents.json');
             contents = JSON.parse(fs.readFileSync(pathContents, {encoding: 'utf8'}));
          } catch (err) {
             grunt.fail.fatal('Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
