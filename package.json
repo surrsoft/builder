@@ -13,7 +13,7 @@
     "fs-extra": "^0.30.0", 
     "grunt": "^1.0.1", 
     "grunt-cli": "^1.2.0", 
-    "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.17.350", 
+    "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.17.400", 
     "grunt-text-replace": "^0.4.0", 
     "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.17.400", 
     "humanize": "0.0.9", 
