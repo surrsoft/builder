@@ -265,24 +265,22 @@ module.exports = function splitResourcesTask(grunt) {
          replaceStrCore = '"' + resourcesDir + '/WS.Core/';
       }
 
-      Object.keys(modDepends.nodes).forEach(function(name) {
-         let pathModule = modDepends.nodes[name].path;
+      Object.keys(modDepend.nodes).forEach(function(name) {
+         let pathModule = modDepens.nodes[name].path;
+         pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+         pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
 
-         if (pathModule.match(/\"ws[\\|/]/g)) {
-            pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-            pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
-
-            if (fs.existsSync(getPath(pathModule))) {
-               fullModuleDep.nodes[name] = modDepends.nodes[name];
-               fullModuleDep.links[name] = modDepends.links[name];
-            }
+         if (fs.existsSync(getPath(pathModule))) {
+            fullModuleDep.nodes[name] = modDepens.nodes[name];
+            fullModuleDep.links[name] = modDepens.links[name];
          }
 
-         fullModuleDep.nodes[name] = modDepends.nodes[name];
-         fullModuleDep.links[name] = modDepends.links[name];
+
       });
 
-      return fullModuleDep;
+      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
+      fullModuleDep = JSON.parse(fullModuleDepCont);
    }
 
    function splitModuleDependencies() {
@@ -292,9 +290,7 @@ module.exports = function splitResourcesTask(grunt) {
          existFile,
          nameModule,
          splitModuleDep = {},
-         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
-
-      fullModuleDep = replaceWsInModDepend(fullModuleDep);
+         fullModuleDep = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true))));
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
