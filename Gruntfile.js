@@ -18,7 +18,7 @@ module.exports = function (grunt) {
     // Init environment
     var target = path.resolve(root);
     var application =  path.join('/', app, '/').replace(dblSlashes, '/');
-    var logger = require('./lib/logger')(grunt);
+    require('./lib/logger').setGruntLogger(grunt);
     var configBuilder = require('./lib/config-builder.js');
 
     process.env.ROOT = target;
