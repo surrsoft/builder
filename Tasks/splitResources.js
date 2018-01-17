@@ -3,9 +3,35 @@
 const
    fs = require('fs'),
    humanize = require('humanize'),
-   path = require('path');
+   path = require('path'),
+   constants = global.requirejs('Core/constants');
 
+/**
+ * Удаляет слэш в начале или в конце строки или в обоих случаях.
+ * @param {String} str - строка
+ * @param {Boolean} lead - удалить ли лидирующий слэш.
+ * @param {Boolean} final - удалить ли слэш в конце строки
+ * @returns {String}
+ */
+function deleteSlash (str, lead, final) {
+   let result = str;
 
+   if (lead) {
+      result = result[0] === '/' ? result.substring(1) : result;
+   }
+   if (final) {
+      result = result[result.length - 1] === '/' ? result.substring(0, result.length - 2) : result;
+   }
+
+   return result;
+}
+
+/**
+ * Есть ли вхождение подстроки в строку.
+ * @param {String} key - построка
+ * @param {String} value - строка в которой ищем вхождение
+ * @returns {boolean}
+ */
 function isNeededValue(key, value) {
    let matchs = value.match(key);
 
@@ -16,6 +42,14 @@ function isNeededValue(key, value) {
    }
 }
 
+/**
+ * Возращает имя интерфейсного модуля.
+ * @param {String} path - путь до модуля
+ * @param {Boolean} isResources - находиться ли модуль в папке ресурсов.
+ * @param {Boolean} isRootApp - находиться ли моудль в корне приложения.
+ * @param {String} sep - раздилитель для строки(слэш в зависимости от ОС).
+ * @returns {String}
+ */
 function getName(path, isResources, isRootApp, sep) {
    let splitPath;
 
@@ -34,7 +68,7 @@ function getName(path, isResources, isRootApp, sep) {
    }
 
    if (isResources) {
-      let index = splitPath.indexOf('resources');
+      let index = splitPath.indexOf(deleteSlash(constants.resourceRoot, true, true));
       if (index == -1) {
          return '';
       }
@@ -48,13 +82,20 @@ function getName(path, isResources, isRootApp, sep) {
 module.exports = function splitResourcesTask(grunt) {
    let rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
 
+   /**
+    * Возращает путь до файла.
+    * @param {String} nameFile - имя файла.
+    * @param {Boolean} nameModule - имя интерфейсного модуля.
+    * @param {Boolean} isResources - файл нужна положить на первый уровень папки ресурсов.
+    * @return {String}
+    */
    function getPath(nameFile, nameModule, isResources) {
       let newPath;
 
       if (isResources) {
-         newPath = path.join(rootPath, '/resources/' + nameFile);
+         newPath = path.join(rootPath, constants.resourceRoot + nameFile);
       } else if (nameModule) {
-         newPath = path.join(rootPath, '/resources/' + nameModule + '/' + nameFile);
+         newPath = path.join(rootPath, constants.resourceRoot + nameModule + '/' + nameFile);
       } else {
          newPath = path.join(rootPath, '/' + nameFile);
       }
@@ -62,6 +103,11 @@ module.exports = function splitResourcesTask(grunt) {
       return path.normalize(newPath);
    }
 
+   /**
+    * Записывает файл во все указанные интерфейсные модули.
+    * @param {Object} data - содержимоей для файла файлов.
+    * @param {String} name - имя файла.
+    */
    function writeFileInModules(data, name) {
       let pathModule;
 
@@ -81,6 +127,13 @@ module.exports = function splitResourcesTask(grunt) {
       });
    }
 
+   /**
+    * Разбивает опцию из contents.json
+    * @param {Object} data - данные из опции.
+    * @param {Object} splitData - разделённые ранее опции.
+    * @param {String} option - обрабатываемя опция.
+    * @returns {Object}
+    */
    function getOptionModule(data, splitData, option) {
       let
          result = splitData,
@@ -112,6 +165,12 @@ module.exports = function splitResourcesTask(grunt) {
       return result;
    }
 
+   /**
+    * Разбивате опцию HtmlNames из contents.json
+    * @param {Object} data - данные из опции.
+    * @param {Object} splitData - разделённые ранее опции.
+    * @returns {Object}
+    */
    function getOptionHtmlNames(data, splitData) {
       let
          result = splitData,
@@ -136,6 +195,12 @@ module.exports = function splitResourcesTask(grunt) {
       return result;
    }
 
+   /**
+    * Разделяет опцию Dictionary из contents.json
+    * @param {Object} data - данные из опции.
+    * @param {String} name - имя интерфейсного модуля.
+    * @returns {Object}
+    */
    function getOptionDictionary(data, name) {
       let
          regExp = new RegExp("(" + name + ")(\\.)"),
@@ -154,6 +219,10 @@ module.exports = function splitResourcesTask(grunt) {
       return result;
    }
 
+   /**
+    * Разбивает routes-info.json
+    * @returns {Object}
+    */
    function splitRoutes() {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
 
@@ -183,6 +252,11 @@ module.exports = function splitResourcesTask(grunt) {
       return splitRoutes;
    }
 
+   /**
+    * Разбивает contents.json
+    * @param {Object} fullContents - оригинальный contents.json
+    * @returns {Object}
+    */
    function splitContents(fullContents) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения contents.json`);
 
@@ -232,6 +306,54 @@ module.exports = function splitResourcesTask(grunt) {
       return splitContents;
    }
 
+   //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
+   /**
+    * Зaменяет вce вхождения ws в путях из module-dependencies.json на актуальные пути.
+    * @param {Object} modDepends - оригинальный module-dependencies.json
+    * @returns {{nodes: {}, links: {}}}
+    */
+   function replaceWsInModDepend(modDepends) {
+      let
+         resourcesDir = deleteSlash(constants.resourceRoot, true, true),
+         replaceStrDeprect,
+         replaceStrCore,
+         fullModuleDep = {
+            nodes: {},
+            links: {}
+         };
+
+      if (path.sep === '\\') {
+         replaceStrDeprect = '"' + resourcesDir + '\\\\WS.Deprecated\\';
+         replaceStrCore = '"' + resourcesDir + '\\\\WS.Core\\';
+      } else {
+         replaceStrDeprect = '"' + resourcesDir + '/WS.Deprecated/';
+         replaceStrCore = '"' + resourcesDir + '/WS.Core/';
+      }
+
+      Object.keys(modDepends.nodes).forEach(function(name) {
+         let pathModule = modDepends.nodes[name].path;
+
+         if (pathModule.match(/\"ws[\\|/]/g)) {
+            pathModule = pathModule.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
+            pathModule = pathModule.replace(/\"ws[\\|/]/g, replaceStrCore);
+
+            if (fs.existsSync(getPath(pathModule))) {
+               fullModuleDep.nodes[name] = modDepends.nodes[name];
+               fullModuleDep.links[name] = modDepends.links[name];
+            }
+         }
+
+         fullModuleDep.nodes[name] = modDepends.nodes[name];
+         fullModuleDep.links[name] = modDepends.links[name];
+      });
+
+      return fullModuleDep;
+   }
+
+   /**
+    * Разбивает module-dependencies.json
+    * @returns {Object}
+    */
    function splitModuleDependencies() {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
@@ -239,23 +361,9 @@ module.exports = function splitResourcesTask(grunt) {
          existFile,
          nameModule,
          splitModuleDep = {},
-         fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
-         fullModuleDep;
+         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
 
-      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
-      let
-         replaceStrDeprect,
-         replaceStrCore;
-      if (path.sep === '\\') {
-         replaceStrDeprect = '"resources\\\\WS.Deprecated\\';
-         replaceStrCore = '"resources\\\\WS.Core\\';
-      } else {
-         replaceStrDeprect = '"resources/WS.Deprecated/';
-         replaceStrCore = '"resources/WS.Core/';
-      }
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
-      fullModuleDep = JSON.parse(fullModuleDepCont);
+      fullModuleDep = replaceWsInModDepend(fullModuleDep);
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
@@ -295,6 +403,11 @@ module.exports = function splitResourcesTask(grunt) {
       return splitModuleDep;
    }
 
+   /**
+    * Разбивает preload_urls.json
+    * @param modules - список всех интерфейсных модулей.
+    * @returns {Object}
+    */
    function splitPreloadUrls(modules) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения preload_urls.json`);
 
@@ -345,7 +458,10 @@ module.exports = function splitResourcesTask(grunt) {
       return preloadUrls;
    }
 
-
+   /**
+    * Распределяет статические страницы по интрейфесным модулям.
+    * @param {Object} modules - список всех интерфейсных модулей.
+    */
    function slpitStaticHtml(modules) {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
 
@@ -362,7 +478,7 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          try {
-            pathContents = path.join(rootPath, '/resources/' + nameModules + '/contents.json');
+            pathContents = path.join(rootPath, constants.resourceRoot + nameModules + '/contents.json');
             contents = JSON.parse(fs.readFileSync(pathContents, {encoding: 'utf8'}));
          } catch(err) {
             grunt.fail.fatal("Не смог найти фалй contents.json.\n Имя модуля: " + nameModules + "\n" + err.stack );
@@ -391,6 +507,9 @@ module.exports = function splitResourcesTask(grunt) {
       });
    }
 
+   /**
+    * Задача по разбиению мета-данных.
+    */
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function () {
 
       let fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
