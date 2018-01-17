@@ -21,10 +21,12 @@
       "object-assign": "^4.1.1",
       "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#master",
 
-      "semver": "^5.4.1",
-      "gulp": "git+ssh://git@git.sbis.ru:sbis/gulp4.git#master"
+      "gulp": "git+ssh://git@git.sbis.ru:sbis/gulp4.git#master",
+      "gulp-rename":"1.2.2"
    },
    "devDependencies": {
+      "mocha": "4.1.0",
+
       "assert": "",
       "autoprefixer": "^7.1.1",
       "escodegen": "^1.9.0",
@@ -44,7 +46,6 @@
       "gulp-util": "^3.0.8",
       "gulp-watch": "^4.3.11",
       "minimatch": "^3.0.4",
-      "mocha": "",
       "object-assign": "^4.1.1",
       "precss": "^1.4.0",
       "source-map": "^0.5.7",
