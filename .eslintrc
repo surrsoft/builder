@@ -3,14 +3,11 @@
       "ecmaVersion": 6
    },
    "env": {
-      "browser": true,
       "node": true,
       "es6": true
    },
    "globals": {
-      "define": true,
-      "require": true,
-      "Set": true
+      "require": true
    },
    "rules": {
       "keyword-spacing": 1,
@@ -137,6 +134,10 @@
          {
             "properties": true
          }
+      ],
+      "strict": [
+         1,
+         "global"
       ]
    }
 }
