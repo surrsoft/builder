@@ -11,14 +11,15 @@ function processFileByModifiedTime(stream, file, modulePath, changesStore) {
    let oldTime;
 
    if (changesStore.store.hasOwnProperty(modulePath)) {
+      changesStore.store[modulePath]['exist'] = true;
       let files = changesStore.store[modulePath]['files'];
       if (files.hasOwnProperty(filePath)) {
          oldTime = files[filePath]['time'];
+      } else {
+         files[filePath] = {};
       }
-      files[filePath] = {
-         time: newTime,
-         exist: true
-      };
+      files[filePath]['time'] = newTime;
+      files[filePath]['exist'] = true;
    } else {
       changesStore.store[modulePath] = {
          'files': {

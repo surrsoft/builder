@@ -35,14 +35,26 @@ class ChangesStore {
       if (!fs.existsSync(dir)) {
          mkdirp.sync(dir);
       }
-      let tmpStore = JSON.parse(JSON.stringify(this.store)); //this.store ещё может быть в работе!
-      for (let modulePath in tmpStore) {
-         if (tmpStore.hasOwnProperty(modulePath)) {
-            const files = tmpStore[modulePath]['files'];
+
+      //this.store ещё может быть в работе. и нам не нужна информация о несуществующих сущностях
+      let tmpStore = {};
+      for (let modulePath in this.store) {
+         if (!this.store.hasOwnProperty(modulePath)) {
+            continue;
+         }
+         if (this.store[modulePath]['exist']) {
+            tmpStore[modulePath] = {files: {}};
+            const files = this.store[modulePath]['files'];
             for (let filePath in files) {
-               if (files.hasOwnProperty(filePath)) {
-                  delete files[filePath]['exist'];
+               if (!files.hasOwnProperty(filePath)) {
+                  continue;
                }
+               if (files[filePath]['exist']) {
+                  tmpStore[modulePath]['files'][filePath] = {
+                     time: files[filePath]['time']
+                  };
+               }
+
             }
          }
       }
