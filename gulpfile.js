@@ -48,7 +48,7 @@ try {
    gulp.task('build',
       gulp.series(
          guardSingleProcessTask.lock,
-         gulp.parallel(buildTask(config)),
+         buildTask.create(config),
          guardSingleProcessTask.unlock));
 
 } catch (e) {
