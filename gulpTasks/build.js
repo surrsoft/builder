@@ -7,35 +7,34 @@ const gulp = require('gulp'),
    transliterate = require('./../lib/utils/transliterate');
 
 
-module.exports = function buildTask(done, config) {
-   const modulesList = config['modules'];
-   for (let i = 0; i < modulesList.length; i++) {
-      logger.progress(100 * i / modulesList.length);
-      const module = modulesList[i],
-         moduleNameWithResponsible = `${module['name']} (responsible: ${module['responsible']})`;
-      logger.info(`Обработка модуля "${moduleNameWithResponsible}"`);
-      logger.locationModule = moduleNameWithResponsible;
+const taskGenerator = function(moduleNameWithResponsible, modulePath, outputDir) {
+   const folderModule = path.basename(modulePath),
+      moduleInput = modulePath + '/**/*.*',
+      moduleOutput = path.join(outputDir, transliterate(folderModule));
 
-      const folderModule = path.basename(module.path),
-         moduleInput = module.path + '/**/*.*',
-         moduleOutput = path.join(config.output, transliterate(folderModule));
-
-      gulp.src(moduleInput)
+   return () => {
+      return gulp.src(moduleInput)
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
          .pipe(gulp.dest(moduleOutput));
+   };
+};
 
-      logger.warning(222, 'многострочное предупреждение\nмногострочное предупреждение');
-      logger.error(333, 'многострочная ошибка\nмногострочная ошибка');
+module.exports = function buildTask(config) {
+   const modulesList = config['modules'];
+   let tasks = [];
+   for (let i = 0; i < modulesList.length; i++) {
+      const module = modulesList[i];
+      let moduleNameWithResponsible = module['name'];
+      if (module['responsible']) {
+         moduleNameWithResponsible += ` (responsible: ${module['responsible']})`;
+      }
+
+      logger.info(`Обработка модуля "${moduleNameWithResponsible}"`);
+      tasks.push(taskGenerator(moduleNameWithResponsible, module.path, config.output));
    }
-   logger.locationModule = null;
-
-   logger.info('многострочное сообщение\nмногострочное сообщение');
-   logger.warning(22, 'многострочное предупреждение\nмногострочное предупреждение');
-   logger.error(33, 'многострочная ошибка\nмногострочная ошибка');
-   done();
-
+   return tasks;
 };
 
