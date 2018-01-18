@@ -36,11 +36,11 @@ module.exports = function (grunt) {
             application = this.data.application,
             applicationRoot = path.join(root, application);
 
-        let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config', 'optional!Core/tmpl/js/tclosure'];
+        let deps = ['View/Builder/Tmpl', 'View/config', 'optional!View/Runner/tclosure'];
 
         global.requirejs(deps, function (tmpl, config, tclosure) {
             if (tclosure) {
-                deps.push('Core/tmpl/js/tclosure');
+                deps.push('View/Runner/tclosure');
             }
             var resultDef = walkFolder(applicationRoot, function (folder, fileName, html) {
                 var def = new Deferred();
