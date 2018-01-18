@@ -31,18 +31,18 @@ try {
       process.exit(1);
    }
 
-   let config = '';
+   let config = {};
    try {
       config = JSON.parse(fs.readFileSync(configFile, {encoding: 'utf-8'}).toString());
    } catch (e) {
-      logger.error(4, 'Файл конфигурации не коррекен. Он должен представлять собой JSON-документ в кодировке UTF8');
+      logger.error(4, 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message);
       process.exit(1);
    }
    if (!config) {
       logger.error(5, 'Файл конфигурации пустой');
    }
 
-   gulp.task('build', done => buildTask(done, config));
+   gulp.task('build', gulp.parallel(buildTask(config)));
 
 } catch (e) {
    // eslint-disable-next-line no-console
