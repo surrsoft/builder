@@ -3,7 +3,6 @@
 const gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
    path = require('path'),
-   logger = require('./../lib/logger').logger,
    transliterate = require('./../lib/utils/transliterate');
 
 
@@ -12,7 +11,7 @@ const taskGenerator = function(moduleNameWithResponsible, modulePath, outputDir)
       moduleInput = modulePath + '/**/*.*',
       moduleOutput = path.join(outputDir, transliterate(folderModule));
 
-   return () => {
+   return function buildModule() {
       return gulp.src(moduleInput)
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
@@ -32,7 +31,7 @@ module.exports = function buildTask(config) {
          moduleNameWithResponsible += ` (responsible: ${module['responsible']})`;
       }
 
-      logger.info(`Обработка модуля "${moduleNameWithResponsible}"`);
+      //logger.info(`Обработка модуля "${moduleNameWithResponsible}"`);
       tasks.push(taskGenerator(moduleNameWithResponsible, module.path, config.output));
    }
    return tasks;

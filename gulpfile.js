@@ -14,7 +14,8 @@ try {
    const fs = require('fs'),
       gulp = require('gulp'),
       logger = require('./lib/logger').logger,
-      buildTask = require('./gulpTasks/build.js');
+      buildTask = require('./gulpTasks/build.js'),
+      guardSingleProcessTask = require('./gulpTasks/guard-single-process.js');
 
    logger.info('Параметры запуска: ' + JSON.stringify(process.argv));
 
@@ -42,7 +43,13 @@ try {
       logger.error(5, 'Файл конфигурации пустой');
    }
 
-   gulp.task('build', gulp.parallel(buildTask(config)));
+   guardSingleProcessTask.init(config['cache']);
+
+   gulp.task('build',
+      gulp.series(
+         guardSingleProcessTask.lock,
+         gulp.parallel(buildTask(config)),
+         guardSingleProcessTask.unlock));
 
 } catch (e) {
    // eslint-disable-next-line no-console
