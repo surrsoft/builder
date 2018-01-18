@@ -125,12 +125,12 @@ module.exports = function (grunt) {
             mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
             nodes = mDeps.nodes;
 
-        let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
+        let deps = ['View/Builder/Tmpl', 'View/config'];
 
-        global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
+        global.requirejs(deps.concat(['optional!View/Runner/tclosure']), function (tmpl, config, tclosure) {
             let tclosureStr = '';
             if (tclosure) {
-                deps.push('Core/tmpl/js/tclosure');
+                deps.push('View/Runner/tclosure');
                 tclosureStr = 'var tclosure=deps[0];';
             }
 

@@ -8,7 +8,7 @@
      * Поддерживаемые форматы запроса
      * - tmpl!SBIS3.CORE.HTMLChunk - подключит шаблон
      */
-    define('tmpl', ['js!Core/tmpl/tmpl', 'js!Core/tmpl/config'], function(tmpl, config){
+    define('tmpl', ['js!Core/tmpl/tmpl', 'js!View/config'], function(tmpl, config){
         function resolverControls(path) {
             return 'js!' + path;
         }

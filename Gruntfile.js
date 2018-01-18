@@ -52,7 +52,7 @@ module.exports = function (grunt) {
 
     //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
     if (packaging) {
-        defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
+        defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'html-build', 'tmpl-build', 'xhtml-build');
         if (versionize && typeof versionize == 'string') {
             defaultTasks.push('replace:html');
         }

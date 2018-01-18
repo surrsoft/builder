@@ -171,7 +171,7 @@ function getComponentForTmpl (opts, mod) {
             let text = opts.acc.getFileByDest(mod.fullPath).contents; // FIXME: откуда читать ?
 
             if (text) {
-                let tmplstr = global.requirejs('Core/tmpl/tmplstr');
+                let tmplstr = global.requirejs('View/Builder/Tmpl');
                 let arr     = tmplstr.getComponents(text).map(function (dp) {
                     return {
                         type: 'Literal',
