@@ -86,10 +86,11 @@ module.exports = function uglifyJsTask(grunt) {
                     sourceJSPath = currentPath.replace(currentEXT, `.source${currentEXTString}`);
                     sourceMapPath = `${currentPath}.map`;
                     fs.writeFileSync(sourceJSPath, data);
-                    minifyOptions.sourceMap = {
-                        url: path.basename(sourceMapPath)
-                    };
-
+                    if (currentEXTString === '.js') {
+                        minifyOptions.sourceMap = {
+                            url: path.basename(sourceMapPath)
+                        };
+                    }
                 }
                 dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = data;
 
