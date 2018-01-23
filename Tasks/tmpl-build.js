@@ -134,7 +134,7 @@ module.exports = function (grunt) {
                 tclosureStr = 'var tclosure=deps[0];';
             }
 
-            async.eachOfLimit(nodes, 10, function (value, fullName, callback) {
+            async.eachOfLimit(nodes, 2, function (value, fullName, callback) {
                 if (fullName.indexOf('tmpl!') === 0) {
                     let filename = value.path.replace(dblSlashes, '/'),
                         fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
@@ -247,7 +247,7 @@ module.exports = function (grunt) {
             mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
             nodes = mDeps.nodes;
 
-        async.eachOfLimit(nodes, 10, function (value, fullName, callback) {
+        async.eachOfLimit(nodes, 2, function (value, fullName, callback) {
             if (fullName.indexOf('html!') === 0) {
                 let filename = value.path.replace(dblSlashes, '/'),
                     fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/');
