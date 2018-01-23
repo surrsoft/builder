@@ -6,11 +6,9 @@ const traverse = require('estraverse').traverse;
 const transliterate = require('./../lib/utils/transliterate');
 const replaceIncludes = require('./../lib/utils/include-replacer');
 const helpers = require('./../lib/utils/helpers');
+const htmlTmpl = require('./../lib/htmlTmpl/htmlTmpl');
 const humanize = require('humanize');
 const async = require('async');
-
-const tmplLocalizator = require('./../lib/i18n/tmplLocalizator');
-const Deferred = global.requirejs('Core/Deferred');
 
 const dblSlashes = /\\/g;
 
@@ -29,15 +27,6 @@ function parseObjectExpression(properties) {
         obj[prop.key.name] = prop.value.value;
     });
     return obj;
-}
-function warnTmplBuild(err, fullPath) {
-    grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
-}
-function errorTmplBuild(err, fullName, fullPath) {
-    grunt.log.error(`Resources error. An ERROR occurred while building template!
-    ---------File name: ${fullName}
-    ---------File path: ${fullPath}`);
-    grunt.fail.fatal(err);
 }
 
 module.exports = function (grunt) {
@@ -112,79 +101,24 @@ module.exports = function (grunt) {
         generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb, inclReplace);
     }
 
-    grunt.registerMultiTask('tmpl-html', 'Generate static html from .html.tmpl files', function () {
-        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача tmpl-html.`);
-        let start = Date.now();
+    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function () {
+        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
+        var start = Date.now();
         const
             done = this.async(),
             root = this.data.root,
             application = this.data.application,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(applicationRoot, 'resources'),
-            fileRegExp = this.data.fileRegExp;
+            filePattern = this.data.filePattern;
 
-        global.requirejs(['View/Builder/Tmpl', 'View/config', 'View/Runner/tclosure'], function (tmpl, config, tclosure) {
-            helpers.recurse(resourcesRoot, function (fullPath, callback) {
-                if (!fileRegExp.test(fullPath)) {
-                    return;
-                }
+        htmlTmpl.convert(resourcesRoot, filePattern, function (err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
 
-                fs.readFile(fullPath, function (err, html) {
-                    if (err) {
-                        grunt.fail.fatal(err);
-                        return callback(err);
-                    }
-
-                    var def = new Deferred();
-                    let conf = {config: config, filename: ''};
-
-                    var templateRender = Object.create(tmpl);
-
-                    if (html.indexOf('define') === 0) {
-                        def.errback(new Error(fullPath + ' - не шаблон!'));
-                        return;
-                    }
-
-                    try {
-                        tmplLocalizator.parseTmpl(grunt, html, fullPath).addCallback(function (traversedObj) {
-                            const traversed = traversedObj.astResult;
-                            try {
-                                let tmplFunc = templateRender.func(traversed, conf);
-                                var resHtml = tmplFunc({}, {}, undefined, false, undefined, tclosure);
-
-                                var newFullPath = fullPath.replace(/\.tmpl$/, '');
-                                // если файл уже есть, удалим
-                                if (fs.existsSync(newFullPath)) {
-                                    fs.unlinkSync(newFullPath);
-                                }
-                                // создадим файл с новым содержимым
-                                fs.writeFileSync(newFullPath, resHtml.toString(), {
-                                    flag: "wx"
-                                });
-                                def.callback();
-                            } catch (err) {
-                                warnTmplBuild(err, fullPath);
-                                def.errback(err);
-                            }
-                        }).addErrback(function (err) {
-                            warnTmplBuild(err, fullPath);
-                            def.errback(err);
-                        });
-                    } catch (err) {
-                        errorTmplBuild(err, fileName, fullPath);
-                        def.errback(err);
-                    }
-                    return def;
-                });
-            }, function (err) {
-                if (err) {
-                    grunt.fail.fatal(err);
-                }
-
-                console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
-
-                done();
-            });
+            grunt.log.ok(`Duration: ${(Date.now() - start) / 1000} sec`);
+            done();
         });
     });
 
