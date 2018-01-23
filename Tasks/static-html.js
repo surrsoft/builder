@@ -112,7 +112,7 @@ module.exports = function (grunt) {
             resourcesRoot = path.join(applicationRoot, 'resources'),
             filePattern = this.data.filePattern;
 
-        htmlTmpl.convert(resourcesRoot, filePattern, function (err) {
+        htmlTmpl.convert(resourcesRoot, filePattern, function(err) {
             if (err) {
                 grunt.fail.fatal(err);
             }
