@@ -11,44 +11,47 @@ const
 let lockFle;
 
 module.exports = {
-   'init': function(dir) {
+   'lock': function lock(dir) {
       if (!fs.existsSync(dir)) {
          mkdirp.sync(dir);
       }
       lockFle = path.join(dir, 'builder.lockfile');
+
+      return (done) => {
+         if (fs.existsSync(lockFle)) {
+            const errorMessage = 'Похоже, что запущен другой процесс builder в этой же папке, попробуйте перезапустить его позже. ' +
+               `Если вы уверены, что предыдущий запуск завершился, то удалите файл '${lockFle}' и перезапустите процесс.`;
+
+            logger.error(errorMessage, 100);
+            throw new PluginError({
+               plugin: 'Guard single process',
+               message: errorMessage
+            });
+
+         } else {
+            fs.closeSync(fs.openSync(lockFle, 'w'));
+            logger.debug(`Создали файл \'${lockFle}'`);
+            done();
+         }
+      };
    },
-   'lock': function lock(done) {
-      if (fs.existsSync(lockFle)) {
-         const errorMessage = 'Похоже, что запущен другой процесс builder в этой же папке, попробуйте перезапустить его позже. ' +
-            `Если вы уверены, что предыдущий запуск завершился, то удалите файл '${lockFle}' и перезапустите процесс.`;
+   'unlock': function unlock() {
+      return (done) => {
+         if (!fs.existsSync(lockFle)) {
+            const errorMessage = `В процессе выполнения кто-то удалил файл '${lockFle}'. ` +
+               'Нет гарантий, что результат не пострадал. Перезапустите процесс.';
 
-         logger.error(errorMessage, 100);
-         throw new PluginError({
-            plugin: 'Guard single process',
-            message: errorMessage
-         });
+            logger.error(errorMessage, 101);
+            throw new PluginError({
+               plugin: 'Guard single process',
+               message: errorMessage
+            });
 
-      } else {
-         fs.closeSync(fs.openSync(lockFle, 'w'));
-         logger.debug(`Создали файл \'${lockFle}'`);
-         done();
-      }
-   },
-   'unlock': function unlock(done) {
-      if (!fs.existsSync(lockFle)) {
-         const errorMessage = `В процессе выполнения кто-то удалил файл '${lockFle}'. ` +
-            'Нет гарантий, что результат не пострадал. Перезапустите процесс.';
-
-         logger.error(errorMessage, 101);
-         throw new PluginError({
-            plugin: 'Guard single process',
-            message: errorMessage
-         });
-
-      } else {
-         fs.unlinkSync(lockFle);
-         logger.debug(`Удалили файл '${lockFle}'`);
-         done();
-      }
+         } else {
+            fs.unlinkSync(lockFle);
+            logger.debug(`Удалили файл '${lockFle}'`);
+            done();
+         }
+      };
    }
 };
