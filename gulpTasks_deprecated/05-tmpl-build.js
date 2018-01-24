@@ -13,7 +13,7 @@ const applySourceMap  = require('vinyl-sourcemaps-apply');
 let tmplLocalizator;
 const oldToNew        = require('../resources/old_to_new.json');
 // const dblSlashes = /\\/g;
-let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
+let deps = ['View/Builder/Tmpl', 'View/config'];
 let tmpl, config, tclosure, tclosureStr, doT;
 
 let executePaths = [];
@@ -47,12 +47,12 @@ module.exports = opts => {
             doT = global.requirejs('Core/js-template-doT');
 
             if (!tclosureStr) {
-                global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (_tmpl, _config, _tclosure) {
+                global.requirejs(deps.concat(['optional!View/Runner/tclosure']), function (_tmpl, _config, _tclosure) {
                     tclosureStr = '';
                     tmpl = _tmpl; config = _config; tclosure = _tclosure;
 
                     if (tclosure) {
-                        deps.push('Core/tmpl/js/tclosure');
+                        deps.push('View/Runner/tclosure');
                         tclosureStr = 'var tclosure=deps[0];';
                     }
 
