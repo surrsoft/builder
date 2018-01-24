@@ -108,7 +108,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
                nodes[secondName].amd = true;
             }
          }
-         callback(err, nameModule, fullPath);
+         setImmediate(callback.bind(null, err, nameModule, fullPath));
       });
    });
 }
@@ -150,7 +150,7 @@ module.exports = function (grunt) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
                             warnTmplBuild(err, fullPath);
-                            return callback();
+                            return setImmediate(callback);
                         }
 
                         var templateRender = Object.create(tmpl);
@@ -159,7 +159,7 @@ module.exports = function (grunt) {
                         html = stripBOM(html);
 
                         if (html.indexOf('define') === 0) {
-                            return callback();
+                            return setImmediate(callback);
                         }
 
                         try {
@@ -204,11 +204,11 @@ module.exports = function (grunt) {
 
                                 } catch (err) {
                                     warnTmplBuild(err, fullPath);
-                                    callback();
+                                    setImmediate(callback);
                                 }
                             }).addErrback(function (err) {
                                 warnTmplBuild(err, fullPath);
-                                callback();
+                                setImmediate(callback);
                             });
                         } catch(err) {
                             errorTmplBuild(err, fullName, fullPath);
@@ -253,21 +253,21 @@ module.exports = function (grunt) {
                     fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/');
 
                 if (value.amd) {
-                    return callback();
+                    return setImmediate(callback);
                 }
 
                 fs.readFile(fullPath, 'utf8', function (err, html) {
                     if (err) {
                         console.log(`Potential 404 error: ${err}`);
                         warnTmplBuild(err, fullPath);
-                        return callback();
+                        return setImmediate(callback);
                     }
 
                     let original = html;
                     html = stripBOM(html);
 
                     if (html.indexOf('define') === 0) {
-                        return callback();
+                        return setImmediate(callback);
                     }
 
                     try {
@@ -287,11 +287,11 @@ module.exports = function (grunt) {
 
                     } catch (err) {
                         warnTmplBuild(err, fullPath);
-                        callback();
+                        setImmediate(callback);
                     }
                 });
             } else {
-                callback();
+               setImmediate(callback);
             }
         }, function (err, fullName, fullPath) {
             if (err) {
