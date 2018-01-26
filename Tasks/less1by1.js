@@ -11,13 +11,6 @@ const helpers = require('./../lib/utils/helpers'),
     dblSlashes = /\\/g;
 
 /**
- * Чёрный список less из SBIS3.CONTROLS, которые не компилим. Такие less-ки используются лишь для импорта другими less-ками,
- * поэтому нужды в их компиляции нет.
- */
-var ControlsLessBlackList = ['theme.less', 'header.less', 'mixins.less', 'typography.less', 'general.less',
-                             'flex.less', 'defaults.less', 'theme-fixme.less', 'variables.less', 'sizes.less', 'colors.less'];
-
-/**
  * подкладываем логи , чтобы понять что происходит на никсовой тачке и почему там
  * портятся стили, а в винде всё в порядке.
  */
@@ -26,7 +19,7 @@ var logs = '';
 /**
  * Динамически генерируем регулярку с игнорируемыми названиями lessок
  */
-function generateBlackListRegExp() {
+function generateBlackListRegExp(ControlsLessBlackList) {
     var regExpString = ControlsLessBlackList.join('$|').replace(/\.less/g, '\\\.less');
     return new RegExp(regExpString);
 }
@@ -115,8 +108,9 @@ module.exports = function less1by1Task(grunt) {
         grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача less1by1.`);
 
         let
+            ControlsLessBlackList = JSON.parse(grunt.file.read(path.join(applicationRoot, 'resources/SBIS3.CONTROLS/less-blacklist.json'))),
             isControl = /resources(\\|\/)SBIS3\.CONTROLS/,
-            lessBlackListRegExp = generateBlackListRegExp(),
+            lessBlackListRegExp = generateBlackListRegExp(ControlsLessBlackList),
             taskDone = this.async();
 
         helpers.recurse(rootPath, function(filepath, cb) {
