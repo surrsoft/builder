@@ -1,23 +1,24 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
-const traverse = require('estraverse').traverse;
-const transliterate = require('./../lib/utils/transliterate');
-const replaceIncludes = require('./../lib/utils/include-replacer');
-const helpers = require('./../lib/utils/helpers');
-const htmlTmpl = require('./../lib/htmlTmpl/htmlTmpl');
-const humanize = require('humanize');
+const path = require('path'),
+   fs = require('fs'),
+   traverse = require('estraverse').traverse,
+   transliterate = require('./../lib/utils/transliterate'),
+   replaceIncludes = require('./../lib/utils/include-replacer'),
+   helpers = require('./../lib/utils/helpers'),
+   htmlTmpl = require('./../lib/htmlTmpl/htmlTmpl'),
+   humanize = require('humanize'),
+   logger = require('../lib/logger').logger;
 
 const dblSlashes = /\\/g;
 
 let cache = {};
 
 function findExpression(node, left) {
-   return node.type == 'ExpressionStatement' && node.expression.type == 'AssignmentExpression' &&
-      node.expression.operator == '=' && node.expression.left.type == 'MemberExpression' &&
-      node.expression.left.property.name == left && node.expression.left.object &&
-      node.expression.left.object.type == 'Identifier';
+   return node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression' &&
+      node.expression.operator === '=' && node.expression.left.type === 'MemberExpression' &&
+      node.expression.left.property.name === left && node.expression.left.object &&
+      node.expression.left.object.type === 'Identifier';
 }
 
 function parseObjectExpression(properties) {
@@ -26,6 +27,34 @@ function parseObjectExpression(properties) {
       obj[prop.key.name] = prop.value.value;
    });
    return obj;
+}
+
+function convertTmpl(resourcesRoot, filePattern, cb) {
+   helpers.recurse(resourcesRoot, function(fullPath, callback) {
+      // фильтр по файлам .html.tmpl
+      if (!helpers.validateFile(fullPath, filePattern)) {
+         return;
+      }
+
+      helpers.readFile(fullPath, function(err, html) {
+         if (err) {
+            logger.error(`Ошибка чтения файла ${fullPath}: ${err}`);
+            return;
+         }
+
+         htmlTmpl.convertHtmlTmpl(html, fullPath, function(result) {
+            const newFullPath = fullPath.replace(/\.tmpl$/, '');
+
+            // если файл уже есть, удалим
+            if (helpers.existsSync(newFullPath)) {
+               helpers.unlinkSync(newFullPath);
+            }
+
+            // создадим файл с новым содержимым
+            helpers.writeFile(newFullPath, result.toString(), callback);
+         });
+      });
+   }, cb);
 }
 
 module.exports = function(grunt) {
@@ -111,7 +140,7 @@ module.exports = function(grunt) {
          resourcesRoot = path.join(applicationRoot, 'resources'),
          filePattern = this.data.filePattern;
 
-      htmlTmpl.convert(resourcesRoot, filePattern, function(err) {
+      convertTmpl(resourcesRoot, filePattern, function(err) {
          if (err) {
             grunt.fail.fatal(err);
          }
@@ -178,30 +207,30 @@ module.exports = function(grunt) {
 
                traverse(ast, {
                   enter: function getModuleName(node) {
-                     if (findExpression(node, 'webPage') && node.expression.right && node.expression.right.type == 'ObjectExpression') {
+                     if (findExpression(node, 'webPage') && node.expression.right && node.expression.right.type === 'ObjectExpression') {
                         arrExpr.push(node.expression);
                      }
 
-                     if (findExpression(node, 'title') && node.expression.right && node.expression.right.type == 'Literal') {
+                     if (findExpression(node, 'title') && node.expression.right && node.expression.right.type === 'Literal') {
                         arrExpr.push(node.expression);
                      }
 
-                     if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-                        node.callee.name == 'define') {
-                        if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
+                     if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
+                        node.callee.name === 'define') {
+                        if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                            moduleName = node.arguments[0].value;
                         }
 
                         let fnNode = null;
-                        if (node.arguments[1] && node.arguments[1].type == 'FunctionExpression') {
+                        if (node.arguments[1] && node.arguments[1].type === 'FunctionExpression') {
                            fnNode = node.arguments[1].body;
-                        } else if (node.arguments[2] && node.arguments[2].type == 'FunctionExpression') {
+                        } else if (node.arguments[2] && node.arguments[2].type === 'FunctionExpression') {
                            fnNode = node.arguments[2].body;
                         }
                         if (fnNode) {
                            if (fnNode.body && fnNode.body instanceof Array) {
                               fnNode.body.forEach(function(i) {
-                                 if (i.type == 'ReturnStatement') {
+                                 if (i.type === 'ReturnStatement') {
                                     ReturnStatement = i.argument;
                                  }
                               });
@@ -216,8 +245,8 @@ module.exports = function(grunt) {
                   opts.moduleName = moduleName;
                   arrExpr.forEach(function(expr) {
                      try {
-                        expr.left.object.name == ReturnStatement.name ? opts[expr.left.property.name] =
-                           expr.right.type == 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
+                        expr.left.object.name === ReturnStatement.name ? opts[expr.left.property.name] =
+                           expr.right.type === 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
                               : expr.right.value : false;
                      } catch (err) {
                         grunt.log.error(err);
