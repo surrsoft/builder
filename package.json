@@ -3,6 +3,14 @@
    "version": "3.18.10-BUILD",
    "private": true,
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
+   "files": [
+      "Gruntfile.js",
+      "gulpfile.js",
+      "gulpTasks/*",
+      "lib/*",
+      "resources/*",
+      "Tasks/*"
+   ],
    "scripts": {
       "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
    },
