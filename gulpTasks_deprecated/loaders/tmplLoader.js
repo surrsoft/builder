@@ -5,14 +5,14 @@ const path              = require('path');
 const resolverControls  = path => 'tmpl!' + path;
 
 module.exports = function (module, base) {
-    let deps    = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
+    let deps    = ['View/Builder/Tmpl', 'View/config'];
     let result  = ['var templateFunction = '];
 
     return new Promise((resolve, reject) => {
-        global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
+        global.requirejs(deps.concat(['optional!View/Runner/tclosure']), function (tmpl, config, tclosure) {
             let conf = {config: config, filename: path.relative(base, module.fullPath)};
             if (tclosure) {
-                deps.push('Core/tmpl/js/tclosure');
+                deps.push('View/Runner/tclosure');
             }
             let html;
             try {

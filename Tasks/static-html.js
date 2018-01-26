@@ -6,6 +6,7 @@ const traverse = require('estraverse').traverse;
 const transliterate = require('./../lib/utils/transliterate');
 const replaceIncludes = require('./../lib/utils/include-replacer');
 const helpers = require('./../lib/utils/helpers');
+const htmlTmpl = require('./../lib/htmlTmpl/htmlTmpl');
 const humanize = require('humanize');
 const async = require('async');
 
@@ -99,6 +100,27 @@ module.exports = function (grunt) {
 
         generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb, inclReplace);
     }
+
+    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function () {
+        grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
+        var start = Date.now();
+        const
+            done = this.async(),
+            root = this.data.root,
+            application = this.data.application,
+            applicationRoot = path.join(root, application),
+            resourcesRoot = path.join(applicationRoot, 'resources'),
+            filePattern = this.data.filePattern;
+
+        htmlTmpl.convert(resourcesRoot, filePattern, function(err) {
+            if (err) {
+                grunt.fail.fatal(err);
+            }
+
+            grunt.log.ok(`Duration: ${(Date.now() - start) / 1000} sec`);
+            done();
+        });
+    });
 
     grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
         grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача static-html.`);

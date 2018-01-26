@@ -108,7 +108,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
                nodes[secondName].amd = true;
             }
          }
-         callback(err, nameModule, fullPath);
+         setImmediate(callback.bind(null, err, nameModule, fullPath));
       });
    });
 }
@@ -125,16 +125,16 @@ module.exports = function (grunt) {
             mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
             nodes = mDeps.nodes;
 
-        let deps = ['Core/tmpl/tmplstr', 'Core/tmpl/config'];
+        let deps = ['View/Builder/Tmpl', 'View/config'];
 
-        global.requirejs(deps.concat(['optional!Core/tmpl/js/tclosure']), function (tmpl, config, tclosure) {
+        global.requirejs(deps.concat(['optional!View/Runner/tclosure']), function (tmpl, config, tclosure) {
             let tclosureStr = '';
             if (tclosure) {
-                deps.push('Core/tmpl/js/tclosure');
+                deps.push('View/Runner/tclosure');
                 tclosureStr = 'var tclosure=deps[0];';
             }
 
-            async.eachOfLimit(nodes, 10, function (value, fullName, callback) {
+            async.eachOfLimit(nodes, 2, function (value, fullName, callback) {
                 if (fullName.indexOf('tmpl!') === 0) {
                     let filename = value.path.replace(dblSlashes, '/'),
                         fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
@@ -150,7 +150,7 @@ module.exports = function (grunt) {
                         if (err) {
                             console.log(`Potential 404 error: ${err}`);
                             warnTmplBuild(err, fullPath);
-                            return callback();
+                            return setImmediate(callback);
                         }
 
                         var templateRender = Object.create(tmpl);
@@ -159,7 +159,7 @@ module.exports = function (grunt) {
                         html = stripBOM(html);
 
                         if (html.indexOf('define') === 0) {
-                            return callback();
+                            return setImmediate(callback);
                         }
 
                         try {
@@ -204,11 +204,11 @@ module.exports = function (grunt) {
 
                                 } catch (err) {
                                     warnTmplBuild(err, fullPath);
-                                    callback();
+                                    setImmediate(callback);
                                 }
                             }).addErrback(function (err) {
                                 warnTmplBuild(err, fullPath);
-                                callback();
+                                setImmediate(callback);
                             });
                         } catch(err) {
                             errorTmplBuild(err, fullName, fullPath);
@@ -247,27 +247,27 @@ module.exports = function (grunt) {
             mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
             nodes = mDeps.nodes;
 
-        async.eachOfLimit(nodes, 10, function (value, fullName, callback) {
+        async.eachOfLimit(nodes, 2, function (value, fullName, callback) {
             if (fullName.indexOf('html!') === 0) {
                 let filename = value.path.replace(dblSlashes, '/'),
                     fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/');
 
                 if (value.amd) {
-                    return callback();
+                    return setImmediate(callback);
                 }
 
                 fs.readFile(fullPath, 'utf8', function (err, html) {
                     if (err) {
                         console.log(`Potential 404 error: ${err}`);
                         warnTmplBuild(err, fullPath);
-                        return callback();
+                        return setImmediate(callback);
                     }
 
                     let original = html;
                     html = stripBOM(html);
 
                     if (html.indexOf('define') === 0) {
-                        return callback();
+                        return setImmediate(callback);
                     }
 
                     try {
@@ -287,11 +287,11 @@ module.exports = function (grunt) {
 
                     } catch (err) {
                         warnTmplBuild(err, fullPath);
-                        callback();
+                        setImmediate(callback);
                     }
                 });
             } else {
-                callback();
+               setImmediate(callback);
             }
         }, function (err, fullName, fullPath) {
             if (err) {
