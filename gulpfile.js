@@ -16,7 +16,8 @@ try {
       logger = require('./lib/logger').logger,
       buildTask = require('./gulpTasks/build.js'),
       guardSingleProcessTask = require('./gulpTasks/guard-single-process.js'),
-      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js');
+      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js'),
+      nodeWS = require('./gulpTasks/helpers/node-ws');
 
    logger.info('Параметры запуска: ' + JSON.stringify(process.argv));
 
@@ -24,6 +25,12 @@ try {
    let err = config.load(process.argv);
    if (err) {
       logger.error(err, 3);
+      process.exit(1);
+   }
+
+   err = nodeWS.init();
+   if (err) {
+      logger.error(err, 4);
       process.exit(1);
    }
 
