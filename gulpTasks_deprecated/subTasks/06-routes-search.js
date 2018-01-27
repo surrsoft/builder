@@ -3,7 +3,7 @@
 const path          = require('path');
 const gutil         = require('gulp-util');
 const estraverse    = require('estraverse');
-const translit      = require('../../lib/utils/transliterate');
+const translit      = require('../../lib/transliterate');
 
 exports.traverse = opts => {
     let node = opts.node;

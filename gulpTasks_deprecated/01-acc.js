@@ -15,7 +15,7 @@ DepGraph.prototype.markNodeAsAMD = function (v) {
     if (this._nodes[v]) this._nodes[v].amd = true;
 };
 
-const translit              = require('../lib/utils/transliterate');
+const translit              = require('../lib/transliterate');
 const removeLeadingSlash    = function removeLeadingSlash(path) {
     if (path) {
         var head = path.charAt(0);

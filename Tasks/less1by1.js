@@ -1,5 +1,5 @@
 'use strict';
-const helpers = require('./../lib/utils/helpers'),
+const helpers = require('../lib/helpers'),
     fs = require('fs'),
     path = require('path'),
     humanize = require('humanize'),

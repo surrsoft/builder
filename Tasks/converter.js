@@ -3,8 +3,8 @@
 const path = require('path');
 const fs = require('fs-extra');
 const async = require('async');
-const helpers = require('./../lib/utils/helpers');
-const transliterate = require('./../lib/utils/transliterate');
+const helpers = require('../lib/helpers');
+const transliterate = require('../lib/transliterate');
 const traverse = require('estraverse').traverse;
 const humanize = require('humanize');
 

@@ -3,7 +3,7 @@
 const path              = require('path');
 const gutil             = require('gulp-util');
 const argv              = require('yargs').argv;
-const translit = require('../../lib/utils/transliterate');
+const translit = require('../../lib/transliterate');
 // const replaceIncludes   = require('../../lib/utils/include-replacer');
 
 let files = [];

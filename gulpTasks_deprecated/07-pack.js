@@ -9,7 +9,7 @@ const argv           = require('yargs').argv;
 const assign         = require('object-assign');
 const loaders        = require('./loaders');
 
-const translit       = require('../lib/utils/transliterate');
+const translit       = require('../lib/transliterate');
 const getMeta        = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 const commonPackage  = require('grunt-wsmod-packer/lib/commonPackage.js');
 // const customPackage  = require('grunt-wsmod-packer/tasks/lib/customPackage.js');

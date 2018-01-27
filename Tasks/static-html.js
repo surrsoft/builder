@@ -3,10 +3,10 @@
 const path = require('path'),
    fs = require('fs'),
    traverse = require('estraverse').traverse,
-   transliterate = require('./../lib/utils/transliterate'),
-   replaceIncludes = require('./../lib/utils/include-replacer'),
-   helpers = require('./../lib/utils/helpers'),
-   htmlTmpl = require('./../lib/htmlTmpl/htmlTmpl'),
+   transliterate = require('../lib/transliterate'),
+   replaceIncludes = require('../lib/include-replacer'),
+   helpers = require('../lib/helpers'),
+   htmlTmpl = require('../lib/html-tmpl'),
    humanize = require('humanize'),
    logger = require('../lib/logger').logger;
 

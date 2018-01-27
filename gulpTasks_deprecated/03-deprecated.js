@@ -6,7 +6,7 @@ const gutil          = require('gulp-util');
 const PluginError    = gutil.PluginError;
 // const argv           = require('yargs').argv;
 const assign         = require('object-assign');
-const translit       = require('../lib/utils/transliterate');
+const translit       = require('../lib/transliterate');
 // const applySourceMap = require('vinyl-sourcemaps-apply');
 
 

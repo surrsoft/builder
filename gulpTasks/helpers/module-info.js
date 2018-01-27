@@ -1,6 +1,6 @@
 'use strict';
 
-const transliterate = require('../../lib/utils/transliterate'),
+const transliterate = require('../../lib/transliterate'),
    path = require('path');
 
 class ModuleInfo {

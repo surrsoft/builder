@@ -10,7 +10,7 @@ const argv           = require('yargs').argv;
 const esprima        = require('esprima');
 const estraverse     = require('estraverse');
 const assign         = require('object-assign');
-const translit       = require('../lib/utils/transliterate');
+const translit       = require('../lib/transliterate');
 // const applySourceMap = require('vinyl-sourcemaps-apply');
 
 /* SUB TASKS */

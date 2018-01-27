@@ -3,7 +3,7 @@
 const gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
    path = require('path'),
-   transliterate = require('./../lib/utils/transliterate'),
+   transliterate = require('../lib/transliterate'),
    ChangesStore = require('./helpers/changes-store'),
    changedInPlace = require('./changed-in-place'),
    clean = require('gulp-clean');

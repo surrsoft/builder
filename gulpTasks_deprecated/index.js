@@ -13,7 +13,7 @@ const through2              = require('through2').obj;
 const gzip                  = require('gulp-gzip');
 const chmod                 = require('gulp-chmod');
 const argv                  = require('yargs').argv;
-const translit              = require('./../lib/utils/transliterate');
+const translit              = require('../lib/transliterate');
 
 /*  TASKS  */
 const acc        = require('./01-acc');

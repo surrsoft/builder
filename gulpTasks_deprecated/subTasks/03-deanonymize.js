@@ -6,7 +6,7 @@ const argv              = require('yargs').argv;
 const esprima           = require('esprima');
 const estraverse        = require('estraverse');
 const codegen           = require('escodegen');
-const translit          = require('../../lib/utils/transliterate');
+const translit          = require('../../lib/transliterate');
 const getMeta           = require('grunt-wsmod-packer/lib/getDependencyMeta.js');
 const reIsRemote        = /^http[s]?:|^\/\//i;
 

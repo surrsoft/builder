@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const helpers = require('./../lib/utils/helpers');
+const helpers = require('../lib/helpers');
 const humanize = require('humanize');
 const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');

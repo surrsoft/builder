@@ -1,6 +1,6 @@
 'use strict';
 
-const translit = require('../../lib/utils/transliterate');
+const translit = require('../../lib/transliterate');
 
 module.exports = opts => {
     if (!opts.node || !opts.contents) return;
