@@ -319,14 +319,14 @@ module.exports = function splitResourcesTask(grunt) {
             allFiles = fs.readdirSync(getPath(nameModules, undefined, true));
             allFiles.some(function(file) {
                if (file.indexOf('.s3mod') > -1) {
-                  modulePreload = fs.readFileSync(getPath(file, nameModules), {encoding: 'utf8'});
+                  modulePreload = fs.readFileSync(getPath(file, nameModules), {encoding: 'utf8'}).replace(/\s/g, '');
                   return true;
                }
             });
 
             matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
 
-            if (matchs) {
+            if (matchs && matchs[2]) {
                matchs = matchs[2];
             } else {
                return;
