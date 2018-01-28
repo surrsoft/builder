@@ -60,11 +60,11 @@ function _init() {
    global.requirejs = requireJS;
    global.define = requireJS.define;
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
-   const requirejs = requireJS.config(requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+   global.requirejs = requireJS.config(requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
       waitSeconds: 20,
       nodeRequire: require
    }));
-   requirejs(path.join(appRoot, wsRoot, 'lib/core.js'));
+   global.requirejs(path.join(appRoot, wsRoot, 'lib/core.js'));
 }
 
 module.exports = {
