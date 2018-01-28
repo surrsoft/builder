@@ -2,6 +2,7 @@
 
 const gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
+   gulpHtmlTmpl = require('./html-tmpl'),
    path = require('path'),
    transliterate = require('../lib/transliterate'),
    ChangesStore = require('./helpers/changes-store'),
@@ -23,13 +24,33 @@ const copyTaskGenerator = function(module, changesStore) {
    };
 };
 
+const htmlTmplTaskGenerator = function(module, changesStore) {
+   const moduleInput = path.join(module.path,  '/**/*.html.tmpl');
+
+   return function htmlTmpl() {
+      return gulp.src(moduleInput)
+
+      //.pipe(changedInPlace(changesStore, module.path))
+         .pipe(gulpHtmlTmpl())
+         .pipe(gulpRename(file => {
+            file.dirname = transliterate(file.dirname);
+            file.basename = transliterate(file.basename);
+            file.extname = ''; // *.html.tmpl => *.html
+         }))
+         .pipe(gulp.dest(module.output));
+   };
+};
+
 module.exports = {
    'create': function buildTask(config) {
-      let copyTasks = [],
+      let buildTasks = [],
          changesStore = new ChangesStore(config.cachePath);
 
       for (let module of config.modules) {
-         copyTasks.push(copyTaskGenerator(module, changesStore));
+         buildTasks.push(
+            gulp.parallel(
+               copyTaskGenerator(module, changesStore),
+               htmlTmplTaskGenerator(module, changesStore)));
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -67,7 +88,7 @@ module.exports = {
       };
 
       return gulp.series(
-         gulp.parallel(copyTasks),
+         gulp.series(buildTasks),
          gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };

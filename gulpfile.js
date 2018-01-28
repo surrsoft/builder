@@ -11,26 +11,30 @@ try {
       process.exit(1);
    }
 
+   //логгер - прежде всего
+   const logger = require('./lib/logger').logger;
+
+   //ws должен быть вызван раньше чем первый global.requirejs
+   const nodeWS = require('./gulpTasks/helpers/node-ws');
+   let err = nodeWS.init();
+   if (err) {
+      logger.error(err, 4);
+      process.exit(1);
+   }
+
    const
       gulp = require('gulp'),
-      logger = require('./lib/logger').logger,
       buildTask = require('./gulpTasks/build.js'),
       guardSingleProcessTask = require('./gulpTasks/guard-single-process.js'),
-      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js'),
-      nodeWS = require('./gulpTasks/helpers/node-ws');
+      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js');
+
 
    logger.info('Параметры запуска: ' + JSON.stringify(process.argv));
 
    let config = new BuildConfiguration();
-   let err = config.load(process.argv);
+   err = config.load(process.argv);
    if (err) {
       logger.error(err, 3);
-      process.exit(1);
-   }
-
-   err = nodeWS.init();
-   if (err) {
-      logger.error(err, 4);
       process.exit(1);
    }
 
