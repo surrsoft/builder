@@ -30,28 +30,36 @@ function parseObjectExpression(properties) {
 }
 
 function convertTmpl(resourcesRoot, filePattern, cb) {
-   helpers.recurse(resourcesRoot, function(fullPath, callback) {
+  helpers.recurse(resourcesRoot, function(fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
+         setImmediate(callback);
          return;
       }
 
       helpers.readFile(fullPath, function(err, html) {
          if (err) {
             logger.error(`Ошибка чтения файла ${fullPath}: ${err}`);
+            setImmediate(callback);
             return;
          }
 
          htmlTmpl.convertHtmlTmpl(html, fullPath, function(err, result) {
-            const newFullPath = fullPath.replace(/\.tmpl$/, '');
-
-            // если файл уже есть, удалим
-            if (helpers.existsSync(newFullPath)) {
-               helpers.unlinkSync(newFullPath);
-            }
             if (err) {
-               logger.exception(`Ошибка при обработке шаблона ${fullPath}`, err);
+               logger.error({
+                  message: 'Ошибка при обработке шаблона',
+                  error: err,
+                  filePath: fullPath
+               });
+               setImmediate(callback);
             } else {
+               const newFullPath = fullPath.replace(/\.tmpl$/, '');
+
+               // если файл уже есть, удалим
+               if (helpers.existsSync(newFullPath)) {
+                  helpers.unlinkSync(newFullPath);
+               }
+
                // создадим файл с новым содержимым
                helpers.writeFile(newFullPath, result.toString(), callback);
             }
@@ -133,9 +141,8 @@ module.exports = function(grunt) {
    }
 
    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
-      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
-      var start = Date.now();
-      const
+      logger.debug(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
+      const start = Date.now(),
          done = this.async(),
          root = this.data.root,
          application = this.data.application,
@@ -145,10 +152,10 @@ module.exports = function(grunt) {
 
       convertTmpl(resourcesRoot, filePattern, function(err) {
          if (err) {
-            grunt.fail.fatal(err);
+            logger.error({error: err});
          }
 
-         grunt.log.ok(`Duration: ${(Date.now() - start) / 1000} sec`);
+         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
          done();
       });
    });

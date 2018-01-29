@@ -5,7 +5,7 @@ const
    indexDict = require('../lib/i18n/indexDictionary').indexDict,
    prepareXHTML = require('../lib/i18n/prepareXHTML').prepareXHTML,
    createResultDict = require('../lib/i18n/createResultDictionary').createResultDict,
-   jsonGenerator = require('../lib/i18n/jsonGenerator').jsonGenerator,
+   jsonGenerator = require('../lib/i18n/jsonGenerator'),
    normalizeKeyDict = require('../lib/i18n/normalizeKey').normalize;
 module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', function() {
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
       //Приводит повторяющиеся ключи в словарях к единому значению
       grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
 
-      grunt.option('json-generate') && jsonGenerator(modules, jsonOutput, ++taskCount && done);
+      grunt.option('json-generate') && jsonGenerator.run(modules, jsonOutput, ++taskCount && done);
 
       grunt.option('make-dict') && createResultDict(grunt, ++taskCount && done);
 
