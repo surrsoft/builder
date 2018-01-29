@@ -42,16 +42,19 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
             return;
          }
 
-         htmlTmpl.convertHtmlTmpl(html, fullPath, function(result) {
+         htmlTmpl.convertHtmlTmpl(html, fullPath, function(err, result) {
             const newFullPath = fullPath.replace(/\.tmpl$/, '');
 
             // если файл уже есть, удалим
             if (helpers.existsSync(newFullPath)) {
                helpers.unlinkSync(newFullPath);
             }
-
-            // создадим файл с новым содержимым
-            helpers.writeFile(newFullPath, result.toString(), callback);
+            if (err) {
+               logger.exception(`Ошибка при обработке шаблона ${fullPath}`, err);
+            } else {
+               // создадим файл с новым содержимым
+               helpers.writeFile(newFullPath, result.toString(), callback);
+            }
          });
       });
    }, cb);

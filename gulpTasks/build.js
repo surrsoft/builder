@@ -29,8 +29,7 @@ const htmlTmplTaskGenerator = function(module, changesStore) {
 
    return function htmlTmpl() {
       return gulp.src(moduleInput)
-
-      //.pipe(changedInPlace(changesStore, module.path))
+         //.pipe(changedInPlace(changesStore, module.path))
          .pipe(gulpHtmlTmpl())
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);

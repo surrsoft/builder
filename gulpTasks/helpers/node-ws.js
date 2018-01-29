@@ -15,7 +15,7 @@ const appRoot = path.join(__dirname, '../../node_modules/sbis3-ws').replace(dblS
 
 const wsLogger = {
    error: function(tag, msg, e) {
-      logger.error(tag + ':: ' + msg + (e ? ('. ' + e.message) : ''));
+      logger.exception(`${tag}::${msg}`, e, 111);
    },
    info: function(tag, msg) {
       logger.info(tag + ':: ' + msg);
