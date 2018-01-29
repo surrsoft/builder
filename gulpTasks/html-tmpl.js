@@ -2,7 +2,7 @@
 
 const through = require('through2'),
    htmlTmpl = require('../lib/html-tmpl'),
-   logger = require('./../lib/logger').logger;
+   logger = require('./../lib/logger').logger();
 
 module.exports = function() {
    return through.obj(function(file, encoding, cb) {

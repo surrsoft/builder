@@ -1,8 +1,14 @@
 'use strict';
 
-const chai = require('chai'),
-   nodeWS = require('../gulpTasks/helpers/node-ws'),
-   logger = require('../lib/logger').logger;
+const chai = require('chai');
+
+//логгер - глобальный, должен быть определён до инициализации WS
+require('../lib/logger').setGulpLogger(require('gulplog'));
+
+const nodeWS = require('../gulpTasks/helpers/node-ws');
+
+
+
 let htmlTmpl;
 
 chai.should();

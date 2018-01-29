@@ -12,7 +12,8 @@ try {
    }
 
    //логгер - прежде всего
-   const logger = require('./lib/logger').logger;
+   const gulplog = require('gulplog');
+   const logger = require('./lib/logger').setGulpLogger(gulplog);
 
    //ws должен быть вызван раньше чем первый global.requirejs
    const nodeWS = require('./gulpTasks/helpers/node-ws');

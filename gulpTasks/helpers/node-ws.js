@@ -5,7 +5,7 @@
 
 const path = require('path'),
    requireJS = require('requirejs'),
-   logger = require('./../../lib/logger').logger;
+   logger = require('./../../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 

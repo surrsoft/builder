@@ -8,7 +8,7 @@ const path = require('path'),
    helpers = require('../lib/helpers'),
    htmlTmpl = require('../lib/html-tmpl'),
    humanize = require('humanize'),
-   logger = require('../lib/logger').logger;
+   logger = require('../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 
