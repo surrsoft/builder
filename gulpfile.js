@@ -18,7 +18,7 @@ try {
    const nodeWS = require('./gulpTasks/helpers/node-ws');
    let err = nodeWS.init();
    if (err) {
-      logger.error(err, 4);
+      logger.error(err);
       process.exit(1);
    }
 
@@ -34,7 +34,7 @@ try {
    let config = new BuildConfiguration();
    err = config.load(process.argv);
    if (err) {
-      logger.error(err, 3);
+      logger.error(err);
       process.exit(1);
    }
 

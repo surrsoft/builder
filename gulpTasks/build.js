@@ -7,36 +7,38 @@ const gulp = require('gulp'),
    transliterate = require('../lib/transliterate'),
    ChangesStore = require('./helpers/changes-store'),
    changedInPlace = require('./changed-in-place'),
-   clean = require('gulp-clean');
+   clean = require('gulp-clean'),
+   addModuleInfo = require('./add-module-info');
 
-
-const copyTaskGenerator = function(module, changesStore) {
-   const moduleInput = path.join(module.path,  '/**/*.*');
+const copyTaskGenerator = function(moduleInfo, changesStore) {
+   const moduleInput = path.join(moduleInfo.path,  '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
-         .pipe(changedInPlace(changesStore, module.path))
+         .pipe(changedInPlace(changesStore, moduleInfo.path))
+         .pipe(addModuleInfo(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
-         .pipe(gulp.dest(module.output));
+         .pipe(gulp.dest(moduleInfo.output));
    };
 };
 
-const htmlTmplTaskGenerator = function(module, changesStore) {
-   const moduleInput = path.join(module.path,  '/**/*.html.tmpl');
+const htmlTmplTaskGenerator = function(moduleInfo, changesStore) {
+   const moduleInput = path.join(moduleInfo.path,  '/**/*.html.tmpl');
 
    return function htmlTmpl() {
       return gulp.src(moduleInput)
          //.pipe(changedInPlace(changesStore, module.path))
+         .pipe(addModuleInfo(moduleInfo))
          .pipe(gulpHtmlTmpl())
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
             file.extname = ''; // *.html.tmpl => *.html
          }))
-         .pipe(gulp.dest(module.output));
+         .pipe(gulp.dest(moduleInfo.output));
    };
 };
 
@@ -45,11 +47,11 @@ module.exports = {
       let buildTasks = [],
          changesStore = new ChangesStore(config.cachePath);
 
-      for (let module of config.modules) {
+      for (let moduleInfo of config.modules) {
          buildTasks.push(
             gulp.parallel(
-               copyTaskGenerator(module, changesStore),
-               htmlTmplTaskGenerator(module, changesStore)));
+               copyTaskGenerator(moduleInfo, changesStore),
+               htmlTmplTaskGenerator(moduleInfo, changesStore)));
       }
       const clearTask = function remove(done) {
          let pattern = [];

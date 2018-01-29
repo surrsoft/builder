@@ -22,7 +22,7 @@ module.exports = {
             const errorMessage = 'Похоже, что запущен другой процесс builder в этой же папке, попробуйте перезапустить его позже. ' +
                `Если вы уверены, что предыдущий запуск завершился, то удалите файл '${lockFle}' и перезапустите процесс.`;
 
-            logger.error(errorMessage, 100);
+            logger.error(errorMessage);
             throw new PluginError({
                plugin: 'Guard single process',
                message: errorMessage
@@ -41,7 +41,7 @@ module.exports = {
             const errorMessage = `В процессе выполнения кто-то удалил файл '${lockFle}'. ` +
                'Нет гарантий, что результат не пострадал. Перезапустите процесс.';
 
-            logger.error(errorMessage, 101);
+            logger.error(errorMessage);
             throw new PluginError({
                plugin: 'Guard single process',
                message: errorMessage

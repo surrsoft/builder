@@ -8,10 +8,19 @@ module.exports = function() {
    return through.obj(function(file, encoding, cb) {
       htmlTmpl.convertHtmlTmpl(file.contents.toString(), '', (error, result) => {
          if (error) {
-            logger.exception('Ошибка при обработке шаблона', error, 1);
+            logger.error(
+               {
+                  code: 1,
+                  message: 'Ошибка при обработке шаблона',
+                  error: error,
+                  moduleInfo: file.moduleInfo,
+                  filePath: file.history[0]
+               }
+            );
+         } else {
+            file.contents = new Buffer(result);
+            this.push(file);
          }
-         file.contents = new Buffer(result);
-         this.push(file);
          cb();
       });
    });
