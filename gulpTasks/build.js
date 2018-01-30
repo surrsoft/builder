@@ -30,6 +30,7 @@ const htmlTmplTaskGenerator = function(moduleInfo, changesStore) {
 
    return function htmlTmpl() {
       return gulp.src(moduleInput)
+
          //.pipe(changedInPlace(changesStore, module.path))
          .pipe(addModuleInfo(moduleInfo))
          .pipe(gulpHtmlTmpl())

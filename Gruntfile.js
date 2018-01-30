@@ -58,6 +58,7 @@ module.exports = function(grunt) {
       if (versionize && typeof versionize == 'string') {
          defaultTasks.push('replace:html');
       }
+
       /**
        * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
        * js-кода и сваливается через долгое время по таймауту, причём без ошибок.

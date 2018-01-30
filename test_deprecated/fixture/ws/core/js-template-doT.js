@@ -9,52 +9,56 @@
 // Licensed under the MIT license.
 //
 define('Core/js-template-doT', function() {
-   "use strict";
+   'use strict';
 
    var doT = {
       version: '0.2.0',
       templateSettings: null,
       template: undefined, //fn, compile template
-      compile:  undefined,  //fn, for express
+      compile: undefined,  //fn, for express
       getSettings: function() {
          // to create a "clone" of settings and don't touch default config
          return {
-            evaluate:    /\{\{([\s\S]+?(\}?)+)\}\}/g,
+            evaluate: /\{\{([\s\S]+?(\}?)+)\}\}/g,
             interpolate: /\{\{=([\s\S]+?)\}\}/g,
-            translate:   /\{\[([\s\S]+?)\]\}/g,
-            encode:      /\{\{!([\s\S]+?)\}\}/g,
-            use:         /\{\{#([\s\S]+?)\}\}/g,
-            define:      /\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g,
+            translate: /\{\[([\s\S]+?)\]\}/g,
+            encode: /\{\{!([\s\S]+?)\}\}/g,
+            use: /\{\{#([\s\S]+?)\}\}/g,
+            define: /\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g,
             conditional: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,
-            iterate:     /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
-            expertMode:  /<!--WS-EXPERT([\s\S]+?)WS-EXPERT-->/g,
-            ref:         /\{\{@([\s\S]+?)\}\}/g,
+            iterate: /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
+            expertMode: /<!--WS-EXPERT([\s\S]+?)WS-EXPERT-->/g,
+            ref: /\{\{@([\s\S]+?)\}\}/g,
             varname: 'it',
             strip: true,
             append: true,
             selfcontained: true
-         }
+         };
       }
    };
 
    doT.templateSettings = doT.getSettings();
 
-   var global = (function(){ return this || (0,eval)('this'); }());
+   var global = (function() {
+      return this || (0, eval)('this'); 
+   }());
 
    global.doT = $ws.doT = doT;
 
    function encodeHTMLSource() {
-      var encodeHTMLRules = { "&": "&#38;", "<": "&#60;", ">": "&#62;", '"': '&#34;', "'": '&#39;', "/": '&#47;' },
-          matchHTML = /&(?!#?\w+;)|<|>|"|'|\//g;
+      var encodeHTMLRules = { '&': '&#38;', '<': '&#60;', '>': '&#62;', '"': '&#34;', "'": '&#39;', '/': '&#47;' },
+         matchHTML = /&(?!#?\w+;)|<|>|"|'|\//g;
       return function dotEH(code) {
-         return code ? code.toString().replace(matchHTML, function(m) {return encodeHTMLRules[m] || m;}) : code;
+         return code ? code.toString().replace(matchHTML, function(m) {
+            return encodeHTMLRules[m] || m;
+         }) : code;
       };
    }
 
    function wrapUndefinedSource() {
       return function dotWU(str) {
          return str === undefined ? '' : '' + str;
-      }
+      };
    }
 
    function encodeEvalSource() {
@@ -64,7 +68,7 @@ define('Core/js-template-doT', function() {
             str = str.replace(reEncodeEval, replacement);
          }
          return str;
-      }
+      };
    }
 
    global.encodeHTML = encodeHTMLSource();
@@ -72,94 +76,98 @@ define('Core/js-template-doT', function() {
    global.encodeEval = encodeEvalSource();
 
    var startend = {
-      append: { start: "'+(encodeEval(wrapUndefined(",     end: ")))+'",      startencode: "'+encodeEval(wrapUndefined(encodeHTML(" },
-      split:  { start: "';out+=(", end: ");out+='", startencode: "';out+=encodeHTML("}
-   }, skip = /$^/;
+         append: { start: "'+(encodeEval(wrapUndefined(",     end: ")))+'",      startencode: "'+encodeEval(wrapUndefined(encodeHTML(" },
+         split: { start: "';out+=(", end: ");out+='", startencode: "';out+=encodeHTML("}
+      }, skip = /$^/;
 
    function resolveDefs(c, block, def) {
       return ((typeof block === 'string') ? block : block.toString())
-            .replace(c.define || skip, function(m, code, assign, value) {
-               if (code.indexOf('def.') === 0) {
-                  code = code.substring(4);
+         .replace(c.define || skip, function(m, code, assign, value) {
+            if (code.indexOf('def.') === 0) {
+               code = code.substring(4);
+            }
+            if (!(code in def)) {
+               if (assign === ':') {
+                  def[code] = value;
+               } else {
+                  eval("def['" + code + "']=" + value);
                }
-               if (!(code in def)) {
-                  if (assign === ':') {
-                     def[code]= value;
-                  } else {
-                     eval("def['"+code+"']=" + value);
-                  }
-               }
-               return '';
-            })
-            .replace(c.use || skip, function(m, code) {
-               var v = eval(code);
-               return v ? resolveDefs(c, v, def) : v;
-            });
+            }
+            return '';
+         })
+         .replace(c.use || skip, function(m, code) {
+            var v = eval(code);
+            return v ? resolveDefs(c, v, def) : v;
+         });
    }
 
    function unescape(code) {
-      return code.replace(/\\('|\\)/g, "$1").replace(/[\r\t\n]/g, ' ');
+      return code.replace(/\\('|\\)/g, '$1').replace(/[\r\t\n]/g, ' ');
    }
 
    doT.template = function(tmpl, c, def) {
       c = c || doT.templateSettings;
-      var cse = c.append ? startend.append : startend.split, str, needhtmlencode, sid=0, indv;
+      var cse = c.append ? startend.append : startend.split, str, needhtmlencode, sid = 0, indv;
 
       if (c.use || c.define) {
          var olddef = global.def; global.def = def || {}; // workaround minifiers
          str = resolveDefs(c, tmpl, global.def);
          global.def = olddef;
-      } else str = tmpl;
+      } else {
+         str = tmpl;
+      }
 
-      str = ("var out='" + (c.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
-            .replace(/\r|\n|\t|\/\*[\s\S]*?\*\//g,''): str)
-            .replace(/'|\\/g, '\\$&')
-            .replace(c.expertMode || skip, function(m, code) {
-               return unescape(code);
-            })
-            .replace(c.translate || skip, function(m, code) {
-               // экранируем апострофы
-               return cse.start + "rk('"+unescape(code.replace(/'/g, "\\'"))+"')" + cse.end;
-            })
-            .replace(c.ref || skip, function (m, code) {
-               return cse.start + '(function setRefValue(s, v){var k = $ws.helpers.randomId(); s[k] = v; return k;}(this.storage, ' + unescape(code) + '))' + cse.end;
-            })
-            .replace(c.encode || skip, function(m, code) {
-               needhtmlencode = true;
-               return cse.startencode + unescape(code) + cse.end;
-            })
-            .replace(c.interpolate || skip, function(m, code) {
-               return cse.start + unescape(code) + cse.end;
-            })
-            .replace(c.conditional || skip, function(m, elsecase, code) {
-               return elsecase ?
-                     (code ? "';}else if(" + unescape(code) + "){out+='" : "';}else{out+='") :
-                     (code ? "';if(" + unescape(code) + "){out+='" : "';}out+='");
-            })
-            .replace(c.iterate || skip, function(m, iterate, vname, iname) {
-               if (!iterate) return "';} } out+='";
-               sid+=1; indv=iname || "i"+sid; iterate=unescape(iterate);
-               return "';var arr"+sid+"="+iterate+";if(arr"+sid+"){var "+vname+","+indv+"=-1,l"+sid+"=arr"+sid+".length-1;while("+indv+"<l"+sid+"){"
-                     +vname+"=arr"+sid+"["+indv+"+=1];out+='";
-            })
-            .replace(c.evaluate || skip, function(m, code) {
-               return "';" + unescape(code) + "out+='";
-            })
-            + "'; out = encodeEval(out); return out + (pp && out.indexOf('{{') !== -1 ? String.fromCharCode(8203,8203) : '');")
-            .replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/\r/g, '\\r')
-            .replace(/(\s|;|}|^|{)out\+='';/g, '$1').replace(/\+''/g, '')
-            .replace(/(\s|;|}|^|{)out\+=''\+/g,'$1out+=');
+      str = ("var out='" + (c.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g, ' ')
+         .replace(/\r|\n|\t|\/\*[\s\S]*?\*\//g, '') : str)
+         .replace(/'|\\/g, '\\$&')
+         .replace(c.expertMode || skip, function(m, code) {
+            return unescape(code);
+         })
+         .replace(c.translate || skip, function(m, code) {
+            // экранируем апострофы
+            return cse.start + "rk('" + unescape(code.replace(/'/g, "\\'")) + "')" + cse.end;
+         })
+         .replace(c.ref || skip, function(m, code) {
+            return cse.start + '(function setRefValue(s, v){var k = $ws.helpers.randomId(); s[k] = v; return k;}(this.storage, ' + unescape(code) + '))' + cse.end;
+         })
+         .replace(c.encode || skip, function(m, code) {
+            needhtmlencode = true;
+            return cse.startencode + unescape(code) + cse.end;
+         })
+         .replace(c.interpolate || skip, function(m, code) {
+            return cse.start + unescape(code) + cse.end;
+         })
+         .replace(c.conditional || skip, function(m, elsecase, code) {
+            return elsecase
+               ? (code ? "';}else if(" + unescape(code) + "){out+='" : "';}else{out+='")
+               : (code ? "';if(" + unescape(code) + "){out+='" : "';}out+='");
+         })
+         .replace(c.iterate || skip, function(m, iterate, vname, iname) {
+            if (!iterate) {
+               return "';} } out+='";
+            }
+            sid += 1; indv = iname || 'i' + sid; iterate = unescape(iterate);
+            return "';var arr" + sid + '=' + iterate + ';if(arr' + sid + '){var ' + vname + ',' + indv + '=-1,l' + sid + '=arr' + sid + '.length-1;while(' + indv + '<l' + sid + '){' +
+                     vname + '=arr' + sid + '[' + indv + "+=1];out+='";
+         })
+         .replace(c.evaluate || skip, function(m, code) {
+            return "';" + unescape(code) + "out+='";
+         }) +
+            "'; out = encodeEval(out); return out + (pp && out.indexOf('{{') !== -1 ? String.fromCharCode(8203,8203) : '');")
+         .replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/\r/g, '\\r')
+         .replace(/(\s|;|}|^|{)out\+='';/g, '$1').replace(/\+''/g, '')
+         .replace(/(\s|;|}|^|{)out\+=''\+/g, '$1out+=');
 
-      str = "var encodeEval=(" + encodeEvalSource.toString() + "());" +
-            "var wrapUndefined=(" + wrapUndefinedSource.toString() + "());" +
+      str = 'var encodeEval=(' + encodeEvalSource.toString() + '());' +
+            'var wrapUndefined=(' + wrapUndefinedSource.toString() + '());' +
             "var pp = typeof process !== 'undefined';" + str;
       if (needhtmlencode && c.selfcontained) {
-         str = "var encodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
+         str = 'var encodeHTML=(' + encodeHTMLSource.toString() + '());' + str;
       }
       try {
          return new Function(c.varname, str);
       } catch (e) {
-         $ws.single.ioc.resolve('ILogger').error("doT", "Could not create template function: " + str, e);
+         $ws.single.ioc.resolve('ILogger').error('doT', 'Could not create template function: ' + str, e);
          throw e;
       }
    };

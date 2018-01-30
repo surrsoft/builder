@@ -38,6 +38,7 @@ describe('html-tmpl', function() {
       const result = await convertHtmlTmplPromise('<div>{{1+1}}</div>');
       result.should.equal('<div>2</div>');
    });
+
    /* TODO: не работает :(
    it('button', async() => {
       const result = await convertHtmlTmplPromise('<Controls:Button caption="Привет" />');

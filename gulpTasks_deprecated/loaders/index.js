@@ -13,15 +13,15 @@ const textLoader        = require('./textLoader');
 // TODO: optionalLoader, baseTextLoader, xmlLoader (хотя собралось и без них...)
 
 module.exports = {
-    js              : jsLoader,
-    tmpl            : tmplLoader,
-    html            : htmlXhtmlLoader,
-    xhtml           : htmlXhtmlLoader,
-    json            : jsonLoader,
-    is              : isLoader,
-    browser         : browserLoader,
-    css             : cssLoader,
-    'native-css'    : cssLoader,
-    i18n            : i18nLoader,
-    text            : textLoader
+   js: jsLoader,
+   tmpl: tmplLoader,
+   html: htmlXhtmlLoader,
+   xhtml: htmlXhtmlLoader,
+   json: jsonLoader,
+   is: isLoader,
+   browser: browserLoader,
+   css: cssLoader,
+   'native-css': cssLoader,
+   i18n: i18nLoader,
+   text: textLoader
 };
