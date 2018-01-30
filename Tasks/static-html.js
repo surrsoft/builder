@@ -6,7 +6,7 @@ const path = require('path'),
    transliterate = require('../lib/transliterate'),
    replaceIncludes = require('../lib/include-replacer'),
    helpers = require('../lib/helpers'),
-   htmlTmpl = require('../lib/html-tmpl'),
+   convertHtmlTmpl = require('../lib/convert-html-tmpl'),
    humanize = require('humanize'),
    logger = require('../lib/logger').logger();
 
@@ -44,7 +44,7 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
             return;
          }
 
-         htmlTmpl.convertHtmlTmpl(html, fullPath, function(err, result) {
+         convertHtmlTmpl(html, fullPath, function(err, result) {
             if (err) {
                logger.error({
                   message: 'Ошибка при обработке шаблона',
