@@ -11,13 +11,19 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', function() {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
 
-      var taskDone = this.async();
-      var taskCount = 0;
-      var isDone = false;
+      const taskDone = this.async();
+      let taskCount = 0;
+      let isDone = false;
 
-      var modules = grunt.option('modules').replace(/"/g, '');
-      var cache = grunt.option('json-cache').replace(/"/g, '');
-      var jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
+      let modules = grunt.option('modules');
+      if (modules) {
+         modules = modules.replace(/"/g, '');
+      }
+      let cache = grunt.option('json-cache');
+      if (cache) {
+         cache = cache.replace(/"/g, '');
+      }
+      const jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
 
       //Приводит повторяющиеся ключи в словарях к единому значению
       grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
