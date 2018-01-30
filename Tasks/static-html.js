@@ -69,7 +69,7 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
 }
 
 module.exports = function(grunt) {
-   const srvPath = (grunt.option('services_path') || '').replace(/"|'/g, '');
+   const srvPath = (grunt.option('services_path') || '').replace(/"'/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
    let htmlNames = {};
@@ -96,7 +96,7 @@ module.exports = function(grunt) {
       let templatePath = '';
       if (!htmlTemplate) {
          templatePath = path.join(__dirname, './../resources/index.html');
-         console.log(templatePath);
+         logger.debug(`Шаблон не указан, искользуем ${templatePath}`);
       } else {
          templatePath = path.join(applicationRoot, 'resources', htmlTemplate);
       }
@@ -107,7 +107,9 @@ module.exports = function(grunt) {
       } else {
          fs.readFile(templatePath, (err, text) => {
             if (err) {
-               grunt.fail.fatal(err);
+               logger.error({
+                  error: err
+               });
                return cb(err);
             }
 
@@ -119,18 +121,18 @@ module.exports = function(grunt) {
    }
 
    function parseOpts(opts, application, replaceOpts, applicationRoot, cb, inclReplace) {
-      let
-         moduleName = opts.moduleName,
-         webPage = opts.webPage || {},
-         htmlTemplate = webPage.htmlTemplate || '',
-         outFileName = webPage.outFileName;
-      replaceOpts.WINDOW_TITLE = opts.title || '';
+      const
+         moduleName = opts['moduleName'],
+         webPage = opts['webPage'] || {},
+         outFileName = webPage['outFileName'];
+      let htmlTemplate = webPage['htmlTemplate'] || '';
+      replaceOpts.WINDOW_TITLE = opts['title'] || '';
       replaceOpts.START_DIALOG = moduleName || '';
 
       if (!outFileName) {
          return cb();
       } else if (!htmlTemplate) {
-         grunt.log.ok(`Using default template for output file ${outFileName}.html`);
+         logger.debug(`Using default template for output file ${outFileName}.html`);
       }
 
       htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
@@ -161,7 +163,7 @@ module.exports = function(grunt) {
    });
 
    grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
-      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача static-html.`);
+      logger.debug('Запускается задача static-html.');
       let start = Date.now();
       const
          done = this.async(),
@@ -179,7 +181,10 @@ module.exports = function(grunt) {
          contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
          htmlNames = contents.htmlNames || {};
       } catch (err) {
-         grunt.log.warn('Error while requiring contents.json', err);
+         logger.warning({
+            message: 'Error while requiring contents.json',
+            error: err
+         });
       }
 
       if (oldHtml && oldHtml.length) {
@@ -189,17 +194,23 @@ module.exports = function(grunt) {
             try {
                fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
-               console.log('Can\'t delete old html: ', filePath, err);
+               logger.warning({
+                  message: 'Can\'t delete old html',
+                  filePath: filePath,
+                  error: err
+               });
             }
          });
-         grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
+         logger.debug(`Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
       }
 
       helpers.recurse(applicationRoot, function(file, callback) {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
                if (err) {
-                  grunt.fail.fatal(err);
+                  logger.error({
+                     error: err
+                  });
                   return callback(err);
                }
 
@@ -207,7 +218,9 @@ module.exports = function(grunt) {
 
                if (ast instanceof Error) {
                   ast.message += '\nPath: ' + file;
-                  grunt.fail.fatal(ast);
+                  logger.error({
+                     error: ast
+                  });
                   return callback(ast);
                }
 
@@ -227,15 +240,15 @@ module.exports = function(grunt) {
 
                      if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
                         node.callee.name === 'define') {
-                        if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
-                           moduleName = node.arguments[0].value;
+                        if (node['arguments'][0].type === 'Literal' && typeof node['arguments'][0].value === 'string') {
+                           moduleName = node['arguments'][0].value;
                         }
 
                         let fnNode = null;
-                        if (node.arguments[1] && node.arguments[1].type === 'FunctionExpression') {
-                           fnNode = node.arguments[1].body;
-                        } else if (node.arguments[2] && node.arguments[2].type === 'FunctionExpression') {
-                           fnNode = node.arguments[2].body;
+                        if (node['arguments'][1] && node['arguments'][1].type === 'FunctionExpression') {
+                           fnNode = node['arguments'][1].body;
+                        } else if (node['arguments'][2] && node['arguments'][2].type === 'FunctionExpression') {
+                           fnNode = node['arguments'][2].body;
                         }
                         if (fnNode) {
                            if (fnNode.body && fnNode.body instanceof Array) {
@@ -258,8 +271,10 @@ module.exports = function(grunt) {
                         expr.left.object.name === ReturnStatement.name ? opts[expr.left.property.name] =
                            expr.right.type === 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
                               : expr.right.value : false;
-                     } catch (err) {
-                        grunt.log.error(err);
+                     } catch (error) {
+                        logger.error({
+                           error: error
+                        });
                      }
                   });
 
@@ -273,7 +288,9 @@ module.exports = function(grunt) {
          }
       }, function(err) {
          if (err) {
-            grunt.fail.fatal(err);
+            logger.error({
+               error: err
+            });
          }
 
          try {
@@ -282,11 +299,13 @@ module.exports = function(grunt) {
 
             grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
             grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));
-         } catch (err) {
-            grunt.fail.fatal(err);
+         } catch (error) {
+            logger.error({
+               error: error
+            });
          }
 
-         console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
 
          done();
       });
