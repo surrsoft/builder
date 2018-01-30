@@ -69,14 +69,16 @@
  *
  */
 
-(function(){
+(function() {
 
-   "use strict";
+   'use strict';
 
-   var global = (function(){ return this || (0,eval)('this'); }()),
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
       define = global.define || (global.requirejs && global.requirejs.define);
 
-   define("is", ['module', './is-api', 'require'], function(module, api, require) {
+   define('is', ['module', './is-api', 'require'], function(module, api, require) {
       var is = {};
       is.pluginBuilder = './is-builder';
 
@@ -84,10 +86,12 @@
       is.features = module.config() || {};
 
       //add 'browser' feature
-      if (is.features.browser === undefined)
+      if (is.features.browser === undefined) {
          is.features.browser = (typeof window != 'undefined');
-      if (is.features.build === undefined)
+      }
+      if (is.features.build === undefined) {
          is.features.build = false;
+      }
 
       //build tracking
       is.curModule = null;
@@ -95,7 +99,7 @@
 
       is.empty = function() {
          return null;
-      }
+      };
 
       var msIe = is.features.browser && navigator;
       if (msIe) {
@@ -112,40 +116,43 @@
          }
 
          require([feature], function(_feature) {
-            if (_feature !== true && _feature !== false)
+            if (_feature !== true && _feature !== false) {
                throw 'Feature module ' + feature + ' must return true or false.';
+            }
 
             is.features[feature] = _feature;
 
             complete(_feature);
          });
-      }
+      };
 
       is.load = function(name, req, load, config) {
          var f = api.parse(name);
 
-         if (f.type == 'lookup')
+         if (f.type == 'lookup') {
             is.lookup(f.feature, load);
+         }
 
          if (f.type == 'load_if' || f.type == 'load_if_not') {
             //check feature
             is.lookup(f.feature, function(_feature) {
                if ((_feature && f.type == 'load_if') || (!_feature && f.type == 'load_if_not'))
+
                //if doing a build, check if we are including the module or not
+               {
                   require([f.yesModuleId], load, function(err) {
                      load.error(err);
                   });
-
-               else if ((!_feature && f.type == 'load_if' && f.noModuleId) || (_feature && f.type == 'load_if_not' && f.noModuleId))
+               } else if ((!_feature && f.type == 'load_if' && f.noModuleId) || (_feature && f.type == 'load_if_not' && f.noModuleId)) {
                   require([f.noModuleId], load, function(err) {
                      load.error(err);
                   });
-
-               else
+               } else {
                   load(is.empty());
+               }
             });
          }
-      }
+      };
 
       return is;
 

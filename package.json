@@ -3,11 +3,21 @@
    "version": "3.18.10-BUILD",
    "private": true,
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
+   "files": [
+      "Gruntfile.js",
+      "gulpfile.js",
+      "gulpTasks/*",
+      "lib/*",
+      "resources/*",
+      "Tasks/*"
+   ],
    "scripts": {
-      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml"
+      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml",
+      "check": "node ./node_modules/eslint/bin/eslint -c=.eslintrc .",
+      "fix": "node ./node_modules/eslint/bin/eslint -c=.eslintrc --fix ."
    },
    "dependencies": {
-      "async": "2.0.1",
+      "async": "^2.0.1",
       "escodegen": "^1.9.0",
       "esprima": "^3.0.0",
       "estraverse": "^4.2.0",
@@ -21,20 +31,23 @@
       "gulp-clean": "^0.4.0",
       "gulp-rename": "^1.2.1",
       "gulplog": "^1.0.0",
-      "humanize": "0.0.9",
+      "humanize": "^0.0.9",
       "less": "^2.7.2",
       "minimatch": "^3.0.3",
       "mkdirp": "^0.5.1",
       "node-uuid": "^1.4.7",
       "object-assign": "^4.1.1",
       "plugin-error": "^1.0.0",
+      "requirejs": "^2.3.5",
       "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.10",
+      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.10",
       "through2": "^2.0.3",
-      "uglify-js": "3.1.3"
+      "uglify-js": "^3.1.3"
    },
    "devDependencies": {
       "chai": "^4.1.2",
-      "mocha": "^4.1.0"
+      "mocha": "^4.1.0",
+      "eslint": "^4.16.0"
    },
    "engines": {
       "node": ">=6"

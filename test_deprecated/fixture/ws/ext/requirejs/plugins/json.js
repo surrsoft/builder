@@ -5,8 +5,10 @@
 (function() {
 
    'use strict';
-   var global = (function(){ return this || (0,eval)('this'); }()),
-       define = global.define || (global.requirejs && global.requirejs.define);
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
+      define = global.define || (global.requirejs && global.requirejs.define);
 
    define('json', ['text'], function() {
       return {
@@ -23,13 +25,12 @@
                   onLoad(parsedData);
                }, function() {
                   // $ws.single.ioc.resolve('ILogger').log("Core", "JSON " + name + " load failed");
-                  onLoad({})
+                  onLoad({});
                });
-            }
-            catch (err) {
+            } catch (err) {
                onLoad.error(err);
             }
          }
-      }
+      };
    });
 }());

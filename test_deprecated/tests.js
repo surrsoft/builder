@@ -5,12 +5,12 @@ var
    exec = require('child_process').exec;
 
 function readJSON(jPath) {
-   return JSON.parse(fs.readFileSync(path.join(__dirname, jPath)).toString())
+   return JSON.parse(fs.readFileSync(path.join(__dirname, jPath)).toString());
 }
 
 describe('i18n Indexing Test', function() {
 
-   before(function(done){
+   before(function(done) {
       this.timeout(15000);
       exec('grunt --root=./test/fixture --index-dict=en-US', {
          cwd: path.join(__dirname, '../')
@@ -19,7 +19,7 @@ describe('i18n Indexing Test', function() {
       });
    });
 
-   it('index-dict', function(){
+   it('index-dict', function() {
       var
          contents = readJSON('./fixture/resources/contents.json'),
          field,
@@ -29,12 +29,12 @@ describe('i18n Indexing Test', function() {
       expect = 'English';
       assert.equal(contents.availableLanguage['en-US'], expect, 'Indexing dictionary error. Field ' + field + ' in contents.json has wrong value. ');
 
-      field = "SBIS3.MySite.Head.en-US.json";
-      expect = "resources/Shop/Head/resources/lang/en-US/en-US.json";
+      field = 'SBIS3.MySite.Head.en-US.json';
+      expect = 'resources/Shop/Head/resources/lang/en-US/en-US.json';
       assert.equal(contents.dictionary[field], expect, 'Packing dictionary error. Field ' + field + ' in contents.json has wrong value.');
 
-      field = "SBIS3.MySite.Index.en-US.json";
-      expect = "resources/Shop/Index/resources/lang/en-US/en-US.json";
+      field = 'SBIS3.MySite.Index.en-US.json';
+      expect = 'resources/Shop/Index/resources/lang/en-US/en-US.json';
       assert.equal(contents.dictionary[field], expect, 'Packing dictionary error. Field ' + field + ' in contents.json has wrong value.');
 
    });
@@ -43,7 +43,7 @@ describe('i18n Indexing Test', function() {
 
 describe('i18n Packing Test ', function() {
 
-   before(function(done){
+   before(function(done) {
       this.timeout(15000);
       exec('grunt i18n --root=./test/fixture --package', {
          cwd: path.join(__dirname, '../')
@@ -52,7 +52,7 @@ describe('i18n Packing Test ', function() {
       });
    });
 
-   it('package', function(){
+   it('package', function() {
 
       var
          indexDict = readJSON('./fixture/resources/Shop/Index/resources/lang/en-US/en-US.json'),
@@ -62,21 +62,25 @@ describe('i18n Packing Test ', function() {
          field,
          expect;
 
-      field = "SBIS3.MySite.Head.en-US.json";
-      expect = "resources/packer/i18n/en-US.json";
+      field = 'SBIS3.MySite.Head.en-US.json';
+      expect = 'resources/packer/i18n/en-US.json';
       assert.equal(contents.dictionary[field], expect, 'Packing dictionary error. Field ' + field + ' in contents.json has wrong value.');
 
-      field = "SBIS3.MySite.Index.en-US.json";
+      field = 'SBIS3.MySite.Index.en-US.json';
       assert.equal(contents.dictionary[field], expect, 'Packing dictionary error. Field ' + field + ' in contents.json has wrong value.');
 
       for (var word in indexDict) {
-         if (!indexDict.hasOwnProperty(word)) continue;
+         if (!indexDict.hasOwnProperty(word)) {
+            continue;
+         }
 
          assert.equal(indexDict[word], packedDict[word], 'Packing dictionary error. ' + word + ' in Index dictionary is: ' + indexDict[word] + ', but in packed dictionary: ' + packedDict[word]);
       }
 
       for (word in headDict) {
-         if (!headDict.hasOwnProperty(word)) continue;
+         if (!headDict.hasOwnProperty(word)) {
+            continue;
+         }
 
          assert.equal(headDict[word], packedDict[word], 'Packing dictionary error. ' + word + ' in Head dictionary is: ' + headDict[word] + ', but in packed dictionary: ' + packedDict[word]);
       }
@@ -90,28 +94,28 @@ describe('i18n prepareXHTML Test ', function() {
       modules = path.join(__dirname, 'results/modules.json'),
       cache = path.join(__dirname, 'results/cache');
 
-   before(function(done){
+   before(function(done) {
       this.timeout(15000);
       var globalPaths = [
          path.join(__dirname, './fixture/resources/Shop/Head'),
          path.join(__dirname, './fixture/resources/Shop/Index')
       ];
       fs.writeFileSync(modules, JSON.stringify(globalPaths, null, 3));
-      exec('grunt --root=./test/fixture --modules='+modules + ' --json-cache=' + cache + ' --prepare-xhtml', {
+      exec('grunt --root=./test/fixture --modules=' + modules + ' --json-cache=' + cache + ' --prepare-xhtml', {
          cwd: path.join(__dirname, '../')
       }, function() {
          done();
       });
    });
 
-   it('prepare-xhtml', function(){
+   it('prepare-xhtml', function() {
       var
          headXhtmlContent = fs.readFileSync(path.join(__dirname, './fixture/resources/Shop/Head/Head.xhtml')).toString(),
          indexXhtmlContent = fs.readFileSync(path.join(__dirname, './fixture/resources/Shop/Index/Index.xhtml')).toString();
 
       assert(headXhtmlContent.indexOf('{[Перейти на главную страницу]}') > -1, 'Head.xhtml: Phrase "Перейти на главную страницу" is not covered');
       assert(indexXhtmlContent.indexOf('{[Добро пожаловать в интернет-магазин "Тензор"!]}') > -1, 'Index.xhtml: Phrase "Добро пожаловать в интернет-магазин "Тензор"!" is not covered');
-      assert(indexXhtmlContent.indexOf('{[Заголовок]}') > -1, 'Index.xhtml: option "Заголовок" is not covered')
+      assert(indexXhtmlContent.indexOf('{[Заголовок]}') > -1, 'Index.xhtml: option "Заголовок" is not covered');
    });
 
 });
@@ -124,17 +128,17 @@ describe('i18n resultDictionary Test ', function() {
       out = path.join(cache, 'out.json'),
       modulesPaths;
 
-   before(function(done){
+   before(function(done) {
       this.timeout(15000);
       modulesPaths = JSON.parse(fs.readFileSync(modules, 'utf-8'));
-      exec('grunt --root=./test/fixture --out=' + out + ' --modules='+modules + ' --json-cache=' + cache + ' --make-dict', {
+      exec('grunt --root=./test/fixture --out=' + out + ' --modules=' + modules + ' --json-cache=' + cache + ' --make-dict', {
          cwd: path.join(__dirname, '../')
       }, function() {
          done();
       });
    });
 
-   it('make-dict', function(){
+   it('make-dict', function() {
       var outJsonContent = readJSON('./results/cache/out.json');
 
       assert.equal(outJsonContent[0].key, 'Перейти на главную страницу', 'Field key in the result dictionary has wrong value');
@@ -147,38 +151,38 @@ describe('i18n resultDictionary Test ', function() {
 
 });
 
-describe('deanonymize', function(){
-   before(function(done){
+describe('deanonymize', function() {
+   before(function(done) {
       this.timeout(15000);
       exec('grunt --root=./test/fixture deanonymize', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
          console.log(error);
-         assert.equal(error, null, "No errors");
+         assert.equal(error, null, 'No errors');
          done();
       });
    });
 
-   it('deanonimyze', function(){
+   it('deanonimyze', function() {
       var result = fs.readFileSync(path.join(__dirname, './fixture/resources/Shop/Head/resources/SubHead.js')).toString();
 
-      assert.notEqual(result.indexOf('js!SBIS3.MySite.Head/resources/SubHead'), -1, "deanonimyze failed");
+      assert.notEqual(result.indexOf('js!SBIS3.MySite.Head/resources/SubHead'), -1, 'deanonimyze failed');
    });
 });
 
-describe('collect-dependencies', function(){
-   before(function(done){
+describe('collect-dependencies', function() {
+   before(function(done) {
       this.timeout(15000);
       exec('grunt --root=./test/fixture collect-dependencies', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
          console.log(error);
-         assert.equal(error, null, "No errors");
+         assert.equal(error, null, 'No errors');
          done();
       });
    });
 
-   it('module-dependencies.json is correct', function(){
+   it('module-dependencies.json is correct', function() {
       var expect = require(path.join(__dirname, './results/module-dependencies.json'));
       var result = require(path.join(__dirname, './fixture/resources/module-dependencies.json'));
 
@@ -186,44 +190,44 @@ describe('collect-dependencies', function(){
    });
 });
 
-describe('packwsmod', function(){
-   before(function(done){
+describe('packwsmod', function() {
+   before(function(done) {
       this.timeout(15000);
       exec('grunt --root=./test/fixture packwsmod', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
          console.log(error);
-         assert.equal(error, null, "No errors");
+         assert.equal(error, null, 'No errors');
          done();
       });
    });
 
-   it('.html modify', function(){
+   it('.html modify', function() {
       var result = fs.readFileSync(path.join(__dirname, './fixture/index.html')).toString();
 
-      assert.notEqual(result.indexOf('/resources/packer/modules/'), -1, ".html correct");
+      assert.notEqual(result.indexOf('/resources/packer/modules/'), -1, '.html correct');
    });
 
-   it('package created', function(){
+   it('package created', function() {
       var result = fs.readdirSync(path.join(__dirname, './fixture/resources/packer/modules'));
 
-      assert.equal(result.length, 2, "package created");
+      assert.equal(result.length, 2, 'package created');
    });
 });
 
-describe('owndepspack', function(){
-   before(function(done){
+describe('owndepspack', function() {
+   before(function(done) {
       this.timeout(15000);
       exec('grunt --root=./test/fixture owndepspack', {
          cwd: path.join(__dirname, '../')
       }, function(error) {
          console.log(error);
-         assert.equal(error, null, "No errors");
+         assert.equal(error, null, 'No errors');
          done();
       });
    });
 
-   it('Own deps collect', function(){
+   it('Own deps collect', function() {
       var Index = fs.readFileSync(path.join(__dirname, './fixture/resources/Shop/Index/Index.module.js')).toString();
       var Head = fs.readFileSync(path.join(__dirname, './fixture/resources/Shop/Head/Head.module.js')).toString();
 

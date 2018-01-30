@@ -2,8 +2,8 @@ var path = require('path');
 
 function xmlMin(text) {
 
-   var str = text.replace(/<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)>/g,"");
-   return  str.replace(/>\s{0}</g,"><");
+   var str = text.replace(/<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)>/g, '');
+   return  str.replace(/>\s{0}</g, '><');
 }
 
 module.exports = function(grunt) {
@@ -14,7 +14,7 @@ module.exports = function(grunt) {
          rootPath = path.join(root, app),
          sourceFiles = grunt.file.expand({cwd: rootPath}, this.data.src);
 
-      sourceFiles.forEach(function (file) {
+      sourceFiles.forEach(function(file) {
          var xmlPath = path.join(rootPath, file);
          var xmlContent = grunt.file.read(xmlPath);
          grunt.file.write(xmlPath, xmlMin(xmlContent));
