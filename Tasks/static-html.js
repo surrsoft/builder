@@ -4,7 +4,6 @@ const path = require('path'),
    fs = require('fs'),
    helpers = require('../lib/helpers'),
    convertHtmlTmpl = require('../lib/convert-html-tmpl'),
-   humanize = require('humanize'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
@@ -56,7 +55,7 @@ module.exports = function(grunt) {
    const globalParams = grunt.option('global_params') || false;
 
    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
-      logger.debug(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
+      logger.debug('Запускается задача html-tmpl.');
       const start = Date.now(),
          done = this.async(),
          root = this.data.root,

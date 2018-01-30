@@ -40,6 +40,7 @@ describe('generate static html for js', function() {
          const ast = helpers.parseModule(moduleWithWebPage.replace(/%filename%/g, 'empty.html'));
          const contents = {};
          const result = await generateStaticHtmlForJs(ast, contents, config, false);
+         contents.htmlNames['MyModule'].should.equal('reclamations.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/reclamations.html'));
          result.text.should.equal('\n\n\n');
       });
@@ -47,6 +48,7 @@ describe('generate static html for js', function() {
          const ast = helpers.parseModule(moduleWithWebPage.replace(/%filename%/g, 'flags.html'));
          const contents = {};
          const result = await generateStaticHtmlForJs(ast, contents, config, false);
+         contents.htmlNames['MyModule'].should.equal('reclamations.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/reclamations.html'));
          result.text.should.equal('true\n' +
             'false\n' +
@@ -56,6 +58,7 @@ describe('generate static html for js', function() {
          const ast = helpers.parseModule(moduleWithWebPage.replace(/%filename%/g, 'includes.html'));
          const contents = {};
          const result = await generateStaticHtmlForJs(ast, contents, config, false);
+         contents.htmlNames['MyModule'].should.equal('reclamations.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/reclamations.html'));
          result.text.should.equal('<INCLUDE1/>\n\n' +
             '<INCLUDE2/>\n\n');
@@ -64,6 +67,7 @@ describe('generate static html for js', function() {
          const ast = helpers.parseModule(moduleWithWebPage.replace(/%filename%/g, 'paths.html'));
          const contents = {};
          const result = await generateStaticHtmlForJs(ast, contents, config, false);
+         contents.htmlNames['MyModule'].should.equal('reclamations.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/reclamations.html'));
          result.text.should.equal('RESOURCE_ROOT:/resources/\n' +
             'WI.SBIS_ROOT:/ws/\n' +
@@ -74,6 +78,7 @@ describe('generate static html for js', function() {
          const ast = helpers.parseModule(moduleWithWebPage.replace(/%filename%/g, 'title.html'));
          const contents = {};
          const result = await generateStaticHtmlForJs(ast, contents, config, false);
+         contents.htmlNames['MyModule'].should.equal('reclamations.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/reclamations.html'));
          result.text.should.equal('TITLE:\n');
       });
