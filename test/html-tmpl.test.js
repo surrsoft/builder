@@ -7,15 +7,13 @@ require('../lib/logger').setGulpLogger(require('gulplog'));
 
 const nodeWS = require('../gulpTasks/helpers/node-ws');
 
-
-
-let htmlTmpl;
+let convertHtmlTmpl;
 
 chai.should();
 
 const convertHtmlTmplPromise = (value) => {
    return new Promise((resolve, reject) => {
-      htmlTmpl.convertHtmlTmpl(value, '', (error, result) => {
+      convertHtmlTmpl(value, '', (error, result) => {
          if (error) {
             reject(error);
          } else {
@@ -32,7 +30,7 @@ describe('html-tmpl', function() {
       if (err) {
          throw new Error(err);
       }
-      htmlTmpl = require('../lib/html-tmpl');
+      convertHtmlTmpl = require('../lib/convert-html-tmpl');
    });
    it('basic', async() => {
       const result = await convertHtmlTmplPromise('<div>{{1+1}}</div>');
