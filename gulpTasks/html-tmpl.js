@@ -6,22 +6,25 @@ const through = require('through2'),
 
 module.exports = function() {
    return through.obj(function(file, encoding, cb) {
-      convertHtmlTmpl(file.contents.toString(), '', (error, result) => {
-         if (error) {
-            logger.error(
-               {
-                  code: 1,
-                  message: 'Ошибка при обработке шаблона',
-                  error: error,
-                  moduleInfo: file.moduleInfo,
-                  filePath: file.history[0]
-               }
-            );
-         } else {
-            file.contents = new Buffer(result);
-            this.push(file);
-         }
-         cb();
-      });
+      convertHtmlTmpl(file.contents.toString(), '')
+         .then(
+            result => {
+               file.contents = new Buffer(result);
+               this.push(file);
+               cb();
+            },
+            error => {
+               logger.error(
+                  {
+                     code: 1,
+                     message: 'Ошибка при обработке шаблона',
+                     error: error,
+                     moduleInfo: file.moduleInfo,
+                     filePath: file.history[0]
+                  }
+               );
+               cb();
+            }
+         );
    });
 };

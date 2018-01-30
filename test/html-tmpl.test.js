@@ -11,20 +11,7 @@ let convertHtmlTmpl;
 
 chai.should();
 
-const convertHtmlTmplPromise = (value) => {
-   return new Promise((resolve, reject) => {
-      convertHtmlTmpl(value, '', (error, result) => {
-         if (error) {
-            reject(error);
-         } else {
-            resolve(result);
-         }
-      });
-   });
-
-};
-
-describe('html-tmpl', function() {
+describe('convert html.tmpl', function() {
    it('init', function() {
       let err = nodeWS.init();
       if (err) {
@@ -33,7 +20,7 @@ describe('html-tmpl', function() {
       convertHtmlTmpl = require('../lib/convert-html-tmpl');
    });
    it('basic', async() => {
-      const result = await convertHtmlTmplPromise('<div>{{1+1}}</div>');
+      const result = await convertHtmlTmpl('<div>{{1+1}}</div>');
       result.should.equal('<div>2</div>');
    });
 

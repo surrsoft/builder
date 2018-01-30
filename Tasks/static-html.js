@@ -2,32 +2,11 @@
 
 const path = require('path'),
    fs = require('fs'),
-   traverse = require('estraverse').traverse,
-   transliterate = require('../lib/transliterate'),
-   replaceIncludes = require('../lib/include-replacer'),
    helpers = require('../lib/helpers'),
    convertHtmlTmpl = require('../lib/convert-html-tmpl'),
    humanize = require('humanize'),
-   logger = require('../lib/logger').logger();
-
-const dblSlashes = /\\/g;
-
-let cache = {};
-
-function findExpression(node, left) {
-   return node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression' &&
-      node.expression.operator === '=' && node.expression.left.type === 'MemberExpression' &&
-      node.expression.left.property.name === left && node.expression.left.object &&
-      node.expression.left.object.type === 'Identifier';
-}
-
-function parseObjectExpression(properties) {
-   let obj = {};
-   properties.forEach(function(prop) {
-      obj[prop.key.name] = prop.value.value;
-   });
-   return obj;
-}
+   logger = require('../lib/logger').logger(),
+   generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(resourcesRoot, filePattern, cb) {
    helpers.recurse(resourcesRoot, function(fullPath, callback) {
@@ -44,103 +23,37 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
             return;
          }
 
-         convertHtmlTmpl(html, fullPath, function(err, result) {
-            if (err) {
-               logger.error({
-                  message: 'Ошибка при обработке шаблона',
-                  error: err,
-                  filePath: fullPath
-               });
-               setImmediate(callback);
-            } else {
-               const newFullPath = fullPath.replace(/\.tmpl$/, '');
+         convertHtmlTmpl(html, fullPath)
+            .then(
+               result => {
+                  const newFullPath = fullPath.replace(/\.tmpl$/, '');
 
-               // если файл уже есть, удалим
-               if (helpers.existsSync(newFullPath)) {
-                  helpers.unlinkSync(newFullPath);
+                  // если файл уже есть, удалим
+                  if (helpers.existsSync(newFullPath)) {
+                     helpers.unlinkSync(newFullPath);
+                  }
+
+                  // создадим файл с новым содержимым
+                  helpers.writeFile(newFullPath, result.toString(), callback);
+               },
+               error => {
+                  logger.error({
+                     message: 'Ошибка при обработке шаблона',
+                     error: error,
+                     filePath: fullPath
+                  });
+                  setImmediate(callback);
                }
+            );
 
-               // создадим файл с новым содержимым
-               helpers.writeFile(newFullPath, result.toString(), callback);
-            }
-         });
       });
    }, cb);
 }
 
 module.exports = function(grunt) {
-   const srvPath = (grunt.option('services_path') || '').replace(/"'/g, '');
+   const servicesPath = (grunt.option('services_path') || '').replace(/"'/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
-   let htmlNames = {};
-
-   function getReplaceOpts(root, application) {
-      return {
-         WINDOW_TITLE: '',
-         APPEND_STYLE: '',
-         APPEND_JAVASCRIPT: '',
-         ACCESS_LIST: '',
-         APPLICATION_ROOT: application,
-         SBIS_ROOT: application + 'ws/',
-         RESOURCE_ROOT: application + 'resources/',
-         SERVICES_PATH: srvPath || application + 'service/',
-         USER_PARAMS: userParams,
-         GLOBAL_PARAMS: globalParams,
-         SAVE_LAST_STATE: false,
-         ROOT: root,
-         START_DIALOG: ''
-      };
-   }
-
-   function generateHTML(htmlTemplate, outFileName, replaceOpts, applicationRoot, cb, inclReplace) {
-      let templatePath = '';
-      if (!htmlTemplate) {
-         templatePath = path.join(__dirname, './../resources/index.html');
-         logger.debug(`Шаблон не указан, искользуем ${templatePath}`);
-      } else {
-         templatePath = path.join(applicationRoot, 'resources', htmlTemplate);
-      }
-
-      if (cache[templatePath]) {
-         let text = replaceIncludes(cache[templatePath], replaceOpts, inclReplace);
-         helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
-      } else {
-         fs.readFile(templatePath, (err, text) => {
-            if (err) {
-               logger.error({
-                  error: err
-               });
-               return cb(err);
-            }
-
-            cache[templatePath] = text.toString();
-            text = replaceIncludes(cache[templatePath], replaceOpts, inclReplace);
-            helpers.writeFile(path.join(applicationRoot, outFileName), text, cb);
-         });
-      }
-   }
-
-   function parseOpts(opts, application, replaceOpts, applicationRoot, cb, inclReplace) {
-      const
-         moduleName = opts['moduleName'],
-         webPage = opts['webPage'] || {},
-         outFileName = webPage['outFileName'];
-      let htmlTemplate = webPage['htmlTemplate'] || '';
-      replaceOpts.WINDOW_TITLE = opts['title'] || '';
-      replaceOpts.START_DIALOG = moduleName || '';
-
-      if (!outFileName) {
-         return cb();
-      } else if (!htmlTemplate) {
-         logger.debug(`Using default template for output file ${outFileName}.html`);
-      }
-
-      htmlNames[moduleName] = application.replace('/', '') + outFileName + '.html';
-
-      htmlTemplate = transliterate(htmlTemplate.replace(dblSlashes, '/'));
-
-      generateHTML(htmlTemplate, outFileName + '.html', replaceOpts, applicationRoot, cb, inclReplace);
-   }
 
    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
       logger.debug(`${humanize.date('H:i:s')}: Запускается задача html-tmpl.`);
@@ -164,8 +77,8 @@ module.exports = function(grunt) {
 
    grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
       logger.debug('Запускается задача static-html.');
-      let start = Date.now();
       const
+         start = Date.now(),
          done = this.async(),
          root = this.data.root,
          application = this.data.application,
@@ -173,13 +86,12 @@ module.exports = function(grunt) {
          resourcesRoot = path.join(applicationRoot, 'resources'),
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
-         inclReplace = (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
+         forPresentationService = (grunt.option('includes') !== undefined) ? !grunt.option('includes') : false;
 
       let contents = {};
 
       try {
          contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
-         htmlNames = contents.htmlNames || {};
       } catch (err) {
          logger.warning({
             message: 'Error while requiring contents.json',
@@ -204,6 +116,15 @@ module.exports = function(grunt) {
          logger.debug(`Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
       }
 
+      const config = {
+         root: root,
+         application: application,
+         applicationRoot: applicationRoot,
+         servicesPath: servicesPath,
+         userParams: userParams,
+         globalParams: globalParams
+      };
+
       helpers.recurse(applicationRoot, function(file, callback) {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
@@ -211,7 +132,7 @@ module.exports = function(grunt) {
                   logger.error({
                      error: err
                   });
-                  return callback(err);
+                  return callback();
                }
 
                let ast = helpers.parseModule(text.toString());
@@ -224,64 +145,25 @@ module.exports = function(grunt) {
                   return callback(ast);
                }
 
-               let arrExpr = [];
-               let ReturnStatement = null;
-               let moduleName = '';
-
-               traverse(ast, {
-                  enter: function getModuleName(node) {
-                     if (findExpression(node, 'webPage') && node.expression.right && node.expression.right.type === 'ObjectExpression') {
-                        arrExpr.push(node.expression);
-                     }
-
-                     if (findExpression(node, 'title') && node.expression.right && node.expression.right.type === 'Literal') {
-                        arrExpr.push(node.expression);
-                     }
-
-                     if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
-                        node.callee.name === 'define') {
-                        if (node['arguments'][0].type === 'Literal' && typeof node['arguments'][0].value === 'string') {
-                           moduleName = node['arguments'][0].value;
+               generateStaticHtmlForJs(ast, contents, config, forPresentationService)
+                  .then(
+                     result => {
+                        if (result) {
+                           logger.info('SUCCESS: ' + result.outputPath);
+                           helpers.writeFile(result.outputPath, result.text, callback);
+                        } else {
+                           callback();
                         }
-
-                        let fnNode = null;
-                        if (node['arguments'][1] && node['arguments'][1].type === 'FunctionExpression') {
-                           fnNode = node['arguments'][1].body;
-                        } else if (node['arguments'][2] && node['arguments'][2].type === 'FunctionExpression') {
-                           fnNode = node['arguments'][2].body;
-                        }
-                        if (fnNode) {
-                           if (fnNode.body && fnNode.body instanceof Array) {
-                              fnNode.body.forEach(function(i) {
-                                 if (i.type === 'ReturnStatement') {
-                                    ReturnStatement = i.argument;
-                                 }
-                              });
-                           }
-                        }
-                     }
-                  }
-               });
-
-               if (arrExpr.length && ReturnStatement) {
-                  let opts = {};
-                  opts.moduleName = moduleName;
-                  arrExpr.forEach(function(expr) {
-                     try {
-                        expr.left.object.name === ReturnStatement.name ? opts[expr.left.property.name] =
-                           expr.right.type === 'ObjectExpression' ? parseObjectExpression(expr.right.properties)
-                              : expr.right.value : false;
-                     } catch (error) {
+                     },
+                     error => {
                         logger.error({
+                           message: 'Ошибка при генерации статической html для JS',
+                           filePath: file,
                            error: error
                         });
+                        callback();
                      }
-                  });
-
-                  parseOpts(opts, application, getReplaceOpts(root, application), applicationRoot, callback, inclReplace);
-               } else {
-                  callback();
-               }
+                  );
             });
          } else {
             callback();
@@ -294,7 +176,6 @@ module.exports = function(grunt) {
          }
 
          try {
-            contents.htmlNames = htmlNames;
             let sorted = helpers.sortObject(contents);
 
             grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
