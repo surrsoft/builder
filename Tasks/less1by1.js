@@ -108,10 +108,15 @@ module.exports = function less1by1Task(grunt) {
         grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача less1by1.`);
 
         let
-            ControlsLessBlackList = JSON.parse(grunt.file.read(path.join(applicationRoot, 'resources/SBIS3.CONTROLS/less-blacklist.json'))),
             isControl = /resources(\\|\/)SBIS3\.CONTROLS/,
-            lessBlackListRegExp = generateBlackListRegExp(ControlsLessBlackList),
-            taskDone = this.async();
+            taskDone = this.async(),
+            blackListPath = path.join(applicationRoot, 'resources/SBIS3.CONTROLS/less-blacklist.json'),
+            ControlsLessBlackList, lessBlackListRegExp;
+
+        if (grunt.file.exists(blackListPath)) {
+            ControlsLessBlackList = JSON.parse(grunt.file.read(blackListPath));
+            lessBlackListRegExp = generateBlackListRegExp(ControlsLessBlackList);
+        }
 
         helpers.recurse(rootPath, function(filepath, cb) {
             if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
@@ -133,7 +138,7 @@ module.exports = function less1by1Task(grunt) {
                          * если less-ка имеет имя из чёрного списка и она лежит в контролах, то её не
                          компилим
                          */
-                        if (!(isControl.test(filepath) && lessBlackListRegExp.test(filepath))) {
+                        if (!(isControl.test(filepath) && lessBlackListRegExp && lessBlackListRegExp.test(filepath))) {
                             processLessFile(data, filepath, readFileError, theme, false);
                         }
                     }
