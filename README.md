@@ -79,6 +79,8 @@ ESLint умеет самостоятельно исправлять некото
 1. https://ru.wikipedia.org/wiki/Теория_разбитых_окон
 2. https://habrahabr.ru/company/pvs-studio/blog/347686/
 
+Также не пренебрегайте функцией Inspect Code в WebStorm.
+ 
 ### Логирование и вывод ошибок
 Логирование и вывод ошибок осуществляется через универсальный логгер для Grunt и Gulp задач: sbis3-builder/lib/logger.js
 Пример использования: 
