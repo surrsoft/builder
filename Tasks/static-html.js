@@ -30,7 +30,7 @@ function parseObjectExpression(properties) {
 }
 
 function convertTmpl(resourcesRoot, filePattern, cb) {
-  helpers.recurse(resourcesRoot, function(fullPath, callback) {
+   helpers.recurse(resourcesRoot, function(fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
          setImmediate(callback);
