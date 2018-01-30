@@ -8,21 +8,20 @@ Builder - утилита для сборки клиентского кода п�
 
 1. Для использования:
 
-         npm install --production --legacy-bundling --no-package-lock --no-shrinkwrap 
+         npm install --production --legacy-bundling --no-package-lock 
 
 2. Для разработки builder'а:
 
-         npm install --legacy-bundling --no-package-lock --no-shrinkwrap
+         npm install --legacy-bundling --no-package-lock
 
 Флаг --legacy-bundling нужен для корректной установки зависимостей пакета sbis3-json-generator.
 
 Флаг --production используется для того, чтобы не выкачивались devDependencies.
 
-Флаги --no-package-lock --no-shrinkwrap нужны для того, чтобы не создавались файлы package-lock.json и 
-npm-shrinkwrap.json, которые имеют больший приоритет чем package.json. 
+Флаг --no-package-lock нужен для того, чтобы не создавался файл package-lock.json, 
+который имеет больший приоритет чем package.json. 
 Подробнее тут:
-1. https://docs.npmjs.com/files/package-lock.json, 
-2. https://docs.npmjs.com/cli/shrinkwrap
+https://docs.npmjs.com/files/package-lock.json, 
  
 ## Использование
 
