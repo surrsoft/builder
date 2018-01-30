@@ -9,12 +9,20 @@ const helpers = require('../lib/helpers'),
     themes = ['online', 'carry', 'presto', 'carrynew', 'prestonew'],
     applicationRoot = path.join(process.env.ROOT, process.env.APPROOT),
     dblSlashes = /\\/g;
+
 /**
  * подкладываем логи , чтобы понять что происходит на никсовой тачке и почему там
  * портятся стили, а в винде всё в порядке.
  */
 var logs = '';
 
+/**
+ * Динамически генерируем регулярку с игнорируемыми названиями lessок
+ */
+function generateBlackListRegExp(ControlsLessBlackList) {
+    var regExpString = ControlsLessBlackList.join('$|').replace(/\.less/g, '\\\.less');
+    return new RegExp(regExpString);
+}
 /**
  @workaround Временно ресолвим текущую тему по названию модуля.
 */
@@ -97,14 +105,20 @@ module.exports = function less1by1Task(grunt) {
   }
 
     grunt.registerMultiTask('less1by1', 'Компилит каждую лесску, ложит cssку рядом. Умеет в темы', function() {
-
         grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача less1by1.`);
 
+        let
+            isControl = /resources(\\|\/)SBIS3\.CONTROLS/,
+            taskDone = this.async(),
+            blackListPath = path.join(applicationRoot, 'resources/SBIS3.CONTROLS/less-blacklist.json'),
+            ControlsLessBlackList, lessBlackListRegExp;
 
-            let taskDone = this.async();
+        if (grunt.file.exists(blackListPath)) {
+            ControlsLessBlackList = JSON.parse(grunt.file.read(blackListPath));
+            lessBlackListRegExp = generateBlackListRegExp(ControlsLessBlackList);
+        }
 
         helpers.recurse(rootPath, function(filepath, cb) {
-
             if (helpers.validateFile(path.relative(rootPath, filepath), ['resources/**/*.less', 'ws/**/*.less'])) {
                 fs.readFile(filepath, function readFileCb(readFileError, data) {
                     if (filepath.indexOf('Retail') !== -1) {
@@ -120,7 +134,13 @@ module.exports = function less1by1Task(grunt) {
                         }
                     }
                     else {
-                        processLessFile(data, filepath, readFileError, theme, false);
+                        /**
+                         * если less-ка имеет имя из чёрного списка и она лежит в контролах, то её не
+                         компилим
+                         */
+                        if (!(isControl.test(filepath) && lessBlackListRegExp && lessBlackListRegExp.test(filepath))) {
+                            processLessFile(data, filepath, readFileError, theme, false);
+                        }
                     }
 
                 });
