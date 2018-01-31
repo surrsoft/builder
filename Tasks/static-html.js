@@ -4,6 +4,7 @@ const path = require('path'),
    fs = require('fs'),
    helpers = require('../lib/helpers'),
    convertHtmlTmpl = require('../lib/convert-html-tmpl'),
+   parseJsComponent = require('../lib/convert-html-tmpl'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
@@ -44,7 +45,6 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
                   setImmediate(callback);
                }
             );
-
       });
    }, cb);
 }
@@ -134,17 +134,14 @@ module.exports = function(grunt) {
                   return callback();
                }
 
-               let ast = helpers.parseModule(text.toString());
-
-               if (ast instanceof Error) {
-                  ast.message += '\nPath: ' + file;
-                  logger.error({
-                     error: ast
-                  });
-                  return callback(ast);
+               let componentInfo = {};
+               try {
+                  componentInfo = parseJsComponent(text.toString());
+               } catch (error) {
+                  return callback(error);
                }
 
-               generateStaticHtmlForJs(ast, contents, config, forPresentationService)
+               generateStaticHtmlForJs(componentInfo, contents, config, forPresentationService)
                   .then(
                      result => {
                         if (result) {
