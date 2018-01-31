@@ -4,7 +4,7 @@ const path = require('path'),
    fs = require('fs'),
    helpers = require('../lib/helpers'),
    convertHtmlTmpl = require('../lib/convert-html-tmpl'),
-   parseJsComponent = require('../lib/convert-html-tmpl'),
+   parseJsComponent = require('../lib/parse-js-component'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 

@@ -5,14 +5,13 @@ const fs = require('fs-extra');
 const async = require('async');
 const helpers = require('../lib/helpers');
 const transliterate = require('../lib/transliterate');
-const traverse = require('estraverse').traverse;
+const parseJsComponent = require('../lib/parse-js-component');
 const humanize = require('humanize');
+const logger = require('../lib/logger').logger();
 
 const dblSlashes = /\\/g;
-const isXmlDeprecated = /\.xml\.deprecated$/;
-const isHtmlDeprecated = /\.html\.deprecated$/;
 const isModuleJs = /\.module\.js$/;
-const QUOTES = /"|'/g;
+const QUOTES = /["']/g;
 
 let
    contents = {},
@@ -24,28 +23,12 @@ let
 
 function removeLeadingSlash(path) {
    if (path) {
-      var head = path.charAt(0);
-      if (head == '/' || head == '\\') {
+      const head = path.charAt(0);
+      if (head === '/' || head === '\\') {
          path = path.substr(1);
       }
    }
    return path;
-}
-
-function getModuleName(tsdModuleName, abspath, input, node) {
-   if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-        node.callee.name == 'define') {
-      //noinspection JSAnnotator
-      if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-         //noinspection JSAnnotator
-         let mod = node.arguments[0].value;
-         let parts = mod.split('!');
-         if (parts[0] == 'js') {
-            jsModules[parts[1]] = path.join(tsdModuleName,
-               transliterate(path.relative(input, abspath))).replace(dblSlashes, '/');
-         }
-      }
-   }
 }
 
 module.exports = function(grunt) {
@@ -56,7 +39,7 @@ module.exports = function(grunt) {
       const
          symlink = !!grunt.option('symlink'),
          modules = (grunt.option('modules') || '').replace(QUOTES, ''),
-         service_mapping = (grunt.option('service_mapping') || '').replace(QUOTES, ''),
+         serviceMapping = (grunt.option('service_mapping') || '').replace(QUOTES, ''),
          i18n = !!grunt.option('index-dict'),
          dryRun = grunt.option('dry-run'),
          application = grunt.option('application') || '',
@@ -69,7 +52,7 @@ module.exports = function(grunt) {
 
       //сохраняем файл modules.json вручную, поскольку он временный
       grunt.file.write(path.join(resourcesPath, 'modules.json'), JSON.stringify(paths, null, 3));
-      if (paths.length == 1 && grunt.file.isFile(paths[0])) {
+      if (paths.length === 1 && grunt.file.isFile(paths[0])) {
          let input = paths[0];
          try {
             paths = grunt.file.readJSON(input);
@@ -85,7 +68,7 @@ module.exports = function(grunt) {
 
       function copyFile(target, dest, data, cb) {
          let ext = path.extname(target);
-         if (!symlink || (i18n && (ext == '.xhtml' || ext == '.html'))) {
+         if (!symlink || (i18n && (ext === '.xhtml' || ext === '.html'))) {
             helpers.copyFile(target, dest, data, cb);
          } else {
             helpers.mkSymlink(target, dest, cb);
@@ -124,7 +107,7 @@ module.exports = function(grunt) {
             let moduleName = parts[parts.length - 1];
             let tsdModuleName = transliterate(moduleName);
 
-            if (applicationName == tsdModuleName) {
+            if (applicationName === tsdModuleName) {
                grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName);
             }
 
@@ -135,42 +118,18 @@ module.exports = function(grunt) {
                let dest = path.join(resourcesPath, tsdModuleName,
                   transliterate(path.relative(input, file)));
 
-               if (isXmlDeprecated.test(file)) {
-                  let basexml = path.basename(file, '.xml.deprecated');
-                  xmlContents[basexml] = path.join(tsdModuleName,
-                     transliterate(path.relative(input, file).replace('.xml.deprecated', ''))).replace(dblSlashes, '/');
-
-                  if (!dryRun) {
-                     copyFile(file, dest, null, callback);
-                  } else {
-                     callback();
-                  }
-               } else if (isHtmlDeprecated.test(file)) {
-                  let basehtml = path.basename(file, '.deprecated');
-                  let parts = basehtml.split('#');
-                  htmlNames[parts[0]] = (parts[1] || parts[0]).replace(dblSlashes, '/');
-
-                  if (!dryRun) {
-                     copyFile(file, dest, null, callback);
-                  } else {
-                     callback();
-                  }
-               } else if (isModuleJs.test(file)) {
+               if (isModuleJs.test(file)) {
                   grunt.log.ok('Читаем js-модуль по пути: ' + file);
                   fs.readFile(file, function(err, text) {
-                     let ast = helpers.parseModule(text.toString());
-
-                     if (ast instanceof Error) {
-                        grunt.log.error(`[ERROR]: Syntax error in the file: ${file}`, ast);
-                        grunt.fail.fatal(file, ast);
-                        return callback(ast);
+                     const componentInfo = parseJsComponent(text.toString());
+                     if (componentInfo.hasOwnProperty('moduleName')) {
+                        const parts = componentInfo.moduleName.split('!');
+                        if (parts[0] === 'js') {
+                           jsModules[parts[1]] = path.join(tsdModuleName,
+                              transliterate(path.relative(input, file))).replace(dblSlashes, '/');
+                        }
                      }
 
-                     traverse(ast, {
-                        enter: function(node) {
-                           getModuleName(tsdModuleName, file, input, node);
-                        }
-                     });
                      if (!dryRun) {
                         copyFile(file, dest, text, callback);
                      } else {
@@ -201,12 +160,12 @@ module.exports = function(grunt) {
 
                contents.requirejsPaths = requirejsPaths;
 
-               if (service_mapping) {
-                  let srv_arr = service_mapping.trim().split(' ');
-                  if (srv_arr.length % 2 == 0) {
+               if (serviceMapping) {
+                  let srvArr = serviceMapping.trim().split(' ');
+                  if (srvArr.length % 2 === 0) {
                      let services = {};
-                     for (let i = 0; i < srv_arr.length; i += 2) {
-                        services[srv_arr[i]] = srv_arr[i + 1];
+                     for (let i = 0; i < srvArr.length; i += 2) {
+                        services[srvArr[i]] = srvArr[i + 1];
                      }
                      contents.services = services;
                   } else {
@@ -218,11 +177,12 @@ module.exports = function(grunt) {
 
                grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
                grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
-            } catch (err) {
+            } catch (error) {
+
                grunt.fail.fatal(err);
             }
 
-            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+            logger.info(`Duration: ${(Date.now() - start) / 1000} sec`);
             done();
          });
       }
