@@ -16,7 +16,7 @@ try {
    const logger = require('./lib/logger').setGulpLogger(gulplog);
 
    //ws должен быть вызван раньше чем первый global.requirejs
-   const nodeWS = require('./gulpTasks/helpers/node-ws');
+   const nodeWS = require('./gulp/helpers/node-ws');
    let err = nodeWS.init();
    if (err) {
       logger.error(err);
@@ -25,9 +25,9 @@ try {
 
    const
       gulp = require('gulp'),
-      buildTask = require('./gulpTasks/build.js'),
-      guardSingleProcessTask = require('./gulpTasks/guard-single-process.js'),
-      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js');
+      buildTask = require('./gulp/build.js'),
+      guardSingleProcessTask = require('./gulp/guard-single-process.js'),
+      BuildConfiguration = require('./gulp/classes/build-configuration.js');
 
 
    logger.info('Параметры запуска: ' + JSON.stringify(process.argv));

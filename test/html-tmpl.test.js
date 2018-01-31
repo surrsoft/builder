@@ -5,7 +5,7 @@ const chai = require('chai');
 //логгер - глобальный, должен быть определён до инициализации WS
 require('../lib/logger').setGulpLogger(require('gulplog'));
 
-const nodeWS = require('../gulpTasks/helpers/node-ws');
+const nodeWS = require('../gulp/helpers/node-ws');
 
 let convertHtmlTmpl;
 

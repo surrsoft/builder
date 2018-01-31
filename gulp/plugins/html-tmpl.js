@@ -1,8 +1,8 @@
 'use strict';
 
 const through = require('through2'),
-   convertHtmlTmpl = require('../lib/convert-html-tmpl'),
-   logger = require('./../lib/logger').logger();
+   convertHtmlTmpl = require('../../lib/convert-html-tmpl'),
+   logger = require('../../lib/logger').logger();
 
 module.exports = function() {
    return through.obj(function(file, encoding, cb) {

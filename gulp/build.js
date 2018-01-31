@@ -2,13 +2,13 @@
 
 const gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
-   gulpHtmlTmpl = require('./html-tmpl'),
+   gulpHtmlTmpl = require('./plugins/html-tmpl'),
    path = require('path'),
    transliterate = require('../lib/transliterate'),
-   ChangesStore = require('./helpers/changes-store'),
-   changedInPlace = require('./changed-in-place'),
+   ChangesStore = require('./classes/changes-store'),
+   changedInPlace = require('./plugins/changed-in-place'),
    clean = require('gulp-clean'),
-   addModuleInfo = require('./add-module-info');
+   addModuleInfo = require('./plugins/add-module-info');
 
 const copyTaskGenerator = function(moduleInfo, changesStore) {
    const moduleInput = path.join(moduleInfo.path,  '/**/*.*');
