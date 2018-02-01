@@ -15,8 +15,14 @@ module.exports = function(grunt) {
       var taskCount = 0;
       var isDone = false;
 
-      var modules = grunt.option('modules').replace(/"/g, '');
-      var cache = grunt.option('json-cache').replace(/"/g, '');
+      let modules = grunt.option('modules');
+      if (modules) {
+         modules = modules.replace(/"/g, '');
+      }
+      let cache = grunt.option('json-cache');
+      if (cache) {
+         cache = cache.replace(/"/g, '');
+      }
       var jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
 
       //Приводит повторяющиеся ключи в словарях к единому значению
