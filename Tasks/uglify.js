@@ -6,13 +6,14 @@
 
 var
    fs = require('fs'),
-   UglifyJS = require('uglify-js'),
+   uglifyES = require('uglify-es'),
    humanize = require('humanize'),
    path = require('path'),
    async = require('async'),
    jsEXT = /\.js$/,
    tmplEXT = /\.tmpl$/,
-   xhtmlEXT = /\.xhtml$/;
+   xhtmlEXT = /\.xhtml$/,
+   logger = require('../lib/logger').logger();
 
 module.exports = function uglifyJsTask(grunt) {
    grunt.registerMultiTask('uglify', 'Задача минификации JS', function() {
@@ -30,11 +31,11 @@ module.exports = function uglifyJsTask(grunt) {
          },
 
          /**
-             * Опция isPresentationService описывает, Препроцессор или Сервис Представлений мы используем.
-             * Она нам пригодится, чтобы на Препроцессоре не генерить SourceMaps, поскольку в целях отладки
-             * там присутствует /debug
-             */
-         isPresentationService =  grunt.file.exists(path.join(process.env.ROOT, 'resources', 'WS.Core'));
+          * Опция isPresentationService описывает, Препроцессор или Сервис Представлений мы используем.
+          * Она нам пригодится, чтобы на Препроцессоре не генерить SourceMaps, поскольку в целях отладки
+          * там присутствует /debug
+          */
+         isPresentationService = grunt.file.exists(path.join(process.env.ROOT, 'resources', 'WS.Core'));
 
       // Iterate over all src-dest file pairs.
       async.eachSeries(this.files, function(currentFile, done) {
@@ -52,10 +53,11 @@ module.exports = function uglifyJsTask(grunt) {
                currentEXTString = currentEXT.toString(),
 
                /**
-                     * если минифицируется обычная js-ка, то передаём правильный набор опций для
-                     * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
-                     */
+                * если минифицируется обычная js-ка, то передаём правильный набор опций для
+                * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
+                */
                minifyOptions = !data.match(/define\("(tmpl!|html!)/) ? {
+                  /* eslint-disable id-match */
                   compress: {
                      sequences: true,
                      properties: false,
@@ -70,19 +72,20 @@ module.exports = function uglifyJsTask(grunt) {
                      hoist_funs: false,
                      if_return: false,
                      join_vars: true,
-                     cascade: false,
-                     warnings: true,
+                     warnings: false, //всё равно их не ловим
                      negate_iife: false,
-                     keep_fargs: true
+                     keep_fargs: true,
+                     collapse_vars: true
                   }
-               } : { mangle: { eval: true } },
+                  /* eslint-enable id-match */
+               } : {mangle: {eval: true}},
                sourceJSPath, sourceMapPath;
 
             currentEXTString = currentEXTString.slice(2, currentEXTString.length - 2);
 
             /**
-                 * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
-                 */
+             * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
+             */
             if (currentEXTString !== '.js' && !fs.existsSync(currentPath.replace(currentEXT, `.original${currentEXTString}`))) {
                grunt.log.ok('Generated template for ' + currentPath + 'doesnt exists. Skipped.');
                return;
@@ -97,15 +100,26 @@ module.exports = function uglifyJsTask(grunt) {
                   };
                }
             }
+
             dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = data;
 
             try {
-               let minified = UglifyJS.minify(dataObject, minifyOptions);
+               const minified = uglifyES.minify(dataObject, minifyOptions);
+               if (minified.error) {
+                  logger.error({
+                     message: 'Ошибка при минификации файла',
+                     error: new Error(JSON.stringify(minified.error)),
+                     filePath: sourceJSPath ? sourceJSPath : currentPath
+                  });
+               }
                if (!minified.error && minified.code) {
                   data = minified;
                }
-            } catch (minerr) {
-               grunt.log.warn(`Error while minifiing js! ${minerr.message}, in file: ${sourceJSPath ? sourceJSPath : currentPath}`);
+            } catch (error) {
+               logger.error({
+                  message: `Ошибка в builder'е при минификации файла ${sourceJSPath ? sourceJSPath : currentPath}`,
+                  error: error
+               });
             }
             fs.writeFileSync(currentPath, data.code);
             if (isPresentationService) {
@@ -114,11 +128,11 @@ module.exports = function uglifyJsTask(grunt) {
          });
 
          /**
-             * используем такой способ возвращения callback'а итеративной функции, поскольку
-             * в противном случае мы получим переполнение размера стека вызовов. Подробнее
-             * можно почитать здесь:
-             * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
-             */
+          * используем такой способ возвращения callback'а итеративной функции, поскольку
+          * в противном случае мы получим переполнение размера стека вызовов. Подробнее
+          * можно почитать здесь:
+          * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
+          */
          async.setImmediate(function() {
             done();
          });
