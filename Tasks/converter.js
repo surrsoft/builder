@@ -11,7 +11,7 @@ const logger = require('../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
-const QUOTES = /["']/g;
+const QUOTES = /"|'/g;
 
 let
    contents = {},

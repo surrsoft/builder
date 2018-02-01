@@ -33,7 +33,7 @@ describe('parse js component', function() {
          'let module;' +
          'module.webPage = {' +
          '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   title: "Пожалуйста, подождите...",' +
+         '   title: "TestTitle",' +
          '   outFileName: "ca_stub",' +
          '   trash:"trash"' +
          '};' +
@@ -43,7 +43,25 @@ describe('parse js component', function() {
       const webPage = result['webPage'];
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
       webPage['htmlTemplate'].should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
-      webPage['title'].should.equal('Пожалуйста, подождите...');
+      webPage['outFileName'].should.equal('ca_stub');
+   });
+
+   it('declare title and web page', async() => {
+      const result = parseJsComponent('define("My.Module/Name", function(){' +
+         'let module;' +
+         'module.webPage = {' +
+         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+         '   outFileName: "ca_stub",' +
+         '   trash:"trash"' +
+         '};' +
+         'module.title = "TestTitle";' +
+         'return module;});');
+      Object.getOwnPropertyNames(result).length.should.equal(2);
+      result['moduleName'].should.equal('My.Module/Name');
+      const webPage = result['webPage'];
+      Object.getOwnPropertyNames(webPage).length.should.equal(3);
+      webPage['htmlTemplate'].should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
+      webPage['title'].should.equal('TestTitle');
       webPage['outFileName'].should.equal('ca_stub');
    });
 
