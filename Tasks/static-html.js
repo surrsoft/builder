@@ -50,7 +50,7 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
 }
 
 module.exports = function(grunt) {
-   const servicesPath = (grunt.option('services_path') || '').replace(/"'/g, '');
+   const servicesPath = (grunt.option('services_path') || '').replace(/["']/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
 
