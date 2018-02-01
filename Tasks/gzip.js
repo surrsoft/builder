@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const helpers = require('../lib/helpers');
 const humanize = require('humanize');
-const async = require('async');
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('gzip', 'Archive resources', function() {
