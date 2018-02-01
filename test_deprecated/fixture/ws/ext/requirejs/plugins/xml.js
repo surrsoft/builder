@@ -1,9 +1,11 @@
 (function() {
 
-   "use strict";
+   'use strict';
 
-   var global = (function(){ return this || (0,eval)('this'); }()),
-       define = global.define || (global.requirejs && global.requirejs.define);
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
+      define = global.define || (global.requirejs && global.requirejs.define);
 
    define('xml', ['text'], function() {
       return {
@@ -19,6 +21,6 @@
                load.error(e);
             }
          }
-      }
+      };
    });
 })();

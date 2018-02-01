@@ -2,7 +2,9 @@
 
    'use strict';
    var
-      global = (function(){ return this || (0,eval)('this'); }()),
+      global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
       define = global.define || (global.requirejs && global.requirejs.define),
       host = typeof window !== 'undefined' ? window.location.hostname : '',
       devPrefixes = ['dev', 'test', 'fix', 'platform'],
@@ -24,9 +26,9 @@
    }
 
    define('cdn', {
-      load: function (name, require, onLoad) {
+      load: function(name, require, onLoad) {
          if (typeof window !== 'undefined') {
-            require([ createCDNUrl(name) ], onLoad, function(err){
+            require([ createCDNUrl(name) ], onLoad, function(err) {
                onLoad.error(err);
             });
          } else {

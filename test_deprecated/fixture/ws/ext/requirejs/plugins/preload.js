@@ -4,12 +4,14 @@
 
 (function() {
 
-  'use strict';
-   var global = (function(){ return this || (0,eval)('this'); }()),
-       define = global.define || (global.requirejs && global.requirejs.define),
-       buffer = [],
-       busy = false,
-       queue;
+   'use strict';
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
+      define = global.define || (global.requirejs && global.requirejs.define),
+      buffer = [],
+      busy = false,
+      queue;
 
    /**
     * Пушим модули в очередь
@@ -35,7 +37,7 @@
 
       queue.addCallback(function() {
          return pd.done().getResult();
-      }).addErrback(function(error){
+      }).addErrback(function(error) {
          // Я никогда не умру
          // Я буду вечно жить © Dolphin
          $ws.single.ioc.resolve('ILogger').error('Preloader', error);
@@ -72,7 +74,7 @@
                   var result = JSON.parse(xhr.responseText);
                   push(result);
                   def.callback();
-               } catch(err) {
+               } catch (err) {
                   def.errback(err);
                }
             } else {
@@ -126,7 +128,7 @@
       if (typeof window == 'undefined') {
          return {
             load: function(n, r, load) {
-               load()
+               load();
             }
          };
       }
@@ -134,14 +136,16 @@
       queue = new $ws.proto.Deferred().callback();
 
       return {
-         load: function (name, require, onLoad, conf) {
+         load: function(name, require, onLoad, conf) {
             name = name.split(';');
             if (typeof window === 'undefined') {
                onLoad(function() {});
             } else {
-               onLoad(function() { preload(name); });
+               onLoad(function() {
+                  preload(name); 
+               });
             }
          }
-      }
+      };
    });
 }());

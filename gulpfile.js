@@ -11,45 +11,39 @@ try {
       process.exit(1);
    }
 
-   const fs = require('fs'),
+   //логгер - прежде всего
+   const gulplog = require('gulplog');
+   const logger = require('./lib/logger').setGulpLogger(gulplog);
+
+   //ws должен быть вызван раньше чем первый global.requirejs
+   const nodeWS = require('./gulpTasks/helpers/node-ws');
+   let err = nodeWS.init();
+   if (err) {
+      logger.error(err);
+      process.exit(1);
+   }
+
+   const
       gulp = require('gulp'),
-      logger = require('./lib/logger').logger,
       buildTask = require('./gulpTasks/build.js'),
-      guardSingleProcessTask = require('./gulpTasks/guard-single-process.js');
+      guardSingleProcessTask = require('./gulpTasks/guard-single-process.js'),
+      BuildConfiguration = require('./gulpTasks/helpers/build-configuration.js');
+
 
    logger.info('Параметры запуска: ' + JSON.stringify(process.argv));
 
-   //для получения 1 параметра --config не нужна сторонняя библиотека
-   let configFile = '';
-   process.argv.forEach(value => {
-      if (value.startsWith('--config=')) {
-         configFile = value.replace('--config=', '');
-      }
-   });
-
-   if (!fs.existsSync(configFile)) {
-      logger.error(3, 'Файл конфигурации не задан или файл не существует, используйте параметр --config');
+   let config = new BuildConfiguration();
+   err = config.load(process.argv);
+   if (err) {
+      logger.error(err);
       process.exit(1);
    }
-
-   let config = {};
-   try {
-      config = JSON.parse(fs.readFileSync(configFile, {encoding: 'utf-8'}).toString());
-   } catch (e) {
-      logger.error(4, 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message);
-      process.exit(1);
-   }
-   if (!config) {
-      logger.error(5, 'Файл конфигурации пустой');
-   }
-
-   guardSingleProcessTask.init(config['cache']);
 
    gulp.task('build',
       gulp.series(
-         guardSingleProcessTask.lock,
+         guardSingleProcessTask.lock(config.cachePath),
          buildTask.create(config),
-         guardSingleProcessTask.unlock));
+         guardSingleProcessTask.unlock()));
 
 } catch (e) {
    // eslint-disable-next-line no-console

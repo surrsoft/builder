@@ -2,45 +2,57 @@
 
 const gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
+   gulpHtmlTmpl = require('./html-tmpl'),
    path = require('path'),
-   transliterate = require('./../lib/utils/transliterate'),
+   transliterate = require('../lib/transliterate'),
    ChangesStore = require('./helpers/changes-store'),
    changedInPlace = require('./changed-in-place'),
-   clean = require('gulp-clean');
+   clean = require('gulp-clean'),
+   addModuleInfo = require('./add-module-info');
 
-
-const copyTaskGenerator = function(moduleNameWithResponsible, modulePath, outputDir, changesStore) {
-   const folderModule = path.basename(modulePath),
-      moduleInput = modulePath + '/**/*.*',
-      moduleOutput = path.join(outputDir, transliterate(folderModule));
+const copyTaskGenerator = function(moduleInfo, changesStore) {
+   const moduleInput = path.join(moduleInfo.path,  '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
-         .pipe(changedInPlace(changesStore, modulePath))
+         .pipe(changedInPlace(changesStore, moduleInfo.path))
+         .pipe(addModuleInfo(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
-         .pipe(gulp.dest(moduleOutput));
+         .pipe(gulp.dest(moduleInfo.output));
+   };
+};
+
+const htmlTmplTaskGenerator = function(moduleInfo, changesStore) {
+   const moduleInput = path.join(moduleInfo.path,  '/**/*.html.tmpl');
+
+   return function htmlTmpl() {
+      return gulp.src(moduleInput)
+
+         //.pipe(changedInPlace(changesStore, module.path))
+         .pipe(addModuleInfo(moduleInfo))
+         .pipe(gulpHtmlTmpl())
+         .pipe(gulpRename(file => {
+            file.dirname = transliterate(file.dirname);
+            file.basename = transliterate(file.basename);
+            file.extname = ''; // *.html.tmpl => *.html
+         }))
+         .pipe(gulp.dest(moduleInfo.output));
    };
 };
 
 module.exports = {
    'create': function buildTask(config) {
-      const modulesList = config['modules'];
-      let copyTasks = [],
-         changesStore = new ChangesStore(config['cache']);
+      let buildTasks = [],
+         changesStore = new ChangesStore(config.cachePath);
 
-      //TODO:
-      for (let i = 0; i < modulesList.length; i++) {
-         //for (let i = 0; i < 2; i++) {
-         const module = modulesList[i];
-         let moduleNameWithResponsible = module['name'];
-         if (module['responsible']) {
-            moduleNameWithResponsible += ` (responsible: ${module['responsible']})`;
-         }
-
-         copyTasks.push(copyTaskGenerator(moduleNameWithResponsible, module.path, config.output, changesStore));
+      for (let moduleInfo of config.modules) {
+         buildTasks.push(
+            gulp.parallel(
+               copyTaskGenerator(moduleInfo, changesStore),
+               htmlTmplTaskGenerator(moduleInfo, changesStore)));
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -48,7 +60,7 @@ module.exports = {
          for (let modulePath in changesStore.store) {
             if (changesStore.store.hasOwnProperty(modulePath)) {
                if (!changesStore.store[modulePath].exist) {
-                  pattern.push(transliterate(path.basename(modulePath)) + '/**/*.*');
+                  pattern.push(transliterate(path.join(path.basename(modulePath)), '/**/*.*'));
                } else {
                   let files = changesStore.store[modulePath]['files'];
                   for (let filePath in files) {
@@ -78,7 +90,7 @@ module.exports = {
       };
 
       return gulp.series(
-         gulp.parallel(copyTasks),
+         gulp.series(buildTasks),
          gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };

@@ -1,17 +1,19 @@
-(function(){
+(function() {
 
-   "use strict";
+   'use strict';
 
-   var global = (function(){ return this || (0,eval)('this'); }()),
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
       define = global.define || (global.requirejs && global.requirejs.define);
 
-   define("template", {
-      load: function (name, require, load, conf) {
+   define('template', {
+      load: function(name, require, load, conf) {
          try {
-            $ws.core.attachComponent('Source').addCallback(function(){
+            $ws.core.attachComponent('Source').addCallback(function() {
                return $ws.core.attachTemplate(name, {fast: true});
             }).addCallbacks(load, load.error.bind(load));
-         } catch(e) {
+         } catch (e) {
             load.error(e);
          }
       }
