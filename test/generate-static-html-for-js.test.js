@@ -104,7 +104,8 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
-         result.text.should.equal('TITLE:testTitle\n');
+         result.text.should.equal('TITLE:testTitle\n' +
+            'START_DIALOG:MyModule\n');
       });
       it('module without web page', async() => {
          const componentInfo = {

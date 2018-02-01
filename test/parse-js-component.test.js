@@ -62,6 +62,5 @@ describe('parse js component', function() {
       //теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);
    });
-
 });
 
