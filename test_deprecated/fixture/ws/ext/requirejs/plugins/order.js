@@ -11,7 +11,7 @@
 //maps the namespaced requirejs API to non-namespaced local variables.
 /*requirejs namespace: true */
 
-(function () {
+(function() {
 
    //Sadly necessary browser inference due to differences in the way
    //that browsers load and execute dynamically inserted javascript
@@ -23,20 +23,21 @@
    //spec. With compliant browsers .async true by default, and
    //if false, then it will execute in order. Favor that test first for forward
    //compatibility.
-   var testScript = typeof document !== "undefined" &&
-         typeof window !== "undefined" &&
-         document.createElement("script"),
+   var testScript = typeof document !== 'undefined' &&
+         typeof window !== 'undefined' &&
+         document.createElement('script'),
 
       supportsInOrderExecution = testScript && (testScript.async ||
          ((window.opera &&
-            Object.prototype.toString.call(window.opera) === "[object Opera]") ||
+            Object.prototype.toString.call(window.opera) === '[object Opera]') ||
+
             //If Firefox 2 does not have to be supported, then
             //a better check may be:
             //('mozIsLocallyAvailable' in window.navigator)
-            ("MozAppearance" in document.documentElement.style))),
+            ('MozAppearance' in document.documentElement.style))),
 
-   //This test is true for IE browsers, which will load scripts but only
-   //execute them once the script is added to the DOM.
+      //This test is true for IE browsers, which will load scripts but only
+      //execute them once the script is added to the DOM.
       supportsLoadSeparateFromExecute = testScript &&
          testScript.readyState === 'uninitialized',
 
@@ -55,9 +56,9 @@
       var node = evt.currentTarget || evt.srcElement, i,
          moduleName, resource;
 
-      if (evt.type === "load" || readyRegExp.test(node.readyState)) {
+      if (evt.type === 'load' || readyRegExp.test(node.readyState)) {
          //Pull out the name of the module and the context.
-         moduleName = node.getAttribute("data-requiremodule");
+         moduleName = node.getAttribute('data-requiremodule');
 
          //Mark this cache request as loaded
          cached[moduleName] = true;
@@ -81,7 +82,7 @@
          //Remove this script tag from the DOM
          //Use a setTimeout for cleanup because some older IE versions vomit
          //if removing a script node while it is being evaluated.
-         setTimeout(function () {
+         setTimeout(function() {
             node.parentNode.removeChild(node);
          }, 15);
       }
@@ -122,7 +123,7 @@
    define({
       version: '1.0.5',
 
-      load: function (name, req, onLoad, config) {
+      load: function(name, req, onLoad, config) {
          var hasToUrl = !!req.nameToUrl,
             url, node, context;
 
@@ -181,7 +182,7 @@
                   req: req,
                   onLoad: onLoad
                });
-               require.attach(url, null, name, scriptCacheCallback, "script/cache");
+               require.attach(url, null, name, scriptCacheCallback, 'script/cache');
             }
          }
       }

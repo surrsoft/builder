@@ -1,7 +1,7 @@
 'use strict';
 
 const chai = require('chai'),
-   transliterate = require('./../lib/utils/transliterate');
+   transliterate = require('../lib/transliterate');
 
 chai.should();
 

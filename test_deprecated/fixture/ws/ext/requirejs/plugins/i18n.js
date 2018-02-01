@@ -1,12 +1,15 @@
 (function() {
 
-   "use strict";
-   var global = (function() {return this || (0,eval)('this');}()),
-       define = global.define || (global.requirejs && global.requirejs.define),
-       // На препроцессоре грузим все языки
-       loadAllLangs = typeof document == 'undefined';
+   'use strict';
+   var global = (function() {
+         return this || (0, eval)('this');
+      }()),
+      define = global.define || (global.requirejs && global.requirejs.define),
 
-   define("i18n", ['json', 'css'], function() {
+      // На препроцессоре грузим все языки
+      loadAllLangs = typeof document == 'undefined';
+
+   define('i18n', ['json', 'css'], function() {
       return {
          load: function(name, require, onLoad/*, conf*/) {
             var names = name.split(';'),
@@ -27,7 +30,7 @@
                      }
                      (function(dictPath, dictName, curLang) {
                         var arr = [],
-                            def = new $ws.proto.Deferred();
+                           def = new $ws.proto.Deferred();
 
                         if ($ws._const.dictionary[dictName + '.' + curLang + '.json']) {
                            arr.push('json!' + dictPath);
@@ -62,6 +65,6 @@
                onLoad($ws.single.i18n.rk.bind($ws.single.i18n));
             });
          }
-      }
+      };
    });
 }());

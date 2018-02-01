@@ -4,60 +4,71 @@
 /* jshint ignore:start */
 var toS = Object.prototype.toString;
 
-if(typeof(window) == 'undefined') {
+if (typeof (window) == 'undefined') {
    window = undefined;
 }
-if(typeof(document) == 'undefined') {
+if (typeof (document) == 'undefined') {
    document = undefined;
 }
-if(typeof(navigator) == 'undefined') {
+if (typeof (navigator) == 'undefined') {
    navigator = undefined;
 }
 
-var isPlainArray = (function () {
+var isPlainArray = (function() {
    var arrayTag = '[object Array]';
-   return function (arr) {
-      return !!(arr && typeof(arr) === 'object' && toS.call(arr) === arrayTag &&
+   return function(arr) {
+      return !!(arr && typeof (arr) === 'object' && toS.call(arr) === arrayTag &&
       Object.getPrototypeOf(arr) === Array.prototype);
    };
 })();
 
-var nop = function(dummy){}, retTrue = function() { return true }, skip = function(p){ return p; };
+var nop = function(dummy) {}, retTrue = function() {
+      return true; 
+   }, skip = function(p) {
+      return p; 
+   };
+
 /**
  * Если инструмент для сбора статистики отсутствует, заменяем его на пустышку
  */
-if (typeof(window) == 'undefined' || window.BOOMR === undefined){
+if (typeof (window) == 'undefined' || window.BOOMR === undefined) {
    var
-      dummyBlock= {closeSyncBlock: nop, openSyncBlock: nop, close: nop, stop: nop},
+      dummyBlock = {closeSyncBlock: nop, openSyncBlock: nop, close: nop, stop: nop},
       dummySpan = { stop: nop };
    BOOMR = {
-      page_ready : nop,
-      plugins : {
-         WS : {
+      page_ready: nop,
+      plugins: {
+         WS: {
             prepareEnvironment: nop,
-            startSpan : function(dummy) { return dummySpan; },
-            reportError : nop,
-            reportMessage : nop,
+            startSpan: function(dummy) {
+               return dummySpan; 
+            },
+            reportError: nop,
+            reportMessage: nop,
             reportEvent: nop,
             logUserActivity: nop,
-            startBlock: function(n){ return dummyBlock; }
+            startBlock: function(n) {
+               return dummyBlock; 
+            }
          }
       },
-      version : false
+      version: false
    };
 }
 /* jshint ignore:end *//* jshint ignore:end */
 /*
  * Инициализация объекта для компонентов ядра
  */
-(function(){
-   var global = (function(){ return this || (0,eval)('this'); }());
+(function() {
+   var global = (function() {
+      return this || (0, eval)('this'); 
+   }());
    global.SBIS3 = {};
    global.SBIS3.CORE = {};
 }());
 
 
-$ws = (function(){
+$ws = (function() {
    var cssTransformProperty = document && (function() {
       var element = document.createElement('div');
       return element.style.transform !== undefined && 'transform' ||        //new browsers
@@ -69,10 +80,10 @@ $ws = (function(){
 
    function IEVersion() {
       var ua = (navigator && navigator.userAgent.toString().toLowerCase()) || '',
-          match = /(msie)\s+([\w.]+)/.exec(ua) ||
+         match = /(msie)\s+([\w.]+)/.exec(ua) ||
                   /(trident)(?:.*rv:([\w.]+))?/.exec(ua) ||
                   /(edge)\/([\w]+)/.exec(ua),
-          rv = match && parseInt(match[2], 10);
+         rv = match && parseInt(match[2], 10);
 
       return rv;
    }
@@ -83,20 +94,22 @@ $ws = (function(){
    }
 
    var now = +new Date(), timeShift2014 = +new Date(2014, 9, 26),
-       userAgent = (navigator && navigator.userAgent) || '',
-       isIOSMobilePlatform = !!(/(iPod|iPhone|iPad)/.test(userAgent)),
-       /**
+      userAgent = (navigator && navigator.userAgent) || '',
+      isIOSMobilePlatform = !!(/(iPod|iPhone|iPad)/.test(userAgent)),
+
+      /**
         * На таблетках нет Mobile в UA
         * @link https://developer.chrome.com/multidevice/user-agent
         */
-       isAndroidMobilePlatform = !!(/Android/.test(userAgent) && /AppleWebKit/.test(userAgent)),
-       isMacOSPlatform = !!(/\bMac\s+OS\s+X\b/.test(userAgent)),
-       isChromeIOS = !!(isIOSMobilePlatform && userAgent.match(/\bCriOS\b/)),
-       isChromeDesktop = !!(window && window['chrome']) || isChromeIOS,
-       isMobilePlatform = isIOSMobilePlatform || isAndroidMobilePlatform,
-       ieVersion = IEVersion();
+      isAndroidMobilePlatform = !!(/Android/.test(userAgent) && /AppleWebKit/.test(userAgent)),
+      isMacOSPlatform = !!(/\bMac\s+OS\s+X\b/.test(userAgent)),
+      isChromeIOS = !!(isIOSMobilePlatform && userAgent.match(/\bCriOS\b/)),
+      isChromeDesktop = !!(window && window['chrome']) || isChromeIOS,
+      isMobilePlatform = isIOSMobilePlatform || isAndroidMobilePlatform,
+      ieVersion = IEVersion();
 
    return {
+
       /**
        * Неймспейс для всех констант
        * @namespace
@@ -105,7 +118,7 @@ $ws = (function(){
          JSONRPC_PROOTOCOL_VERSION: 4,
          fasttemplate: true,
          nostyle: false,
-         moscowTimeOffset: now >= timeShift2014 ? 3*60 : 4*60, // UTC+04:00 ... 26/10/2014 UTC+03:00
+         moscowTimeOffset: now >= timeShift2014 ? 3 * 60 : 4 * 60, // UTC+04:00 ... 26/10/2014 UTC+03:00
          javaStartTimeout: 15000,
          styleLoadTimeout: 4000, // Поднял до 4 секунд, так как на медленном соединении не успевало отработать
          IDENTITY_SPLITTER: ',',
@@ -119,7 +132,7 @@ $ws = (function(){
          debug: window && window.location.hash.indexOf('dbg') > 0,
          saveLastState: true,
          checkSessionCookie: true,
-         i18n:false,
+         i18n: false,
 
          /***
           * Флаг показывает, что код исполняется на клиентской стороне, на браузере
@@ -137,76 +150,90 @@ $ws = (function(){
           */
          compatibility: {
             dateBug: (new Date(2014, 0, 1, 0, 0, 0, 0).getHours() !== 0),
+
             /**
              * Поддержка placeholder'а на элементах input
              */
             placeholder: document && !!('placeholder' in document.createElement('input')),
+
             /**
              * Поддержка загрузки файлов с использованием стандартного инпута (её может не быть, если, к примеру, у пользователя iPad)
              */
-            fileupload: document && (function() { var i = document.createElement('input'); i.setAttribute('type', 'file'); return !i.disabled }()),
+            fileupload: document && (function() {
+               var i = document.createElement('input'); i.setAttribute('type', 'file'); return !i.disabled; 
+            }()),
+
             /**
              * У старых версий оперы немного другая обработка клавиатурных нажатий. В ней эта константа будет равна false
              */
             correctKeyEvents: window && (!window.opera || parseFloat(window.opera.version()) >= 12.1),
+
             /**
              * Поддержка css3-анимаций
              */
-            cssAnimations: document && (function(){
+            cssAnimations: document && (function() {
                var style = document.createElement('div').style;
                return style.transition !== undefined ||  //Opera, IE 10+, Firefox 16+, Chrome 26+, Safari ?
                   style.mozTransition !== undefined ||   //Firefox 4-15 (?)
                   style.webkitTransition !== undefined;  //Chrome ?-25, Safari ? - ?
             })(),
+
             /**
              * Поддержка <b>requestFullscreen</b> и подобных на элементе (позволяет показывать в полноэкранном режиме только некоторые элементы)
              */
-            fullScreen: document && (function(){
+            fullScreen: document && (function() {
                var element = document.createElement('div');
                return element.requestFullscreen !== undefined ||  //Opera
                   element.mozRequestFullScreen !== undefined ||   //Firefox
                   element.webkitRequestFullscreen !== undefined;  //Chrome
             })(),
+
             /**
              * Поддержка события прокрутки колеса мыши. Есть 3 основных варианта:
              * 1) 'wheel'. DOM3 событие, поддержка есть пока только в ие 9+ и файерфоксе (17+)
              * 2) 'mousewheel'. Старое, популярное событие. Имеет большие проблемы из-за разных значений в различных браузерах и даже ос. Аналог в файерфоксе - MozMousePixelScroll или DOMMouseWheel.
              * 3) 'DOMMouseWheel'. Для файерфокса версии 0.9.7+
              */
-            wheel: document && (function(){
+            wheel: document && (function() {
                var element = document.createElement('div');
-               return (element.onwheel !== undefined || document.documentMode >= 9) ? 'wheel' : // Firefox 17+, IE 9+
-                  element.onmousewheel !== undefined ? 'mousewheel' : // Chrome, Opera, IE 8-
-                     'DOMMouseScroll'; // older Firefox
+               return (element.onwheel !== undefined || document.documentMode >= 9) ? 'wheel' // Firefox 17+, IE 9+
+                  : element.onmousewheel !== undefined ? 'mousewheel' // Chrome, Opera, IE 8-
+                     : 'DOMMouseScroll'; // older Firefox
             })(),
             cssTransformProperty: cssTransformProperty,
+
             /**
              * Поддержка css-трансформаций. Появились в Chrome (изначально), Firefox (3.5), Internet Explorer (9), Opera (10.5), Safari (3.1)
              */
             cssTransform: !!cssTransformProperty,
+
             /**
              * Есть ли поддержка прикосновений (touch) у браузера
              */
             touch: document && (navigator.msMaxTouchPoints || 'ontouchstart' in document.documentElement),
+
             /**
              * Определение поддержки стандартной работы со стилями
              */
-            standartStylesheetProperty: document && (function(){
+            standartStylesheetProperty: document && (function() {
                var style = document.createElement('style');
                style.setAttribute('type', 'text/css');
                return !style.styleSheet;
             })()
          },
+
          /**
           * Константы, которые можно использовать для проверки браузера
           * @namespace
           */
          browser: {
+
             /**
              * Мобильный сафари - iPhone, iPod, iPad
              */
             isMobileSafari: isIOSMobilePlatform && !isChromeIOS &&
                             /AppleWebKit/.test(userAgent) && /Mobile\//.test(userAgent),
+
             /**
              * Мобильные версии браузеров на андроиде
              */
@@ -226,6 +253,7 @@ $ws = (function(){
              * internet explorer
              */
             isIE: !!ieVersion,
+
             /**
              * internet explorer 7
              */
@@ -291,50 +319,56 @@ $ws = (function(){
 
             webkit: /(webkit)/i.test(userAgent)
          },
-         buildnumber:"", // jshint ignore:line
+         buildnumber: '', // jshint ignore:line
          resizeDelay: 40,
+
          /**
           * Пакеты XML-файлов
           * Формат:
           *    ИмяШаблона: ФайлПакета, ...
           */
          xmlPackages: {},
+
          /**
           * Пакеты JS-файлов
           * Формат:
           *    ОригинальноеИмяФайла: ИмяФайлаПакета, ...
           */
-         jsPackages:{},
+         jsPackages: {},
+
          /**
           * Оглавление. Сопоставление коротких имен полным путям
           * Формат:
           *    ИмяШаблона: ФайлШаблона, ...
           */
          xmlContents: {},
+
          /**
           * Альтернативные имена входного файла
           */
-         htmlNames : {},
+         htmlNames: {},
+
          /**
           * Декларативная привязка обработчиков на ресурс
           * Формат:
           *    ИмяШаблона: [ ФайлОбработчиков, ФайлОбработчиков, ... ], ...
           */
          hdlBindings: {},
+
          /**
           * Хосты, с которых запрашиваются файлы
           * Формат:
           *    Хост1, Хост2, Хост3, ...
           */
-         hosts : [],
+         hosts: [],
          services: {},
          modules: {},
          jsCoreModules: {
-            'SBIS3.CORE.AttributeCfgParser'    : 'lib/Control/AttributeCfgParser/AttributeCfgParser.module.js',
-            'SBIS3.CORE.bignumWrapper'         : 'ext/bignumWrapper.js',
-            'SBIS3.CORE.Marker'                : 'lib/Marker/Marker.module.js',
-            'SBIS3.CORE.NavigationController'  : 'lib/NavigationController/NavigationController.module.js',
-            'SBIS3.CORE.Control'               : 'lib/Control/Control.module.js',
+            'SBIS3.CORE.AttributeCfgParser': 'lib/Control/AttributeCfgParser/AttributeCfgParser.module.js',
+            'SBIS3.CORE.bignumWrapper': 'ext/bignumWrapper.js',
+            'SBIS3.CORE.Marker': 'lib/Marker/Marker.module.js',
+            'SBIS3.CORE.NavigationController': 'lib/NavigationController/NavigationController.module.js',
+            'SBIS3.CORE.Control': 'lib/Control/Control.module.js',
             'SBIS3.CORE.SelectMergeRecordDialog': 'res/wsmodules/SelectMergeRecordDialog/SelectMergeRecordDialog.module.js',
             'SBIS3.CORE.ConfirmRecordActionsDialog': 'res/wsmodules/ConfirmRecordActionsDialog/ConfirmRecordActionsDialog.module.js',
             'SBIS3.CORE.ReplaceRecordDialog': 'res/wsmodules/ReplaceRecordDialog/ReplaceRecordDialog.module.js',
@@ -349,7 +383,7 @@ $ws = (function(){
             'SBIS3.CORE.FileScaner': 'lib/Control/FileScaner/FileScaner.module.js',
             'SBIS3.CORE.FileScanLoader': 'lib/Control/FileScanLoader/FileScanLoader.module.js',
             'SBIS3.CORE.PrintDialog': 'lib/Control/PrintDialog/PrintDialog.module.js',
-            "SBIS3.CORE.SelectScannerDialog": "lib/Control/FileScanLoader/resources/SelectScannerDialog/SelectScannerDialog.module.js",
+            'SBIS3.CORE.SelectScannerDialog': 'lib/Control/FileScanLoader/resources/SelectScannerDialog/SelectScannerDialog.module.js',
             'SBIS3.CORE.FileLoader': 'lib/Control/FileLoader/FileLoader.module.js',
             'SBIS3.CORE.FileStorageLoader': 'lib/Control/FileStorageLoader/FileStorageLoader.module.js',
             'SBIS3.CORE.FileLoaderAbstract': 'lib/Control/FileLoaderAbstract/FileLoaderAbstract.module.js',
@@ -404,163 +438,174 @@ $ws = (function(){
             'SBIS3.CORE.RecordFloatArea': 'lib/Control/RecordFloatArea/RecordFloatArea.module.js',
 
             'SBIS3.CORE.FilterFloatArea': 'lib/Control/FilterFloatArea/FilterFloatArea.module.js',
-            'SBIS3.CORE.FilterButtonArea'      : 'lib/Control/FilterButton/FilterButtonArea/FilterButtonArea.module.js',
-            'SBIS3.CORE.FilterButtonHistory'   : 'lib/Control/FilterButton/FilterButtonHistory/FilterButtonHistory.module.js',
-            'SBIS3.CORE.FilterButton'          : 'lib/Control/FilterButton/FilterButton.module.js',
+            'SBIS3.CORE.FilterButtonArea': 'lib/Control/FilterButton/FilterButtonArea/FilterButtonArea.module.js',
+            'SBIS3.CORE.FilterButtonHistory': 'lib/Control/FilterButton/FilterButtonHistory/FilterButtonHistory.module.js',
+            'SBIS3.CORE.FilterButton': 'lib/Control/FilterButton/FilterButton.module.js',
 
-            'SBIS3.CORE.Master'                : 'lib/Control/Master/Master.module.js',
+            'SBIS3.CORE.Master': 'lib/Control/Master/Master.module.js',
+
             /*'SBIS3.CORE.SchemeEditor'          : 'lib/Control/SchemeEditor/SchemeEditor.module.js',*/
-            'SBIS3.CORE.TabTemplatedArea'      : 'lib/Control/TabTemplatedArea/TabTemplatedArea.module.js',
-            'SBIS3.CORE.Tabs'                  : 'lib/Control/Tabs/Tabs.module.js',
-            'SBIS3.CORE.Grid'                  : 'lib/Control/Grid/Grid.module.js',
-            'SBIS3.CORE.RelativeGrid'          : 'lib/Control/RelativeGrid/RelativeGrid.module.js',
-            'SBIS3.CORE.GridLayout'            : 'lib/Control/GridLayout/GridLayout.module.js',
-            'SBIS3.CORE.StackPanel'            : 'lib/Control/StackPanel/StackPanel.module.js',
-            'SBIS3.CORE.Table'                 : 'lib/Control/Table/Table.module.js',
-            'SBIS3.CORE.Accordion'             : 'lib/Control/Accordion/Accordion.module.js',
-            'SBIS3.CORE.NavigationPanel'       : 'lib/Control/NavigationPanel/NavigationPanel.module.js',
-            'SBIS3.CORE.ToolBar'               : 'lib/Control/ToolBar/ToolBar.module.js',
-            'SBIS3.CORE.FieldImage'            : 'lib/Control/FieldImage/FieldImage.module.js',
-            'SBIS3.CORE.ImageGallery'          : 'lib/Control/ImageGallery/ImageGallery.module.js',
-            'SBIS3.CORE.FieldLink'             : 'lib/Control/FieldLink/FieldLink.module.js',
-            'SBIS3.CORE.FieldNumeric'          : 'lib/Control/FieldNumeric/FieldNumeric.module.js',
-            'SBIS3.CORE.FieldInteger'          : 'lib/Control/FieldInteger/FieldInteger.module.js',
-            'SBIS3.CORE.FieldMoney'            : 'lib/Control/FieldMoney/FieldMoney.module.js',
-            'SBIS3.CORE.FieldRadio'            : 'lib/Control/FieldRadio/FieldRadio.module.js',
-            'SBIS3.CORE.ProgressBar'           : 'lib/Control/ProgressBar/ProgressBar.module.js',
-            'SBIS3.CORE.HTMLChunk'             : 'lib/Control/HTMLChunk/HTMLChunk.module.js',
-            'SBIS3.CORE.MasterProgress'        : 'lib/Control/MasterProgress/MasterProgress.module.js',
-            'SBIS3.CORE.GroupCheckBox'         : 'lib/Control/GroupCheckBox/GroupCheckBox.module.js',
-            'SBIS3.CORE.OperationsPanel'       : 'lib/Control/OperationsPanel/OperationsPanel.module.js',
-            'SBIS3.CORE.OperationsPanelND'     : 'lib/Control/OperationsPanelND/OperationsPanelND.module.js',
-            'SBIS3.CORE.HTMLView'              : 'lib/Control/HTMLView/HTMLView.module.js',
-            'SBIS3.CORE.DateRange'             : 'lib/Control/DateRange/DateRange.module.js',
-            'SBIS3.CORE.DateRangeChoose'       : 'lib/Control/DateRangeChoose/DateRangeChoose.module.js',
-            'SBIS3.CORE.FieldCheckbox'         : 'lib/Control/FieldCheckbox/FieldCheckbox.module.js',
-            'SBIS3.CORE.RecordArea'            : 'lib/Control/RecordArea/RecordArea.module.js',
-            'SBIS3.CORE.GridAbstract'          : 'lib/Control/GridAbstract/GridAbstract.module.js',
-            'SBIS3.CORE.Dialog'                : 'lib/Control/Dialog/Dialog.module.js',
-            'SBIS3.CORE.DialogAlert'           : 'lib/Control/DialogAlert/DialogAlert.module.js',
-            'SBIS3.CORE.DialogConfirm'         : 'lib/Control/DialogConfirm/DialogConfirm.module.js',
-            'SBIS3.CORE.DialogRecord'          : 'lib/Control/DialogRecord/DialogRecord.module.js',
-            'SBIS3.CORE.Selector'              : 'lib/Control/DialogSelector/Selector.module.js',
-            'SBIS3.CORE.DialogSelector'        : 'lib/Control/DialogSelector/DialogSelector.module.js',
-            'SBIS3.CORE.FloatAreaSelector'     : 'lib/Control/DialogSelector/FloatAreaSelector.module.js',
-            'SBIS3.CORE.SimpleDialogAbstract'  : 'lib/Control/SimpleDialogAbstract/SimpleDialogAbstract.module.js',
-            'SBIS3.CORE.Window'                : 'lib/Control/Window/Window.module.js',
-            'SBIS3.CORE.ModalOverlay'          : 'lib/Control/ModalOverlay/ModalOverlay.module.js',
-            'SBIS3.CORE.TemplatedArea'         : 'lib/Control/TemplatedArea/TemplatedArea.module.js',
-            'SBIS3.CORE.TemplatedAreaAbstract' : 'lib/Control/TemplatedAreaAbstract/TemplatedAreaAbstract.module.js',
-            'SBIS3.CORE.AreaAbstract'          : 'lib/Control/AreaAbstract/AreaAbstract.module.js',
-            'SBIS3.CORE.RaphaelMultiGraph'     : 'lib/Control/RaphaelMultiGraph/RaphaelMultiGraph.module.js',
-            'SBIS3.CORE.RaphaelPieGraph'       : 'lib/Control/RaphaelPieGraph/RaphaelPieGraph.module.js',
-            'SBIS3.CORE.RaphaelChartGraph'     : 'lib/Control/RaphaelChartGraph/RaphaelChartGraph.module.js',
-            'SBIS3.CORE.RaphaelDrawerInternal' : 'lib/Control/RaphaelDrawerInternal/RaphaelDrawerInternal.module.js',
-            'SBIS3.CORE.DragAndDropPlugin'     : 'lib/Control/DragAndDropPlugin/DragAndDropPlugin.module.js',
-            'SBIS3.CORE.CompoundControl'       : 'lib/Control/CompoundControl/CompoundControl.module.js',
-            'SBIS3.CORE.TabButtons'            : 'lib/Control/TabButtons/TabButtons.module.js',
-            'SBIS3.CORE.CollapsingNavigation'  : 'lib/CollapsingNavigation/CollapsingNavigation.module.js',
+            'SBIS3.CORE.TabTemplatedArea': 'lib/Control/TabTemplatedArea/TabTemplatedArea.module.js',
+            'SBIS3.CORE.Tabs': 'lib/Control/Tabs/Tabs.module.js',
+            'SBIS3.CORE.Grid': 'lib/Control/Grid/Grid.module.js',
+            'SBIS3.CORE.RelativeGrid': 'lib/Control/RelativeGrid/RelativeGrid.module.js',
+            'SBIS3.CORE.GridLayout': 'lib/Control/GridLayout/GridLayout.module.js',
+            'SBIS3.CORE.StackPanel': 'lib/Control/StackPanel/StackPanel.module.js',
+            'SBIS3.CORE.Table': 'lib/Control/Table/Table.module.js',
+            'SBIS3.CORE.Accordion': 'lib/Control/Accordion/Accordion.module.js',
+            'SBIS3.CORE.NavigationPanel': 'lib/Control/NavigationPanel/NavigationPanel.module.js',
+            'SBIS3.CORE.ToolBar': 'lib/Control/ToolBar/ToolBar.module.js',
+            'SBIS3.CORE.FieldImage': 'lib/Control/FieldImage/FieldImage.module.js',
+            'SBIS3.CORE.ImageGallery': 'lib/Control/ImageGallery/ImageGallery.module.js',
+            'SBIS3.CORE.FieldLink': 'lib/Control/FieldLink/FieldLink.module.js',
+            'SBIS3.CORE.FieldNumeric': 'lib/Control/FieldNumeric/FieldNumeric.module.js',
+            'SBIS3.CORE.FieldInteger': 'lib/Control/FieldInteger/FieldInteger.module.js',
+            'SBIS3.CORE.FieldMoney': 'lib/Control/FieldMoney/FieldMoney.module.js',
+            'SBIS3.CORE.FieldRadio': 'lib/Control/FieldRadio/FieldRadio.module.js',
+            'SBIS3.CORE.ProgressBar': 'lib/Control/ProgressBar/ProgressBar.module.js',
+            'SBIS3.CORE.HTMLChunk': 'lib/Control/HTMLChunk/HTMLChunk.module.js',
+            'SBIS3.CORE.MasterProgress': 'lib/Control/MasterProgress/MasterProgress.module.js',
+            'SBIS3.CORE.GroupCheckBox': 'lib/Control/GroupCheckBox/GroupCheckBox.module.js',
+            'SBIS3.CORE.OperationsPanel': 'lib/Control/OperationsPanel/OperationsPanel.module.js',
+            'SBIS3.CORE.OperationsPanelND': 'lib/Control/OperationsPanelND/OperationsPanelND.module.js',
+            'SBIS3.CORE.HTMLView': 'lib/Control/HTMLView/HTMLView.module.js',
+            'SBIS3.CORE.DateRange': 'lib/Control/DateRange/DateRange.module.js',
+            'SBIS3.CORE.DateRangeChoose': 'lib/Control/DateRangeChoose/DateRangeChoose.module.js',
+            'SBIS3.CORE.FieldCheckbox': 'lib/Control/FieldCheckbox/FieldCheckbox.module.js',
+            'SBIS3.CORE.RecordArea': 'lib/Control/RecordArea/RecordArea.module.js',
+            'SBIS3.CORE.GridAbstract': 'lib/Control/GridAbstract/GridAbstract.module.js',
+            'SBIS3.CORE.Dialog': 'lib/Control/Dialog/Dialog.module.js',
+            'SBIS3.CORE.DialogAlert': 'lib/Control/DialogAlert/DialogAlert.module.js',
+            'SBIS3.CORE.DialogConfirm': 'lib/Control/DialogConfirm/DialogConfirm.module.js',
+            'SBIS3.CORE.DialogRecord': 'lib/Control/DialogRecord/DialogRecord.module.js',
+            'SBIS3.CORE.Selector': 'lib/Control/DialogSelector/Selector.module.js',
+            'SBIS3.CORE.DialogSelector': 'lib/Control/DialogSelector/DialogSelector.module.js',
+            'SBIS3.CORE.FloatAreaSelector': 'lib/Control/DialogSelector/FloatAreaSelector.module.js',
+            'SBIS3.CORE.SimpleDialogAbstract': 'lib/Control/SimpleDialogAbstract/SimpleDialogAbstract.module.js',
+            'SBIS3.CORE.Window': 'lib/Control/Window/Window.module.js',
+            'SBIS3.CORE.ModalOverlay': 'lib/Control/ModalOverlay/ModalOverlay.module.js',
+            'SBIS3.CORE.TemplatedArea': 'lib/Control/TemplatedArea/TemplatedArea.module.js',
+            'SBIS3.CORE.TemplatedAreaAbstract': 'lib/Control/TemplatedAreaAbstract/TemplatedAreaAbstract.module.js',
+            'SBIS3.CORE.AreaAbstract': 'lib/Control/AreaAbstract/AreaAbstract.module.js',
+            'SBIS3.CORE.RaphaelMultiGraph': 'lib/Control/RaphaelMultiGraph/RaphaelMultiGraph.module.js',
+            'SBIS3.CORE.RaphaelPieGraph': 'lib/Control/RaphaelPieGraph/RaphaelPieGraph.module.js',
+            'SBIS3.CORE.RaphaelChartGraph': 'lib/Control/RaphaelChartGraph/RaphaelChartGraph.module.js',
+            'SBIS3.CORE.RaphaelDrawerInternal': 'lib/Control/RaphaelDrawerInternal/RaphaelDrawerInternal.module.js',
+            'SBIS3.CORE.DragAndDropPlugin': 'lib/Control/DragAndDropPlugin/DragAndDropPlugin.module.js',
+            'SBIS3.CORE.CompoundControl': 'lib/Control/CompoundControl/CompoundControl.module.js',
+            'SBIS3.CORE.TabButtons': 'lib/Control/TabButtons/TabButtons.module.js',
+            'SBIS3.CORE.CollapsingNavigation': 'lib/CollapsingNavigation/CollapsingNavigation.module.js',
 
-            'SBIS3.CORE.CopyPlugin'            : 'lib/Control/DataViewAbstract/plugins/Copy-plugin.js',
+            'SBIS3.CORE.CopyPlugin': 'lib/Control/DataViewAbstract/plugins/Copy-plugin.js',
             'SBIS3.CORE.MarkedRowOptionsPlugin': 'lib/Control/DataViewAbstract/plugins/MarkedRowOptions-plugin.js',
-            'SBIS3.CORE.MergePlugin'           : 'lib/Control/DataViewAbstract/plugins/Merge-plugin.js',
-            'SBIS3.CORE.PrintPlugin'           : 'lib/Control/DataViewAbstract/plugins/Print-plugin.js',
-            'SBIS3.CORE.ToolbarPlugin'         : 'lib/Control/DataViewAbstract/plugins/Toolbar-plugin.js',
-            'SBIS3.CORE.MovePlugin'            : 'lib/Control/DataViewAbstract/plugins/Move-plugin.js',
+            'SBIS3.CORE.MergePlugin': 'lib/Control/DataViewAbstract/plugins/Merge-plugin.js',
+            'SBIS3.CORE.PrintPlugin': 'lib/Control/DataViewAbstract/plugins/Print-plugin.js',
+            'SBIS3.CORE.ToolbarPlugin': 'lib/Control/DataViewAbstract/plugins/Toolbar-plugin.js',
+            'SBIS3.CORE.MovePlugin': 'lib/Control/DataViewAbstract/plugins/Move-plugin.js',
 
-            'SBIS3.CORE.AtPlaceEditPlugin'     : 'lib/Control/TableView/plugins/AtPlaceEdit-plugin.js',
-            'SBIS3.CORE.LadderPlugin'          : 'lib/Control/TableView/plugins/Ladder-plugin.js',
-            'SBIS3.CORE.ResultsPlugin'         : 'lib/Control/TableView/plugins/Results-plugin.js',
-            'SBIS3.CORE.ColorMarkPlugin'       : 'lib/Control/TableView/plugins/ColorMark-plugin.js',
-            'SBIS3.CORE.PartScrollPlugin'      : 'lib/Control/TableView/plugins/PartScroll-plugin/PartScroll-plugin.js',
-            'SBIS3.CORE.ScrollPaging'          : 'lib/Control/TableView/plugins/ScrollPaging-plugin.js',
-            'SBIS3.CORE.RightAccordionPlugin'  : 'lib/Control/TableView/plugins/RightAccordion-plugin/RightAccordion-plugin.js',
+            'SBIS3.CORE.AtPlaceEditPlugin': 'lib/Control/TableView/plugins/AtPlaceEdit-plugin.js',
+            'SBIS3.CORE.LadderPlugin': 'lib/Control/TableView/plugins/Ladder-plugin.js',
+            'SBIS3.CORE.ResultsPlugin': 'lib/Control/TableView/plugins/Results-plugin.js',
+            'SBIS3.CORE.ColorMarkPlugin': 'lib/Control/TableView/plugins/ColorMark-plugin.js',
+            'SBIS3.CORE.PartScrollPlugin': 'lib/Control/TableView/plugins/PartScroll-plugin/PartScroll-plugin.js',
+            'SBIS3.CORE.ScrollPaging': 'lib/Control/TableView/plugins/ScrollPaging-plugin.js',
+            'SBIS3.CORE.RightAccordionPlugin': 'lib/Control/TableView/plugins/RightAccordion-plugin/RightAccordion-plugin.js',
 
-            'SBIS3.CORE.CropPlugin'            : 'lib/Control/FieldImage/plugins/FieldImageCrop-plugin.js',
-            'SBIS3.CORE.ZoomPlugin'            : 'lib/Control/FieldImage/plugins/FieldImageZoom-plugin.js',
+            'SBIS3.CORE.CropPlugin': 'lib/Control/FieldImage/plugins/FieldImageCrop-plugin.js',
+            'SBIS3.CORE.ZoomPlugin': 'lib/Control/FieldImage/plugins/FieldImageZoom-plugin.js',
 
-            'SBIS3.CORE.AccordionCollapsePlugin':'lib/Control/Accordion/plugins/Collapse-plugin.js',
-            'SBIS3.CORE.NavigationPanelCollapsePlugin':'lib/Control/NavigationPanel/plugins/Collapse-plugin.js',
+            'SBIS3.CORE.AccordionCollapsePlugin': 'lib/Control/Accordion/plugins/Collapse-plugin.js',
+            'SBIS3.CORE.NavigationPanelCollapsePlugin': 'lib/Control/NavigationPanel/plugins/Collapse-plugin.js',
 
-            'SBIS3.CORE.RequestHistoryPlugin'  : 'lib/Control/FilterButton/plugins/RequestHistory-plugin.js',
+            'SBIS3.CORE.RequestHistoryPlugin': 'lib/Control/FilterButton/plugins/RequestHistory-plugin.js',
 
-            'SBIS3.CORE.Label'                 : 'lib/Control/Label/Label.module.js',
-            'SBIS3.CORE.ButtonAbstract'        : 'lib/Control/ButtonAbstract/ButtonAbstract.module.js',
-            'SBIS3.CORE.LinkButton'            : 'lib/Control/LinkButton/LinkButton.module.js',
-            'SBIS3.CORE.OutlineButton'           : 'lib/Control/OutlineButton/OutlineButton.module.js',
-            'SBIS3.CORE.PushButton'            : 'lib/Control/PushButton/PushButton.module.js',
-            'SBIS3.CORE.TabControl'            : 'lib/Control/TabControl/TabControl.module.js',
-            'SBIS3.CORE.SwitchableArea'        : 'lib/Control/SwitchableArea/SwitchableArea.module.js',
-            'SBIS3.CORE.FloatAreaManager'      : 'lib/FloatAreaManager/FloatAreaManager.module.js',
+            'SBIS3.CORE.Label': 'lib/Control/Label/Label.module.js',
+            'SBIS3.CORE.ButtonAbstract': 'lib/Control/ButtonAbstract/ButtonAbstract.module.js',
+            'SBIS3.CORE.LinkButton': 'lib/Control/LinkButton/LinkButton.module.js',
+            'SBIS3.CORE.OutlineButton': 'lib/Control/OutlineButton/OutlineButton.module.js',
+            'SBIS3.CORE.PushButton': 'lib/Control/PushButton/PushButton.module.js',
+            'SBIS3.CORE.TabControl': 'lib/Control/TabControl/TabControl.module.js',
+            'SBIS3.CORE.SwitchableArea': 'lib/Control/SwitchableArea/SwitchableArea.module.js',
+            'SBIS3.CORE.FloatAreaManager': 'lib/FloatAreaManager/FloatAreaManager.module.js',
 
-            "SBIS3.CORE.CustomType"            : "lib/Type/CustomType.module.js",
-            "SBIS3.CORE.TDataSource"           : "lib/Type/TDataSource/TDataSource.module.js",
-            "SBIS3.CORE.TReaderParams"         : "lib/Type/TReaderParams/TReaderParams.module.js",
-            "SBIS3.CORE.PluginManager"         : "lib/PluginManager/PluginManager.module.js",
-            "SBIS3.CORE.PluginSetupDialog"     : "lib/PluginManager/resources/PluginSetupDialog/PluginSetupDialog.module.js",
-            'SBIS3.CORE.DataBoundMixin'        : 'lib/Mixins/DataBoundMixin.module.js',
+            'SBIS3.CORE.CustomType': 'lib/Type/CustomType.module.js',
+            'SBIS3.CORE.TDataSource': 'lib/Type/TDataSource/TDataSource.module.js',
+            'SBIS3.CORE.TReaderParams': 'lib/Type/TReaderParams/TReaderParams.module.js',
+            'SBIS3.CORE.PluginManager': 'lib/PluginManager/PluginManager.module.js',
+            'SBIS3.CORE.PluginSetupDialog': 'lib/PluginManager/resources/PluginSetupDialog/PluginSetupDialog.module.js',
+            'SBIS3.CORE.DataBoundMixin': 'lib/Mixins/DataBoundMixin.module.js',
             'SBIS3.CORE.CompoundActiveFixMixin': 'lib/Mixins/CompoundActiveFixMixin.module.js',
-            'SBIS3.CORE.ServerEventBus'        : 'lib/ServerEventBus/ServerEventBus.module.js',
-            'SBIS3.CORE.CloseButton'           : 'lib/Control/CloseButton/CloseButton.module.js',
-            'SBIS3.CORE.Cache'                 : 'lib/Cache/Cache.module.js',
-            'SBIS3.CORE.CoreValidators'        : 'lib/CoreValidators/CoreValidators.module.js',
-            'SBIS3.CORE.KbLayoutRevert'        : 'lib/KbLayoutRevert/KbLayoutRevert.module.js',
-            'SBIS3.CORE.MarkupTransformer'     : 'lib/MarkupTransformer/MarkupTransformer.module.js',
-            'SBIS3.CORE.TileView'              : 'lib/Control/TileView/TileView.module.js',
-            'SBIS3.CORE.XSLT'                  : 'lib/xslt.js',
-            'SBIS3.CORE.ServiceUpdateNotifier' : 'lib/ServiceUpdateNotifier/ServiceUpdateNotifier.module.js'
+            'SBIS3.CORE.ServerEventBus': 'lib/ServerEventBus/ServerEventBus.module.js',
+            'SBIS3.CORE.CloseButton': 'lib/Control/CloseButton/CloseButton.module.js',
+            'SBIS3.CORE.Cache': 'lib/Cache/Cache.module.js',
+            'SBIS3.CORE.CoreValidators': 'lib/CoreValidators/CoreValidators.module.js',
+            'SBIS3.CORE.KbLayoutRevert': 'lib/KbLayoutRevert/KbLayoutRevert.module.js',
+            'SBIS3.CORE.MarkupTransformer': 'lib/MarkupTransformer/MarkupTransformer.module.js',
+            'SBIS3.CORE.TileView': 'lib/Control/TileView/TileView.module.js',
+            'SBIS3.CORE.XSLT': 'lib/xslt.js',
+            'SBIS3.CORE.ServiceUpdateNotifier': 'lib/ServiceUpdateNotifier/ServiceUpdateNotifier.module.js'
          },
-         jsModules:{},
+         jsModules: {},
+
          /**
           * Информация о словарях, чтобы знать какие есть и какие грузить
           * Временная мера (все временное постоянно :( )
           */
-         dictionary:{
-            'SBIS3.CORE.DialogConfirm.uk-UA.json'     : 'ws/lib/Control/DialogConfirm/resources/lang/uk-UA/uk-UA.json',
-            'SBIS3.CORE.LoadingIndicator.uk-UA.json'  : 'ws/lib/Control/LoadingIndicator/resources/lang/uk-UA/uk-UA.json',
-            'SBIS3.CORE.PathSelector.uk-UA.json'      : 'ws/lib/Control/PathSelector/resources/lang/uk-UA/uk-UA.json',
-            'SBIS3.CORE.Control.uk-UA.json'           : 'ws/lib/Control/resources/lang/uk-UA/uk-UA.json',
-            'SBIS3.CORE.SearchString.uk-UA.json'      : 'ws/lib/Control/SearchString/resources/lang/uk-UA/uk-UA.json'
+         dictionary: {
+            'SBIS3.CORE.DialogConfirm.uk-UA.json': 'ws/lib/Control/DialogConfirm/resources/lang/uk-UA/uk-UA.json',
+            'SBIS3.CORE.LoadingIndicator.uk-UA.json': 'ws/lib/Control/LoadingIndicator/resources/lang/uk-UA/uk-UA.json',
+            'SBIS3.CORE.PathSelector.uk-UA.json': 'ws/lib/Control/PathSelector/resources/lang/uk-UA/uk-UA.json',
+            'SBIS3.CORE.Control.uk-UA.json': 'ws/lib/Control/resources/lang/uk-UA/uk-UA.json',
+            'SBIS3.CORE.SearchString.uk-UA.json': 'ws/lib/Control/SearchString/resources/lang/uk-UA/uk-UA.json'
          },
          classLoaderMappings: {},
+
          /**
           * Расстояние, утянув объект на которое, начинается drag&drop
           */
          startDragDistance: 4,
          availableLanguage: {},
+
          /**
           * Классы контролов-окон, которые могут быть родителями других окон и всплывающих панелей.
           */
          WINDOW_CLASSES: ['SBIS3.CORE.FloatArea', 'SBIS3.CORE.Window', 'SBIS3.CORE.FieldEditAtPlace']
       },
+
       /**
        * Хранилище загруженных обработчиков
        */
       _handlers: {},
       core: {},
       helpers: {},
+
       /**
        * Хранилище прототипов классов
        */
-      proto : {},
+      proto: {},
+
       /**
        * Хранилище синглтонов
        */
-      single : {},
+      single: {},
+
       /**
        * Хранилище миксинов
        */
-      mixins : {},
+      mixins: {},
+
       /**
        * Рендеры.
        * См. {@link $ws.render.defaultColumn}.
        * @namespace
        */
-      render : {
+      render: {
+
          /**
           * @namespace
           */
          defaultColumn: {
+
             /**
              * Отображает число с добавлением нулей слева от него.
              * Используется для приведения к виду с заданным количеством знаков.
@@ -572,13 +617,14 @@ $ws = (function(){
              *     $ws.render.defaultColumn.leadZero(2, 5); // выведет 00002
              * </pre>
              */
-            leadZero : function(val, l){
-               var s ='' + Math.floor(val);
+            leadZero: function(val, l) {
+               var s = '' + Math.floor(val);
                if (s.length < l) {
                   s = '00000000000000000000000000000000'.substr(0, l - s.length) + s;
                }
                return s;
             },
+
             /**
              * Отображает форматированное целое число.
              * Производит отделение разрядов пробелами.
@@ -597,19 +643,22 @@ $ws = (function(){
              *     $ws.render.defaultColumn.integer(1111111, true) // выведет 1111111
              * </pre>
              */
-            integer : function(val, noDelimiters){
+            integer: function(val, noDelimiters) {
                try {
                   val = String.trim('' + val);
                } catch (e) {
                   val = '';
                }
+
                //пример регулярки "-000233.222px"
                var numRe = /^-?([0]*)(\d+)\.?\d*\D*$/, f;
-               if(!val.match(numRe))
+               if (!val.match(numRe)) {
                   return '0';
+               }
                f = val.replace(numRe, '$2');
                return (val.substr(0, 1) == '-' ? '-' : '') + (noDelimiters ? f : String.trim(f.replace(/(?=(\d{3})+$)/g, ' ')));
             },
+
             /**
              * Спан для boolean, формирует вёрстку: если true - чекбокс с галочкой, иначе пустой.
              * @param {Boolean} val Исходное значение.
@@ -621,7 +670,7 @@ $ws = (function(){
              *     $ws.render.defaultColumn.logic(true,true); // вернёт "<span class="ws-browser-checkbox-logic true"></span>"
              * </pre>
              */
-            logic: function(val, returnStr){
+            logic: function(val, returnStr) {
                var className;
                if (val) {
                   className = 'ws-browser-checkbox-logic-true';
@@ -631,6 +680,7 @@ $ws = (function(){
                var str = '<span class="ws-browser-checkbox-logic ' + (className) + '"></span>';
                return returnStr ? str : $(str);
             },
+
             /**
              * Отображает число в формате денежной единицы
              * Округляет с точностью до двух знаков после запятой, целую часть разделяет на разряды пробелами.
@@ -643,9 +693,10 @@ $ws = (function(){
              *     $ws.render.defaultColumn.money(12345.678); // выведет "12 345.68"
              * </pre>
              */
-            money : function(val){
+            money: function(val) {
                return $ws.render.defaultColumn.real(val, 2, true);
             },
+
             /**
              * Отображает значение в виде отформатированного числа
              * @param val Вещественное число.
@@ -658,34 +709,38 @@ $ws = (function(){
              */
             numeric: function(val, integers, delimiters, decimals, notNegative, maxLength) {
                var
+
                   // позиция точки
                   dotPos,
+
                   // позиция второй точки
                   dotSec,
+
                   // позиция 0 до точки справа
                   lastZeroPos,
+
                   // присутствует ли минус в значении
                   hasMinus;
-               if ((val+'').indexOf('e') !== -1 && !isNaN(parseFloat(val+''))) {
+               if ((val + '').indexOf('e') !== -1 && !isNaN(parseFloat(val + ''))) {
                   val = val.toFixed(20);
                   lastZeroPos = val.length;
-                  while (val.charAt(lastZeroPos-1) === '0') {
+                  while (val.charAt(lastZeroPos - 1) === '0') {
                      --lastZeroPos;
                   }
                   val = val.substr(0, lastZeroPos);
                }
-               val = ('' + val).replace(notNegative ? /[^0-9\.]/g : /[^0-9\.\-]/g,'');
+               val = ('' + val).replace(notNegative ? /[^0-9\.]/g : /[^0-9\.\-]/g, '');
                dotPos = val.indexOf('.');
-               dotSec = val.indexOf('.',dotPos+1);
+               dotSec = val.indexOf('.', dotPos + 1);
                hasMinus = /\-/.test(val) ? 1 : 0;
                if (dotSec !== -1) {
-                  val = val.substring(0,dotSec);
+                  val = val.substring(0, dotSec);
                }
-               if (dotPos === val.length-1) {
-                  val = val.substr(0,val.length-1);
+               if (dotPos === val.length - 1) {
+                  val = val.substr(0, val.length - 1);
                   dotPos = -1;
                }
-               if(!/^\-?[0-9]*(\.[0-9]*)?$/.test(val)) {
+               if (!/^\-?[0-9]*(\.[0-9]*)?$/.test(val)) {
                   val = '';
                }
                if (val === '' || val === null) { // все нумерик поля кроме денег могут иметь значение null
@@ -704,9 +759,9 @@ $ws = (function(){
                      val = dotPos === -1
                         ? $ws.render.defaultColumn.integer(val, !delimiters)
                         : [
-                        $ws.render.defaultColumn.integer(val.substring(0, dotPos), !delimiters),
-                        val.substr(dotPos)
-                     ].join('');
+                           $ws.render.defaultColumn.integer(val.substring(0, dotPos), !delimiters),
+                           val.substr(dotPos)
+                        ].join('');
                   } else {
                      val = val.substr(0, maxLength && !delimiters ?  maxLength : val.length);
                      val = $ws.render.defaultColumn.real(val, decimals, delimiters);
@@ -714,7 +769,8 @@ $ws = (function(){
                }
                return val;
             },
-             /**
+
+            /**
               * Отображает значение в виде отформатированного вещественного числа
               * @param val Вещественное число.
               * @param {Number} decimals Количество знаков после запятой. Если их нет, то допишет нули.
@@ -725,27 +781,29 @@ $ws = (function(){
               *     $ws.render.defaultColumn.real(2564, 2, true); // выведет "2 564.00"
               * </pre>
               */
-            real : function(val, decimals, delimiters){
+            real: function(val, decimals, delimiters) {
                decimals = decimals === undefined ? 0 : decimals;
-               var dotPos = (val = (val + "")).indexOf(".");
+               var dotPos = (val = (val + '')).indexOf('.');
                var firstPart = val;
 
-               if (dotPos != -1)
+               if (dotPos != -1) {
                   firstPart = val.substring(0, dotPos);
+               }
 
                // Получаем математическое округление дробной части
                var
                   parsedVal = dotPos != -1 ? val.substr(dotPos) : 0,
                   isNegative = firstPart.indexOf('-') !== -1,
                   weNeedDecimals;
-               if(parsedVal == '.')
+               if (parsedVal == '.') {
                   parsedVal = '.0';
+               }
                weNeedDecimals = parseFloat(parsedVal).toFixed(decimals);
                if (weNeedDecimals == 1) {
                   firstPart = parseInt(firstPart, 10);
                   firstPart = isNegative ? firstPart - 1 : firstPart + 1;
                }
-               weNeedDecimals = weNeedDecimals.replace(/.+\./, "");
+               weNeedDecimals = weNeedDecimals.replace(/.+\./, '');
 
                // Если передано значение без точки или нам нужна только целая часть
                if (decimals === 0) {
@@ -758,6 +816,7 @@ $ws = (function(){
                buffer.push(weNeedDecimals);
                return buffer.join('');
             },
+
             /**
              * Отображает любое число в виде вещественного с 3 знаками после запятой
              * Может использоваться для перевода из миллисекунд в секунды и других целей.
@@ -771,9 +830,10 @@ $ws = (function(){
              *     $ws.render.defaultColumn.timer(123456); // выведет 123.456
              * </pre>
              */
-            timer : function(val){
-               return Math.floor(val / 1000) + "." + $ws.render.defaultColumn.leadZero(val % 1000, 3);
+            timer: function(val) {
+               return Math.floor(val / 1000) + '.' + $ws.render.defaultColumn.leadZero(val % 1000, 3);
             },
+
             /**
              * Отображает объект Date строкой вида 'DD.MM.YY HH:MM:SS'
              * Например, new Date(2010,8,6,17,44,15) преобразуется в '06.09.10 17:44:15'.
@@ -792,49 +852,51 @@ $ws = (function(){
              *     $ws.render.defaultColumn.timestamp(new Date(2013,10,7,9,27,0,1), "Дата и время", true); // выведет "07.11.13 09:27:00.001"
              * </pre>
              */
-            timestamp : function(date, type, prec){
-               var retval = "",
-                   year, month, day, hours, minutes, seconds, millisec,
-                   precision = (typeof prec == 'object' && 'precision' in prec ? prec.precision : prec);
-               if(date instanceof Date){
-                  year = date.getFullYear()%100;
+            timestamp: function(date, type, prec) {
+               var retval = '',
+                  year, month, day, hours, minutes, seconds, millisec,
+                  precision = (typeof prec == 'object' && 'precision' in prec ? prec.precision : prec);
+               if (date instanceof Date) {
+                  year = date.getFullYear() % 100;
                   month = date.getMonth() + 1;
                   day = date.getDate();
                   hours = date.getHours();
                   minutes = date.getMinutes();
                   seconds = date.getSeconds();
                   millisec = date.getMilliseconds();
-                  if(type !== "time" && type !== "Время")
-                     retval = ((day < 10 ? "0" : "") + day) + "." + ((month < 10 ? "0" : "") + month) + "." + ((year < 10 ? "0" : "") + year);
-                  if(type in {"timestamp": 0, "Дата и время": 0, "time": 0, "Время": 0}){
-                     retval += type in {"time": 0, "Время": 0} ? "" : " ";
-                     retval +=  ((hours < 10 ? "0" : "") + hours) + ":" + ((minutes < 10 ? "0" : "") + minutes);
-                  if(precision === true || precision == 'sec' || precision == 'msec' || precision !== 'min') {
-                     retval += ":" + (seconds < 10 ? "0" : "") + seconds;
+                  if (type !== 'time' && type !== 'Время') {
+                     retval = ((day < 10 ? '0' : '') + day) + '.' + ((month < 10 ? '0' : '') + month) + '.' + ((year < 10 ? '0' : '') + year);
                   }
+                  if (type in {'timestamp': 0, 'Дата и время': 0, 'time': 0, 'Время': 0}) {
+                     retval += type in {'time': 0, 'Время': 0} ? '' : ' ';
+                     retval +=  ((hours < 10 ? '0' : '') + hours) + ':' + ((minutes < 10 ? '0' : '') + minutes);
+                     if (precision === true || precision == 'sec' || precision == 'msec' || precision !== 'min') {
+                        retval += ':' + (seconds < 10 ? '0' : '') + seconds;
+                     }
 
-                     if(precision === true || precision == 'msec') {
-                        if(millisec > 0) {
-                           if(millisec < 10)
-                              retval += ".00" + millisec;
-                           else {
-                              if(millisec < 100)
-                                 retval += ".0" + millisec;
-                              else
-                                 retval += "." + millisec;
+                     if (precision === true || precision == 'msec') {
+                        if (millisec > 0) {
+                           if (millisec < 10) {
+                              retval += '.00' + millisec;
+                           } else {
+                              if (millisec < 100) {
+                                 retval += '.0' + millisec;
+                              } else {
+                                 retval += '.' + millisec;
+                              }
                            }
+                        } else {
+                           retval += '.000';
                         }
-                        else
-                           retval += ".000";
                      }
 
                   }
-               }
-               else {
-                  retval = "&minus;";
+               } else {
+                  retval = '&minus;';
                }
                return retval;
             },
+
             /**
               * Отображение по умолчанию для колонок типа "перечисляемое"
               * Отображает текущее значение.
@@ -854,15 +916,16 @@ $ws = (function(){
               * </pre>
              */
             enumType: function(iEnum) {
-               if(iEnum instanceof $ws.proto.Enum){
+               if (iEnum instanceof $ws.proto.Enum) {
                   var value = iEnum.getCurrentValue();
-                  if(value === null){
+                  if (value === null) {
                      return '';
                   }
                   return iEnum.getValues()[iEnum.getCurrentValue()];
                }
                return '';
             },
+
             /**
              * Отображение по умолчанию для колонок типа "флаги"
              * @param {$ws.proto.Record} record Запись, флаги передаются именно в таком виде.
@@ -884,18 +947,19 @@ $ws = (function(){
              *    $ws.render.defaultColumn.flags(record); // выведет "Первое, Третье"
              * </pre>
              */
-            flags: function(record){
+            flags: function(record) {
                var res = [];
-               record.each(function(title, value){
-                  if(value){
+               record.each(function(title, value) {
+                  if (value) {
                      res.push(title);
                   }
                });
-               if(res.length){
+               if (res.length) {
                   return res.join(', ');
                }
-               return "&minus;";
+               return '&minus;';
             },
+
             /**
              * Проверяет принадлежность типа к строковому
              * @param {String} type Тип данных.
@@ -905,7 +969,7 @@ $ws = (function(){
              *     $ws.render.defaultColumn.isText("xid"); // выведет "false"
              * </pre>
              */
-            isText: function(type){
+            isText: function(type) {
                return type.indexOf('char') !== -1 || type == 'text';
             }
          }
@@ -927,10 +991,11 @@ $ws = (function(){
  *    null        - выбрать тип автоматически (см. setSQLSerializationMode).
  * @returns {String}
  */
-Date.prototype.toSQL = function (mode) {
+Date.prototype.toSQL = function(mode) {
 
-   if (mode === Date.SQL_SERIALIZE_MODE_AUTO)
+   if (mode === Date.SQL_SERIALIZE_MODE_AUTO) {
       mode = this._serializeMode;
+   }
 
    var
       year = this.getFullYear(),
@@ -941,9 +1006,10 @@ Date.prototype.toSQL = function (mode) {
       seconds = this.getSeconds(),
       milliseconds = this.getMilliseconds(),
       offsetNum = this.getTimezoneOffset(),
-   //offset = ['+', 0, ':', 0],
+
+      //offset = ['+', 0, ':', 0],
       offset = ['+', 0],
-      someDig = function (num, dig) { // функция для форматирования чисел с нужным количеством цифр/ведущих нулей
+      someDig = function(num, dig) { // функция для форматирования чисел с нужным количеством цифр/ведущих нулей
          if (dig === undefined || dig < 2) {
             dig = 2;
          }
@@ -954,36 +1020,46 @@ Date.prototype.toSQL = function (mode) {
          return (dig == 2 ? '' + num : someDig(num, dig - 1)) + dec;
       },
       data = '';
-   if (mode !== Date.SQL_SERIALIZE_MODE_TIME)
+   if (mode !== Date.SQL_SERIALIZE_MODE_TIME) {
       data = year + '-' + someDig(month) + '-' + someDig(day);
+   }
    if (mode !== Date.SQL_SERIALIZE_MODE_DATE) {
-      if (mode === Date.SQL_SERIALIZE_MODE_DATETIME)
+      if (mode === Date.SQL_SERIALIZE_MODE_DATETIME) {
          data += ' ';
+      }
       data += someDig(hours) + ':' + someDig(minutes) + ':' + someDig(seconds);
       if (milliseconds) // выводим милисекунды, если они заданы
+      {
          data += '.' + someDig(milliseconds, 3);
+      }
       if (offsetNum > 0) // добавляем указание часового пояса локали
+      {
          offset[0] = '-';
-      else
+      } else {
          offsetNum = -offsetNum;
+      }
+
       //offset[3] = offsetNum % 60;
       offsetNum -= offsetNum % 60;
       offset[1] = offsetNum / 60;
       offset[1] = someDig(offset[1]);
+
       //offset[3] = someDig(offset[3]);
       data += offset.join('');
    }
    return data;
 };
+
 /**
  * Метод сравнения дат. Если даты равны, вернёт true, иначе - false
  * @param {Date} d Другая дата.
  * @return {Boolean}
  */
-Date.prototype.equals = function (d) {
+Date.prototype.equals = function(d) {
    var res = false;
-   if (d instanceof Date)
+   if (d instanceof Date) {
       res = this.getTime() == d.getTime();
+   }
    return res;
 };
 
@@ -998,11 +1074,11 @@ Date.SQL_SERIALIZE_MODE_AUTO = null;
  *    true - Сериализуется как Дата и время.
  *    false - Сериализуется как Время.
  */
-Date.prototype.setSQLSerializationMode = function (mode) {
+Date.prototype.setSQLSerializationMode = function(mode) {
    this._serializeMode = mode;
 };
 
-Date.prototype.getSQLSerializationMode = function () {
+Date.prototype.getSQLSerializationMode = function() {
    return this._serializeMode;
 };
 
@@ -1023,7 +1099,7 @@ $ws._const.Date = {
  * @param {Number} timeValue Число, равное количеству миллисекунд,
  * прошедших с полуночи 1 января 1970 года по универсальному времени
  */
-Date.prototype.rollback = function (timeValue) {
+Date.prototype.rollback = function(timeValue) {
    this.setTime(timeValue);
 };
 
@@ -1115,7 +1191,7 @@ Date.prototype.rollback = function (timeValue) {
  * @returns {String} Возвращает дату в выбранном формате.
  * @function
  */
-Date.prototype.strftime = function () {
+Date.prototype.strftime = (function() {
    function _xPad(x, pad, r) {
       if (typeof r === 'undefined') {
          r = 10;
@@ -1127,33 +1203,33 @@ Date.prototype.strftime = function () {
    }
 
    var _formats = {
-      a: function (d) {
+      a: function(d) {
          return $ws._const.Date.days[d.getDay()];
       },
-      A: function (d) {
+      A: function(d) {
          return $ws._const.Date.longDays[d.getDay()];
       },
-      b: function (d) {
+      b: function(d) {
          return $ws._const.Date.months[d.getMonth()];
       },
-      B: function (d) {
+      B: function(d) {
          return $ws._const.Date.longMonths[d.getMonth()];
       },
-      q: function (d) {
+      q: function(d) {
          return $ws._const.Date.monthsWithDays[d.getMonth()];
       },
-      f: function (d) {
+      f: function(d) {
          return $ws._const.Date.longMonthsSmall[d.getMonth()];
       },
-      C: function (d) {
+      C: function(d) {
          return _xPad(parseInt(d.getFullYear() / 100, 10), 0);
       },
       d: ['getDate', '0'],
       e: ['getDate', ' '],
-      g: function (d) {
+      g: function(d) {
          return _xPad(parseInt(_formats.G(d) % 100, 10), 0);
       },
-      G: function (d) {
+      G: function(d) {
          var y = d.getFullYear();
          var V = parseInt(_formats.V(d), 10);
          var W = parseInt(_formats.W(d), 10);
@@ -1167,11 +1243,11 @@ Date.prototype.strftime = function () {
          return y;
       },
       H: ['getHours', '0'],
-      I: function (d) {
+      I: function(d) {
          var I = d.getHours() % 12;
          return _xPad(I === 0 ? 12 : I, 0);
       },
-      j: function (d) {
+      j: function(d) {
          var ms = d - new Date('' + d.getFullYear() + '/1/1 GMT');
          ms += d.getTimezoneOffset() * 60000; // Line differs from Yahoo implementation which would be equivalent to replacing it here with:
          // ms = new Date('' + d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate() + ' GMT') - ms;
@@ -1179,45 +1255,47 @@ Date.prototype.strftime = function () {
          return _xPad(doy, 0, 100);
       },
       k: ['getHours', '0'],
+
       // not in PHP, but implemented here (as in Yahoo)
-      l: function (d) {
+      l: function(d) {
          var l = d.getHours() % 12;
          return _xPad(l === 0 ? 12 : l, ' ');
       },
-      m: function (d) {
+      m: function(d) {
          return _xPad(d.getMonth() + 1, 0);
       },
       M: ['getMinutes', '0'],
-      p: function (d) {
+      p: function(d) {
          return ['AM', 'PM'][d.getHours() >= 12 ? 1 : 0];
       },
-      P: function (d) {
+      P: function(d) {
          return ['am', 'pm'][d.getHours() >= 12 ? 1 : 0];
       },
-      Q: function (d) {
+      Q: function(d) {
          return ['I', 'II', 'III', 'IV'][parseInt(d.getMonth() / 3, 10)];
       },
-      s: function (d) { // Yahoo uses return parseInt(d.getTime()/1000, 10);
+      s: function(d) { // Yahoo uses return parseInt(d.getTime()/1000, 10);
          return Date.parse(d) / 1000;
       },
       S: ['getSeconds', '0'],
-      u: function (d) {
+      u: function(d) {
          var dow = d.getDay();
          return ((dow === 0) ? 7 : dow);
       },
-      U: function (d) {
+      U: function(d) {
          var doy = parseInt(_formats.j(d), 10);
          var rdow = 6 - d.getDay();
          var woy = parseInt((doy + rdow) / 7, 10);
          return _xPad(woy, 0);
       },
-      v: function (d) {
+      v: function(d) {
          var month = d.getMonth();
          return $ws._const.Date.monthsSmall[month];
       },
-      V: function (d) {
+      V: function(d) {
          var woy = parseInt(_formats.W(d), 10);
          var dow1_1 = (new Date('' + d.getFullYear() + '/1/1')).getDay();
+
          // First week is 01 and not 00 as in the case of %U and %W,
          // so we add 1 to the final result except if day 1 of the year
          // is a Monday (then %W returns 01).
@@ -1232,26 +1310,26 @@ Date.prototype.strftime = function () {
          return _xPad(idow, 0);
       },
       w: 'getDay',
-      W: function (d) {
+      W: function(d) {
          var doy = parseInt(_formats.j(d), 10);
          var rdow = 7 - _formats.u(d);
          var woy = parseInt((doy + rdow) / 7, 10);
          return _xPad(woy, 0, 10);
       },
-      y: function (d) {
+      y: function(d) {
          return _xPad(d.getFullYear() % 100, 0);
       },
       Y: 'getFullYear',
-      z: function (d) {
+      z: function(d) {
          var o = d.getTimezoneOffset();
          var H = _xPad(parseInt(Math.abs(o / 60), 10), 0);
          var M = _xPad(o % 60, 0);
          return (o > 0 ? '-' : '+') + H + M;
       },
-      Z: function (d) {
+      Z: function(d) {
          return d.toString().replace(/^.*\(([^)]+)\)$/, '$1');
       },
-      '%': function (d) {
+      '%': function(d) {
          return '%';
       }
    };
@@ -1270,53 +1348,54 @@ Date.prototype.strftime = function () {
       X: '%r'
    };
 
-   return function (format) {
+   return function(format) {
       var self = this;
 
       // First replace aggregates (run in a loop because an agg may be made up of other aggs)
       while (format.match(/%[cDFhnrRtTxX]/)) {
-         format = format.replace(/%([cDFhnrRtTxX])/g, function (m0, m1) {
+         format = format.replace(/%([cDFhnrRtTxX])/g, function(m0, m1) {
             return _aggregates[m1];
          });
       }
 
       // Now replace formats - we need a closure so that the date object gets passed through
-      return format.replace(/%([aAbBCdefgGHIjklmMpPsqQSuUvVwWyYzZ%])/g, function (m0, m1) {
+      return format.replace(/%([aAbBCdefgGHIjklmMpPsqQSuUvVwWyYzZ%])/g, function(m0, m1) {
          var f = _formats[m1];
          if (typeof f === 'string') {
             return self[f]();
          } else if (typeof f === 'function') {
             return f(self);
-         } else if (typeof f === 'object' && typeof(f[0]) === 'string') {
+         } else if (typeof f === 'object' && typeof (f[0]) === 'string') {
             return _xPad(self[f[0]](), f[1]);
          } else { // Shouldn't reach here
             return m1;
          }
       });
-   }
-}();
+   };
+}());
 
 /**
  * Пытается разобрать дату из БД в объект Date
  * @param {String} date_time.
  * @returns {Date}.
  */
-Date.fromSQL = function (date_time) {
+Date.fromSQL = function(date_time) {
    var
-      dateSep = date_time.indexOf("-"),
-      timeSep = date_time.indexOf(":"),
-      millisecSep = date_time.indexOf("."),
+      dateSep = date_time.indexOf('-'),
+      timeSep = date_time.indexOf(':'),
+      millisecSep = date_time.indexOf('.'),
       tz = date_time.match(/([0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?)([+-])([0-9]{2})[:-]*([0-9]{2})*$/),
       tzSep = tz && tz.index + tz[1].length || -1,
-      timeOffset = tz && ((tz[2] + "1") * (tz[3] * 60 + (tz[4] * 1 || 0))) || $ws._const.moscowTimeOffset,
+      timeOffset = tz && ((tz[2] + '1') * (tz[3] * 60 + (tz[4] * 1 || 0))) || $ws._const.moscowTimeOffset,
       retval = new Date(),
       ms = null,
       msStr, y, m, d;
 
    retval.setHours(0, 0, 0, 0);
 
-   if (timeSep === -1 && dateSep === -1)
+   if (timeSep === -1 && dateSep === -1) {
       return retval;
+   }
 
    if (millisecSep !== -1) {
       msStr = date_time.substr(millisecSep + 1, (tzSep == -1 ? date_time.length : tzSep) - (millisecSep + 1));
@@ -1324,8 +1403,9 @@ Date.fromSQL = function (date_time) {
          msStr = msStr.substr(0, 3);
       }
       ms = parseInt(msStr, 10);
-      if (msStr.length < 3)
+      if (msStr.length < 3) {
          ms *= (msStr.length === 2 ? 10 : 100);
+      }
    }
 
    if (dateSep !== -1) {
@@ -1346,6 +1426,7 @@ Date.fromSQL = function (date_time) {
          parseInt(date_time.substr(timeSep + 1, 2), 10),
          parseInt(date_time.substr(timeSep + 4, 2), 10),
          ms);
+
       // Приводим время к местному из Московского если дата передана с сервера со временем
       retval.setMinutes(retval.getMinutes() - timeOffset - retval.getTimezoneOffset());
    }
@@ -1358,7 +1439,7 @@ Date.fromSQL = function (date_time) {
  * Изменяет пришедшую дату.
  * @returns {Date} Возвращает текущую уже изменённую дату.
  */
-Date.prototype.toServerTime = function () {
+Date.prototype.toServerTime = function() {
    // Приводим время к местному из Московского
    this.setMinutes(this.getMinutes() + this.getTimezoneOffset() + $ws._const.moscowTimeOffset);
    return this;
@@ -1370,7 +1451,7 @@ Date.prototype.toServerTime = function () {
  * Если не указан берется из даты.
  * @returns {Date}
  */
-Date.prototype.setLastMonthDay = function (month) {
+Date.prototype.setLastMonthDay = function(month) {
    month = month === undefined ? this.getMonth() : parseInt(month, 10);
    this.setDate(1);
    this.setMonth(month + 1);
@@ -1380,13 +1461,15 @@ Date.prototype.setLastMonthDay = function (month) {
 
 
 
-Object.isEmpty = function (obj) {
-   if (typeof(obj) !== 'object' || obj === null)
+Object.isEmpty = function(obj) {
+   if (typeof (obj) !== 'object' || obj === null) {
       return false;
+   }
 
    if (obj instanceof Object) {
-      for (var i in obj)
+      for (var i in obj) {
          return false;
+      }
    } else if (obj instanceof Array) {
       return obj.length === 0;
    }
@@ -1394,22 +1477,22 @@ Object.isEmpty = function (obj) {
    return true;
 };
 
-Object.isValid = function (obj) {
-   return obj !== null && !(obj instanceof Date) && typeof(obj) == 'object' && !Object.isEmpty(obj);
+Object.isValid = function(obj) {
+   return obj !== null && !(obj instanceof Date) && typeof (obj) == 'object' && !Object.isEmpty(obj);
 };
 
-if (typeof Object.getPrototypeOf !== "function") {
-   if (typeof "test".__proto__ === "object") {
-      Object.getPrototypeOf = function (object) {
+if (typeof Object.getPrototypeOf !== 'function') {
+   if (typeof 'test'.__proto__ === 'object') {
+      Object.getPrototypeOf = function(object) {
          return object.__proto__;
       };
    } else {
-      Object.getPrototypeOf = function (object) {
+      Object.getPrototypeOf = function(object) {
          // May break if the constructor has been tampered with
          return object.constructor.prototype;
       };
    }
-};
+}
 
 /**
  * Возвращает ключи и значения объекта в отсортированном виде.
@@ -1419,12 +1502,12 @@ if (typeof Object.getPrototypeOf !== "function") {
  * @param {Boolean} [sortByValues] Сортировать по занчениям (true) или по ключам (false).
  * @returns {Object} Объект с ключами. keys - ключи, values - значения.
  */
-Object.sortedPairs = function (obj, sortByValues) {
+Object.sortedPairs = function(obj, sortByValues) {
    var
       keys = Object.keys(obj),
       values = [],
       tempValue,
-      comparator = function (a, b) {
+      comparator = function(a, b) {
          var aFloat = parseFloat(a),
             bFloat = parseFloat(b),
             aNumeric = aFloat + '' === a,
@@ -1469,14 +1552,15 @@ if (Object.keys === undefined) {
     * @param {Object} obj
     * @return {Array}
     */
-   Object.keys = function (obj) {
+   Object.keys = function(obj) {
       var rv = [];
       for (var k in obj) {
-         if (obj.hasOwnProperty(k))
+         if (obj.hasOwnProperty(k)) {
             rv.push(k);
+         }
       }
       return rv;
-   }
+   };
 }
 
 /**
@@ -1503,13 +1587,13 @@ if (Object.keys === undefined) {
  * </pre>
  */
 if (!Function.prototype.bind) {
-   (function () {
+   (function() {
       var funcSlice = Array.prototype.slice,
          funcPush = Array.prototype.push;
-      Function.prototype.bind = function (ctx) {
+      Function.prototype.bind = function(ctx) {
          var f = this, args = arguments;
          if (args.length > 1) {
-            return function () {
+            return function() {
                var selfArgs = funcSlice.call(args, 1);
                if (selfArgs.concat) {
                   selfArgs = selfArgs.concat(funcSlice.call(arguments));
@@ -1517,15 +1601,16 @@ if (!Function.prototype.bind) {
                   funcPush.apply(selfArgs, funcSlice.call(arguments));
                }
                return f.apply(ctx, selfArgs);
-            }
+            };
          } else {
-            return function () {
+            return function() {
                return f.apply(ctx, arguments);
-            }
+            };
          }
       };
    })();
 }
+
 /**
  * @class
  * @name Function
@@ -1564,21 +1649,27 @@ if (!Function.prototype.bind) {
  * }
  * </pre>
  */
-Function.prototype.debounce = function (delay, first) {
+Function.prototype.debounce = function(delay, first) {
    var f = this, timer, wait = false;
-   return function () {
-      if(wait) return;
+   return function() {
+      if (wait) {
+         return;
+      }
       if (first && !timer) {
          f.apply(this, arguments);
          wait = true;
-         setTimeout(function(){ wait = false; }, delay);
+         setTimeout(function() {
+            wait = false; 
+         }, delay);
          return;
       }
 
-      if (timer)
+      if (timer) {
          clearTimeout(timer);
+      }
       var argsToCallWith = Array.prototype.slice.call(arguments);
       argsToCallWith.unshift(this);
+
       // f.bind(this, arg1, arg2, arg3, ...);
       timer = setTimeout(f.bind.apply(f, argsToCallWith), delay);
    };
@@ -1613,45 +1704,45 @@ Function.prototype.debounce = function (delay, first) {
  * }).throttle(1000);
  * </pre>
  */
-Function.prototype.throttle = function (delay, last) {
+Function.prototype.throttle = function(delay, last) {
    var f = this, next, state = true;
-   return function () {
+   return function() {
       if (state) {
          f.apply(this, arguments);
          state = false;
-         setTimeout(function () {
+         setTimeout(function() {
             state = true;
             if (last && next) {
                next();
                next = null;
             }
          }, delay);
-      }
-      else if(last){
+      } else if (last) {
          var argsToCallWith = Array.prototype.slice.call(arguments);
          argsToCallWith.unshift(this);
          next = f.bind.apply(f, argsToCallWith);
       }
+   };
+};
+
+Function.prototype.callAround = function(fn) {
+   if (fn) {
+      var f = this;
+      return function() {
+         Array.prototype.unshift.call(arguments, f);
+         return fn.apply(this, arguments);
+      };
+   } else {
+      return this;
    }
 };
 
-Function.prototype.callAround = function (fn) {
-   if (fn) {
-      var f = this;
-      return function () {
-         Array.prototype.unshift.call(arguments, f);
-         return fn.apply(this, arguments);
-      }
-   } else
-      return this;
-};
-
-Function.prototype.once = function () {
+Function.prototype.once = function() {
    var
       original = this,
       called = false,
       result;
-   return function () {
+   return function() {
       if (!called) {
          result = original.apply(this, arguments);
          called = true;
@@ -1659,8 +1750,9 @@ Function.prototype.once = function () {
          original = null;
       }
       return result;
-   }
+   };
 };
+
 /**
  * Метод обертки функции. Вызовет перед доопределяемой функцией переданную.
  * Если переданная функция вернула результат, добавит его последним аргументом
@@ -1677,22 +1769,24 @@ Function.prototype.once = function () {
  *        newFunc = func.callBefore(beforeFunc);
  * </pre>
  */
-Function.prototype.callBefore = function (fn) {
+Function.prototype.callBefore = function(fn) {
    if (fn) {
       var f = this;
-      return function () {
+      return function() {
          var res = fn.apply(this, arguments);
-         if (res !== undefined)
+         if (res !== undefined) {
             Array.prototype.push.call(arguments, res);
+         }
          return f.apply(this, arguments);
-      }
-   } else
+      };
+   } else {
       return this;
+   }
 };
 
-Function.prototype.callBeforeWithCondition = function (fn, condition) {
+Function.prototype.callBeforeWithCondition = function(fn, condition) {
    if (fn) {
-      return this.callBefore(function () {
+      return this.callBefore(function() {
          if (condition && condition.apply(this, [])) {
             return fn.apply(this, arguments);
          }
@@ -1702,9 +1796,9 @@ Function.prototype.callBeforeWithCondition = function (fn, condition) {
    }
 };
 
-Function.prototype.callNext = function (fn) {
+Function.prototype.callNext = function(fn) {
    var f = this;
-   return function () {
+   return function() {
       var res = f.apply(this, arguments),
          sourceResult = res;
       if (fn) {
@@ -1712,23 +1806,24 @@ Function.prototype.callNext = function (fn) {
          res = fn.apply(this, arguments);
       }
       return res === undefined ? sourceResult : res;
-   }
+   };
 };
 
-Function.prototype.callNextWithCondition = function (fn, condition) {
-   if (fn)
-      return this.callNext(function () {
+Function.prototype.callNextWithCondition = function(fn, condition) {
+   if (fn) {
+      return this.callNext(function() {
          if (condition && condition.apply(this, [])) {
             return fn.apply(this, arguments);
          }
       });
-   else
+   } else {
       return this;
+   }
 };
 
-Function.prototype.callIf = function (condition) {
+Function.prototype.callIf = function(condition) {
    var f = this;
-   return function () {
+   return function() {
       if (condition && condition.apply(this, [])) {
          return f.apply(this, arguments);
       }
@@ -1736,26 +1831,26 @@ Function.prototype.callIf = function (condition) {
 };
 
 if (String.prototype.trim === undefined) {
-   String.prototype.trim = function () {
+   String.prototype.trim = function() {
       return this.replace(/^\s+|\s+$/g, '');
    };
 }
 
-String.prototype.beginsWith = function (s) {
+String.prototype.beginsWith = function(s) {
    s = ('' + s);
    return this.substr(0, s.length) === s;
-}
+};
 
-String.prototype.ucFirst = function () {
+String.prototype.ucFirst = function() {
    return this.substr(0, 1).toUpperCase() + this.substr(1);
-}
+};
 
-String.prototype.lcFirst = function () {
+String.prototype.lcFirst = function() {
    return this.substr(0, 1).toLowerCase() + this.substr(1);
-}
+};
 
 if (String.trim === undefined) {
-   String.trim = function (str) {
+   String.trim = function(str) {
       return str.trim();
    };
 }
@@ -1770,7 +1865,7 @@ if (typeof Object.create != 'function') {
       // make a safe reference to Object.prototype.hasOwnProperty
       var hasOwn = Object.prototype.hasOwnProperty;
 
-      return function (O) {
+      return function(O) {
          // 1. If Type(O) is not Object or Null throw a TypeError exception.
          if (typeof O != 'object') {
             throw TypeError('Object prototype may only be an Object or null');
@@ -1810,7 +1905,7 @@ if (typeof Object.create != 'function') {
  * но также создает копию внутренних массивов
  * @returns {Array} массив, копию которого нужно получить
  */
-Array.clone = function (array) {
+Array.clone = function(array) {
    var copy = array.slice(),
       obj = {};
    for (var i = 0, l = copy.length; i < l; i++) {
@@ -1829,42 +1924,48 @@ Array.clone = function (array) {
    }
    return copy;
 };
-Array.isArray = function (arg) {
+Array.isArray = function(arg) {
    return isPlainArray(arg);
 };
 
-Array.indexOf = function (arr, e /*, from */) {
+Array.indexOf = function(arr, e /*, from */) {
 
-   if (!(arr instanceof Array))
-      throw new TypeError("Incorrect type of the first arguments. Array expected");
+   if (!(arr instanceof Array)) {
+      throw new TypeError('Incorrect type of the first arguments. Array expected');
+   }
 
-   if ([].indexOf)
+   if ([].indexOf) {
       return arr.indexOf(e, arguments[2]);
+   }
 
    var len = arr.length;
    var from = Number(arguments[2]) || 0;
    from = (from < 0) ? Math.ceil(from) : Math.floor(from);
-   if (from < 0)
+   if (from < 0) {
       from += len;
+   }
    for (; from < len; from++) {
-      if (arr[from] === e)
+      if (arr[from] === e) {
          return from;
+      }
    }
    return -1;
 };
 
-Array.remove = function (arr, index, count) {
+Array.remove = function(arr, index, count) {
    var resCount = count ? count : 1;
-   if (!(arr instanceof Array))
-      throw new TypeError("Incorrect type of the first arguments. Array expected");
+   if (!(arr instanceof Array)) {
+      throw new TypeError('Incorrect type of the first arguments. Array expected');
+   }
    return arr.splice(index, resCount);
 };
 
-Array.insert = function (arr, index) {
-   if (!(arr instanceof Array))
-      throw new TypeError("Incorrect type of the first arguments. Array expected");
-   if (typeof(index) == 'undefined') {
-      throw new TypeError("Index must be defined");
+Array.insert = function(arr, index) {
+   if (!(arr instanceof Array)) {
+      throw new TypeError('Incorrect type of the first arguments. Array expected');
+   }
+   if (typeof (index) == 'undefined') {
+      throw new TypeError('Index must be defined');
    }
    var curIndex = index;
    for (var i = 2; i <= arguments.length; i++) {
@@ -1895,10 +1996,10 @@ Array.insert = function (arr, index) {
  * @singleton
  * @public
  */
-$ws.single.ioc = (function(){
+$ws.single.ioc = (function() {
    var
-         map = {},
-         singletons = {};
+      map = {},
+      singletons = {};
    return /** @lends $ws.single.ioc.prototype */ {
       /**
        * Привязывает реализацию к интерфейсу.
@@ -1906,12 +2007,13 @@ $ws.single.ioc = (function(){
        * @param {String} interfaceName
        * @param {String|Function} implementationName Имя реализации или функция-резолвер возвращающая экземпляр
        */
-      bind: function(interfaceName, implementationName){
+      bind: function(interfaceName, implementationName) {
          map[interfaceName] = {
             implementation: implementationName,
             isSingle: 0
          };
       },
+
       /**
        * Привязывает единственный экземпляр реализации к указанному "интерфейсу"
        *
@@ -1927,6 +2029,7 @@ $ws.single.ioc = (function(){
          };
          singletons[interfaceName] = '';
       },
+
       /**
        * @param {String} interfaceName
        * @param {Object} [config]
@@ -1934,30 +2037,33 @@ $ws.single.ioc = (function(){
        * @throws TypeError
        * @throws ReferenceError
        */
-      resolve: function(interfaceName, config){
-         if(interfaceName in map){
+      resolve: function(interfaceName, config) {
+         if (interfaceName in map) {
             var
-                  binding = map[interfaceName],
-                  classConstructorName = binding.implementation,
-                  isSingleton = binding.isSingle;
-            if(isSingleton && singletons[interfaceName])
+               binding = map[interfaceName],
+               classConstructorName = binding.implementation,
+               isSingleton = binding.isSingle;
+            if (isSingleton && singletons[interfaceName]) {
                return singletons[interfaceName];
+            }
 
             // resolver mode
-            if(typeof classConstructorName == 'function')
+            if (typeof classConstructorName == 'function') {
                return classConstructorName(config);
-
-            if(typeof($ws.proto[classConstructorName]) == 'function') {
-               if(isSingleton)
-                  return singletons[interfaceName] = new $ws.proto[classConstructorName](binding.config);
-               else
-                  return new $ws.proto[classConstructorName](config);
             }
-            else
-               throw new TypeError("Implementation " + classConstructorName + " is not defined");
+
+            if (typeof ($ws.proto[classConstructorName]) == 'function') {
+               if (isSingleton) {
+                  return singletons[interfaceName] = new $ws.proto[classConstructorName](binding.config);
+               } else {
+                  return new $ws.proto[classConstructorName](config);
+               }
+            } else {
+               throw new TypeError('Implementation ' + classConstructorName + ' is not defined');
+            }
+         } else {
+            throw new ReferenceError('No mappings defined for ' + interfaceName);
          }
-         else
-            throw new ReferenceError("No mappings defined for " + interfaceName);
       }
    };
 })();
@@ -2006,13 +2112,14 @@ $ws.core = /** @lends  $ws.core.prototype */{
           * Если к нам пришел объект и можно клонировать
           * Запускаем мерж того, что пришло с пустым объектом (клонируем ссылочные типы).
           */
-         if ((typeof(hashExtender[i]) == 'object' && hashExtender[i] !== null) && cfg.clone) {
+         if ((typeof (hashExtender[i]) == 'object' && hashExtender[i] !== null) && cfg.clone) {
             if (isMergeableObject(hashExtender[i])) {
                hash[i] = $ws.core.merge(hashExtender[i] instanceof Array ? [] : {}, hashExtender[i], cfg);
             } else {
                hash[i] = hashExtender[i];
             }
          }
+
          /**
           * Иначе (т.е. это
           *  ... не объект (простой тип) или
@@ -2025,7 +2132,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          }
       }
 
-      if (typeof(hash) == 'object' && hash !== null && typeof(hashExtender) == "object" && hashExtender !== null) {
+      if (typeof (hash) == 'object' && hash !== null && typeof (hashExtender) == 'object' && hashExtender !== null) {
          for (var i in hashExtender) {
             if (hashExtender.hasOwnProperty(i)) {
                // Если индекса в исходном хэше нет и можно создавать
@@ -2038,7 +2145,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
                      }
                   }
                } else if (!cfg.preferSource) { // Индекс есть, исходное значение можно перебивать
-                  if (hash[i] && typeof hash[i] == "object" && typeof hashExtender[i] == "object") {
+                  if (hash[i] && typeof hash[i] == 'object' && typeof hashExtender[i] == 'object') {
                      // Объект в объект
                      if (hash[i] instanceof Date) {
                         if (hashExtender[i] instanceof Date) {
@@ -2072,11 +2179,12 @@ $ws.core = /** @lends  $ws.core.prototype */{
                      cloneOrCopy(i);
                   }
                }
+
                /**
                 * Исходное значение имеет приоритет, но разрешена рекурсия
                 * Идем глубже.
                 */
-               else if (typeof hash[i] == "object" && typeof hashExtender[i] == "object" && cfg.rec) {
+               else if (typeof hash[i] == 'object' && typeof hashExtender[i] == 'object' && cfg.rec) {
                   if (isMergeableObject(hashExtender[i]) || hashExtender[i] === null) {
                      hash[i] = $ws.core.merge(hash[i], hashExtender[i], cfg);
                   } else {
@@ -2098,7 +2206,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
        * При конструировании source это конфиг, переданный в new, target - this._options
        * Если есть _goUp это сконструированный класс ферймворка
        */
-      for(var prop in source) {
+      for (var prop in source) {
          if (source.hasOwnProperty(prop)) {
             if (prop in target) {
                if (typeof source[prop] == 'object') {
@@ -2123,7 +2231,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
                   } else {
                      target[prop] = source[prop];
                   }
-               } else if(toS.call(target[prop]) == '[object Object]' && target[prop] && ('isCustomType' in target[prop])) {
+               } else if (toS.call(target[prop]) == '[object Object]' && target[prop] && ('isCustomType' in target[prop])) {
                   // Пропускаем параметр, ничего не присваиваем. Оставим дефолтное значение
                   // Просто любой CustomType может иметь несколько обязательныйх свойств
                } else {
@@ -2174,12 +2282,12 @@ $ws.core = /** @lends  $ws.core.prototype */{
                return 'FUNCTION(' + (storage.length - 1) + ')';
             }
          } else if (v === Infinity) {
-            return "+INF";
+            return '+INF';
          } else if (v === -Infinity) {
-            return "-INF";
+            return '-INF';
          } else if (!isNaN(Number(k)) && Number(k) >= 0 && v === undefined) {
             // В массивах позволяем передавать undefined
-            return "UNDEF!";
+            return 'UNDEF!';
          } else {
             return v;
          }
@@ -2227,6 +2335,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          }
       };
    })(),
+
    /**
     * Создание класса-наследника.
     *
@@ -2264,34 +2373,37 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {Object} classExtender Объект-описание нового класса-наследника.
     * @returns {Function} Новый класс-наследник.
     */
-   extend : (function() {
+   extend: (function() {
 
-      function localExtend(mixinsList, classExtender){
+      function localExtend(mixinsList, classExtender) {
          return $ws.core.extend(this, mixinsList, classExtender);
       }
 
-      function localExtendPlugin(pluginConfig){
+      function localExtendPlugin(pluginConfig) {
          return $ws.core.extendPlugin(this, pluginConfig);
       }
 
-      function localMixin(mixinConfig){
+      function localMixin(mixinConfig) {
          return $ws.core.mixin(this, mixinConfig);
       }
 
       function mergePropertiesToPrototype(classResult, classExtender) {
          // Copy all properties to a newly created prototype
-         for (var i in classExtender){
+         for (var i in classExtender) {
             if (classExtender.hasOwnProperty(i) && i.charAt(0) != '$') {
                classResult.prototype[i] = classExtender[i];
             }
          }
+
          // fix for the best browser in the world (IE) (c) ErshovKA
          // IE 7-8 не видит при переборе через for-in свойства valueOf и toString
-         if(!$ws._const.browser.isModernIE) {
+         if (!$ws._const.browser.isModernIE) {
             var props = [ 'valueOf', 'toString' ];
-            for(i = 0; i < props.length; i++) {
-               if(classExtender.hasOwnProperty(props[i])) // property is redefined
-                  classResult.prototype[props[i]] = classExtender[props[i]]
+            for (i = 0; i < props.length; i++) {
+               if (classExtender.hasOwnProperty(props[i])) // property is redefined
+               {
+                  classResult.prototype[props[i]] = classExtender[props[i]];
+               }
             }
          }
       }
@@ -2302,11 +2414,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
       }
 
 
-      return function extend(classPrototype, mixinsList, classExtender){
+      return function extend(classPrototype, mixinsList, classExtender) {
          if (Object.prototype.toString.call(mixinsList) === '[object Array]') {
             classPrototype = $ws.core.mixin(classPrototype, mixinsList);
-         }
-         else {
+         } else {
             classExtender = mixinsList;
          }
 
@@ -2317,10 +2428,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
          var
             parentCtor = classPrototype.prototype && classPrototype.prototype.$constructor || null,
             childCtor = classExtender.$constructor,
-            constructor = function(){},
+            constructor = function() {},
             classResult;
 
-         classResult = classExtender.$constructor = function constructFn(cfg){
+         classResult = classExtender.$constructor = function constructFn(cfg) {
 
             this._goUp = this._goUp || 1;
 
@@ -2346,13 +2457,14 @@ $ws.core = /** @lends  $ws.core.prototype */{
                 * Это честная возможность вернуть из конструктора класса что-то иное...
                 */
                var r = childCtor.call(this, cfg);
-               if(r)
+               if (r) {
                   return r;
+               }
             }
 
             --this._goUp;
 
-            if(this._goUp === 0) {
+            if (this._goUp === 0) {
                this.init && this.init();
                this._initComplete && this._initComplete();
                this._isInitialized = true;
@@ -2370,8 +2482,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          mergePropertiesToPrototype(classResult, classExtender);
          if (classExtender.destroy &&
              'isDestroyed' in classResult.prototype &&
-              typeof classResult.prototype.isDestroyed === 'function')
-         {
+              typeof classResult.prototype.isDestroyed === 'function') {
             classResult.prototype.destroy = $ws.helpers.forAliveOnly(classExtender.destroy);
          }
 
@@ -2383,9 +2494,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
          classResult.superclass = classPrototype.prototype;
 
          return classResult;
-      }
+      };
 
    })(),
+
    /**
     * Расширение класса с помощью "плагина"
     * Подробное описание см. в файле EXTENDING.md
@@ -2393,8 +2505,8 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {Function} classPrototype Прототип расширяемого класса
     * @param {Object} pluginConfig "Конфигурация" плагина
     */
-   extendPlugin: function(classPrototype, pluginConfig){
-      if(!Object.isEmpty(pluginConfig.$protected)) {
+   extendPlugin: function(classPrototype, pluginConfig) {
+      if (!Object.isEmpty(pluginConfig.$protected)) {
          var initializer = $ws.core.initializerHelper.create(pluginConfig);
          classPrototype.prototype._initializer = classPrototype.prototype._initializer.callNext(initializer);
       }
@@ -2404,7 +2516,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          var classFunction;
          if (classPrototype.prototype.hasOwnProperty(classMethod)) {
             classFunction = classPrototype.prototype[classMethod];
-         } else if(classPrototype.superclass) {
+         } else if (classPrototype.superclass) {
             classFunction = function() {
                var superClassFunction = classPrototype.superclass[classMethod];
                if (superClassFunction) {
@@ -2427,9 +2539,9 @@ $ws.core = /** @lends  $ws.core.prototype */{
          if (classPrototype.prototype[functionName]) {
             callNext(functionName, pluginFunction);
          } else if (pluginConfig.$condition) {
-            classPrototype.prototype[functionName] = pluginConfig.$withoutCondition[functionName] === undefined ?
-               pluginFunction.callIf(pluginConfig.$condition) :
-               pluginFunction;
+            classPrototype.prototype[functionName] = pluginConfig.$withoutCondition[functionName] === undefined
+               ? pluginFunction.callIf(pluginConfig.$condition)
+               : pluginFunction;
          } else {
             classPrototype.prototype[functionName] = pluginFunction;
          }
@@ -2440,6 +2552,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
             addPluginFunction(i, pluginConfig[i]);
          }
       }
+
       // IE 7-8 не видит при переборе через for-in свойства valueOf и toString
       if (!$ws._const.browser.isModernIE) {
          var props = [ 'valueOf', 'toString' ];
@@ -2455,10 +2568,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
          callNext('init', pluginConfig.$constructor);
          if ($ws.single.ControlStorage) {
             var pluginConstructor = pluginConfig.$constructor,
-                controls = $ws.single.ControlStorage.getControls();
+               controls = $ws.single.ControlStorage.getControls();
             for (var id in controls) {
                if (controls.hasOwnProperty(id)) {
-                  if (controls[id] instanceof classPrototype){
+                  if (controls[id] instanceof classPrototype) {
                      pluginConstructor.apply(controls[id]);
                   }
                }
@@ -2466,6 +2579,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          }
       }
    },
+
    /**
     * Расширение класса с помощью "mixin'а"
     *
@@ -2474,21 +2588,21 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {Object|Array} mixinConfig "Конфигурация" примеси, или массив описаний нескольких примесей
     * В случае массива будут подмешаны в том порядке, в котором перечислены.
     */
-   mixin: function(classPrototype, mixinConfig){
-      if(mixinConfig && Object.prototype.toString.call(mixinConfig) === '[object Object]'){
+   mixin: function(classPrototype, mixinConfig) {
+      if (mixinConfig && Object.prototype.toString.call(mixinConfig) === '[object Object]') {
          mixinConfig = [mixinConfig];
       }
       var mixinOptions = {},
-          mixinConstructor,
-          l = mixinConfig.length, i,
-          description = {},
-          functionCollection,
-          callMethod = {
-             'around': 'callAround',
-             'after': 'callNext',
-             'before': 'callBefore'
-          };
-      for(i = 0; i < l; i++){
+         mixinConstructor,
+         l = mixinConfig.length, i,
+         description = {},
+         functionCollection,
+         callMethod = {
+            'around': 'callAround',
+            'after': 'callNext',
+            'before': 'callBefore'
+         };
+      for (i = 0; i < l; i++) {
          description = mixinConfig[i];
          if (description.$protected) {
             mixinOptions = $ws.core.merge(mixinOptions, description.$protected);
@@ -2498,26 +2612,26 @@ $ws.core = /** @lends  $ws.core.prototype */{
          }
       }
       var mixin = $ws.core.extend(classPrototype, {
-            $protected: mixinOptions,
-            $constructor: mixinConstructor || function(){}
-         });
+         $protected: mixinOptions,
+         $constructor: mixinConstructor || function() {}
+      });
 
-      function addSpecialFunctionInIE(descriptionObject, position){
+      function addSpecialFunctionInIE(descriptionObject, position) {
          // IE 7-8 не видит при переборе через for-in свойства valueOf и toString
-         if(!$ws._const.browser.isModernIE) {
+         if (!$ws._const.browser.isModernIE) {
             var props = [ 'valueOf', 'toString' ];
-            for(k = 0; k < props.length; k++) {
-               if(descriptionObject.hasOwnProperty(props[k]) && !(props[k] in {'$protected': 0, '$constructor': 0})) {
+            for (k = 0; k < props.length; k++) {
+               if (descriptionObject.hasOwnProperty(props[k]) && !(props[k] in {'$protected': 0, '$constructor': 0})) {
                   addMixinFunction(props[k], descriptionObject[props[k]], position);
                }
             }
          }
       }
 
-      function addMixinFunction(functionName, functionDescription, functionPosition){
-         if( typeof(functionDescription) === 'function'){
+      function addMixinFunction(functionName, functionDescription, functionPosition) {
+         if (typeof (functionDescription) === 'function') {
             //проверим определена ли уже функция в классе, иначе добавим
-            if ( functionPosition === 'instead' || typeof(mixin.prototype[functionName]) !== 'function') {
+            if (functionPosition === 'instead' || typeof (mixin.prototype[functionName]) !== 'function') {
                mixin.prototype[functionName] = functionDescription;
             } else {
                var newFunction = mixin.prototype[functionName][callMethod[functionPosition]](functionDescription);
@@ -2526,13 +2640,13 @@ $ws.core = /** @lends  $ws.core.prototype */{
          }
       }
 
-      for(i = 0; i < l; i++){
+      for (i = 0; i < l; i++) {
          description = mixinConfig[i];
-         for(var k in description){
-            if(!( k in {'$protected': 0, '$constructor': 0} )){
+         for (var k in description) {
+            if (!(k in {'$protected': 0, '$constructor': 0})) {
                functionCollection = description[k];
-               if (functionCollection && Object.prototype.toString.call(functionCollection) === '[object Object]'){
-                  for(var j in functionCollection){
+               if (functionCollection && Object.prototype.toString.call(functionCollection) === '[object Object]') {
+                  for (var j in functionCollection) {
                      addMixinFunction(j, functionCollection[j], k);
                   }
                   addSpecialFunctionInIE(functionCollection, k);
@@ -2548,45 +2662,48 @@ $ws.core = /** @lends  $ws.core.prototype */{
 
       return mixin;
    },
+
    /**
     * Генерация хэша переданных параметров/объекта.
     */
-   hash : function(){
+   hash: function() {
       var
          src = arguments.length > 1 ? Array.prototype.slice.call(arguments) : arguments[0],
          dst = {};
-      if (src instanceof Array || src instanceof Object){
-         for (var i in src){
-            if (src.hasOwnProperty(i)){
-               if (typeof src[i] in {"boolean":null, "number":null, "string":null})
-                  dst["" + src[i]] = i;
+      if (src instanceof Array || src instanceof Object) {
+         for (var i in src) {
+            if (src.hasOwnProperty(i)) {
+               if (typeof src[i] in {'boolean': null, 'number': null, 'string': null}) {
+                  dst['' + src[i]] = i;
+               }
             }
          }
       }
       return dst;
    },
+
    /**
     * Функция разбивает путь на класс и компонент
     * @param path
     * @returns {{component: *, className: *, moduleName: *, isModule: *}}
     */
-   extractComponentPath : function(path){
+   extractComponentPath: function(path) {
       var className, modName;
       path = $ws.single.ClassMapper.getClassMapping(path);
 
-      if(path.indexOf(':') == -1){
+      if (path.indexOf(':') == -1) {
          path = path.split('/');
          path.push(className = path.pop());
-         if(className.indexOf('@') != -1)
+         if (className.indexOf('@') != -1) {
             className = className.split('@').pop();
-      }
-      else{
+         }
+      } else {
          path = path.split(':');
          className = path.pop();
          path = path.pop().split('/');
       }
 
-      modName = $ws._const.jsCoreModules[className] ? className :  ($ws._const.jsModules[className] ? className : "SBIS3.CORE." + className);
+      modName = $ws._const.jsCoreModules[className] ? className :  ($ws._const.jsModules[className] ? className : 'SBIS3.CORE.' + className);
 
       return {
          component: path.join('/'),
@@ -2611,15 +2728,17 @@ $ws.core = /** @lends  $ws.core.prototype */{
     */
    loadControlsDependencies: function(configsPaths, resolveCtors) {
       var loadedPaths = {},
-          global = (function() { return this || (0,eval)('this') })(),
-          reduce = $ws.helpers.reduce.bind($ws.helpers),
-          map = $ws.helpers.map.bind($ws.helpers),
-          jsModRegex = /js!/;
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })(),
+         reduce = $ws.helpers.reduce.bind($ws.helpers),
+         map = $ws.helpers.map.bind($ws.helpers),
+         jsModRegex = /js!/;
 
       function loaderForPath(path, resolveCtor) {
          var result;
 
-         if (jsModRegex.test(path)){
+         if (jsModRegex.test(path)) {
             result = function() {
                return $ws.require([path]).addCallback(function(mod) {
                   return [path, mod[0]];
@@ -2628,19 +2747,19 @@ $ws.core = /** @lends  $ws.core.prototype */{
          } else {
             result = function() {
                var requestedPath = $ws.core.extractComponentPath(path),
-                   loadAsModule = requestedPath.isModule,
-                   moduleName = requestedPath.moduleName,
-                   componentName = requestedPath.className,
-                   loadDfr = loadAsModule ? $ws.require("js!" + moduleName) : $ws.core.attachComponent(requestedPath.component);
+                  loadAsModule = requestedPath.isModule,
+                  moduleName = requestedPath.moduleName,
+                  componentName = requestedPath.className,
+                  loadDfr = loadAsModule ? $ws.require('js!' + moduleName) : $ws.core.attachComponent(requestedPath.component);
 
-               loadDfr.addCallback(function(mod){
+               loadDfr.addCallback(function(mod) {
                   var ctor = loadAsModule ? mod[0] : null;
                   if (!ctor && resolveCtor) {
                      // Шаг 3: Построим запрошенный класс
                      ctor = $ws.proto;
-                     if(componentName.indexOf('.') != -1) {
+                     if (componentName.indexOf('.') != -1) {
                         var classPath = componentName.split('.');
-                        while(classPath.length && ctor) {
+                        while (classPath.length && ctor) {
                            ctor = ctor[classPath.shift()];
                         }
                      } else {
@@ -2675,10 +2794,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
       function resolveDepsAsControlConfigs(configsPaths) {
          return reduce(configsPaths, function(result, cfgPath) {
             var path = cfgPath[0],
-                cfg = cfgPath[1],
-                requestedPath, loadAsModule, moduleName, componentName, depPath, deps;
+               cfg = cfgPath[1],
+               requestedPath, loadAsModule, moduleName, componentName, depPath, deps;
 
-            if(!jsModRegex.test(path)) {
+            if (!jsModRegex.test(path)) {
                requestedPath = $ws.core.extractComponentPath(path);
                loadAsModule = requestedPath.isModule;
                moduleName = requestedPath.moduleName;
@@ -2701,10 +2820,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
 
          return map(configsPaths, function(cfgPath) {
             var path = cfgPath[0],
-                ctor = hash[path];
+               ctor = hash[path];
 
-            if (resolveCtors && typeof ctor !== 'function' ) {
-                throw new Error("Can't instantiate class '" + path + "'. Class not exists");
+            if (resolveCtors && typeof ctor !== 'function') {
+               throw new Error("Can't instantiate class '" + path + "'. Class not exists");
             }
 
             return ctor;
@@ -2716,10 +2835,12 @@ $ws.core = /** @lends  $ws.core.prototype */{
 
          return loadersPDef.addCallback(function(pathsConstructors) {
             var depConfigs = resolveDepsAsControlConfigs(configsPaths),
-                result;
+               result;
 
             if (depConfigs.length > 0) {
-               result = loadPaths(depConfigs, false).addCallback(function() { return pathsConstructors; });
+               result = loadPaths(depConfigs, false).addCallback(function() {
+                  return pathsConstructors; 
+               });
             } else {
                result = pathsConstructors;
             }
@@ -2743,12 +2864,12 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @returns {$ws.proto.Deferred}
     * @deprecated Используйте {$ws.core.loadControlsDependencies}. Удалено в 3.8.0
     */
-   loadAttachInstanceDependencies: function(path, cfg){
-      return this.loadControlsDependencies([ [ path, cfg ] ], true).addCallback(function(ctors){
+   loadAttachInstanceDependencies: function(path, cfg) {
+      return this.loadControlsDependencies([ [ path, cfg ] ], true).addCallback(function(ctors) {
          return function(cfg) {
             return new ctors[0](cfg);
-         }
-      })
+         };
+      });
    },
 
    /**
@@ -2774,7 +2895,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {object} [cfg] конфиг
     * @returns {$ws.proto.Deferred} Асинхронный результат
     */
-   attachInstance : function(path, cfg){
+   attachInstance: function(path, cfg) {
       var
          deps = $ws.core.loadControlsDependencies([[path, cfg]], true),
          block = BOOMR.plugins.WS.startBlock('attachInstance:' + path);
@@ -2786,6 +2907,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          return result;
       });
    },
+
    /**
     * Подключение цепочки компонентов.
     *
@@ -2793,71 +2915,76 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {String} [servicePath] Путь к сервису, с которого загружать файлы.
     * @returns {$ws.proto.Deferred}
     */
-   attachComponent: function(path, servicePath){
+   attachComponent: function(path, servicePath) {
       var resourceRoot,
-          global = (function() { return this || (0,eval)('this') })();
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })();
 
-      if(!servicePath){
+      if (!servicePath) {
          servicePath = '';
          resourceRoot = $ws._const.resourceRoot;
-      }
-      else
+      } else {
          resourceRoot = '/';
+      }
+
       /**
        * Это - Deferred для всей цепочки. Его успех зависит от выполнения CodeChain
        */
-      return $ws.single.Storage.store(path, function(dChainResult){
+      return $ws.single.Storage.store(path, function(dChainResult) {
 
          // Костыль
          // Если мы на node (есть process) или в браузере (есть window) - грузим через require
          // На серверном скрипте (нет window и нет process) - работаем по старому.
          if ((typeof window !== 'undefined' || typeof process !== 'undefined') && path === 'Source') {
-            global.requirejs(['Lib/Source'], function () {
+            global.requirejs(['Lib/Source'], function() {
                dChainResult.callback();
-            }, function(){
+            }, function() {
                dChainResult.errback();
             });
             return;
          }
 
          var
-            queue = path.split("/"),
+            queue = path.split('/'),
             codeChain = new $ws.proto.CodeChain(queue.length),
             i = queue.length - 1;
+
          // строим цепочку вложенных подключений скриптов компонентов
-         while (queue.length > 0){
-            (function(componentPath, index){
+         while (queue.length > 0) {
+            (function(componentPath, index) {
                var libPath,
-                   fileUrl;
-               if(componentPath.indexOf('@') != -1)
-               {
+                  fileUrl;
+               if (componentPath.indexOf('@') != -1) {
                   componentPath = componentPath.split('@');
                   var module = componentPath.shift();
 
                   // если модуля нет в списке подключенных модулей,
                   // то, значит, мы подключаем модули на сервере, и в таком случае
                   // транслитерация не нужна
-                  if(module in $ws._const.modules)
+                  if (module in $ws._const.modules) {
                      module = $ws._const.modules[module];
+                  }
 
-                  libPath = servicePath + resourceRoot + module + "/";
-               }
-               else
+                  libPath = servicePath + resourceRoot + module + '/';
+               } else {
                   libPath = servicePath + $ws._const.wsRoot;
+               }
                fileUrl = $ws.core.checkPackages(libPath + 'lib/' + componentPath + '.js');
                var wasStored = $ws.single.Storage.isStored(fileUrl);
+
                /**
                 * Это - Deferred для единичного файла цепочки. Его успех зависит от XHR
                 * @param {$ws.proto.Deferred} dSingleFileResult
                 */
-               $ws.single.Storage.store(fileUrl, function(dSingleFileResult){
+               $ws.single.Storage.store(fileUrl, function(dSingleFileResult) {
                   // Этот код должен выполниться только один раз (грузим из сети единожды) ...
                   dSingleFileResult.dependOn(
                      $ws.single.ioc.resolve('ITransport', {
                         url: $ws.core.urlWithHost(fileUrl)
                      }).execute(null)
                   );
-               }).addCallback(function(code){
+               }).addCallback(function(code) {
                   /**
                    * ... а этот должен выполняться кажый раз при подключении данного файла
                    * Потому что здесь codeChain и она должна знать, что все компоненты готовы.
@@ -2865,15 +2992,16 @@ $ws.core = /** @lends  $ws.core.prototype */{
                    * Если данный файл был загружен ранее - не добавляем его код в CodeChain,
                    * просто известим что он готов.
                    */
-                  if (codeChain.setCode(index, wasStored ? '' : code))
-                     dChainResult.callback(); // Цепочка выполнена
+                  if (codeChain.setCode(index, wasStored ? '' : code)) {
+                     dChainResult.callback();
+                  } // Цепочка выполнена
                   // Меняем результат на пустую строку
                   // при следующей загрузке CodeChain посчитает что этот код уже готов к работе
                   return '';
-               }).addErrback(function(e){
+               }).addErrback(function(e) {
                   // Построение завершилось ошибкой
                   if (!dChainResult.isReady()) {
-                     dChainResult.errback(new Error("Building failed. Reason: " + e.message + ". Component: " + path + ". File: " + fileUrl));
+                     dChainResult.errback(new Error('Building failed. Reason: ' + e.message + '. Component: ' + path + '. File: ' + fileUrl));
                   }
                   return e;
                });
@@ -2883,6 +3011,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          return dChainResult;
       });
    },
+
    /**
     * Получает описание переданного имени хэндлера
     *
@@ -2901,15 +3030,19 @@ $ws.core = /** @lends  $ws.core.prototype */{
          packageUniqName, type, fullPath;
 
       type = pathParts.pop();  // some kind of peek()
-      if(type || type === "")  // if type is not null | undefined
-         pathParts.push(type); // return it to path
-      if(type != 'render')     // If it is not render
-         type = "_handlers";   // ...set default handlers type
+      if (type || type === '')  // if type is not null | undefined
+      {
+         pathParts.push(type);
+      } // return it to path
+      if (type != 'render')     // If it is not render
+      {
+         type = '_handlers';
+      }   // ...set default handlers type
 
-      if(handlerPackage in $ws._const.jsCoreModules || handlerPackage in $ws._const.jsModules) {
+      if (handlerPackage in $ws._const.jsCoreModules || handlerPackage in $ws._const.jsModules) {
 
          pathParts.push($ws._const.jsCoreModules[handlerPackage] || $ws._const.jsModules[handlerPackage]);
-         if($ws._const.jsModules[handlerPackage]) {
+         if ($ws._const.jsModules[handlerPackage]) {
             base = '/resources/';
          } else {
             base = $ws._const.wsRoot;
@@ -2926,12 +3059,15 @@ $ws.core = /** @lends  $ws.core.prototype */{
       }
 
 
-      if (packageUniqName.indexOf('/resources/') === 0)
+      if (packageUniqName.indexOf('/resources/') === 0) {
          packageUniqName = packageUniqName.replace('/resources/', $ws._const.resourceRoot);
-      if(fullPath.indexOf('/resources/') === 0)
+      }
+      if (fullPath.indexOf('/resources/') === 0) {
          fullPath = fullPath.replace('/resources/', $ws._const.resourceRoot);
-      if(ext && $ws._const.buildnumber && fullPath.indexOf(".v" + $ws._const.buildnumber) == -1)
+      }
+      if (ext && $ws._const.buildnumber && fullPath.indexOf('.v' + $ws._const.buildnumber) == -1) {
          fullPath = fullPath.replace(ext, '.v' + $ws._const.buildnumber + ext);
+      }
 
       return {
          type: type,
@@ -2941,6 +3077,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          isModule: isModule
       };
    },
+
    /**
     * Загружает пакет, возвращает его через Deferred
     *
@@ -2949,13 +3086,13 @@ $ws.core = /** @lends  $ws.core.prototype */{
     */
    getHandlerPackage: function(name) {
       var
-            urlSpec = $ws.core.getHandlerInfo(name),
-            url = urlSpec.url;
+         urlSpec = $ws.core.getHandlerInfo(name),
+         url = urlSpec.url;
 
-      return $ws.single.Storage.store("hdlpack://" + url, function(dResult){
-         (function(){
-            if(urlSpec.isModule) {
-               return $ws.requireModule(url).addCallback(function(mods){
+      return $ws.single.Storage.store('hdlpack://' + url, function(dResult) {
+         (function() {
+            if (urlSpec.isModule) {
+               return $ws.requireModule(url).addCallback(function(mods) {
                   return mods[0];
                });
             } else {
@@ -2963,40 +3100,43 @@ $ws.core = /** @lends  $ws.core.prototype */{
                   url: url
                }).execute(null).addCallback(function(data) {
                   var hdl = null;
+
                   // Добавим sourceURL для нормальных браузеров
                   // TODO Это устаревший стандарт!
-                  if(!$ws._const.browser.isIE){
+                  if (!$ws._const.browser.isIE) {
                      var sourceURL = url.substr(url.lastIndexOf('/') + 1);
-                     data += "\n//# sourceURL=" + sourceURL;
-                     if(data.indexOf('//@ sourceURL') !== -1){
-                        data = data.replace(/\/\/@ sourceURL[^\n]+/, "");//replace "
+                     data += '\n//# sourceURL=' + sourceURL;
+                     if (data.indexOf('//@ sourceURL') !== -1) {
+                        data = data.replace(/\/\/@ sourceURL[^\n]+/, '');//replace "
                      }
-                     data += "\n//@ sourceURL=" + sourceURL;
+                     data += '\n//@ sourceURL=' + sourceURL;
                   }
                   eval(data);                   // эвалим полученный код
                   return hdl;
                });
             }
-         }()).addCallbacks(function(hdl){
-            for(var f in hdl) {
-               if(hdl.hasOwnProperty(f) && typeof hdl[f] == 'function')
+         }()).addCallbacks(function(hdl) {
+            for (var f in hdl) {
+               if (hdl.hasOwnProperty(f) && typeof hdl[f] == 'function') {
                   hdl[f].wsHandlerPath = urlSpec['package'].replace('.hdl', '') + '/' + f;
+               }
             }
             $ws[urlSpec.type][urlSpec['package']] = hdl;
             dResult.callback(hdl);
-         }, function(res){
-            res.message = "getHandler failed (" + name + "). Reason: " + res.message;
+         }, function(res) {
+            res.message = 'getHandler failed (' + name + '). Reason: ' + res.message;
             dResult.errback(res);
          });
       });
    },
+
    /**
     * Загружает и получает указанную функцию-обработчик
     *
     * @param {String} name Имя обработчика в формате HandlerPackage/handlerName.
     * @returns {$ws.proto.Deferred} Deferred, результатом которого будет заказанный обработчик.
     */
-   getHandler: function(name){
+   getHandler: function(name) {
 
       var
          urlTemp = $ws.core.getHandlerInfo(name),
@@ -3004,40 +3144,43 @@ $ws.core = /** @lends  $ws.core.prototype */{
          dResult = new $ws.proto.Deferred(),
          handlerName = urlTemp.name,
          handlerPackage = urlTemp['package'],
-         funcCheckHandler = function(type, pkgName, hdlName){
-            return $ws[type][pkgName] && typeof($ws[type][pkgName][hdlName]) == 'function';
+         funcCheckHandler = function(type, pkgName, hdlName) {
+            return $ws[type][pkgName] && typeof ($ws[type][pkgName][hdlName]) == 'function';
          };
 
       // есть ли информация о наличии указанного пакета
-      if(typeof($ws[type][handlerPackage]) == 'object'){
-         if (funcCheckHandler(type, handlerPackage, handlerName))
+      if (typeof ($ws[type][handlerPackage]) == 'object') {
+         if (funcCheckHandler(type, handlerPackage, handlerName)) {
             dResult.callback($ws[type][handlerPackage][handlerName]);
-         else
+         } else {
             dResult.errback(
-                  new Error("getHandler failed: package is loaded but function is not present (" + name + ")"));
-      }
-      else {                                 // загрузка пакета
+               new Error('getHandler failed: package is loaded but function is not present (' + name + ')'));
+         }
+      } else {                                 // загрузка пакета
          $ws[type][handlerPackage] = '';     // система знает о наличии такого обработчика
-         dResult.dependOn($ws.core.getHandlerPackage(name)).addCallback(function(){
-            if (funcCheckHandler(type, handlerPackage, handlerName))
+         dResult.dependOn($ws.core.getHandlerPackage(name)).addCallback(function() {
+            if (funcCheckHandler(type, handlerPackage, handlerName)) {
                return $ws[type][handlerPackage][handlerName];
-            else
-               throw new Error("getHandler failed: package is loaded but function is not present (" + name + ")");
+            } else {
+               throw new Error('getHandler failed: package is loaded but function is not present (' + name + ')');
+            }
          });
       }
       return dResult;
    },
+
    /**
     * Проверяет, имеется ли для файла альтернативный URL
     *
     * @param {String} url исходный URL файла.
     * @returns {String} альтернативный URL для файла (с учетом пакета).
     */
-   checkPackages : function(url){
+   checkPackages: function(url) {
       var shortUrl = url.replace($ws._const.wsRoot, '/');
       var packages = $ws._const.jsPackages;
       return packages[shortUrl] ? ($ws._const.wsRoot + packages[shortUrl]) : url;
    },
+
    /**
     * Возвращает случайный хост из списка хостов
     *
@@ -3046,10 +3189,10 @@ $ws.core = /** @lends  $ws.core.prototype */{
     */
    urlWithHost: function(url) {
       var l = $ws._const.hosts.length,
-          host = '',
-          lang = $ws.single.i18n.getLang();
+         host = '',
+         lang = $ws.single.i18n.getLang();
       if (l > 0) {
-         host = $ws._const.hosts[Math.floor(Math.random()*l)];
+         host = $ws._const.hosts[Math.floor(Math.random() * l)];
          if (url.substring(0, 1) == '.') {
             var curPath = window.location.pathname;
             curPath = curPath.substring(0, curPath.lastIndexOf('/') + 1);
@@ -3058,14 +3201,15 @@ $ws.core = /** @lends  $ws.core.prototype */{
             url = host + (url.substring(0, 1) == '/' ? '' : '/') + url;
          }
       }
-      if ($ws._const.buildnumber && url.indexOf(".v" + $ws._const.buildnumber) == -1) {
-         url = url.replace(/(\.js|\.css|\.xml)/, ".v" + $ws._const.buildnumber + "$1");
+      if ($ws._const.buildnumber && url.indexOf('.v' + $ws._const.buildnumber) == -1) {
+         url = url.replace(/(\.js|\.css|\.xml)/, '.v' + $ws._const.buildnumber + '$1');
       }
-      if ($ws._const.i18n && lang && url.indexOf(".l" + lang) == -1) {
-         url = url.replace(/(\.xml)/, ".l" + lang + "$1");
+      if ($ws._const.i18n && lang && url.indexOf('.l' + lang) == -1) {
+         url = url.replace(/(\.xml)/, '.l' + lang + '$1');
       }
       return url;
    },
+
    /**
     * @function
     * Подключение JS/CSS-файла в контекст документа.
@@ -3073,16 +3217,17 @@ $ws.core = /** @lends  $ws.core.prototype */{
     * @param {Object} [options] Опциональные опции. Например options.charset - значение аттрибута charset при подключении (для IE7).
     * @returns {$ws.proto.Deferred}
     */
-   attach: function(URL, options){
+   attach: function(URL, options) {
       URL = $ws.core.checkPackages(URL);
-      if(URL.charAt(0) !== '/'){
+      if (URL.charAt(0) !== '/') {
          URL = $ws._const.wsRoot + URL;
       }
       URL = $ws.core.urlWithHost(URL);
-      return $ws.single.Storage.store(URL, function(resource){
+      return $ws.single.Storage.store(URL, function(resource) {
          $ws.single.ioc.resolve('IAttachLoader').attach(URL, resource, options);
       });
    },
+
    /**
     * Подключает переданные файлы по порядку
     * @param {Array} urls Массив строк с адресами файлов для подключения.
@@ -3099,20 +3244,22 @@ $ws.core = /** @lends  $ws.core.prototype */{
          if (urls.length) {
             var url = urls.shift();
             if (/^(js!|css!)/.test(url)) {
-               $ws.require(url).addCallbacks(loader, function (e) {
+               $ws.require(url).addCallbacks(loader, function(e) {
                   dResult.errback(e);
                });
             } else {
-               $ws.core.attach(url).addCallbacks(loader, function (e) {
+               $ws.core.attach(url).addCallbacks(loader, function(e) {
                   dResult.errback(e);
                });
             }
-         } else
+         } else {
             dResult.callback();
+         }
       })();
 
       return dResult;
    },
+
    /**
     * Готовит ядро к работе с указанными компонентами.
     * Фактически замена $ws.core.ready + attachComponent * N.
@@ -3120,24 +3267,26 @@ $ws.core = /** @lends  $ws.core.prototype */{
     */
    withComponents: function(/*components*/) {
       var components = arguments;
-      return $ws.core.ready.addCallback(function(){
+      return $ws.core.ready.addCallback(function() {
          var dComponents = new $ws.proto.ParallelDeferred();
-         for (var i = 0, li = components.length; i < li; i++){
+         for (var i = 0, li = components.length; i < li; i++) {
             var requestedPath = $ws.core.extractComponentPath(components[i]),
-                componentName = requestedPath.className,
-                moduleName = $ws._const.jsCoreModules[componentName] ? componentName : "SBIS3.CORE." + componentName;
-            (function(moduleName){
-               if($ws._const.jsCoreModules[moduleName])
-                  dComponents.push($ws.require("js!" + moduleName).createDependent().addCallback( function(){
+               componentName = requestedPath.className,
+               moduleName = $ws._const.jsCoreModules[componentName] ? componentName : 'SBIS3.CORE.' + componentName;
+            (function(moduleName) {
+               if ($ws._const.jsCoreModules[moduleName]) {
+                  dComponents.push($ws.require('js!' + moduleName).createDependent().addCallback(function() {
                      return $ws.core.loadControlsDependencies([[moduleName, {}]], false);
                   }));
-               else
+               } else {
                   dComponents.push($ws.core.attachComponent(components[i]));
+               }
             })(moduleName);
          }
          return dComponents.done().getResult();
-      })
+      });
    },
+
    /**
     * Вызывает диалог-сообщение
     * @param {String} message - текст сообщения.
@@ -3147,19 +3296,19 @@ $ws.core = /** @lends  $ws.core.prototype */{
    alert: function(message, detail, type) {
       var
          defOnClose = new $ws.proto.Deferred(),
-         types = {"error":0, "success":0, "info":0},
+         types = {'error': 0, 'success': 0, 'info': 0},
          windowManager = $ws.single.WindowManager;
-      if (arguments.length == 2 && detail in types){
+      if (arguments.length == 2 && detail in types) {
          type = detail;
-         detail = "";
+         detail = '';
       }
       $ws.core.attachInstance('SBIS3.CORE.DialogAlert', {
          message: message,
          opener: windowManager && windowManager.getActiveWindow(),
          detail: detail,
-         type : type,
-         handlers : {
-            onAfterClose : function(){
+         type: type,
+         handlers: {
+            onAfterClose: function() {
                defOnClose.callback();
             }
          }
@@ -3175,17 +3324,20 @@ $ws.core = /** @lends  $ws.core.prototype */{
    },
    getNamedContents: function(name) {
       var isPath = name.lastIndexOf('/');
-      if(isPath != -1)
+      if (isPath != -1) {
          name = name.substring(isPath + 1);
+      }
       return $ws._const.hdlBindings[name] || [];
    },
+
    /**
     * Устанавливает курсор загрузки или стандартный
     * @param {Boolean} def -- ставить ли стандартный курсор.
     */
-   setCursor: function(def){
+   setCursor: function(def) {
       $('body').toggleClass('ws-progress', !def);
    },
+
    /**
     * Возвращает URL сервиса по имени
     * @param {String} serviceName имя сервиса (как указано на 4 шаге мастера выгрузки).
@@ -3194,6 +3346,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
    getServiceByName: function(serviceName) {
       return $ws._const.services[serviceName] || $ws._const.defaultServiceUrl;
    },
+
    /**
     * Прописывает оглавление
     * @param {Object} contents.
@@ -3211,6 +3364,7 @@ $ws.core = /** @lends  $ws.core.prototype */{
          $ws._const.modules = {};
          $ws._const.htmlNames = {};
          $ws._const.jsModules = {};
+
          //$ws._const.dictionary = {};
          $ws._const.availableLanguage = {};
       }
@@ -3278,65 +3432,71 @@ $ws.core = /** @lends  $ws.core.prototype */{
    _initRequireJS: function() {
       this.initRequireJS();
    },
-   initRequireJS: function(){
+   initRequireJS: function() {
       var
-            global = (function() { return this || (0,eval)('this') })(),
-            wsPath = $ws._const.wsRoot;
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })(),
+         wsPath = $ws._const.wsRoot;
 
       // TODO СРОЧО ЭТО ВЫПИЛИТЬ! КОНФИГ ДУБЛИРУЕТСЯ!
       global.requirejs.config({
-         baseUrl: "/",
+         baseUrl: '/',
          paths: {
-            "Ext": wsPath + "lib/Ext",
-            "Core": wsPath + "core",
+            'Ext': wsPath + 'lib/Ext',
+            'Core': wsPath + 'core',
             'Resources': $ws._const.resourceRoot,
-            "css": wsPath + "ext/requirejs/plugins/css",
-            "js": wsPath + "ext/requirejs/plugins/js",
-            "native-css": wsPath + "ext/requirejs/plugins/native-css",
-            "normalize": wsPath + "ext/requirejs/plugins/normalize",
-            "html": wsPath + "ext/requirejs/plugins/html",
-            "tmpl": wsPath + "ext/requirejs/plugins/tmpl",
-            "text": wsPath + "ext/requirejs/plugins/text",
-            "is": wsPath + "ext/requirejs/plugins/is",
-            "is-api": wsPath + "ext/requirejs/plugins/is-api",
-            "i18n": wsPath + "ext/requirejs/plugins/i18n",
-            "json": wsPath + "ext/requirejs/plugins/json"
+            'css': wsPath + 'ext/requirejs/plugins/css',
+            'js': wsPath + 'ext/requirejs/plugins/js',
+            'native-css': wsPath + 'ext/requirejs/plugins/native-css',
+            'normalize': wsPath + 'ext/requirejs/plugins/normalize',
+            'html': wsPath + 'ext/requirejs/plugins/html',
+            'tmpl': wsPath + 'ext/requirejs/plugins/tmpl',
+            'text': wsPath + 'ext/requirejs/plugins/text',
+            'is': wsPath + 'ext/requirejs/plugins/is',
+            'is-api': wsPath + 'ext/requirejs/plugins/is-api',
+            'i18n': wsPath + 'ext/requirejs/plugins/i18n',
+            'json': wsPath + 'ext/requirejs/plugins/json'
          },
          waitSeconds: 30,
          nodeRequire: global.require
       });
    },
+
    /**
     * Классическое наследование на классах
     * @param Child - класс-наследник.
     * @param Parent - класс-родитель.
     */
-   classicExtend : function(Child, Parent) {
+   classicExtend: function(Child, Parent) {
       var F = function() { };
       F.prototype = Parent.prototype;
       Child.prototype = new F();
       Child.prototype.constructor = Child;
-      Child.superclass = Parent.prototype
+      Child.superclass = Parent.prototype;
    },
+
    /**
     * @param {Function} func
     * @deprecated Используйте $ws.single.EventBus.channel('errors').subscribe('onAuthError', ...); Удаляется с 3.8
     */
-   appendAuthError : function(func){
-      if (typeof func == "function")
+   appendAuthError: function(func) {
+      if (typeof func == 'function') {
          $ws.core._authError = func;
+      }
    }
 };
 
 $ws.single.ClassMapper = {
    _mapping: {},
    setClassMapping: function(classSpec, mapTo) {
-      if(typeof classSpec == 'string')
+      if (typeof classSpec == 'string') {
          this._mapping[classSpec] = mapTo;
-      else if(classSpec !== null && Object.isValid(classSpec)) {
-         for(var spec in classSpec) {
-            if(classSpec.hasOwnProperty(spec))
+      } else if (classSpec !== null && Object.isValid(classSpec)) {
+         for (var spec in classSpec) {
+            if (classSpec.hasOwnProperty(spec)) {
                this._mapping[spec] = classSpec[spec];
+            }
          }
       }
    },
@@ -3350,6 +3510,7 @@ $ws.single.ClassMapper = {
       this._mapping = {};
    }
 };
+
 /**
  * Класс вспомогательных функций
  * @class $ws.helpers
@@ -3374,23 +3535,23 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @return {String|Boolean}
      * deprecated Используйте функцию generatePageURL
     */
-   generateURL: function(recordId, isBranch, parentId, isCopy, editDialogTemplate, id, readOnly, dataSource, filter, reports, handlers,columnParentId){
-       var params = {
-           recordId : recordId,
-           isBranch : isBranch,
-           parentId : parentId,
-           isCopy : isCopy,
-           editDialogTemplate : editDialogTemplate,
-           id : id,
-           readOnly : readOnly,
-           dataSource : dataSource,
-           filter : filter,
-           reports : reports,
-           handlers : handlers,
-           columnParentId : columnParentId
-       };
-       return $ws.helpers.generatePageURL(params, false);
-    },
+   generateURL: function(recordId, isBranch, parentId, isCopy, editDialogTemplate, id, readOnly, dataSource, filter, reports, handlers, columnParentId) {
+      var params = {
+         recordId: recordId,
+         isBranch: isBranch,
+         parentId: parentId,
+         isCopy: isCopy,
+         editDialogTemplate: editDialogTemplate,
+         id: id,
+         readOnly: readOnly,
+         dataSource: dataSource,
+         filter: filter,
+         reports: reports,
+         handlers: handlers,
+         columnParentId: columnParentId
+      };
+      return $ws.helpers.generatePageURL(params, false);
+   },
 
    /**
     * Функция, позволяющая сгенерировать URL для открытия страницы редактирования/создания записи
@@ -3428,77 +3589,79 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *  paramsObj = $ws.helpers.generatePageURL(params, true );
     * </pre>
     */
-   generatePageURL: function(cfg, retParams, url){
-      if((cfg.editDialogTemplate && ($ws._const.htmlNames[cfg.editDialogTemplate] || $ws._const.xmlContents[cfg.editDialogTemplate]))) {
+   generatePageURL: function(cfg, retParams, url) {
+      if ((cfg.editDialogTemplate && ($ws._const.htmlNames[cfg.editDialogTemplate] || $ws._const.xmlContents[cfg.editDialogTemplate]))) {
          var isHierarchyMode = !!(cfg.isBranch),
-             hdlIsObject = cfg.handlers && Object.prototype.toString.call(cfg.handlers) == "[object Object]",
-             params = {
-                  id : cfg.id,
-                  hierMode : isHierarchyMode,
-                  pk : cfg.recordId,
-                  copy : cfg.isCopy || false,
-                  readOnly : cfg.readOnly || false,
-                  obj : cfg.dataSource.readerParams.linkedObject,
-                  _events : {}
-               },
-               editTemplate,
-               pageURL;
-         if(url)
+            hdlIsObject = cfg.handlers && Object.prototype.toString.call(cfg.handlers) == '[object Object]',
+            params = {
+               id: cfg.id,
+               hierMode: isHierarchyMode,
+               pk: cfg.recordId,
+               copy: cfg.isCopy || false,
+               readOnly: cfg.readOnly || false,
+               obj: cfg.dataSource.readerParams.linkedObject,
+               _events: {}
+            },
+            editTemplate,
+            pageURL;
+         if (url) {
             pageURL = url;
-         else if ($ws._const.htmlNames[cfg.editDialogTemplate]) {
+         } else if ($ws._const.htmlNames[cfg.editDialogTemplate]) {
             var arr = $ws._const.htmlNames[cfg.editDialogTemplate].split('/');
             pageURL = arr[arr.length - 1];
-         }
-         else {
+         } else {
             editTemplate = $ws._const.xmlContents[cfg.editDialogTemplate].split('/');
-            pageURL = $ws._const.appRoot + editTemplate[editTemplate.length - 1] + ".html";
+            pageURL = $ws._const.appRoot + editTemplate[editTemplate.length - 1] + '.html';
          }
-         params["changedRecordValues"] = cfg.changedRecordValues;
-         params["history"] = cfg.history;
-         params["format"] = cfg.dataSource.readerParams.format;
-         params["type"] = cfg.dataSource.readerType;
-         if(cfg.dataSource.readerParams.otherURL !== $ws._const.defaultServiceUrl)
-            params["url"] = cfg.dataSource.readerParams.otherURL;
-         params["db"] = cfg.dataSource.readerParams.dbScheme;
-         params["method"] = cfg.dataSource.readerParams.queryName;
-         params["readMethod"] = cfg.dataSource.readerParams.readMethodName;
-         params["createMethod"] = cfg.dataSource.readerParams.createMethodName;
-         params["updateMethod"] = cfg.dataSource.readerParams.updateMethodName;
-         params["destroyMethod"] = cfg.dataSource.readerParams.destroyMethodName;
-         if(isHierarchyMode){
-            params["branch"] = cfg.isBranch;
-            params["pId"] = cfg.parentId;
-            if(cfg.columnParentId)
-               params["pIdCol"] = cfg.columnParentId;
+         params['changedRecordValues'] = cfg.changedRecordValues;
+         params['history'] = cfg.history;
+         params['format'] = cfg.dataSource.readerParams.format;
+         params['type'] = cfg.dataSource.readerType;
+         if (cfg.dataSource.readerParams.otherURL !== $ws._const.defaultServiceUrl) {
+            params['url'] = cfg.dataSource.readerParams.otherURL;
          }
-         if(cfg.recordId === undefined){
-            params["filter"] = cfg.filter;
-            params._events["onBeforeCreate"] = hdlIsObject && cfg.handlers.onBeforeCreate || [];
-            params._events["onBeforeInsert"] = hdlIsObject && cfg.handlers.onBeforeInsert || [];
+         params['db'] = cfg.dataSource.readerParams.dbScheme;
+         params['method'] = cfg.dataSource.readerParams.queryName;
+         params['readMethod'] = cfg.dataSource.readerParams.readMethodName;
+         params['createMethod'] = cfg.dataSource.readerParams.createMethodName;
+         params['updateMethod'] = cfg.dataSource.readerParams.updateMethodName;
+         params['destroyMethod'] = cfg.dataSource.readerParams.destroyMethodName;
+         if (isHierarchyMode) {
+            params['branch'] = cfg.isBranch;
+            params['pId'] = cfg.parentId;
+            if (cfg.columnParentId) {
+               params['pIdCol'] = cfg.columnParentId;
+            }
          }
-         params._events["onBeforeRead"] = hdlIsObject && cfg.handlers.onBeforeRead || [];
-         params._events["onBeforeUpdate"] = hdlIsObject && cfg.handlers.onBeforeUpdate || [];
-         params._events["onBeforeShowRecord"] = hdlIsObject && cfg.handlers.onBeforeShowRecord || [];
-         params._events["onLoadError"] = hdlIsObject && cfg.handlers.onLoadError || [];
-         if( cfg.reports && !(Object.isEmpty(cfg.reports)) ){
-            params["reports"] = cfg.reports;
-            params._events["onBeforeShowPrintReports"] = hdlIsObject && cfg.handlers.onBeforeShowPrintReports || [];
-            params._events["onPrepareReportData"] = hdlIsObject && cfg.handlers.onPrepareReportData || [];
-            params._events["onSelectReportTransform"] = hdlIsObject && cfg.handlers.onSelectReportTransform || [];
+         if (cfg.recordId === undefined) {
+            params['filter'] = cfg.filter;
+            params._events['onBeforeCreate'] = hdlIsObject && cfg.handlers.onBeforeCreate || [];
+            params._events['onBeforeInsert'] = hdlIsObject && cfg.handlers.onBeforeInsert || [];
          }
-         if(retParams)
+         params._events['onBeforeRead'] = hdlIsObject && cfg.handlers.onBeforeRead || [];
+         params._events['onBeforeUpdate'] = hdlIsObject && cfg.handlers.onBeforeUpdate || [];
+         params._events['onBeforeShowRecord'] = hdlIsObject && cfg.handlers.onBeforeShowRecord || [];
+         params._events['onLoadError'] = hdlIsObject && cfg.handlers.onLoadError || [];
+         if (cfg.reports && !(Object.isEmpty(cfg.reports))) {
+            params['reports'] = cfg.reports;
+            params._events['onBeforeShowPrintReports'] = hdlIsObject && cfg.handlers.onBeforeShowPrintReports || [];
+            params._events['onPrepareReportData'] = hdlIsObject && cfg.handlers.onPrepareReportData || [];
+            params._events['onSelectReportTransform'] = hdlIsObject && cfg.handlers.onSelectReportTransform || [];
+         }
+         if (retParams) {
             return params;
-         else{
-            pageURL += "?editParams=" + encodeURIComponent($ws.helpers.serializeURLData(params));
+         } else {
+            pageURL += '?editParams=' + encodeURIComponent($ws.helpers.serializeURLData(params));
             return pageURL;
          }
       } else {
-         if(!$ws._const.htmlNames[cfg.editDialogTemplate] && !$ws._const.xmlContents[cfg.editDialogTemplate]) {
+         if (!$ws._const.htmlNames[cfg.editDialogTemplate] && !$ws._const.xmlContents[cfg.editDialogTemplate]) {
             $ws.single.ioc.resolve('ILogger').log('$ws.helpers.generatePageURL', 'ВНИМАНИЕ! Диалог "' + cfg.editDialogTemplate + '" отсутствует в оглавлении!');
          }
          return false;
       }
    },
+
    /**
     * Проверяет изменения между двумя наборами данных
     * @param {Array} obj1 Исходный набор данных
@@ -3507,24 +3670,24 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    objectsDiff: function(object1, object2) {
       var VALUE_CREATED = 'created',
-          VALUE_UPDATED = 'updated',
-          VALUE_DELETED = 'deleted',
-          VALUE_UNCHANGED = 'unchanged',
-          VALUE_MOVED = 'moved',
-          cloneObj1 = JSON.parse(JSON.stringify(object1)),
-          cloneObj2 = JSON.parse(JSON.stringify(object2));
+         VALUE_UPDATED = 'updated',
+         VALUE_DELETED = 'deleted',
+         VALUE_UNCHANGED = 'unchanged',
+         VALUE_MOVED = 'moved',
+         cloneObj1 = JSON.parse(JSON.stringify(object1)),
+         cloneObj2 = JSON.parse(JSON.stringify(object2));
 
       function compareValues(value1, value2) {
          if (value1 === value2) {
             return VALUE_UNCHANGED;
          }
-         if (value1 !== value2 && 'undefined' !== typeof(value1) && 'undefined' !== typeof(value2)) {
+         if (value1 !== value2 && 'undefined' !== typeof (value1) && 'undefined' !== typeof (value2)) {
             return VALUE_UPDATED;
          }
-         if ('undefined' == typeof(value1)) {
+         if ('undefined' == typeof (value1)) {
             return VALUE_CREATED;
          }
-         if ('undefined' == typeof(value2)) {
+         if ('undefined' == typeof (value2)) {
             return VALUE_DELETED;
          }
 
@@ -3542,36 +3705,38 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       function isValue(obj) {
          return !isObject(obj) && !isArray(obj);
       }
-      function push(arr, index, id, data){
-         for (var i=arr.length; i>index; i--){
-            arr[i]= JSON.parse(JSON.stringify(arr[i-1]));
+      function push(arr, index, id, data) {
+         for (var i = arr.length; i > index; i--) {
+            arr[i] = JSON.parse(JSON.stringify(arr[i - 1]));
          }
          arr[index] = {};
          arr[index][id] = data;
       }
-      function findInArr(obj, id){
+      function findInArr(obj, id) {
          for (var i in obj) {
-            if (Object.keys(obj[i])[0] == id) return i;
+            if (Object.keys(obj[i])[0] == id) {
+               return i;
+            }
          }
          return false;
       }
-      function createChanges(obj1, obj2){
-         for (var i in obj1){
+      function createChanges(obj1, obj2) {
+         for (var i in obj1) {
             var curKey = Object.keys(obj1[i])[0],
-                newKey = obj2[i] && Object.keys(obj2[i])[0],
-                isMoved = findInArr(obj2, curKey);
+               newKey = obj2[i] && Object.keys(obj2[i])[0],
+               isMoved = findInArr(obj2, curKey);
             if (curKey != newKey && isMoved === false) {
-               push(obj2, i, curKey, obj1[i][curKey])
-               obj2[i].type = VALUE_DELETED
+               push(obj2, i, curKey, obj1[i][curKey]);
+               obj2[i].type = VALUE_DELETED;
             }
          }
-         for (var i in obj2){
+         for (var i in obj2) {
             var curKey = Object.keys(obj2[i])[0],
-                newKey = obj1[i] && Object.keys(obj1[i])[0],
-                isMoved = findInArr(obj1, curKey);
+               newKey = obj1[i] && Object.keys(obj1[i])[0],
+               isMoved = findInArr(obj1, curKey);
             if (curKey != newKey && isMoved === false) {
-               push(obj1, i, curKey, obj2[i][newKey])
-               obj2[i].type = VALUE_CREATED
+               push(obj1, i, curKey, obj2[i][newKey]);
+               obj2[i].type = VALUE_CREATED;
             }
             if (curKey != newKey && isMoved !== false) {
                obj2[i].type = VALUE_MOVED;
@@ -3588,14 +3753,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          if (isValue(obj1) || isValue(obj2)) {
             return {type: compareValues(obj1, obj2)};
          }
-         var diff = {}, isChanged=false;
+         var diff = {}, isChanged = false;
          for (var key in obj2) {
             if (isFunction(obj2[key]) || (obj2[key] && obj2[key].type !== undefined)) {
                continue;
             }
 
-            changed = getChanges(obj1[key], obj2[key], level+1);
-            if (changed.type === VALUE_UPDATED){
+            changed = getChanges(obj1[key], obj2[key], level + 1);
+            if (changed.type === VALUE_UPDATED) {
                isChanged = true;
                if (level == 1) {
                   obj2.type = VALUE_UPDATED;
@@ -3603,20 +3768,28 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             }
          }
 
-         if (isChanged && level > 1) return {type: VALUE_UPDATED};
-         if (level == 0) return obj2;
+         if (isChanged && level > 1) {
+            return {type: VALUE_UPDATED};
+         }
+         if (level == 0) {
+            return obj2;
+         }
          return changed;
       }
 
 
-      function parseValues(obj){
-         var actions=[];
-         if (obj.type == VALUE_UNCHANGED) return actions;
-         for (var i in obj){
-            if (!obj[i].type) continue;
-            var result={};
+      function parseValues(obj) {
+         var actions = [];
+         if (obj.type == VALUE_UNCHANGED) {
+            return actions;
+         }
+         for (var i in obj) {
+            if (!obj[i].type) {
+               continue;
+            }
+            var result = {};
             result.op = obj[i].type;
-            if (obj[i].fromRowNum){
+            if (obj[i].fromRowNum) {
                result.fromRowNum = obj[i].fromRowNum;
             }
             result.rowNum = i;
@@ -3627,6 +3800,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return createChanges(cloneObj1, cloneObj2);
    },
+
    /**
     * Проверяет строковое значение даты на соответствие формату ISO 8601
     * @param {String} value строковое значение даты
@@ -3635,6 +3809,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    isISODate: function(value) {
       return /^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*)?)([zZ]|([+\-])(\d\d):?(\d\d))?$/g.test(value);
    },
+
    /**
     * Преобразует строковое значение даты в формате ISO 8601 в Date
     * @param {String} value строковое значение даты в формате ISO 8601
@@ -3642,29 +3817,38 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    dateFromISO: function(value) {
       var day, tz,
-            rx= /^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*)?)([zZ]|([+\-])(\d\d):?(\d\d))?$/,
-            p= rx.exec(value) || [];
-      if(p[1]){
-         day = $ws.helpers.map(p[1].split(/\D/), function(itm){
+         rx = /^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*)?)([zZ]|([+\-])(\d\d):?(\d\d))?$/,
+         p = rx.exec(value) || [];
+      if (p[1]) {
+         day = $ws.helpers.map(p[1].split(/\D/), function(itm) {
             return parseInt(itm, 10) || 0;
          });
          day[1] -= 1;
          var secToStr = (day[6] !== undefined ? day[6] + '' : '');
-         if(secToStr.length > 3) {
-            day[6] = parseInt(secToStr.substr(0,3), 10);
+         if (secToStr.length > 3) {
+            day[6] = parseInt(secToStr.substr(0, 3), 10);
          }
-         day= new Date(Date.UTC.apply(Date, day));
-         if(!day.getDate()) return NaN;
-         if(p[5]){
-            tz= parseInt(p[5], 10)*60;
-            if(p[6]) tz += parseInt(p[6], 10);
-            if(p[4]== "+") tz*= -1;
-            if(tz) day.setUTCMinutes(day.getUTCMinutes()+ tz);
+         day = new Date(Date.UTC.apply(Date, day));
+         if (!day.getDate()) {
+            return NaN;
+         }
+         if (p[5]) {
+            tz = parseInt(p[5], 10) * 60;
+            if (p[6]) {
+               tz += parseInt(p[6], 10);
+            }
+            if (p[4] == '+') {
+               tz *= -1;
+            }
+            if (tz) {
+               day.setUTCMinutes(day.getUTCMinutes() + tz);
+            }
          }
          return day;
       }
       return NaN;
    },
+
    /**
     * Подготавливает пакет для отрпавки запроса JSON RPC
     * @param {String}         method   Название метода.
@@ -3677,16 +3861,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    jsonRpcPreparePacket: function(method, params, id) {
       var
          body = {
-            jsonrpc  :  '2.0',
-            protocol :  $ws._const.JSONRPC_PROOTOCOL_VERSION,
-            method   :  method,
-            params   :  params,
-            id       :  id !== undefined ? id : 1
+            jsonrpc: '2.0',
+            protocol: $ws._const.JSONRPC_PROOTOCOL_VERSION,
+            method: method,
+            params: params,
+            id: id !== undefined ? id : 1
          },
          headers = {
-            'X-CalledMethod'        : $ws.helpers.transliterate("" + method),
-            'X-OriginalMethodName'  : $ws.single.base64.encode("" + method),
-            'Accept-Language'       : $ws.single.i18n.getLang() + ';q=0.8,en-US;q=0.5,en;q=0.3'
+            'X-CalledMethod': $ws.helpers.transliterate('' + method),
+            'X-OriginalMethodName': $ws.single.base64.encode('' + method),
+            'Accept-Language': $ws.single.i18n.getLang() + ';q=0.8,en-US;q=0.5,en;q=0.3'
          },
          url = '?protocol=' + $ws._const.JSONRPC_PROOTOCOL_VERSION +
                '&method=' + encodeURI(method) +
@@ -3699,13 +3883,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          reqHeaders: headers
       };
    },
+
    /**
     * Функция, которая превращает строку вида 'js!SBIS3.EDO.MyPackage:handler' в функцию
     * @param {String} declaration - декларативное описание функции
     * @returns {Function|undefined}
     */
-   getFuncFromDeclaration: (function(toJSON){
-      return function(declaration){
+   getFuncFromDeclaration: (function(toJSON) {
+      return function(declaration) {
          var
             paths = declaration.split(':'),
             result, module, p;
@@ -3715,19 +3900,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             // requirejs.defined здес НЕ помогает (Сюрприз!)
             // Контрольный пример: define('x', function(){}); requirejs.defined('x') -> false
             module = requirejs(paths[0]);
-         } catch(e) {
+         } catch (e) {
             // Если модуля нет - результат будет исходная декларация модуля
             result = declaration;
          }
 
          if (module) {
             // Если модуль загрузили
-            try{
+            try {
                // Ищем внутренности
                result = module;
-               if (paths[1]){
+               if (paths[1]) {
                   paths = paths[1].split('.');
-                  while(p = paths.shift()){
+                  while (p = paths.shift()) {
                      // try/catch нам тут нужен если указали кривой путь
                      result = result[p];
                   }
@@ -3735,28 +3920,32 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   result.wsHandlerPath = declaration;
                   result.toJSON = toJSON;
                }
-            }
-            catch (e){
+            } catch (e) {
                throw new Error('Parsing function declaration "' + declaration + '" failed. Original message: ' + e.message);
             }
 
-            if (typeof result !== 'function'){
-               throw new Error('Can`t transform "'+ declaration +'" declaration to function');
+            if (typeof result !== 'function') {
+               throw new Error('Can`t transform "' + declaration + '" declaration to function');
             }
          }
 
          return result;
-      }
-   }(function(){return this._declaration})),
+      };
+   }(function() {
+      return this._declaration;
+   })),
+
    /**
     * Функция, которая превращает строку вида 'datasource!SBIS3.EDO.MyDataSourcePackage:datasource_name' в json
     * @param declaration
     * @returns {object}
     */
-   getDataSourceFromDeclaration: function (declaration) {
+   getDataSourceFromDeclaration: function(declaration) {
       var
          parts = declaration.split(':'),
-         global = (function() { return this || (0,eval)('this') })(),
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })(),
          result;
       try {
          result = global.requirejs(parts[0]);
@@ -3764,19 +3953,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             var data = result.contents && result.contents[parts[1]];
             result = {
                readerParams: {
-                  adapterType: "TransportAdapterStatic",
+                  adapterType: 'TransportAdapterStatic',
                   adapterParams: {
                      data: data
                   }
                }
-            }
+            };
          }
-      }
-      catch (e) {
+      } catch (e) {
          throw new Error('Parsing datasource declaration "' + declaration + '" failed. Message:' + e.massage);
       }
       return result;
    },
+
    /**
     * Кроссбраузерно считает высоту страницы
     * @returns {Number}
@@ -3788,16 +3977,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          document.body.clientHeight, document.documentElement.clientHeight
       );
    },
+
    /**
     * Возвращает имя тэга элемента DOM дерева в нижнем регистре. Ф-ция совместима с IE8+.
     * @param {Object} elem - элемент DOM дерева
     * @returns {String}
     */
-   getTagName : function (elem) {
+   getTagName: function(elem) {
       return elem.localName || (elem.nodeName && elem.nodeName.toLowerCase());
+
       // Bugfix. IE8 DOM localName is undefined, checking nodeName instead.
    },
-    /**
+
+   /**
      * Высчитывает ширину переданного текста в пикселях.
      * Высчитывает по базовым на странице шрифту и размеру, то есть без довеска каких-либо классов.
      * @param text Переданный текст.
@@ -3807,8 +3999,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
      *     $ws.helpers.getTextWidth("helloWorld")
      * </pre>
      */
-   getTextWidth : function(text){
-      var hiddenStyle = "left:-10000px;top:-10000px;height:auto;width:auto;position:absolute;";
+   getTextWidth: function(text) {
+      var hiddenStyle = 'left:-10000px;top:-10000px;height:auto;width:auto;position:absolute;';
       var clone = document.createElement('div');
 
       // устанавливаем стили у клона, дабы он не мозолил глаз.
@@ -3825,15 +4017,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       return rect;
    },
+
    /**
     * Достаем значение из localStorage по key.
     * @param {String} key - ключ
     * @returns {String} Значение localStorage по key
     */
    getLocalStorageValue: function(key) {
-      if (typeof localStorage !== "undefined") {
+      if (typeof localStorage !== 'undefined') {
          var lastSid = localStorage.getItem('__sid'),
-             currentSid = $.cookie('sid');
+            currentSid = $.cookie('sid');
 
          function clear() {
             //сбросим значения всех параметров, которые мы сохраняли, ибо сессия поменялась
@@ -3847,13 +4040,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                localStorage.removeItem(key);
             });
             localStorage.removeItem('ws-local-keys');
+
             // Установим новое занчение
             localStorage.setItem('__sid', currentSid);
          }
 
          if (lastSid && currentSid) {
-            var w = lastSid.split("-"),
-                n = currentSid.split("-");
+            var w = lastSid.split('-'),
+               n = currentSid.split('-');
+
             //если изменились пользователи или клиент
             if (w[0] !== n[0] || w[1] !== n[1]) {
                clear();
@@ -3865,19 +4060,20 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return localStorage.getItem(key);
       }
    },
+
    /**
     * Устанавливаем значение localStorage по key.
     * @param {String} key - ключ
     * @param {String} value - Значение
     */
    setLocalStorageValue: function(key, value) {
-      if ("localStorage" in window && window.localStorage !== null) {
+      if ('localStorage' in window && window.localStorage !== null) {
          if (key !== '__sid') {
             localStorage.setItem(key, value);
             var localKeys = localStorage.getItem('ws-local-keys');
             try {
                localKeys = JSON.parse(localKeys) || [];
-            } catch(e) {
+            } catch (e) {
                localKeys = [];
             }
 
@@ -3889,6 +4085,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          }
       }
    },
+
    /**
     * Возвращает количество свойств в объекте
     * @param {Object} obj - Объект, у которого хотим узнать кол-во свойств
@@ -3896,7 +4093,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    countOfProperties: function(obj) {
       var count = 0;
-      if (typeof(obj) != "object" || obj == null) {
+      if (typeof (obj) != 'object' || obj == null) {
          return 0;
       }
       for (var prop in obj) {
@@ -3904,19 +4101,20 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return count;
    },
+
    /**
     * Превращает переданный контейнер в конфиг компонента, содержащий ссылку на элемент DOM дерева
     * @param {HTMLElement | *} cfg - контейнер для инстанцирования компонента.
     * @returns {Object}
     */
-   parseMarkup : (function() {
+   parseMarkup: (function() {
       var
          fnStorage = {},
          reOpt = /^(option|opt)$/i,
          reOpts = /^(options|opts)$/i;
 
 
-      function toJSON (){
+      function toJSON() {
          var id = $ws.helpers.randomId();
          fnStorage[id] = this;
          return 'wsGlobalFnDecl::' + id;
@@ -3934,7 +4132,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       function containsElementNodes(node) {
          var child;
          if (node.childNodes.length > 0) {
-            for(var i = 0, l = node.childNodes.length; i < l; i++) {
+            for (var i = 0, l = node.childNodes.length; i < l; i++) {
                child = node.childNodes[i];
                if (child.nodeType !== 3) {
                   return true;
@@ -3948,7 +4146,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return !isNaN(parseFloat(n)) && isFinite(n);
       }
 
-      function parseElem(elem, vStorage){
+      function parseElem(elem, vStorage) {
          var result;
 
          function parseValue(valueAttr, valTypeAttr, content) {
@@ -3957,8 +4155,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
             if (content && content.length) {
                rawValue = String.trim(content);
-            }
-            else if (valueAttr !== null) {
+            } else if (valueAttr !== null) {
                rawValue = valueAttr;
             } else {
                rawValue = undefined;
@@ -3970,7 +4167,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                case 'function':
                   if (ok) {
                      value = $ws.helpers.getFuncFromDeclaration(rawValue);
-            }
+                  }
                   break;
 
                case 'ref':
@@ -3979,16 +4176,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                      value = vStorage.storage[key];
                      if (typeof value === 'function' && !value.toJSON) {
                         value.toJSON = toJSON;
-            }
+                     }
                      delete vStorage.storage[key];
-               }
+                  }
                   break;
 
                case 'null':
                   {
                      value = null;
                      ok = true;
-            }
+                  }
                   break;
 
                case 'undefined':
@@ -4007,24 +4204,21 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                default:
                   if (ok) {
                      if (isNumber(rawValue)) {
-                  //is number
-                  //проверяем наличие лидирующих нулей (строка 0001234 - не должна быть преобразована в число)
+                        //is number
+                        //проверяем наличие лидирующих нулей (строка 0001234 - не должна быть преобразована в число)
                         value = /^0+/.test(rawValue) && rawValue.length > 1 ? rawValue : parseFloat(rawValue);
-               }
-                     else if (rawValue === 'false') {
-                  //is boolean "false"
+                     } else if (rawValue === 'false') {
+                        //is boolean "false"
                         value = false;
-               }
-                     else if (rawValue === 'true') {
-                  //is boolean "true"
+                     } else if (rawValue === 'true') {
+                        //is boolean "true"
                         value = true;
-               }
-                     else if (/^datasource!/.test(rawValue)) {
+                     } else if (/^datasource!/.test(rawValue)) {
                         value = $ws.helpers.getDataSourceFromDeclaration(rawValue);
                      } else {
                         value = rawValue;
-               }
-            }
+                     }
+                  }
             }
 
             return {
@@ -4059,9 +4253,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
          if (elem.nodeType === 3) { //TEXT_NODE
             //если это любой непробельный символ - считаем, что это часть контента, иначе скорее всего перевод строки - пропускаем
-            result = /\S/.test(elem.text || elem.textContent) ? {name : 'content', value : (elem.text || elem.textContent)} : false;
-         }
-         else if (reOpt.test(elem.nodeName)) {
+            result = /\S/.test(elem.text || elem.textContent) ? {name: 'content', value: (elem.text || elem.textContent)} : false;
+         } else if (reOpt.test(elem.nodeName)) {
             var
                obj = {},
                content,
@@ -4080,8 +4273,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             setBinding(elem, obj, []);
 
             result = obj;
-         }
-         else if (reOpts.test(elem.nodeName)) {
+         } else if (reOpts.test(elem.nodeName)) {
             var
                isArray = /Array|array/.test(elem.getAttribute('type')),
                res = isArray ? [] : {},
@@ -4092,7 +4284,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
             // считаем атрибуты свойствами объекта только если у него нет дочерних нод (исключая текстовые)
             if (!isArray && !containsElementNodes(elem)) {
-               for (var aI = 0, attrs = elem.attributes, aL = attrs.length; aI < aL; aI++){
+               for (var aI = 0, attrs = elem.attributes, aL = attrs.length; aI < aL; aI++) {
                   attr = attrs[aI];
                   if (attr.name !== 'name') {
                      res[attr.name] = attr.value;
@@ -4100,30 +4292,28 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                }
             }
 
-            for (var i = 0, l = childNodes.length; i < l; i++){
-               if ((childRes = parseElem(childNodes[i], vStorage)) !== false){
-                  if (isArray){
+            for (var i = 0, l = childNodes.length; i < l; i++) {
+               if ((childRes = parseElem(childNodes[i], vStorage)) !== false) {
+                  if (isArray) {
                      if (childRes.binding) {
                         childRes.binding.index = res.length;
                         bindings.push(childRes.binding);
                      }
                      if ('value' in childRes) {
-                     res.push(childRes.value);
-                  }
-                  }
-                  else if (childRes.name == 'content' && res.content) {
-                        res.content += childRes.value;
+                        res.push(childRes.value);
                      }
-                     else{
+                  } else if (childRes.name == 'content' && res.content) {
+                     res.content += childRes.value;
+                  } else {
                      if ('value' in childRes) {
                         res[childRes.name] = childRes.value;
                      }
 
                      if (childRes.binding) {
                         bindings.push(childRes.binding);
+                     }
                   }
                }
-            }
             }
 
             result =  {
@@ -4132,9 +4322,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             };
 
             setBinding(elem, result, bindings);
-            }
-         else if ('outerHTML' in elem){
-            result = {name : "content", value : getHTML(elem, 'outer')};
+         } else if ('outerHTML' in elem) {
+            result = {name: 'content', value: getHTML(elem, 'outer')};
          }
 
          return result;
@@ -4144,11 +4333,11 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          var
             parserModule = 'js!SBIS3.CORE.AttributeCfgParser',
             attributeCfgParser = requirejs.defined(parserModule) ? requirejs(parserModule) : null,
-            attr = attributeCfgParser && node.getAttribute("data-bind"),
+            attr = attributeCfgParser && node.getAttribute('data-bind'),
             result;
 
          if (attr) {
-            result = $ws.helpers.map(attributeCfgParser(attr), function (fieldName, propName) {
+            result = $ws.helpers.map(attributeCfgParser(attr), function(fieldName, propName) {
                return {
                   fieldName: fieldName,
                   propName: propName.lcFirst(),
@@ -4164,25 +4353,24 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       function parseConfigFromDOM(cfg, node, vStorage) {
 
          var childNodes = node.childNodes,
-             bindings = [],
-             oldStyleBindings = getOldStyleBindings(node);
+            bindings = [],
+            oldStyleBindings = getOldStyleBindings(node);
 
-         if (childNodes.length){
-            for (var i = 0, l = childNodes.length; i < l; i++){
+         if (childNodes.length) {
+            for (var i = 0, l = childNodes.length; i < l; i++) {
                var field = parseElem(childNodes[i], vStorage);
-               if (field){
+               if (field) {
                   if (field.name === 'content') {
                      cfg.content = cfg.content || '';
                      cfg.content += field.value;
-                  }
-                  else{
+                  } else {
                      cfg[field.name] = field.value;
                      if (field.binding) {
                         bindings.push(field.binding);
+                     }
                   }
                }
             }
-         }
          }
 
          if (bindings.length + oldStyleBindings.length > 0) {
@@ -4192,8 +4380,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return cfg;
       }
 
-      return function parseMarkupInner(node, vStorage, noRevive){
-         if (node && node.getAttribute){ // Bugfix. IE8 type of DOM elements functions == "object".
+      return function parseMarkupInner(node, vStorage, noRevive) {
+         if (node && node.getAttribute) { // Bugfix. IE8 type of DOM elements functions == "object".
             var cfg, name;
 
             // Попробуем получить конфиг с самой ноды
@@ -4203,7 +4391,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             if (!('name' in cfg)) {
                name = node.getAttribute('name');
                if (name) {
-                 cfg.name = name;
+                  cfg.name = name;
                }
             }
 
@@ -4213,6 +4401,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   // И у нее нет разметки, попробуем дополнить конфиг из разметки
                   cfg = parseConfigFromDOM(cfg, node, vStorage);
                }
+
                // Заполним свойство element текущей нодой, на которой проводим разбор
                cfg.element = node;
             } else {
@@ -4224,7 +4413,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          } else {
             return node;
          }
-      }
+      };
    })(),
 
    setElementCachedSize: function(element, size) {
@@ -4268,44 +4457,45 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * и значением: значение_параметра_в_виде_строки.
     * @returns {$ws.proto.Deferred}
     */
-   saveToFile: function(object, methodName, params, url, useGET){
+   saveToFile: function(object, methodName, params, url, useGET) {
       var dResult = new $ws.proto.Deferred();
-      if(object && methodName && params){
-         if(!params['fileDownloadToken'])
-            params['fileDownloadToken'] = ('' + Math.random()).substr(2)* 1;
+      if (object && methodName && params) {
+         if (!params['fileDownloadToken']) {
+            params['fileDownloadToken'] = ('' + Math.random()).substr(2) * 1;
+         }
          if (useGET) {
-            window.open($ws.helpers.prepareGetRPCInvocationURL( object, methodName, params));
+            window.open($ws.helpers.prepareGetRPCInvocationURL(object, methodName, params));
             dResult.callback();
          } else {
             var body = $('body'),
-                  cookie = 'fileDownloadToken_'+params['fileDownloadToken'],
-                  fileDownloadCheckTimer,
-                  cookieValue,
-                  form = $('.ws-upload-form'),
-                  iframe = $('.ws-upload-iframe');
+               cookie = 'fileDownloadToken_' + params['fileDownloadToken'],
+               fileDownloadCheckTimer,
+               cookieValue,
+               form = $('.ws-upload-form'),
+               iframe = $('.ws-upload-iframe');
 
-            if(!form.length && !iframe.length){
-               body.append(form = $('<form enctype="multipart/form-data" target="ws-upload-iframe" '+
-               'action="' + ( url ? url : $ws._const.defaultServiceUrl ) +
-               '?raw_file_result" method="POST" class="ws-upload-form ws-hidden">'+
+            if (!form.length && !iframe.length) {
+               body.append(form = $('<form enctype="multipart/form-data" target="ws-upload-iframe" ' +
+               'action="' + (url ? url : $ws._const.defaultServiceUrl) +
+               '?raw_file_result" method="POST" class="ws-upload-form ws-hidden">' +
                '<input type="hidden" name="Запрос"></form>'));
                body.append(iframe = $('<iframe class="ws-upload-iframe ws-hidden" name="ws-upload-iframe"></iframe>'));
             }
             form.find('[name=Запрос]').val(
-                  $ws.helpers.jsonRpcPreparePacket(
-                        object + '.' + methodName,
-                        params,
-                        ("" + Math.random()).substr(2)
-                  ).reqBody
+               $ws.helpers.jsonRpcPreparePacket(
+                  object + '.' + methodName,
+                  params,
+                  ('' + Math.random()).substr(2)
+               ).reqBody
             );
             form.submit();
-            fileDownloadCheckTimer = setInterval(function(){
+            fileDownloadCheckTimer = setInterval(function() {
                var iframeText = iframe.contents().find('pre');
                cookieValue = $.cookie(cookie);
                if (parseInt(cookieValue, 10) === params['fileDownloadToken']) {
                   clearInterval(fileDownloadCheckTimer);
                   $.cookie(cookie, null);
-                  if(iframeText.length) {
+                  if (iframeText.length) {
                      dResult.errback(new Error(JSON.parse(iframeText.html()).error.details));
                      iframeText.remove('pre');
                   } else {
@@ -4314,30 +4504,34 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                }
             }, 1000);
          }
-      }else
+      } else {
          dResult.errback();
+      }
       return dResult;
    },
+
    /**
     * Удаляет все пробелы из строки
     * @param str
     * @returns {*}
     */
-   removeWhiteSpaces: function(str){
-      return typeof(str) === "string" ? str.replace(/\s/g, "") : undefined;
+   removeWhiteSpaces: function(str) {
+      return typeof (str) === 'string' ? str.replace(/\s/g, '') : undefined;
    },
+
    /**
     * Удаляем указанные тэги.
     * @param {String} str - строка.
     * @param {Array|String} tags - массив тэгов, которые необходимо убрать из строки.
     */
-   escapeTagsFromStr : function(){
+   escapeTagsFromStr: (function() {
       var reCache = {};
 
-      return function(str, tags){
+      return function(str, tags) {
          var tagString, re;
-         if (typeof tags == 'string')
+         if (typeof tags == 'string') {
             tags = [tags];
+         }
          if (typeof str == 'string' && tags instanceof Array) {
             tagString = tags.join('|');
             re = reCache[tagString] || (reCache[tagString] = new RegExp('<(?=\/*(?:' + tagString + '))[^>]+>', 'g'));
@@ -4345,8 +4539,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             str = str.replace(re, '');
          }
          return str;
-      }
-   }(),
+      };
+   }()),
 
    /**
     * Удаляет все теги из строки, заменяя теги <pre><br></pre> на переводы строки (<pre>\n</pre>).
@@ -4363,33 +4557,36 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} str строка.
     * @return {String} экранированная строка.
     */
-   escapeHtml : function(str){
-      if (typeof str == "string") {
-         return str.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g, '&quot;');
-      }
-      else
+   escapeHtml: function(str) {
+      if (typeof str == 'string') {
+         return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      } else {
          return str;
+      }
    },
+
    /**
     * Разэкранирование HTML тэгов
     * @param {String} str строка.
     * @return {String} разэкранированная строка.
     */
-   unEscapeHtml: function(str){
-      BOOMR.plugins.WS.reportEvent("ws.helpers", "unEscapeHtml");
-      if (typeof str == "string")
-         return str.replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-      else
+   unEscapeHtml: function(str) {
+      BOOMR.plugins.WS.reportEvent('ws.helpers', 'unEscapeHtml');
+      if (typeof str == 'string') {
+         return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      } else {
          return str;
+      }
    },
+
    /**
     * Экранирование ASCII символов
     * @param {String} str строка.
     * @return {String} экранированная строка.
     */
-   escapeASCII: function (str) {
-      if (typeof str == "string") {
-         return str.replace(/./g, function(str){
+   escapeASCII: function(str) {
+      if (typeof str == 'string') {
+         return str.replace(/./g, function(str) {
             var c = str.charCodeAt(0);
             if ((c < 256) && (c < 48 || c > 57) && (c < 65 || c > 90) && (c < 97 || c > 122)) {
                return '&#' + c + ';';
@@ -4401,84 +4598,88 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return str;
       }
    },
+
    /**
     * Разэкранирование ASCII символов
     * @param {String} str строка.
     * @return {String} разэкранированная строка.
     */
-   unEscapeASCII: function (str) {
-      if (typeof str == "string") {
-         return str.replace(/&#(.*?);/g, function (str, sub) {
+   unEscapeASCII: function(str) {
+      if (typeof str == 'string') {
+         return str.replace(/&#(.*?);/g, function(str, sub) {
             return String.fromCharCode(sub);
          });
       } else {
          return str;
       }
    },
+
    /**
     * Преобразование html-сущностей в символы
     * @param {String} str строка.
     * @return {String} преобразованная строка.
     */
-   unEscapeHtmlSpecialChars: function(str){
-      if (typeof str == "string"){
+   unEscapeHtmlSpecialChars: function(str) {
+      if (typeof str == 'string') {
          var
-               chars = {
-                  '&minus;': '-',
-                  '&nbsp;': ' ',
-                  '&#92;': '\\'
-               },
-               chr;
-         for(chr in chars){
+            chars = {
+               '&minus;': '-',
+               '&nbsp;': ' ',
+               '&#92;': '\\'
+            },
+            chr;
+         for (chr in chars) {
             str = str.replace(new RegExp(chr, 'g'), chars[chr]);
          }
       }
       return str;
    },
-    /**
+
+   /**
      * Подготавливает объект сортировки для передачи на бизнес-логику
      * Создаёт объект вида { d: [], s: [] }.
      * @param filter - текущий фильтр табличного представления.
      * @returns {*} возвращает объект или null.
      */
-   prepareSorting: function(filter){
-      if(!filter || filter['sorting'] === undefined){
+   prepareSorting: function(filter) {
+      if (!filter || filter['sorting'] === undefined) {
          return null;
       }
       var result = {
-         s:[
+         s: [
             {'n': 'n', 't': 'Строка'},
             {'n': 'o', 't': 'Логическое'},
             {'n': 'l', 't': 'Логическое'}
          ],
-         d:[]
+         d: []
       };
-      for(var len = filter['sorting'].length, i = 0; i < len; ++i){
+      for (var len = filter['sorting'].length, i = 0; i < len; ++i) {
          result.d.push([filter['sorting'][i][0], filter['sorting'][i][1], !filter['sorting'][i][1]]);
       }
       return result;
    },
-    /**
+
+   /**
      * Подготавливает фильтр
      * Создаёт объект вида { d: [], s: [] }.
      * @param filter - текущий фильтр табличного представления.
      * @returns {{d: Array, s: Array}} возвращает объект вида { d: [], s: [] }.
      */
-   prepareFilter: function(filter){
+   prepareFilter: function(filter) {
       var retval = { d: [], s: [] };
-      if(filter && filter instanceof Object) {
+      if (filter && filter instanceof Object) {
          var keys = Object.keys(filter).sort();
-         for(var i, j = 0; j < keys.length; ++j) {
+         for (var i, j = 0; j < keys.length; ++j) {
             i = keys[j];
-            if(i == 'pageNum' || i == 'pageCount' || i == 'usePages' || i == 'sorting'){
+            if (i == 'pageNum' || i == 'pageCount' || i == 'usePages' || i == 'sorting') {
                continue;
             }
-            if(filter.hasOwnProperty(i) && filter[i] !== undefined) {
+            if (filter.hasOwnProperty(i) && filter[i] !== undefined) {
                var serialized = $ws.proto.ReaderSBIS.serializeParameter(i, filter[i]);
-               if(filter[i] instanceof Object && filter[i].hasOwnProperty('hierarchy')){
+               if (filter[i] instanceof Object && filter[i].hasOwnProperty('hierarchy')) {
                   retval.d = retval.d.concat(serialized.d);
                   retval.s = retval.s.concat(serialized.s);
-               }else{
+               } else {
                   retval.d.push(serialized.d);
                   retval.s.push({ 'n': i, 't': serialized.s });
                }
@@ -4487,7 +4688,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return retval;
    },
-    /**
+
+   /**
      * Возвращает на сколько пикселей сдвинули страницу вниз/влево
      * @returns {{left: (Number), top: (Number)}}
      */
@@ -4497,31 +4699,32 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          top: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
       };
    },
-   makeBackground: (function(){
+   makeBackground: (function() {
       var backDeffered, backgroundMapper;
-      return function(element, image){
+      return function(element, image) {
          backDeffered = backDeffered || $ws.requireModule('Core/BackgroundMapper').addCallback(function(BackgroundMapper) {
-            backgroundMapper=BackgroundMapper[0];
+            backgroundMapper = BackgroundMapper[0];
             return backgroundMapper;
          });
 
-         if(!backDeffered.isReady()) {
-            backDeffered.addCallback(function (){
+         if (!backDeffered.isReady()) {
+            backDeffered.addCallback(function() {
                backgroundMapper.makeBackground(element, image);
-            })
+            });
          } else {
             backgroundMapper.makeBackground(element, image);
          }
          return element;
-      }
+      };
    })(),
-    /**
+
+   /**
      * Превращает абстрактный путь к картинке вида "ws:/" к пути относительно корня
      * @param {string} path
      * @returns {*}
      */
    processImagePath: function(path) {
-      BOOMR.plugins.WS.reportEvent("ws.helpers", "processImagePath");
+      BOOMR.plugins.WS.reportEvent('ws.helpers', 'processImagePath');
       if (typeof path == 'string') {
          if (typeof window == 'undefined') {
             var nodePath = require('path');
@@ -4534,8 +4737,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                replaceTo = nodePath.join('/', nodePath.relative($ws._const.appRoot, wsRoot), 'img/themes', $ws._const.theme);
             }
             path = path.replace('ws:', replaceTo);
-         }
-         else if(/^js!/.test(path)) {
+         } else if (/^js!/.test(path)) {
             var modulePath = $ws.helpers.resolveModule(path.replace(/^js!|\/.*/g, ''));
             if (modulePath) {
                if (typeof window == 'undefined') {
@@ -4545,11 +4747,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             }
          }
          if ($ws._const.buildnumber && !/\.v[0-9a-z]+/.test(path)) {
-            path = path.replace(/(jpg|png|gif)$/, "v" + $ws._const.buildnumber + ".$1");
+            path = path.replace(/(jpg|png|gif)$/, 'v' + $ws._const.buildnumber + '.$1');
          }
       }
       return path;
    },
+
    /**
     * Превращаем упрощенный путь до ресурсов компонента в "настоящий"
     * @param {String} path упрощенный путь до ресурсов комопнента, например, 'SBIS3.CORE.Button/resources/images/process.gif'.
@@ -4557,18 +4760,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *    var image = $ws.helpers.resolveComponentPath('SBIS3.CORE.Button/resources/images/process.gif');
     * </pre>
     */
-   resolveComponentPath: function(path){
+   resolveComponentPath: function(path) {
       var
-         pA = path.split("/"),
+         pA = path.split('/'),
          componentName = pA.shift(),
          rA = [$ws._const.wsRoot],
          relativePath = $ws._const.jsCoreModules[componentName] || $ws._const.jsModules[componentName];
 
-      rA.push(relativePath ? relativePath.replace(/\/[^\/]*$/, "/") : componentName);
-      rA.push(pA.join("/"));
-      return rA.join("");
+      rA.push(relativePath ? relativePath.replace(/\/[^\/]*$/, '/') : componentName);
+      rA.push(pA.join('/'));
+      return rA.join('');
    },
-    /**
+
+   /**
      * Переводит строку адреса в строку base64
      * @param {string} data - строка адреса
      * @returns {String}
@@ -4577,12 +4781,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       // Шилов 12.10.2012
       // Если это IE8 или мало ли какой паразит, то преобразуем в UTF-8
       var stringified = JSON.stringify(data);
-      if( stringified.indexOf( "\\u" ) != -1 )
+      if (stringified.indexOf('\\u') != -1) {
          stringified  = unescape(stringified.replace(/\\u/g, '%u'));
+      }
 
       return $ws.single.base64.encode(stringified);
    },
-    /**
+
+   /**
      * Переводит строку из base64 в обычную строку
      * @param {string} serialized
      * @returns {*}
@@ -4591,17 +4797,18 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       var parseFunc = JSON && JSON.parse ? JSON.parse : $.parseJSON;
       return parseFunc($ws.single.base64.decode(serialized));
    },
+
    /**
     * Функция для приведения строки к валидной для XSLT трансформации
     */
    removeInvalidXMLChars: function(valueStr) {
-      if (typeof valueStr == "string"){
-         valueStr = valueStr.replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u10000-\u10FFFF]*/g, "");
+      if (typeof valueStr == 'string') {
+         valueStr = valueStr.replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u10000-\u10FFFF]*/g, '');
       }
       return valueStr;
    },
 
-   checkAssertion: function (assert, message) {
+   checkAssertion: function(assert, message) {
       if (!assert) {
          throw new Error(message || 'Ошибка логики');
       }
@@ -4614,10 +4821,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [Any] obj Проверяемое значение
     * @returns {Boolean}  Является ли переданный аргумент простым js-объектом
     */
-   isPlainObject: (function () {
+   isPlainObject: (function() {
       var objTag = '[object Object]';
 
-      return function (obj) {
+      return function(obj) {
          return !!(obj && toS.call(obj) === objTag &&
                    Object.getPrototypeOf(obj) === Object.prototype);
       };
@@ -4641,7 +4848,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    isEqualObject: function isEqualObject(obj1, obj2) {
       function isTraversable(v) {
-         return typeof(v) === 'object' && v !== null;
+         return typeof (v) === 'object' && v !== null;
       }
 
       var
@@ -4650,7 +4857,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          diff1, diff2;
 
       if (!ok && $ws.helpers.isPlainArray(obj1) === $ws.helpers.isPlainArray(obj2) && isTraversable(obj1) && isTraversable(obj2)) {
-         diff1 = $ws.helpers.findIdx(obj1, function (val, key) {
+         diff1 = $ws.helpers.findIdx(obj1, function(val, key) {
             var
                ok = key in obj2,
                val2;
@@ -4662,7 +4869,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             return !ok;
          }, undefined, notFound);
 
-         diff2 = $ws.helpers.findIdx(obj2, function (val, key) {
+         diff2 = $ws.helpers.findIdx(obj2, function(val, key) {
             var
                ok = key in obj1,
                val1;
@@ -4698,7 +4905,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          } else {
             return undefined;
          }
-      }
+      };
    },
 
    /**
@@ -4729,8 +4936,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [context] - опциональный аргумент, указывающий контекст, в котором будет выполняться iterateCallback.
     */
    forEach: function(obj, iterateCallback, context) {
-      if (obj === null || obj === undefined || obj.length === 0)
+      if (obj === null || obj === undefined || obj.length === 0) {
          return;
+      }
 
       var i, l, key;
       if (obj instanceof Array) {
@@ -4782,14 +4990,17 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    map: function(obj, iterateCallback, context) {
       var results = [];
-      if (obj === null || obj === undefined)
+      if (obj === null || obj === undefined) {
          return results;
+      }
 
       $ws.helpers.forEach(obj, function(value, index, list) {
          results[results.length] = iterateCallback.call(context, value, index, list);
       }, context);
       if (obj.length === +obj.length)//если на входе массив - подгоним длину
+      {
          results.length = obj.length;
+      }
       return results;
    },
 
@@ -4805,13 +5016,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    filter: function(obj, iterateCallback, context) {
       var results = [];
-      if (obj === null || obj === undefined)
+      if (obj === null || obj === undefined) {
          return results;
+      }
 
       $ws.helpers.forEach(obj, function(value, index, list) {
          if (iterateCallback) {
-            if (iterateCallback.call(context, value, index, list))
+            if (iterateCallback.call(context, value, index, list)) {
                results[results.length] = value;
+            }
          } else if (!!value) {
             results[results.length] = value;
          }
@@ -4820,17 +5033,20 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       return results;
    },
 
-   filterObj: function (obj, iterateCallback, context) {
+   filterObj: function(obj, iterateCallback, context) {
       var results = {};
-      if (obj === null || obj === undefined)
+      if (obj === null || obj === undefined) {
          return results;
+      }
 
-      $ws.helpers.forEach(obj, function (value, index, list) {
+      $ws.helpers.forEach(obj, function(value, index, list) {
          if (iterateCallback) {
-            if (iterateCallback.call(context, value, index, list))
+            if (iterateCallback.call(context, value, index, list)) {
                results[index] = value;
-         } else if (value)
+            }
+         } else if (value) {
             results[index] = value;
+         }
       }, context);
 
       return results;
@@ -4847,10 +5063,11 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [context] - опциональный аргумент, указывающий контекст, в котором будет выполняться iterateCallback.
     * @param [notFoundIndex] - опциональный аргумент, указывающий результат, который надо отдавать в том случае, если элемент не найден.
     */
-   find: function (obj, iterateCallback, context, notFoundIndex) {
+   find: function(obj, iterateCallback, context, notFoundIndex) {
       var result = notFoundIndex;
-      if (obj === null || obj === undefined)
+      if (obj === null || obj === undefined) {
          return result;
+      }
 
       var i, l, key;
       if (obj.length === +obj.length) { //хак, определяющий массив
@@ -4909,11 +5126,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [context] - опциональный аргумент, указывающий контекст, в котором будет выполняться iterateCallback.
     * @param [notFoundIndex] - опциональный аргумент, указывающий результат, который надо отдавать в том случае, если элемент не найден.
     */
-   findIdx: function (obj, iterateCallback, context, notFoundIndex) {
-      BOOMR.plugins.WS.reportEvent("ws.helpers", "find");
+   findIdx: function(obj, iterateCallback, context, notFoundIndex) {
+      BOOMR.plugins.WS.reportEvent('ws.helpers', 'find');
       var result = notFoundIndex === undefined ? -1 : notFoundIndex;
-      if (obj === null || obj === undefined)
-         return ;
+      if (obj === null || obj === undefined) {
+         return;
+      }
 
       var i, l, key;
       if (obj.length === +obj.length) { //хак, определяющий массив
@@ -4981,8 +5199,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    reduce: function(obj, iterator, memoInitial, context) {
       var initial = arguments.length > 2, memo = memoInitial;
 
-      if (obj === null || obj === undefined)
+      if (obj === null || obj === undefined) {
          obj = [];
+      }
 
       $ws.helpers.forEach(obj, function(value, index, list) {
          if (!initial) {
@@ -4993,8 +5212,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          }
       });
 
-      if (!initial)
+      if (!initial) {
          throw new TypeError('Reduce of empty array with no initial value');
+      }
 
       return memo;
    },
@@ -5002,8 +5222,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    memoize: function(func, cachedFuncName) {
       var wrapFn = function() {
          var res = func.call(this),
-             cached = function() { return res;},
-             self = this;
+            cached = function() {
+               return res;
+            },
+            self = this;
 
          cached.reset = function() {
             self[cachedFuncName] = wrapFn;
@@ -5026,13 +5248,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * для оборачивания методов контрола).
     * @returns {Function}
     */
-   forAliveOnly: function (func, selfControl) {
+   forAliveOnly: function(func, selfControl) {
       return function() {
          var self = selfControl || this;
          if (!self.isDestroyed()) {
             return func.apply(self, arguments);
          }
-      }
+      };
    },
 
    /**
@@ -5047,8 +5269,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    isScrollable: function(element, kind) {
       var el = $(element),
-          overflow = el.css('overflow'),
-          overflowX, overflowY;
+         overflow = el.css('overflow'),
+         overflowX, overflowY;
 
       return (overflow === 'scroll' || overflow === 'auto') ||
              ((kind === undefined || kind === 'y') &&
@@ -5102,7 +5324,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    hasHorizontalScrollbar: function(element) {
       return this.hasScrollbar(element, 'x');
    },
-    /**
+
+   /**
      * Возвращает случайный идентификатор в виде "префикс"-123...
      * Идентификатор без префикса составляет 16 знаков.
      * @param {String} [prefix='ws-'] Префикс идентификатора
@@ -5115,6 +5338,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    randomId: function(prefix) {
       return (prefix || 'ws-') + Math.random().toString(36).substr(2) + (+new Date());
    },
+
    /**
     * Создает "GUID"
     * В кавычках потому, что он не настоящий, только выглядит как GUID.
@@ -5124,14 +5348,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    createGUID: function() {
       var
-            i = 0, s = 0, pad = new Date().getTime().toString(16);
+         i = 0, s = 0, pad = new Date().getTime().toString(16);
       pad = '000000000000'.substr(0, 12 - pad.length) + pad;
       var p = function() {
-         return (pad.substring(s, s += (i++ % 2 ? 2 : 1)) + (((1+Math.random())*0x10000)|0).toString(16)).substring(0, 4);
+         return (pad.substring(s, s += (i++ % 2 ? 2 : 1)) + (((1 + Math.random()) * 0x10000) | 0).toString(16)).substring(0, 4);
       };
-      return (p()+p()+'-'+p()+'-'+p()+'-'+p()+'-'+p()+p()+p());
+      return (p() + p() + '-' + p() + '-' + p() + '-' + p() + '-' + p() + p() + p());
    },
-    /**
+
+   /**
      * Метод разбора сложного ключа
      * в объект вида
      * {
@@ -5142,13 +5367,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
      * @returns {*}
      */
    parseComplexKey: function(key) {
-      if(typeof key == 'string') {
+      if (typeof key == 'string') {
          var splitPos = key.indexOf($ws._const.IDENTITY_SPLITTER);
-         if(splitPos != -1) {
+         if (splitPos != -1) {
             return {
-               objName: key.substr(splitPos+1),
+               objName: key.substr(splitPos + 1),
                objKey: key.substr(0, splitPos)
-            }
+            };
          }
       }
       return {
@@ -5156,7 +5381,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          objKey: key
       };
    },
-    /**
+
+   /**
      * Формирует GET запрос к бизнес-логике
      * Подготавливает адрес для вызова метода БЛ через GET запрос. Например, чтобы при клике на ссылку начиналась
      * загрузка какого-либо файла, расположенного в базе данных бизнес-логики.
@@ -5177,22 +5403,23 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          baseUrl = serviceUrl || $ws._const.defaultServiceUrl,
          rpcMethod = encodeURIComponent(object + '.' + method),
          filterParams = $ws.core.merge({}, args || {}),
-      // IE8-9 пускай горят в огне, не кэшим ничего и никогда
-         id = ($ws._const.browser.isIE8 || $ws._const.browser.isIE9) ? ('' + Math.random()).substr(2,9) : 0,
+
+         // IE8-9 пускай горят в огне, не кэшим ничего и никогда
+         id = ($ws._const.browser.isIE8 || $ws._const.browser.isIE9) ? ('' + Math.random()).substr(2, 9) : 0,
          complexKey, objName;
 
-      for(var fName in filterParams) {
-         if(filterParams.hasOwnProperty(fName)) {
+      for (var fName in filterParams) {
+         if (filterParams.hasOwnProperty(fName)) {
             var param = filterParams[fName];
-            if(param !== null && typeof param == 'object' && 'fieldName' in param) {
+            if (param !== null && typeof param == 'object' && 'fieldName' in param) {
                filterParams[fName] = (context || $ws.single.GlobalContext).getValue(param.fieldName);
             }
-            if(fName == 'ИдО') {
+            if (fName == 'ИдО') {
                var oN = filterParams[fName];
-               if(!oN) {
+               if (!oN) {
                   return '';
                }
-               if(typeof oN == 'string') {
+               if (typeof oN == 'string') {
                   complexKey = $ws.helpers.parseComplexKey(oN);
                   objName = complexKey.objName || object;
 
@@ -5209,8 +5436,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             '?id=' + id +
             '&method=' + rpcMethod +
             '&protocol=' + $ws._const.JSONRPC_PROOTOCOL_VERSION +
-            '&params=' + encodeURIComponent( $ws.helpers.serializeURLData(filterParams) );
+            '&params=' + encodeURIComponent($ws.helpers.serializeURLData(filterParams));
    },
+
    /**
     * Выполняет GET запрос на получение файла с помощью метода БЛ.
     * @param {String} objectName имя объекта БЛ. Например "Контакт".
@@ -5219,14 +5447,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} serviceUrl путь до сервиса, на котором надо выполнить метод
     * @return $ws.proto.Deferred объект deferred с результатом запроса
     */
-   fetchFile : function(objectName, methodName, params, serviceUrl){
+   fetchFile: function(objectName, methodName, params, serviceUrl) {
       return $ws.single.ioc.resolve('ITransport', {
          method: 'GET',
          dataType: 'text',
          url: $ws.helpers.prepareGetRPCInvocationURL(objectName, methodName, params, null, serviceUrl)
       }).execute();
    },
-    /**
+
+   /**
      * Метод для создания запросов.
      * @param {String} object Имя таблицы, у которой будет вызван метод.
      * @param {String} [method] Имя метода БЛ.
@@ -5260,74 +5489,74 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
      *    });
      * </pre>
      */
-    newRecordSet : function(object, method, filter, reader, autoQuery, url, hierarchyField, readerParams){
-        var
-           attachDfr,
-           canceled = false,
-           internalRs = null;
+   newRecordSet: function(object, method, filter, reader, autoQuery, url, hierarchyField, readerParams) {
+      var
+         attachDfr,
+         canceled = false,
+         internalRs = null;
 
-       autoQuery = ((autoQuery === undefined) ? true : !!autoQuery);
+      autoQuery = ((autoQuery === undefined) ? true : !!autoQuery);
 
-       hierarchyField = (hierarchyField === undefined ? '' : hierarchyField);
+      hierarchyField = (hierarchyField === undefined ? '' : hierarchyField);
 
-       readerParams = $ws.core.merge({
-          otherUrl : url,
-          dbScheme: '',
-          linkedObject: object,
-          queryName: method
-       }, (!!readerParams && readerParams.constructor === Object) ? readerParams : {});
+      readerParams = $ws.core.merge({
+         otherUrl: url,
+         dbScheme: '',
+         linkedObject: object,
+         queryName: method
+      }, (!!readerParams && readerParams.constructor === Object) ? readerParams : {});
 
-       attachDfr = $ws.core.attachInstance('Source:RecordSet', {
-          hierarchyField: hierarchyField,
-          firstRequest: false,
-          filterParams: filter,
-          readerType: reader || 'ReaderUnifiedSBIS',
-          readerParams: readerParams
-       }).addCallback(function(rs){
-          var res;
+      attachDfr = $ws.core.attachInstance('Source:RecordSet', {
+         hierarchyField: hierarchyField,
+         firstRequest: false,
+         filterParams: filter,
+         readerType: reader || 'ReaderUnifiedSBIS',
+         readerParams: readerParams
+      }).addCallback(function(rs) {
+         var res;
 
-          if (autoQuery && !!method && !canceled) {
-             internalRs = rs;
-             res = rs.reload().createDependent().addCallback($ws.helpers.constant(rs));
-          } else {
-             res = rs;
-          }
+         if (autoQuery && !!method && !canceled) {
+            internalRs = rs;
+            res = rs.reload().createDependent().addCallback($ws.helpers.constant(rs));
+         } else {
+            res = rs;
+         }
 
-          return res;
-       });
+         return res;
+      });
 
-       return attachDfr.createDependent().addErrback(function(err) {
-          var rs;
-          if (err.canceled) {
-             canceled = true;
-             if (internalRs) {
-                rs = internalRs;
-                internalRs = null;
-                rs.abort();
-             }
-          }
-          return err;
-       });
+      return attachDfr.createDependent().addErrback(function(err) {
+         var rs;
+         if (err.canceled) {
+            canceled = true;
+            if (internalRs) {
+               rs = internalRs;
+               internalRs = null;
+               rs.abort();
+            }
+         }
+         return err;
+      });
    },
-    /**
+
+   /**
      * Назначает обработчик на на событие keydown
      * Для одинаковой обработки событий в разных браузерах.
      * Актуально для старых версий, например, Opera до 12.10.
      * @param object - jQuery объект, на который вешается обработчик события нажатия клавиши.
      * @param callback - функция, которая сработает при нажатии клавиши.
      */
-   keyDown: function(object, callback){
-      object[$ws._const.compatibility.correctKeyEvents ? 'keydown' : 'keypress'](function(e){
-         if(!$ws._const.compatibility.correctKeyEvents){
-            if(e.which === e.keyCode){
-               if(e.which >= 97 && e.which <= 122){
+   keyDown: function(object, callback) {
+      object[$ws._const.compatibility.correctKeyEvents ? 'keydown' : 'keypress'](function(e) {
+         if (!$ws._const.compatibility.correctKeyEvents) {
+            if (e.which === e.keyCode) {
+               if (e.which >= 97 && e.which <= 122) {
                   e.which = e.keyCode - 32;
-               }
-               else if(e.which in $ws._const.operaKeys){
+               } else if (e.which in $ws._const.operaKeys) {
                   e.which = $ws._const.key[$ws._const.operaKeys[e.which]];
                }
             }
-            if(e.which === 0){
+            if (e.which === 0) {
                e.which = e.keyCode;
             }
             e.keyCode = e.which;
@@ -5335,6 +5564,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          callback(e);
       });
    },
+
    /**
     * Рисует календарик
     * @param {String|jQuery} id - идентификатор элемента, либо jQuery элемент, в который вставляем календарик.
@@ -5357,13 +5587,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * });
     * </pre>
     */
-   showDatePicker:function  (id , func, firstDayToShow){
+   showDatePicker: function(id, func, firstDayToShow) {
       var def = new $ws.proto.Deferred();
-      $ws.core.ready.addCallback(function (){
-         $ws.require(["js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min",
-                      "css!Ext/jquery-ui/jquery-ui-1.8.5.custom",
-                      "js!SBIS3.CORE.FieldDate/resources/ext/jquery.ui.datepicker-ru"])
-               .addCallback(function(){
+      $ws.core.ready.addCallback(function() {
+         $ws.require(['js!Ext/jquery-ui/jquery-ui-1.8.5.custom.min',
+            'css!Ext/jquery-ui/jquery-ui-1.8.5.custom',
+            'js!SBIS3.CORE.FieldDate/resources/ext/jquery.ui.datepicker-ru'])
+            .addCallback(function() {
                var el = (id instanceof $) ? id : $('#' + id);
                el.datepicker({
                   beforeShowDay: func,
@@ -5371,9 +5601,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                });
                def.callback();
             });
-         });
+      });
       return def;
    },
+
    /**
     * Переводит число/денежное значение из его цифрового представления в строковое(словесное)
     * @remark
@@ -5397,22 +5628,24 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *   // результат = 'шестьсот семьдесят три миллиарда четыреста пятьдесят три миллиона четыреста пятьдесят три тысячи пятьсот тридцать пять рублей пятьдесят шесть копеек'
     * </pre>
     */
-   numToWritten : function(numAsStr, pSocr) {
+   numToWritten: function(numAsStr, pSocr) {
       // pSexFemale = true если для женского рода, например для тысяч
       function numberToWritten999(value, pSexFemale) {
          var
-            digits = {'0':'','1':'один','2':'два','3':'три','4':'четыре','5':'пять','6':'шесть','7':'семь','8':'восемь','9':'девять','10':'десять','11':'одиннадцать','12':'двенадцать','13':'тринадцать','14':'четырнадцать','15':'пятнадцать','16':'шестнадцать','17':'семнадцать','18':'восемнадцать','19':'девятнадцать'},
-            dozens = {'2':'двадцать','3':'тридцать','4':'сорок','5':'пятьдесят','6':'шестьдесят','7':'семьдесят','8':'восемьдесят','9':'девяносто'},
-            hundreds = {'0': '','1':'сто','2':'двести','3':'триста','4':'четыреста','5':'пятьсот','6':'шестьсот','7':'семьсот','8':'восемьсот','9':'девятьсот'},
+            digits = {'0': '', '1': 'один', '2': 'два', '3': 'три', '4': 'четыре', '5': 'пять', '6': 'шесть', '7': 'семь', '8': 'восемь', '9': 'девять', '10': 'десять', '11': 'одиннадцать', '12': 'двенадцать', '13': 'тринадцать', '14': 'четырнадцать', '15': 'пятнадцать', '16': 'шестнадцать', '17': 'семнадцать', '18': 'восемнадцать', '19': 'девятнадцать'},
+            dozens = {'2': 'двадцать', '3': 'тридцать', '4': 'сорок', '5': 'пятьдесят', '6': 'шестьдесят', '7': 'семьдесят', '8': 'восемьдесят', '9': 'девяносто'},
+            hundreds = {'0': '', '1': 'сто', '2': 'двести', '3': 'триста', '4': 'четыреста', '5': 'пятьсот', '6': 'шестьсот', '7': 'семьсот', '8': 'восемьсот', '9': 'девятьсот'},
             result, h, d;
-         if(pSexFemale === true) {
+         if (pSexFemale === true) {
             digits['1'] = 'одна';
             digits['2'] = 'две';
          }
          d = value % 100;
-         d = d <= 19 ? digits[d] : dozens[Math.floor(d/10)] + (d%10 ? ' ' : '') + digits[d%10];
+         d = d <= 19 ? digits[d] : dozens[Math.floor(d / 10)] + (d % 10 ? ' ' : '') + digits[d % 10];
          h = hundreds[Math.floor(value / 100)];
-         if( h && d ) { h += ' '; }
+         if (h && d) {
+            h += ' '; 
+         }
          result = h + d;
          return result;
       }
@@ -5421,69 +5654,68 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          var
             fst = Math.abs(value % 10),
             sec = Math.abs(value % 100);
-         if(fst === 0 || fst >= 5 || sec >= 11 && sec <= 19) {
+         if (fst === 0 || fst >= 5 || sec >= 11 && sec <= 19) {
             return 0;
          }
-         if(fst === 1) {
+         if (fst === 1) {
             return 1; // 11 excluded
          }
          return 2;
       }
 
       // pSexFemale = true если для женского рода, например для тысяч
-      function numberToWritten(numAsStr,pSexFemale,allowMinus) {
+      function numberToWritten(numAsStr, pSexFemale, allowMinus) {
          allowMinus = allowMinus || true;
          var
             result = '',
             i = 0,
             trizryads = {
-               0:{'0':'',              '1':'',              '2':''},
-               1:{'0':'тысяч',         '1':'тысяча',        '2':'тысячи'},
-               2:{'0':'миллионов',     '1':'миллион',       '2':'миллиона'},
-               3:{'0':'миллиардов',    '1':'миллиард',      '2':'миллиарда'},
-               4:{'0':'триллионов',    '1':'триллион',      '2':'триллиона'},
-               5:{'0':'квадриллионов', '1':'квадриллион',   '2':'квадриллиона'},
-               6:{'0':'квинтиллионов', '1':'квинтиллион',   '2':'квинтиллиона'},
-               7:{'0':'сикстиллионов', '1':'сикстиллион',   '2':'сикстиллиона'},
-               8:{'0':'септиллионов',  '1':'септиллион',    '2':'септиллиона'},
-               9:{'0':'октиллионов',   '1':'октиллион',     '2':'октиллиона'},
-              10:{'0':'нониллионов',   '1':'нониллион',     '2':'нониллиона'},
-              11:{'0':'дециллионов',   '1':'дециллион',     '2':'дециллиона'}
+               0: {'0': '',              '1': '',              '2': ''},
+               1: {'0': 'тысяч',         '1': 'тысяча',        '2': 'тысячи'},
+               2: {'0': 'миллионов',     '1': 'миллион',       '2': 'миллиона'},
+               3: {'0': 'миллиардов',    '1': 'миллиард',      '2': 'миллиарда'},
+               4: {'0': 'триллионов',    '1': 'триллион',      '2': 'триллиона'},
+               5: {'0': 'квадриллионов', '1': 'квадриллион',   '2': 'квадриллиона'},
+               6: {'0': 'квинтиллионов', '1': 'квинтиллион',   '2': 'квинтиллиона'},
+               7: {'0': 'сикстиллионов', '1': 'сикстиллион',   '2': 'сикстиллиона'},
+               8: {'0': 'септиллионов',  '1': 'септиллион',    '2': 'септиллиона'},
+               9: {'0': 'октиллионов',   '1': 'октиллион',     '2': 'октиллиона'},
+               10: {'0': 'нониллионов',   '1': 'нониллион',     '2': 'нониллиона'},
+               11: {'0': 'дециллионов',   '1': 'дециллион',     '2': 'дециллиона'}
             },
             three, writning, negative;
-         if(numAsStr.charAt(0)==='-') {
-            if(allowMinus) {
+         if (numAsStr.charAt(0) === '-') {
+            if (allowMinus) {
                negative = true;
                numAsStr = numAsStr.slice(1);
-            }
-            else {
+            } else {
                return 'ОШИБКА';
             }
          }
-         if(parseInt(numAsStr,10) === 0) {
+         if (parseInt(numAsStr, 10) === 0) {
             return 'ноль';
          }
-         if(isNaN(numAsStr)){
+         if (isNaN(numAsStr)) {
             return 'ОШИБКА';
          }
-         if(''===numAsStr){
+         if ('' === numAsStr) {
             return '';
          }
-         while(numAsStr.length > 0) {
-            three = parseInt(numAsStr.substr(Math.max(numAsStr.length-3,0),3),10);
+         while (numAsStr.length > 0) {
+            three = parseInt(numAsStr.substr(Math.max(numAsStr.length - 3, 0), 3), 10);
             var ct = chooseNumericEndingType(three);
             writning = trizryads[i] && trizryads[i][ct] ? ' ' + trizryads[i][ct] : '';
 
-            if(three > 0) {
-               if(i && writning === '') {
+            if (three > 0) {
+               if (i && writning === '') {
                   return 'ОШИБКА'; // Слишком много разрядов
                }
-               result = numberToWritten999(three,i===1 || pSexFemale) + writning + (result ? ' ' + result : '');
+               result = numberToWritten999(three, i === 1 || pSexFemale) + writning + (result ? ' ' + result : '');
             }
-            numAsStr = numAsStr.slice(0,-3);
+            numAsStr = numAsStr.slice(0, -3);
             i++;
          }
-         if(negative) {
+         if (negative) {
             result = 'минус ' + result;
          }
          return result;
@@ -5491,44 +5723,52 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       // если pSocr = true, то тоже самое что и moneyToWritten, но сокращенно аббревиатуры руб и коп.
       // если pSocr = false или не указана, то полностью, например, рублей и копеек.
-      function moneyToWritten (numAsStr, pSocr) {
+      function moneyToWritten(numAsStr, pSocr) {
          // Все операции проводим со строками, чтобы можно было оперировать с большими числами
-         numAsStr = (numAsStr+'').replace(/\s/g,'');
-         if(isNaN(numAsStr) || !numAsStr.match(/^[-0-9.]*$/)){ return 'ОШИБКА'; }
-         if(''===numAsStr){ return ''; }
+         numAsStr = (numAsStr + '').replace(/\s/g, '');
+         if (isNaN(numAsStr) || !numAsStr.match(/^[-0-9.]*$/)) {
+            return 'ОШИБКА'; 
+         }
+         if ('' === numAsStr) {
+            return ''; 
+         }
          var
-            arr = (numAsStr+'').split('.'),
+            arr = (numAsStr + '').split('.'),
             rub = arr[0] || '0',
             kop = arr[1] || '00',
-            rubles = {'0':'рублей', '1':'рубль',   '2':'рубля'},
-            kopeks = {'0':'копеек', '1':'копейка', '2':'копейки'},
+            rubles = {'0': 'рублей', '1': 'рубль',   '2': 'рубля'},
+            kopeks = {'0': 'копеек', '1': 'копейка', '2': 'копейки'},
             rubR, kopR, result;
-         if(rub === '-') { rub = '-0'; }
-         if(kop.length === 1){ kop += '0'; }
-         if(kop.length > 2){
+         if (rub === '-') {
+            rub = '-0'; 
+         }
+         if (kop.length === 1) {
+            kop += '0'; 
+         }
+         if (kop.length > 2) {
             // rounding
             var flow = kop.charAt(2);
-            kop = kop.substr(0,2);
-            if(flow >= '5') {
-               kop = parseInt(kop,10)+1+'';
-               if(kop.length === 1){ kop = '0' + kop; }
-               if(kop === '100') {
+            kop = kop.substr(0, 2);
+            if (flow >= '5') {
+               kop = parseInt(kop, 10) + 1 + '';
+               if (kop.length === 1) {
+                  kop = '0' + kop; 
+               }
+               if (kop === '100') {
                   kop = '00';
-                  if(rub === '') {
+                  if (rub === '') {
                      rub = 1;
                   }
                   var pos = rub.length - 1, after = '';
-                  while(true) {
-                     if(pos < 0 || isNaN(parseInt(rub.charAt(pos),10))) {
-                        after = (pos >= 0 ? rub.substr(0,pos+1) : '') +'1' + after;
+                  while (true) {
+                     if (pos < 0 || isNaN(parseInt(rub.charAt(pos), 10))) {
+                        after = (pos >= 0 ? rub.substr(0, pos + 1) : '') + '1' + after;
                         break;
-                     }
-                     else if(rub.charAt(pos) === '9') {
+                     } else if (rub.charAt(pos) === '9') {
                         after = '0' + after;
                         pos--;
-                     }
-                     else {
-                        after = rub.substr(0,pos) + (parseInt(rub.charAt(pos),10)+1) + after;
+                     } else {
+                        after = rub.substr(0, pos) + (parseInt(rub.charAt(pos), 10) + 1) + after;
                         break;
                      }
                   }
@@ -5538,11 +5778,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          }
 
          rubR = numberToWritten(rub);
-         if(rubR === 'ОШИБКА'){ return 'ОШИБКА'; }
+         if (rubR === 'ОШИБКА') {
+            return 'ОШИБКА'; 
+         }
          rubR = rubR || 'ноль';
-         rubR += ' ' + (pSocr ? 'руб' : rubles[chooseNumericEndingType(parseInt(rub.substr(Math.max(0,rub.length-2),2),10))]);
-         kopR = ' ' + kop + ' ' + (pSocr ? 'коп' : kopeks[chooseNumericEndingType(parseInt(kop,10))]);
-         if(parseInt(kop.substr(0,2),10) > 0 && rub.charAt(0)==='-' && rubR.charAt(0) !== 'м') {
+         rubR += ' ' + (pSocr ? 'руб' : rubles[chooseNumericEndingType(parseInt(rub.substr(Math.max(0, rub.length - 2), 2), 10))]);
+         kopR = ' ' + kop + ' ' + (pSocr ? 'коп' : kopeks[chooseNumericEndingType(parseInt(kop, 10))]);
+         if (parseInt(kop.substr(0, 2), 10) > 0 && rub.charAt(0) === '-' && rubR.charAt(0) !== 'м') {
             rubR = 'минус ' + rubR; // так как 0 рублей, то минус не прописался
          }
          result = rubR + kopR;
@@ -5552,27 +5794,28 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       return moneyToWritten(numAsStr, pSocr);
    },
+
    /**
     * Получает и парсит атрибут alignmargin, отвечающий за отступы контрола.
     * Если атрибута нет, марджины ставятся в ноль по умолчанию.
     * @param {jQuery} elem  элемент, у которого получить марджины.
     * @returns {Object} Объект марджинов.
     */
-   parseMargins:function (elem){
+   parseMargins: function(elem) {
       var result, wsMargin, margins;
-      BOOMR.plugins.WS.reportEvent("ws.helpers", "parseMargins");
+      BOOMR.plugins.WS.reportEvent('ws.helpers', 'parseMargins');
 
       elem = $(elem);
 
       wsMargin = elem.attr('alignmargin');
-      if(wsMargin){
+      if (wsMargin) {
          margins = wsMargin.split(',');
          result = {
-            'top':parseInt(margins[0], 10),
-            'right':parseInt(margins[1], 10),
-            'bottom':parseInt(margins[2], 10),
-            'left':parseInt(margins[3], 10)
-         }
+            'top': parseInt(margins[0], 10),
+            'right': parseInt(margins[1], 10),
+            'bottom': parseInt(margins[2], 10),
+            'left': parseInt(margins[3], 10)
+         };
       } else {
          result = {};
       }
@@ -5590,7 +5833,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} type Height|Width - тип размера.
     * @returns {Number} значение.
     */
-   getNonControlSize: function(collection, type){
+   getNonControlSize: function(collection, type) {
       var max = 0, curr = 0, i, ln = (collection && collection.length) || 0, isHidden, ltype;
 
       if (ln > 0) {
@@ -5604,7 +5847,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                jqElem = $(elem);
 
                var attr = elem.getAttribute('orig' + type);
-               if (attr === null || attr === "auto" || attr === "Auto") {
+               if (attr === null || attr === 'auto' || attr === 'Auto') {
                   curr = jqElem['getNative' + type]();
                } else {
                   curr = parseFloat(attr);
@@ -5621,23 +5864,25 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   }
 
                   // добавляем padding+border, если есть.
-                  curr += jqElem["outer"+type]() - jqElem[ltype]();
+                  curr += jqElem['outer' + type]() - jqElem[ltype]();
                }
                max = (curr > max) ? curr : max;
             }
-         };
+         }
       }
 
       return max;
    },
+
    /**
     * Проверяет нажата ли клавиша CapsLock
     * @param {Event} keypressEvent jQuery событие keypress, для которого проверяется нажат капс-лок или нет.
     * @returns {Boolean} нажат ли капс-лок. undefined возвращается когда определить невозможно.
     */
-   checkCapsLock:function (keypressEvent){
-      if (!keypressEvent || !keypressEvent.which)
+   checkCapsLock: function(keypressEvent) {
+      if (!keypressEvent || !keypressEvent.which) {
          return undefined;
+      }
       var asciiCode = keypressEvent.which;
       var letter = String.fromCharCode(asciiCode);
       var upper = letter.toUpperCase();
@@ -5645,33 +5890,35 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       var shiftKey = keypressEvent.shiftKey;
 
       // Если верхние и нижние регистры равны, то нет возможности определить нажат ли капс-лок
-      if(upper !== lower){
+      if (upper !== lower) {
 
          // Если вводится верхний символ при ненажатом шифте, значит капс-лок включен
-         if(letter === upper && !shiftKey){
+         if (letter === upper && !shiftKey) {
             return true;
+
             // Если нижний, то выключен.
-         } else if(letter === lower && !shiftKey){
+         } else if (letter === lower && !shiftKey) {
             return false;
+
             // Если нижний при нажажатом шифте, то включен
-         } else if(letter === lower && shiftKey){
+         } else if (letter === lower && shiftKey) {
             return true;
-         } else if(letter === upper && shiftKey){
-            if(navigator.platform.toLowerCase().indexOf("win") !== -1){
+         } else if (letter === upper && shiftKey) {
+            if (navigator.platform.toLowerCase().indexOf('win') !== -1) {
                // Если на Windows, то выключен
                return false;
-            } else{
-               if(navigator.platform.toLowerCase().indexOf("mac") !== -1){
+            } else {
+               if (navigator.platform.toLowerCase().indexOf('mac') !== -1) {
                   // Если на Mac, то выключен
                   return false;
-               } else{
+               } else {
                   return undefined;
                }
             }
-         } else{
+         } else {
             return undefined;
          }
-      } else{
+      } else {
          return undefined;
       }
    },
@@ -5695,35 +5942,44 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * </pre>
     * @returns {String}
     */
-   format:function(source,format){
-      if (typeof format !== "string")
-         return "";
+   format: function(source, format) {
+      if (typeof format !== 'string') {
+         return '';
+      }
       return format.replace(/\$([а-яА-Яa-zA-Z0-9_ .]+)\$(?:([sdD])|([t])\$([\s\S]*?)|([fF])(?:\$([0-9]+))?)\$/g, function(str, m0, m1, m2, m3, m4, m5) {
          var
             field =
-               source ?
-                  (
-                     source instanceof $ws.proto.Record && source.hasColumn(m0) ? source.get(m0) :
-                     source.getValue && typeof source.getValue === 'function' ? source.getValue(m0) :
-                     source[m0] ) :
-                  null;
-         if (m2)
+               source
+                  ? (
+                     source instanceof $ws.proto.Record && source.hasColumn(m0) ? source.get(m0)
+                        : source.getValue && typeof source.getValue === 'function' ? source.getValue(m0)
+                           : source[m0])
+                  : null;
+         if (m2) {
             m1 = m2;
-         if (m4)
+         }
+         if (m4) {
             m1 = m4;
-         if (m1 === 't')
-            return field ? field.strftime(m3) : "";
-         if (m1 === 'd' || m1 === 'D')
-            return $ws.render.defaultColumn.integer( field, !!(m1 === 'd') );
-         if (m1 === 'f' || m1 === 'F')
-            return $ws.render.defaultColumn.real( field, m5 ? m5 : 2, m1 !== 'f' );
+         }
+         if (m1 === 't') {
+            return field ? field.strftime(m3) : '';
+         }
+         if (m1 === 'd' || m1 === 'D') {
+            return $ws.render.defaultColumn.integer(field, !!(m1 === 'd'));
+         }
+         if (m1 === 'f' || m1 === 'F') {
+            return $ws.render.defaultColumn.real(field, m5 ? m5 : 2, m1 !== 'f');
+         }
+
          //if (m1 === 's')
-         if (field instanceof $ws.proto.Enum)
-            return $ws.render.defaultColumn.enumType( field );
-         else
-            return field ? field : "";
+         if (field instanceof $ws.proto.Enum) {
+            return $ws.render.defaultColumn.enumType(field);
+         } else {
+            return field ? field : '';
+         }
       });
    },
+
    /**
     * Информационное окно "Общий вопрос".
     * Пользователю будет доступно 2 варианта ответа: "Да" и "Нет".
@@ -5760,16 +6016,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @see alert
     * @see message
     */
-   question: function( text, cfg, opener ){
+   question: function(text, cfg, opener) {
       var res = new $ws.proto.Deferred(),
-          escPressed = false,
-          windowManager = $ws.single.WindowManager;
+         escPressed = false,
+         windowManager = $ws.single.WindowManager;
       $ws.core.attachInstance('SBIS3.CORE.DialogConfirm', $ws.core.merge({
          message: text,
          opener: opener || (windowManager && windowManager.getActiveWindow()),
          handlers: {
-            onKeyPressed : function (event, result){
-               if(result.keyCode == $ws._const.key.esc) {
+            onKeyPressed: function(event, result) {
+               if (result.keyCode == $ws._const.key.esc) {
                   escPressed = true;
                }
             },
@@ -5779,20 +6035,20 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                // и это окно в том числа),
                // тогда он может попытаться стрельнуть ещё раз, и будет ошибка
                if (!res.isReady()) {
-                  if(escPressed) {
+                  if (escPressed) {
                      res.callback(undefined);
-                  }
-                  else {
-                     res.callback( result );
+                  } else {
+                     res.callback(result);
                   }
                }
             }
          }
-      }, cfg || {} ) ).addErrback(function(err){
-         res.errback( err );
+      }, cfg || {})).addErrback(function(err) {
+         res.errback(err);
       });
       return res;
    },
+
    /**
     * Показывает сообщение. Возвращает Deferred, который сработает при закрытии окна.
     * @param {String} text Текст.
@@ -5802,25 +6058,26 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @returns {$ws.proto.Deferred}
     * @private
     */
-   _messageBox: function(text, cfg, type, opener){
+   _messageBox: function(text, cfg, type, opener) {
       var res = new $ws.proto.Deferred(),
-          windowManager = $ws.single.WindowManager;
+         windowManager = $ws.single.WindowManager;
       $ws.core.attachInstance('SBIS3.CORE.DialogAlert', $ws.core.merge({
          message: text,
          type: type,
          opener: opener || (windowManager && windowManager.getActiveWindow()),
          handlers: {
-            onAfterClose: function(){
+            onAfterClose: function() {
                res.callback();
             }
          }
-      }, cfg || {})).addErrback(function(err){
+      }, cfg || {})).addErrback(function(err) {
          $ws.single.ioc.resolve('ILogger').log('$ws.helpers._messageBox', err.message);
          alert($ws.helpers.htmlToText(text));//Если не удалось создать диалог, показываем простой браузерный алёрт
          res.errback(err);
       });
       return res;
    },
+
    /**
     * Информационное окно "Ошибка"
     * Возвращает $ws.proto.Deferred, который сработает при закрытии окна.
@@ -5854,13 +6111,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @see message
     * @see question
     */
-   alert: function(text, cfg, opener){
+   alert: function(text, cfg, opener) {
       if (text instanceof Error) {
          //Обработка отмены запроса пользователем
          if (text.httpError === 0) {
             return new $ws.proto.Deferred().callback();
-         }
-         else {
+         } else {
             if (cfg && cfg.checkAlreadyProcessed) {
                if (text.processed) {
                   return new $ws.proto.Deferred().callback();
@@ -5878,6 +6134,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return new $ws.proto.Deferred().callback();
       }
    },
+
    /**
     * Информационное окно "Сообщение"
     * Возвращает $ws.proto.Deferred, который сработает при закрытии окна.
@@ -5900,30 +6157,33 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @see alert
     * @see question
     */
-   message: function(text, cfg, opener){
+   message: function(text, cfg, opener) {
       return $ws.helpers._messageBox(text, cfg, 'info', opener);
    },
+
    /**
     * Создает контекстное меню по упрощенным параметрам - список пунктов и м.б. функция активации
     * @param {Array} items Пункты меню.
     * @param {Function} [onActivate] Функция, которая будет выполняться при выборе пункта меню.
     * @returns {$ws.proto.Deferred} Стреляет созданным контекстным меню.
     */
-   newContextMenu: function(items, onActivate){
+   newContextMenu: function(items, onActivate) {
       var config = [];
-      for(var k = 0, l = items.length; k < l; k++){
+      for (var k = 0, l = items.length; k < l; k++) {
          config[k] = {
             caption: items[k],
             id: items[k],
             handlers: {}
          };
-         if(typeof(onActivate) == 'function')
+         if (typeof (onActivate) == 'function') {
             config[k].handlers['onActivated'] = onActivate;
+         }
       }
       return $ws.core.attachInstance('Control/Menu', {
          data: config
       });
    },
+
    /**
     * Показывает стандартный платформенный диалог печати.
     * @param {String|Object} htmlText|cfg Если этот параметр-строка, то в нём лежит html-текст, который нужно показать в окне предварительного просмотра при печати.
@@ -5942,10 +6202,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *
     * @returns {$ws.proto.Deferred} стреляет созданным окном предварительного просмотра
     */
-   showHTMLForPrint: function(htmlText, top, left, opener){
+   showHTMLForPrint: function(htmlText, top, left, opener) {
 
       var
-         options = typeof(htmlText) === 'string' ? {} : $ws.core.shallowClone(htmlText),
+         options = typeof (htmlText) === 'string' ? {} : $ws.core.shallowClone(htmlText),
          windowManager = $ws.single.WindowManager;
 
       function removeUndefinded(obj) {
@@ -5976,14 +6236,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return dlg.getReadyDeferred().addCallback($ws.helpers.constant(dlg));
       });
    },
+
    /**
     * Вычисляет ширину скроллбара в текущем браузере
     * @return {*}
     */
    getScrollWidth: function() {
-      if(document && document.body) {
+      if (document && document.body) {
          var div = document.createElement('div');
-         div.style.cssText="position:absolute;height:50px;overflow-y:hidden;width:50px;visibility:hidden";
+         div.style.cssText = 'position:absolute;height:50px;overflow-y:hidden;width:50px;visibility:hidden';
          div.innerHTML = '<div style="height:100px"></div>';
          var innerDiv = div.firstChild;
 
@@ -5993,7 +6254,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          var scrollWidth = w1 - innerDiv.offsetWidth;
          document.body.removeChild(div);
 
-         $ws.helpers.getScrollWidth = function() { return scrollWidth; };
+         $ws.helpers.getScrollWidth = function() {
+            return scrollWidth; 
+         };
          return scrollWidth;
       } else if (!document) {
          throw new Error('Ошибка: функция $ws.helpers.getScrollWidth вызвана на сервере. Она должна вызываться только в клиентском браузере.');
@@ -6001,6 +6264,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          throw new Error('Ошибка: функция $ws.helpers.getScrollWidth вызвана на клиентском браузере, однако body ещё не готово.');
       }
    },
+
    /**
     * Вычисляет координаты элемента с учетом скроллинга
     * @param elem Элемент, координаты которого надо вычислить.
@@ -6008,16 +6272,17 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    getOffsetRect: function(elem) {
       var box = elem.getBoundingClientRect(),
-          body = document.body,
-          docElem = document.documentElement,
-          scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
-          scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
-          clientTop = docElem.clientTop || body.clientTop || 0,
-          clientLeft = docElem.clientLeft || body.clientLeft || 0,
-          top = box.top + scrollTop - clientTop,
-          left = box.left + scrollLeft - clientLeft;
+         body = document.body,
+         docElem = document.documentElement,
+         scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
+         scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
+         clientTop = docElem.clientTop || body.clientTop || 0,
+         clientLeft = docElem.clientLeft || body.clientLeft || 0,
+         top = box.top + scrollTop - clientTop,
+         left = box.left + scrollLeft - clientLeft;
       return { top: Math.round(top), left: Math.round(left) };
    },
+
    /**
     * Возвращает слово в нужном падеже, в зависимоси от числа,
     * например (10, "рублей", "рубль", "рубля") возвратит слово "рублей".
@@ -6027,54 +6292,59 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} word2 Падеж, соответствующий числу 2.
     * @returns {String}
     */
-   wordCaseByNumber: function (num, word0, word1, word2) {
+   wordCaseByNumber: function(num, word0, word1, word2) {
       num = Math.abs(num);
 
       // если есть дробная часть
-      if (num % 1 > 0)
+      if (num % 1 > 0) {
          return word2;
+      }
 
       // если две последние цифры 11 ... 19
       num = num % 100;
-      if (num >= 11 && num <= 19)
+      if (num >= 11 && num <= 19) {
          return word0;
+      }
 
       // все остальные случаи - по последней цифре
       num = num % 10;
 
-      if (num == 1)
+      if (num == 1) {
          return word1;
+      }
 
-      if (num == 2 || num == 3 || num == 4)
+      if (num == 2 || num == 3 || num == 4) {
          return word2;
-      else
+      } else {
          return word0;
+      }
    },
-   addXmlLog: function(templateName){
+   addXmlLog: function(templateName) {
       var tplListElem = $('#xmlContent');
-      if(!tplListElem.length){
+      if (!tplListElem.length) {
          tplListElem = $('<div id="xmlContent" style="display:none; visibility: hidden;"></div>');
          $('body').append(tplListElem);
       }
-      if(!tplListElem.data(templateName)){
+      if (!tplListElem.data(templateName)) {
          tplListElem.data(templateName, true);
-         tplListElem.append('<div name="'+templateName+'">')
+         tplListElem.append('<div name="' + templateName + '">');
       }
    },
+
    /**
     * Если есть deferred, то дожидается его окончания и выполняет callback, иначе просто выполняет callback
     * @param {*} deferred То, чего ждём.
     * @param {Function} callback То, что нужно выполнить.
     * @return {$ws.proto.Deferred|*} Если есть деферред, то возвращает его, иначе - результат выполнения функции.
     */
-   callbackWrapper: function(deferred, callback){
-      if(deferred && deferred instanceof $ws.proto.Deferred){
+   callbackWrapper: function(deferred, callback) {
+      if (deferred && deferred instanceof $ws.proto.Deferred) {
          return deferred.addCallback(callback);
-      }
-      else{
+      } else {
          return callback(deferred);
       }
    },
+
    /**
     * Вставляет кусок css на страницу
     * @param {String} style CSS-текст, который нужно вставить.
@@ -6082,20 +6352,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} [hint] "Подсказка". Присутствует в сообщении об ошибке если стили не удалось применить.
     * @returns {Deferred|null} Если waitApply = true, то возвращает Deferred, сигнализирующий готовность css (применённость к документу), иначе null.
     */
-   insertCss: function(style, waitApply, hint){
+   insertCss: function(style, waitApply, hint) {
       /**
        * Возвращает тэг для вставки css
        * @return {*}
        */
-      function getCurStyleHolder(){
+      function getCurStyleHolder() {
          var tag;
-         if ("getElementsByClassName" in document){
-            tag = document.getElementsByClassName("ws-style-holder-current")[0];
-         }
-         else{
-            var styles = document.getElementsByTagName("style");
-            for (var i = 0, l = styles.length; i < l; i++){
-               if (hasClass(styles[i], "ws-style-holder-current")){
+         if ('getElementsByClassName' in document) {
+            tag = document.getElementsByClassName('ws-style-holder-current')[0];
+         } else {
+            var styles = document.getElementsByTagName('style');
+            for (var i = 0, l = styles.length; i < l; i++) {
+               if (hasClass(styles[i], 'ws-style-holder-current')) {
                   tag = styles[i];
                   break;
                }
@@ -6109,7 +6378,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
        * Создает новый тэг style
        * @return {HTMLElement}
        */
-      function createStyleHolder(){
+      function createStyleHolder() {
          var sHolder = document.createElement('style');
          var head = document.getElementsByTagName('head')[0];
 
@@ -6130,9 +6399,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       function hasClass(element, cls) {
          var
             className = ' ' + element.className + ' ',
-            m = cls.split(" ");
-         for (var i = 0, l = m.length; i < l; i++){
-            if (className.indexOf(' ' + m[i] + ' ') == -1){
+            m = cls.split(' ');
+         for (var i = 0, l = m.length; i < l; i++) {
+            if (className.indexOf(' ' + m[i] + ' ') == -1) {
                return false;
             }
          }
@@ -6154,10 +6423,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             markerDiv.remove();
             if (waitInterval) {
                clearInterval(waitInterval);
-               if(timeout && isIEBefore10) {
+               if (timeout && isIEBefore10) {
                   result.errback('Timeout waiting for styles to apply' + (hint ? ' for ' + hint : ''));
-               } else if(timeout) {
-                  notifierDiv.text("Страница загружается слишком долго. Попробуйте перезагрузить страницу");
+               } else if (timeout) {
+                  notifierDiv.text('Страница загружается слишком долго. Попробуйте перезагрузить страницу');
                   notifierDiv.css('display', '');
                   result.callback();
                } else {
@@ -6180,11 +6449,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          markerCss = '#' + markerDivId + ' { position: absolute; }';
       }
 
-      if ($ws._const.compatibility.standartStylesheetProperty){
+      if ($ws._const.compatibility.standartStylesheetProperty) {
          styleHolder = createStyleHolder();
          styleHolder.appendChild(document.createTextNode(style + markerCss));
-      }
-      else {
+      } else {
          styleHolder = getCurStyleHolder();
          style = style + markerCss;
          var
@@ -6192,7 +6460,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             curRulesCnt = (cssText.match(/\{|,/g) || []).length,
             insRulesCnt = (style.match(/\{|,/g) || []).length;
 
-         if (curRulesCnt + insRulesCnt > 4000){
+         if (curRulesCnt + insRulesCnt > 4000) {
             styleHolder.className = 'ws-style-holder';
             styleHolder = createStyleHolder();
          }
@@ -6220,76 +6488,79 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * Возвращает выделенный на странице текст
     * @return {String}
     */
-   getTextSelection : function(){
+   getTextSelection: function() {
       var txt;
 
-      if (window.getSelection)
+      if (window.getSelection) {
          txt = window.getSelection().toString();
-      else if (document.getSelection)
+      } else if (document.getSelection) {
          txt = document.getSelection().toString();
-      else if (document.selection)  // IE 6/7
+      } else if (document.selection)  // IE 6/7
+      {
          txt = document.selection.createRange().text;
+      }
 
       return txt;
    },
-    /**
+
+   /**
      * Скрывает/показывает индикатор загрузки
      */
-   toggleIndicator: (function(){
+   toggleIndicator: (function() {
       var indicInstance, indicDeffered;
-      function indicatorVisible(toggle){
-         if(!!toggle) {
+      function indicatorVisible(toggle) {
+         if (!!toggle) {
             // Если передали Deferred
-            if( toggle instanceof $ws.proto.Deferred ){
+            if (toggle instanceof $ws.proto.Deferred) {
                // Если он еще не готов
-               if(!toggle.isReady()) {
+               if (!toggle.isReady()) {
                   // Покажем
                   indicInstance.show();
+
                   // Подпишемся на завершение с любым статусом ...
-                  toggle.addBoth(function( res ){
+                  toggle.addBoth(function(res) {
                      // и скроем индикатор
                      indicInstance.hide();
                      return res;
                   });
-               }
-               else{ // Скроем индикатор, если Deferred сразу готов
+               } else { // Скроем индикатор, если Deferred сразу готов
                   indicInstance.hide();
                }
-            }
-            else {
+            } else {
                indicInstance.show();
             }
          } else {
             indicInstance.hide();
          }
       }
-      return function (toggle) {
+      return function(toggle) {
          indicDeffered = indicDeffered || $ws.requireModule('SBIS3.CORE.LoadingIndicator').addCallback(function() {
             indicInstance = new $ws.proto.LoadingIndicator({message: 'Пожалуйста, подождите…'});
             return indicInstance;
          });
-         if(!indicDeffered.isReady()) {
+         if (!indicDeffered.isReady()) {
             //Идет попытка загрузить LoadingIndicator, но он еще не готов
-            indicDeffered.addCallback(function (){
+            indicDeffered.addCallback(function() {
                indicatorVisible(toggle);
-            })
+            });
          } else {
             // Был определен LoadingIndicator, обрабатываем индикатор
             indicatorVisible(toggle);
          }
-      }
+      };
    })(),
+
    /**
     * Показывает индикатор загрузки над конкретной областью
     * @param {jQuery} target область под индикатором
     * @param {Boolean} state скрыть / показать
     */
-   toggleLocalIndicator: function (target, state){
+   toggleLocalIndicator: function(target, state) {
       // ищем существующий индикатор
       var indicator = target.children('.ws-browser-ajax-loader').first();
 
       // если не нашли - создаём новый
-      if(!indicator.length){
+      if (!indicator.length) {
          indicator = $('<div class="ws-browser-ajax-loader ws-hidden"><div class="ws-loading-indicator-outer">' +
          '<div class="ws-loading-indicator-block"><div class="ws-loading-indicator ws-browser-loading-indicator">' +
          '</div></div></div></div>');
@@ -6297,13 +6568,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
 
       // переключаем
-      if(state){
+      if (state) {
          indicator.removeClass('ws-hidden');
-      }
-      else{
+      } else {
          indicator.addClass('ws-hidden');
       }
    },
+
    /**
     * Показывает всплывающую панель с указанным конфигом. Если она уже есть, не создаёт новую. Для корректной работы необходим name в config
     * @param {Object} config Конфигурация панели. Параметры конфигурации должны быть теми, которые требуются конструктору класса создаваемой панели.
@@ -6320,14 +6591,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * и будет показана старая панель с переустановленными параметрами.
     * @return {$ws.proto.Deferred}
     */
-   showFloatArea: function(config){
+   showFloatArea: function(config) {
       var
          id = config.id,
          name = config.name,
          storage = $ws.helpers.showFloatArea.storage,
          storageEntry, result, oldCfg;
 
-      if(!storage){
+      if (!storage) {
          $ws.helpers.showFloatArea.storage = storage = {
             id: {},
             name: {}
@@ -6337,8 +6608,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       var path;
       if (config.path) {
          path = config.path;
-      }
-      else if (config.filter) {
+      } else if (config.filter) {
          path = 'SBIS3.CORE.FilterFloatArea';
       } else {
          path = 'SBIS3.CORE.FloatArea';
@@ -6384,8 +6654,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             }
             return result;
          });
-      }
-      else {
+      } else {
          result = $ws.core.attachInstance(path, config);
          storageEntry = {
             instDfr: result,
@@ -6417,6 +6686,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       //нужно отдавать результат через createDependent, чтобы клиентский код не мог испортить состояния deferred-а с экземпляром панельки
       return result.createDependent();
    },
+
    /**
     * Показывает всплывающую панель, аналогично {@link showFloatArea}. Только панель показывается при ховере по элементу.
     * Является надстройкой, позволяющей избежать ситуации, когда на элемент навели мышь, панель загружается, мышь убрали, панель показалась и больше никогда не убирается.
@@ -6425,26 +6695,27 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {Object}                     config   Конфигурация панели. Параметры конфигурации смотрите в документации функции {@link showFloatArea}.
     * @return {$ws.proto.Deferred}
     */
-   showHoverFloatArea: function(element, hovered, config){
+   showHoverFloatArea: function(element, hovered, config) {
       var
          hover = hovered || false,
-         block = $(element).bind('mouseenter.wsShowHoverFloatArea', function(){
+         block = $(element).bind('mouseenter.wsShowHoverFloatArea', function() {
             hover = true;
-         }).bind('mouseleave.wsShowHoverFloatArea', function(){
+         }).bind('mouseleave.wsShowHoverFloatArea', function() {
             hover = false;
          });
 
       config.autoShow = false;
       config.hoverTarget = element;
 
-      return $ws.helpers.showFloatArea(config).addCallback(function(area){
+      return $ws.helpers.showFloatArea(config).addCallback(function(area) {
          block.unbind('.wsShowHoverFloatArea');
-         if(hover){
+         if (hover) {
             area.show();
          }
          return area;
       });
    },
+
    /**
     * Проверяет, лежит ли элемент 2 в дом дереве элемента 1
     * @param {HTMLElement|jQuery} parent
@@ -6457,13 +6728,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          par = parent instanceof jQuery ? parent[0] : parent,
          chi = child  instanceof jQuery ? child[0]  : child;
 
-      while(!contains && chi) {
+      while (!contains && chi) {
          chi = chi.parentNode;
          contains = par === chi;
       }
 
       return contains;
    },
+
    /**
     * Очистка выделения на странице
     * Если передали currentContainer, и window.getSelection().getRangeAt(0).startContainer находится в нём,
@@ -6471,8 +6743,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * collapse может приводить к получению фокуса теряющим активность контролом.
     * @param {HTMLElement|jQuery} [currentContainer] Контейнер в котором должен сохраняться фокус.
     */
-   clearSelection: function(currentContainer){
-      if(window.getSelection){
+   clearSelection: function(currentContainer) {
+      if (window.getSelection) {
          var
             elem,
             selection = window.getSelection(),
@@ -6482,14 +6754,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             elem = selection.getRangeAt(0).startContainer;
 
             // Если выделение находится в активном контейнере, то просто сколлапсим его вместо очищения
-            if($ws.helpers.contains(currentContainer, elem)) {
+            if ($ws.helpers.contains(currentContainer, elem)) {
                selection.collapseToStart();
                collapsed = true;
             }
          } catch (w) {
          }
 
-         if(collapsed) {
+         if (collapsed) {
             return;
          }
 
@@ -6500,17 +6772,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             } else if (selection && selection.empty) {
                selection.empty(); // ie
             }
-         } catch(e) {
+         } catch (e) {
          }
-      }
-      else if(document.selection && document.selection.empty){
+      } else if (document.selection && document.selection.empty) {
          try {
             document.selection.empty();
-         }
-         catch(e) {
+         } catch (e) {
          }
       }
    },
+
    /**
     * Располагает элемент так, чтобы он полностью помещался в окне (координаты - абсолютные, скролл учитывается
     * @param {Object} offset Объект с координатами top и left.
@@ -6518,7 +6789,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {Number} [height] Высота объекта. Если не передать, не будет переносить вниз.
     * @returns {Object} Объект с координатами top и left (тот же самый объект, что и offset).
     */
-   positionInWindow: function(offset, width, height){
+   positionInWindow: function(offset, width, height) {
       var scrollTop = $ws._const.$win.scrollTop(),
          scrollLeft = $ws._const.$win.scrollLeft(),
          maxWidth = $ws._const.$win.width(),
@@ -6527,16 +6798,16 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       offset.top -= scrollTop;
       offset.left -= scrollLeft;
 
-      if(offset.left + width > maxWidth){
+      if (offset.left + width > maxWidth) {
          offset.left = maxWidth - width;
       }
-      if(offset.left < 0){
+      if (offset.left < 0) {
          offset.left = 0;
       }
-      if(height !== undefined && offset.top + height > maxHeight){
+      if (height !== undefined && offset.top + height > maxHeight) {
          offset.top = maxHeight - height;
       }
-      if(offset.top < 0){
+      if (offset.top < 0) {
          offset.top = 0;
       }
 
@@ -6555,8 +6826,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [ctx] - контекст, чтобы можно было обращаться из фильтра браузера к полям контекста.
     * @return {$ws.proto.Deferred} стрельнет, когда будет произведен выбор, и все результаты будут обработаны.
     */
-   showDialogSelector: function( cfg, func, ctx ){
-      return this._showSelector( cfg, func, ctx, 'SBIS3.CORE.DialogSelector');
+   showDialogSelector: function(cfg, func, ctx) {
+      return this._showSelector(cfg, func, ctx, 'SBIS3.CORE.DialogSelector');
    },
 
    /**
@@ -6568,9 +6839,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param [ctx] - контекст, чтобы можно было обращаться из фильтра браузера к полям контекста.
     * @return {$ws.proto.Deferred} стрельнет, когда будет произведен выбор, и все результаты будут обработаны.
     */
-   showFloatAreaSelector: function( cfg, func, ctx ) {
+   showFloatAreaSelector: function(cfg, func, ctx) {
       return this._showSelector(cfg, func, ctx, 'SBIS3.CORE.FloatAreaSelector');
    },
+
    /**
     * Вызываем селектор, выполняет функцию для каждой выбранной записи,
     * если функция возвращает Deferred, то они объединяются в ParallelDeferred;
@@ -6582,22 +6854,23 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @returns {$ws.proto.Deferred} стрельнет, когда будет произведен выбор, и все результаты будут обработаны.
     * @private
     */
-   _showSelector: function( cfg, func, ctx, moduleName ){
+   _showSelector: function(cfg, func, ctx, moduleName) {
       var result = new $ws.proto.Deferred(),
-          needIndic = false;
+         needIndic = false;
 
       $ws.core.attachInstance(moduleName, $ws.core.merge({
          context: new $ws.proto.Context().setPrevious(ctx),
          handlers: {
-            onChange: function (event, records){
+            onChange: function(event, records) {
                var self = this;
+
                // если выбор только листьев, то для папки может прийти [ null ], проверка на это
-               if( records && records[0] ){
+               if (records && records[0]) {
                   // чтобы дождаться всех
-                  var ready = new $ws.proto.ParallelDeferred({ stopOnFirstError : false });
-                  $ws.helpers.forEach(records, function (){
+                  var ready = new $ws.proto.ParallelDeferred({ stopOnFirstError: false });
+                  $ws.helpers.forEach(records, function() {
                      var funcRes = func.apply(self, arguments),
-                         isDeferred = funcRes instanceof $ws.proto.Deferred;
+                        isDeferred = funcRes instanceof $ws.proto.Deferred;
 
                      // может не нужна ансинхронная обработка, тогда индикатор не покажем
                      needIndic |= isDeferred;
@@ -6605,27 +6878,29 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                         ready.push(funcRes);
                      }
                   });
-                  if( needIndic ) {
+                  if (needIndic) {
                      $ws.helpers.toggleIndicator(true);
                   }
                   this.close(ready.done().getResult());
                }
             },
-            onAfterClose: function (event, res){
+            onAfterClose: function(event, res) {
                //  если просто закрыли диалог, то res будет false вроде
-               if(res && res instanceof $ws.proto.Deferred)
+               if (res && res instanceof $ws.proto.Deferred) {
                   result.dependOn(res);
-               else
+               } else {
                   result.callback(res);
+               }
             }
          }
-      }, cfg )).addErrback(function (err){
+      }, cfg)).addErrback(function(err) {
          result.errback(err);
          return err;
       });
-      result.addBoth(function (res){
-         if( needIndic )
+      result.addBoth(function(res) {
+         if (needIndic) {
             $ws.helpers.toggleIndicator(false);
+         }
          return res;
       });
       return result;
@@ -6636,21 +6911,22 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {jQuery}jq
     * @return {String}
     */
-   jQueryToString: function (jq){
+   jQueryToString: function(jq) {
       var res = [];
-      for(var i = 0, l = jq.length; i < l; i++) {
+      for (var i = 0, l = jq.length; i < l; i++) {
          res.push(jq.get(i).outerHTML);
       }
       return res.join('');
    },
    parseIdentity: function(value) {
-      if(value instanceof Array) {
-         if(value.length === 1 && value[0] === null)
+      if (value instanceof Array) {
+         if (value.length === 1 && value[0] === null) {
             return null;
+         }
          return value.join($ws._const.IDENTITY_SPLITTER);
-      }
-      else
+      } else {
          return value;
+      }
    },
 
    /**
@@ -6664,35 +6940,37 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {Boolean} [newTab=true] Открывать ли созданные ссылки в новой вкладке.
     * @returns {String} Текст с обёрнутыми ссылками.
     */
-   wrapURLs: function() {
+   wrapURLs: (function() {
       var
-          urlRegExpString = '(https?|ftp|file):\/\/[-A-Za-zА-ЯЁа-яё0-9.]+(?::[0-9]+)?(\/[-A-Za-zА-ЯЁа-яё0-9+&@#$/%=~_{|}!?:,.;()]*)*',
-          emailRegExpString = "[-a-zА-ЯЁа-яё0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zА-ЯЁа-яё0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zА-ЯЁа-яё0-9]([-a-zА-ЯЁа-яё0-9]{0,61}[a-zА-ЯЁа-яё0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zА-ЯЁа-яё][a-zА-ЯЁа-яё])",
-          // регулярка для поиска готовых ссылок между <a></a>, их преобразовывать не нужно
-          excludeLinkString = '<[\\s]*a[\\s\\S]*?>[\\s\\S]*?<\/a>|',
-          emailRegExp = new RegExp( excludeLinkString + emailRegExpString, 'gi'),
-          urlRegExp = new RegExp(excludeLinkString + urlRegExpString, 'i'),
-          urlStartRegExp = new RegExp( "^"+urlRegExpString, "i"),
-          quotRegExp = /(&quot;)+$/i,
-          cleanRegExp = /^(&nbsp;|,)+/gi,
-          specialRegExp = /(&nbsp;|,|&quot;)+/i, //для поиска в ссылки &quot;,&nbsp;
-          assembleUrl = function(href, linkText, newTab){
-             return '<a class="asLink"' + ( newTab ? ' target="_blank"' : '') + ' href="' + href + '">' + linkText + '</a>';
-          };
+         urlRegExpString = '(https?|ftp|file):\/\/[-A-Za-zА-ЯЁа-яё0-9.]+(?::[0-9]+)?(\/[-A-Za-zА-ЯЁа-яё0-9+&@#$/%=~_{|}!?:,.;()]*)*',
+         emailRegExpString = "[-a-zА-ЯЁа-яё0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zА-ЯЁа-яё0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zА-ЯЁа-яё0-9]([-a-zА-ЯЁа-яё0-9]{0,61}[a-zА-ЯЁа-яё0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zА-ЯЁа-яё][a-zА-ЯЁа-яё])",
+
+         // регулярка для поиска готовых ссылок между <a></a>, их преобразовывать не нужно
+         excludeLinkString = '<[\\s]*a[\\s\\S]*?>[\\s\\S]*?<\/a>|',
+         emailRegExp = new RegExp(excludeLinkString + emailRegExpString, 'gi'),
+         urlRegExp = new RegExp(excludeLinkString + urlRegExpString, 'i'),
+         urlStartRegExp = new RegExp('^' + urlRegExpString, 'i'),
+         quotRegExp = /(&quot;)+$/i,
+         cleanRegExp = /^(&nbsp;|,)+/gi,
+         specialRegExp = /(&nbsp;|,|&quot;)+/i, //для поиска в ссылки &quot;,&nbsp;
+         assembleUrl = function(href, linkText, newTab) {
+            return '<a class="asLink"' + (newTab ? ' target="_blank"' : '') + ' href="' + href + '">' + linkText + '</a>';
+         };
 
       // ищет в строке ссылки и оборачивает их в тег <a></a>
-      function parseElement (str, newTab) {
+      function parseElement(str, newTab) {
          var
-             result = [],
-             linkPos = -1, //позиция начала ссылки в строке
-             beforeStr = '', //текст до ссылки
-             link = '',
-             linkLength = 0,
-             length = str.length,
-             quot = false; //заключена ли ссылка в &quot;
+            result = [],
+            linkPos = -1, //позиция начала ссылки в строке
+            beforeStr = '', //текст до ссылки
+            link = '',
+            linkLength = 0,
+            length = str.length,
+            quot = false; //заключена ли ссылка в &quot;
 
          // распознаём ссылку
          urlRegExp.lastIndex = 0;
+
          //Получаем грязную ссылку (с &blank и &quot)
          str.replace(urlRegExp, function(a, protocol, href, pos) {
             linkPos = pos;
@@ -6705,14 +6983,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                quot = quotRegExp.exec(beforeStr.trim()); // если ссылка заключена в &quot;
             }
             var resLink,
-                trash = '', //складываем в trash текст, который находится после &blank/&quot
-                linkModified = false; //ссылка отделена от &blank/&quot
+               trash = '', //складываем в trash текст, который находится после &blank/&quot
+               linkModified = false; //ссылка отделена от &blank/&quot
             if (link.charAt(0) != '<' && str.substr(linkPos - 5, 4) !== 'src=' && str.substr(linkPos - 5, 4) !== 'url(') {
                //ссылку нашли, теперь нужно её разобрать
-               link.replace(specialRegExp, function(founded, part, pos, str){
+               link.replace(specialRegExp, function(founded, part, pos, str) {
                   var foundedQuot = false, //найдена &quot;
-                      trashIsUrl = false, //является ли ссылкой текст после &nbsp;
-                      cleanTrash = ''; //чистый текст после &nbsp
+                     trashIsUrl = false, //является ли ссылкой текст после &nbsp;
+                     cleanTrash = ''; //чистый текст после &nbsp
                   if (founded == '&quot;') {
                      foundedQuot = true; //возможно ссылка обёрнута в &quot с двух сторон
                   }
@@ -6723,7 +7001,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                         // текст после &nbsp также является ссылкой?
                         trashIsUrl = urlStartRegExp.exec(cleanTrash);
                      }
-                     if ( (quot && foundedQuot)  || trashIsUrl || cleanTrash.length == 0) {
+                     if ((quot && foundedQuot)  || trashIsUrl || cleanTrash.length == 0) {
                         // если заключена в &quot, или после &nbsp следует новая ссылка, или ссылка заканчивается символом &nbsp, то отделим чистую ссылку
                         link = str.substr(0, pos);
                         linkModified = true;
@@ -6731,10 +7009,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   }
                });
                resLink = assembleUrl(link, link, newTab);
-            }
-            else {
+            } else {
                resLink = link;
             }
+
             //формируем результат
             result.push(beforeStr + resLink); //найденная ссылка
             if (linkModified) {
@@ -6750,10 +7028,10 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return result;
       }
 
-      return function (str, newTab) {
+      return function(str, newTab) {
          var
-             idx,
-             arr;
+            idx,
+            arr;
          if (typeof str === 'string') {
             newTab = newTab === undefined ? true : newTab;
             arr = [str];
@@ -6769,7 +7047,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
             // Заменим электронную почту
             emailRegExp.lastIndex = 0;
-            str = str.replace(emailRegExp, function (result) {
+            str = str.replace(emailRegExp, function(result) {
                if (result.charAt(0) === '<') {
                   // Мы нашли ссылку, ничего делать с ней не нужно.
                   return result;
@@ -6778,33 +7056,33 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             });
          }
          return str;
-      }
-   }(),
+      };
+   }()),
 
    /**
      * Заменяет/убирает юникод символы, на аналогичные коды из win1251.
      * Актуально пока БД в кодировке win1251
    */
-   escapeUnicode: function() {
+   escapeUnicode: (function() {
       // Коды для замены utf символов аналогами из win1251
       var codeMap = {
          8210: 45
       };
       return function(str) {
          var L = [];
-         for (var i=0; i<str.length; i++) {
+         for (var i = 0; i < str.length; i++) {
             var ord = str.toString().charCodeAt(i);
+
             // диапозон win1251 оставляем
             if (ord < 128 || (ord > 1025 && ord < 1104)) {
                L.push(String.fromCharCode(ord));
-            }
-            else if(ord in codeMap) { // если код входит в таблицу codeMap
+            } else if (ord in codeMap) { // если код входит в таблицу codeMap
                L.push(String.fromCharCode(codeMap[ord]));
             }
          }
-         return L.join('')
-        }
-   }(),
+         return L.join('');
+      };
+   }()),
 
    /**
     * Открывает указанный файл при помощи FileLink плагина нотификатора.
@@ -6821,12 +7099,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    openFile: function(fileName) {
       var
          result = new $ws.proto.Deferred(),
-         global = (function() { return this || (0,eval)('this') })();
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })();
 
-      global.requirejs(['js!SBIS3.CORE.PluginManager'], function (plugins) {
+      global.requirejs(['js!SBIS3.CORE.PluginManager'], function(plugins) {
          plugins.getPlugin('FileLink', '1.0.0.4', {}).addCallbacks(function(plugin) {
             var def = plugin.OpenLink(fileName);
-            def.addCallbacks(function(){
+            def.addCallbacks(function() {
                result.callback();
             }, function() {
                $ws.single.ioc.resolve('ILogger').log('$ws.helpers.openFile', 'error opening file "' + fileName + '".');
@@ -6839,6 +7119,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       });
       return result;
    },
+
    /**
     * Обернуть файловые ссылки.
     * Оборачивает ссылки на файлы и папки в &lt;a&gt;&lt;/a&gt;.
@@ -6849,15 +7130,18 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {String} string Текст, в котором нужно обернуть ссылки.
     * @returns {String} Текст с обёрнутыми ссылками.
     */
-   wrapFiles: function () {
+   wrapFiles: (function() {
       var
+
          //Регулярка для поиска начала ссылки
          startChars = /(?:\b[a-z]:|\\\\[a-z0-9 %._-]+\\[a-z0-9 $%._-]+)/i,
+
          //Регулярка для поиска окончания ссылки, которая НЕ обрамлена в кавычки
          endLinkRegex = /[:*?"'<>|\r\n]/gi,
+
          //Регулярка для поиска окончания ссылки, которая обрамлена в кавычки
          endLinkWithCommaRegex = /([,.]+(([ ]|&nbsp;)*[а-я]|([ ]|&nbsp;)+[a-z]|[:*?"'<>|])|[:*?"'<>|])|[.,]+$/gi;
-      function parseElement (str) {
+      function parseElement(str) {
          var
             result = [],
             idx = -1,
@@ -6889,7 +7173,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             result.push(str);
          }
          return result;
-      };
+      }
       return function wrapFiles(str) {
          var
             idx,
@@ -6907,8 +7191,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             return arr.join('');
          }
          return str;
-      }
-   }(),
+      };
+   }()),
+
    /**
     * Открытие диалога просмотра изображений
     * в модальном окне.
@@ -6917,7 +7202,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    openImageViewer: function(event) {
       var target = event.target;
       if (!$(target).parents('.ws-editor-frame').length && target.tagName === 'IMG' && target.className.indexOf('ws-fre__smile') === -1) {
-         $('<img src="' + target.getAttribute('src') + '">').bind('load', function () {
+         $('<img src="' + target.getAttribute('src') + '">').bind('load', function() {
             var image = this;
             image.style.margin = '0 auto';
             image.style.display = 'block';
@@ -6925,23 +7210,30 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             function getDimensions(target) {
                var
                   doc = document.documentElement,
+
                   // коэффициент отступа
                   perIndent = 0.05,
+
                   // минимальная ширина/длина модального окна
                   dialogDimensionMin = 100,
+
                   // ширина окна документа
                   docWidth = doc.clientWidth,
+
                   // длина окна документа
                   docHeight = doc.clientHeight,
+
                   // расчет процента превышения размера изображения над размером документа
-                  perDimension = function (docDimension, imgDimension) {
+                  perDimension = function(docDimension, imgDimension) {
                      return docDimension > imgDimension ? 1 : docDimension / imgDimension;
                   },
+
                   // выбор наибольшего соотношения сторон по которому производить уменьшение изображения
-                  perMostSide = function (dimensions) {
+                  perMostSide = function(dimensions) {
                      var
                         widthPer = perDimension(dimensions.docW, dimensions.imgW),
                         heightPer = perDimension(dimensions.docH, dimensions.imgH),
+
                         //чем больше процент, тем меньше соотношение сторон
                         isHeightMostSide = widthPer >= heightPer,
                         mostSidePer = 0;
@@ -6954,13 +7246,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                      }
                      return mostSidePer;
                   },
+
                   // расчёт сторон окна для оптимального просмотра изображения
-                  sideDimension = function (docDimension, imgDimension, percentageRatio) {
+                  sideDimension = function(docDimension, imgDimension, percentageRatio) {
                      if (percentageRatio) {
                         imgDimension *= percentageRatio;
                      }
                      return imgDimension < dialogDimensionMin ? dialogDimensionMin : imgDimension;
                   },
+
                   // процент уменьшения изображения
                   perRatio = perMostSide({
                      docW: docWidth,
@@ -6981,6 +7275,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                var
                   Dialog = classes[0],
                   CloseButton = classes[1],
+
                   //контейнер для кнопки закрытия модального окна
                   $btnContainer = $('<div class="ws-closeBtn">'),
                   win = $ws._const.$win,
@@ -7019,7 +7314,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   element: $btnContainer,
                   parent: dialog,
                   handlers: {
-                     onActivated: function(){
+                     onActivated: function() {
                         dialog.close();
                      }
                   }
@@ -7029,23 +7324,23 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          event.stopPropagation();
       }
    },
+
    /**
     * Метод, который добавляет обработчик на вращение колеса мыши
     * @param {jQuery} element Элемент, над которым нужно вращать колесо мыши. В некоторых браузерах также необходимо, чтобы страница имела фокус.
     * @param {Function} callback Функция, которая будет вызвана. Получит один аргумент - event, объект jQuery-события. У него будет задано свойство wheelDelta. При вращении колеса вниз значение будет отрицательным, вверх - положительным. Значение примерно равно количеству пикселей, на которое будет проскроллен блок, но не гарантируется, что в разных браузерах это значение будет одинаковым.
     * @return {jQuery}
     */
-   wheel: function(element, callback){
+   wheel: function(element, callback) {
       var support = $ws._const.compatibility.wheel;
-      return element.bind(support, function(event){
+      return element.bind(support, function(event) {
          var originalEvent = event.originalEvent;
-         if( support === 'wheel' ){
+         if (support === 'wheel') {
             event.wheelDelta = -originalEvent.deltaY;
-            if( originalEvent.deltaMode === 1 ){
+            if (originalEvent.deltaMode === 1) {
                event.wheelDelta *= 40;
             }
-         }
-         else if( support === 'DOMMouseScroll' ){
+         } else if (support === 'DOMMouseScroll') {
             event.wheelDelta = -originalEvent.detail * 40;
          }
          callback.call(this, event);
@@ -7063,8 +7358,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    dispatchIframeWheelEventsToParentDocument: function(iframe) {
       if (iframe.contentDocument) {
          var ingnoreProps = {target: true, eventPhase: true, explicitOriginalTarget: true, originalTarget: true,
-                             timeStamp: true, isTrusted: true, defaultPrevented: true,  cancelable: true, bubbles: true},
-             doc = $(iframe.contentDocument);
+               timeStamp: true, isTrusted: true, defaultPrevented: true,  cancelable: true, bubbles: true},
+            doc = $(iframe.contentDocument);
 
          // Attach a new onmousemove listener
          $ws.helpers.wheel(doc, function(event) {
@@ -7074,7 +7369,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                }).length;
 
             if (!hasScrollable) {
-               var evt = doc.get(0).createEvent("Event"),
+               var evt = doc.get(0).createEvent('Event'),
                   e = event.originalEvent;
 
                evt.initEvent(e.type, true, false);
@@ -7111,8 +7406,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             doc = $(iframe.contentDocument);
 
          $ws.helpers.keyDown(doc, function(event) {
-            if ( event.which == $ws._const.key.esc ) { //esc
-               var evt = doc.get(0).createEvent("Event"),
+            if (event.which == $ws._const.key.esc) { //esc
+               var evt = doc.get(0).createEvent('Event'),
                   e = event.originalEvent;
 
                evt.initEvent(e.type, true, false);
@@ -7144,18 +7439,20 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *    $ws.helpers.invertedInput("ckjdj") // слово
    * </pre>
    */
-   invertedInput: function (words, switched_kb) {
+   invertedInput: function(words, switched_kb) {
       var keyboardEn = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'],
-          keyboardRu = ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', '.', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', 'Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', ','],
-          res = '',
-          i, j, k, l, l2, l3;
+         keyboardRu = ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', '.', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', 'Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', ','],
+         res = '',
+         i, j, k, l, l2, l3;
       function evalDirection(data) {
          var directionEn = false,
-             stop = false,
-             i, j, l, l2;
+            stop = false,
+            i, j, l, l2;
 
          for (i = 0, l = data.length; i < l; i++) {
-            if (stop) break;
+            if (stop) {
+               break;
+            }
             for (j = 0, l2 = keyboardEn.length; j < l2; j++) {
                if (data.charAt(i) === keyboardEn[j]) {
                   directionEn = true;
@@ -7213,12 +7510,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
                   }
                }
             }
-            if (!invSymbol) invSymbol = words[i];
+            if (!invSymbol) {
+               invSymbol = words[i];
+            }
          }
          res += invSymbol;
       }
       return res;
    },
+
    /**
     * Выполняет четыре проверки:
     * 1) object - что объект существует.
@@ -7231,10 +7531,11 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    hasFunctionProperty: function(object, property) {
       return object &&
-         typeof(object) === 'object' &&
+         typeof (object) === 'object' &&
          property in object &&
-         typeof(object[property]) === 'function';
+         typeof (object[property]) === 'function';
    },
+
    /**
     * Выполняет транслитерацию строки. Заменяет пробелы на _, вырезает мягкий и твердый знаки
     * @param {String} string Исходная строка
@@ -7277,21 +7578,22 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          'я': 'ya',
          ' ': '_'
       };
-      for(var k in charMap) {
-         if(charMap.hasOwnProperty(k)) {
+      for (var k in charMap) {
+         if (charMap.hasOwnProperty(k)) {
             charMap[k.toUpperCase()] = charMap[k].toUpperCase();
          }
       }
       return function(string) {
          var result = [], c, i, l;
-         for(i = 0, l = string.length; i < l; i++) {
+         for (i = 0, l = string.length; i < l; i++) {
             c = string.charAt(i);
             result[i] = (c in charMap) ? charMap[c] : c;
          }
          return result.join('');
-      }
+      };
    })(),
-    /**
+
+   /**
      * Проверяет поддерживается ли конкретным браузером указанный плагин
      * @param mimeType
      * @returns {boolean}
@@ -7304,6 +7606,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return true;
       }
    },
+
    /**
     * Открывает диалог с результатами выполнения массовых операций
     * @param cfg - конфигурация
@@ -7318,7 +7621,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *    });})
     * </pre>
     */
-   openErrorsReportDialog: function(cfg){
+   openErrorsReportDialog: function(cfg) {
       var
          numSelected = cfg.numSelected || 0,
          numSuccess = cfg.numSuccess || 0,
@@ -7332,16 +7635,17 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       context.setValue('Отмечено', numSelected);
       context.setValue('Обработано', numSuccess);
       context.setValue('НеВыполнено', numErrors);
-      for (var i = 0, len = errors.length; i < len; i++){
+      for (var i = 0, len = errors.length; i < len; i++) {
          var text = errors[i] instanceof Error ? errors[i].message : errors[i];
-         if ($.inArray(text, errorsText)===-1){
+         if ($.inArray(text, errorsText) === -1) {
             errorsText.push(text);
-            if (errorsText.length > 5)
+            if (errorsText.length > 5) {
                break;
+            }
          }
       }
       context.setValue('ТекстОшибки', errorsText.join('<br>'));
-      $ws.core.attachInstance('SBIS3.CORE.ErrorsReportDialog', {}).addCallback(function(){
+      $ws.core.attachInstance('SBIS3.CORE.ErrorsReportDialog', {}).addCallback(function() {
          $ws.core.attachInstance('Control/Area:Dialog', {
             template: 'js!SBIS3.CORE.ErrorsReportDialog',
             context: context,
@@ -7349,50 +7653,52 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             isReadOnly: true,
             opener: windowManager && windowManager.getActiveWindow(),
             handlers: {
-               'onAfterLoad':function(e){
+               'onAfterLoad': function(e) {
                   if (title) {
                      this.setTitle(title);
                   }
-                  this.getChildControlByName('ТекстОшибки').setContent('<div style="color:red; overflow: auto;">'+errorsText.join('<br>')+'</div>');
-                  if (numErrors===0){
-                     $("div[sbisname='заголовокОшибок']").css('display','none');
+                  this.getChildControlByName('ТекстОшибки').setContent('<div style="color:red; overflow: auto;">' + errorsText.join('<br>') + '</div>');
+                  if (numErrors === 0) {
+                     $("div[sbisname='заголовокОшибок']").css('display', 'none');
                      this.getChildControlByName('НеВыполнено').hide();
                      this.getChildControlByName('ТекстОшибки').hide();
                   }
                }
             }
          });
-      }.bind(this));
+      });
    },
+
    /**
     * Возвращает путь до картинки, лежащей в ресурсах компонента
     * @param {String} name Строка в формате "имя компонента|имя картинки"
     * @returns {String}
     */
-   getImagePath: function(name){
+   getImagePath: function(name) {
       var
-            moduleAndName = name.split('|'),
-            img = moduleAndName.pop(),
-            module = moduleAndName.pop();
+         moduleAndName = name.split('|'),
+         img = moduleAndName.pop(),
+         module = moduleAndName.pop();
       return $ws._const.wsRoot + 'lib/Control/' + module + '/resources/images/' + img;
    },
+
    /**
     * Возвращает путь с готовым блоком картинки или sprite
     * @param {String} img Ссылка на картинку или sprite
     * @returns {String}
     */
-   getImageBlock: function(img){
+   getImageBlock: function(img) {
       var imgBlock = document.createElement('div');
       var isSpriteImage = (img.indexOf('sprite:') !== -1);
 
-      if(!isSpriteImage){
+      if (!isSpriteImage) {
          $(imgBlock).append('<img src="' + img + '" />');
-      }
-      else{
-         $(imgBlock).addClass(img.replace("sprite:",""));
+      } else {
+         $(imgBlock).addClass(img.replace('sprite:', ''));
       }
       return imgBlock;
    },
+
    /**
     * Мержит набор строк, переданных в аргументах, рассматривая их как значения, разделенные пробелами
     * Функция дял слияния таких DOM-аттрибутов как class.
@@ -7401,7 +7707,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
    mergeAttributes: function() {
       var unfilteredList, prev = null;
 
-      unfilteredList = $ws.helpers.map(arguments, function(element){
+      unfilteredList = $ws.helpers.map(arguments, function(element) {
          return String.trim(element || '').split(/\s+/);
       });
 
@@ -7413,7 +7719,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return check;
       });
    },
-    /**
+
+   /**
      * Помещает xhtml разметку файла в контейнер создаваемого компонента
      * Зовётся с браузера, либо с препроцессора; заполнит нужным содержимым компонент при создании.
      * @param container - контейнер.
@@ -7425,42 +7732,48 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          attributes,
          rCounter = 0;
 
-      markup = markup.replace(/(<\/?)option/g, function(str, bkt){
+      markup = markup.replace(/(<\/?)option/g, function(str, bkt) {
          rCounter++;
          return bkt + 'opt';
       });
 
-      if (rCounter){
+      if (rCounter) {
          BOOMR.plugins.WS.reportMessage('Configuration warning: tags <option> and <options> was deprecated, please use tags <opt> and <opts> respectively');
       }
-      if("jquery" in container){ // from browser
+      if ('jquery' in container) { // from browser
          markup = $(markup);
 
          // get unique class names
          var mergingClass = $ws.helpers.mergeAttributes(container.attr('class'), markup.attr('class'));
 
          attributes = {};
+
          // copy all the attributes to the shell
          $.each(container.get(0).attributes, function(index, attribute) {
             attributes[attribute.name] = attribute.value;
          });
+
          // assign attributes
          markup.attr(attributes);
+
          // merge attribute "class"
          markup.attr('class', mergingClass.join(' '));
+
          // copy the data
          markup.data(container.data());
+
          // replace
          container.replaceWith(markup);
+
          // emtpy jQuery collection
          container.length = 0;
+
          // add markup into empty collection
          container.push(markup.get(0));
-         container.attr("hasMarkup", "true");
+         container.attr('hasMarkup', 'true');
 
          return container;
-      }
-      else{ // from preprocessor
+      } else { // from preprocessor
          var
             document = container.ownerDocument,
             id = container.getAttribute('id'),
@@ -7478,15 +7791,15 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             firstElt = firstElt.nextSibling;
          }
 
-         if(firstElt) {
+         if (firstElt) {
             attributes = container.attributes;
-            for(var i = 0, l = attributes.length; i < l; i++) {
+            for (var i = 0, l = attributes.length; i < l; i++) {
                var attr = attributes[i], attrname = attr.nodeName;
-               if(attrname in attrsToMerge) {
+               if (attrname in attrsToMerge) {
                   values = $ws.helpers.mergeAttributes(attr.nodeValue, firstElt.getAttribute(attrname));
                   firstElt.setAttribute(attrname, values.join(' '));
                } else {
-                  if(!firstElt.hasAttribute(attrname)) {
+                  if (!firstElt.hasAttribute(attrname)) {
                      firstElt.setAttribute(attrname, attr.nodeValue);
                   }
                }
@@ -7499,11 +7812,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             result = container;
          }
 
-         result.setAttribute("hasMarkup", "true");
+         result.setAttribute('hasMarkup', 'true');
          return result;
       }
    },
-    /**
+
+   /**
      * Строит путь до компонента по его имени
      * По имени компонента, который хотим получить,
      * строит до него путь вида /ws/... или /resources/...
@@ -7511,7 +7825,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
      * @param plugin - плагин, который запрашиваем.
      * @returns {*}
      */
-   requirejsPathResolver: function(name, plugin){
+   requirejsPathResolver: function(name, plugin) {
       var plugins = {
          'js': 0,
          'css': 0,
@@ -7523,23 +7837,23 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          'xml': 0
       };
 
-      function pathResolver(plugin){
+      function pathResolver(plugin) {
          var
-             path,
-             ext;
+            path,
+            ext;
 
          if (plugin == 'html') {
             ext = '.xhtml';
          } else if (plugin == 'i18n') {
             var currLang = $ws.single.i18n.getLang();
-            ext = '/resources/lang/' + currLang + '/' + currLang + '.json'
+            ext = '/resources/lang/' + currLang + '/' + currLang + '.json';
          } else {
             ext = '.' + plugin;
          }
 
          if (/\//.test(name)) {
             var paths = name.split('/'),
-                moduleName = paths.shift();
+               moduleName = paths.shift();
 
             path = $ws.helpers.resolveModule(moduleName);
             if (path) {
@@ -7551,13 +7865,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          } else {
             path = $ws.helpers.resolveModule(name);
             if (!path) {
-               throw new Error("Module " + name + " is not defined");
+               throw new Error('Module ' + name + ' is not defined');
             }
 
             if (plugin == 'i18n') {
                path = path.replace(/(\/|\\)(\w|\.)+\.module\.js$/, ext);
             } else if (plugin != 'js') {
-               path = path.replace(/(\.module\.js|\.js)$/, ext)
+               path = path.replace(/(\.module\.js|\.js)$/, ext);
             }
          }
 
@@ -7569,7 +7883,9 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             if (path == name) {
                path = path.replace(new RegExp('\\' + ext + '$'), rid + ext);
             } else {
-               path = path.replace(/(\.[^\.]+$)/, function(e) {return rid + e});
+               path = path.replace(/(\.[^\.]+$)/, function(e) {
+                  return rid + e;
+               });
             }
          }
 
@@ -7577,18 +7893,19 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
 
       if (!(plugin in plugins)) {
-         throw new Error("Plugin " + plugin + " is not defined");
+         throw new Error('Plugin ' + plugin + ' is not defined');
       }
 
       return pathResolver(plugin);
    },
+
    /**
     * Возвращает путь до модуля по его имени
     * @param {String} name имя модуля
     * @returns {string}
     */
-   resolveModule : function(name){
-      if ($ws._const.jsCoreModules[name]){
+   resolveModule: function(name) {
+      if ($ws._const.jsCoreModules[name]) {
          return $ws._const.wsRoot + $ws._const.jsCoreModules[name];
       } else {
          var jsMod = $ws._const.jsModules[name];
@@ -7602,11 +7919,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return '';
    },
+
    /**
     * Возвращает стек ошибки
     * @param e - ошибка
     */
-   getStackTrace: function(e){
+   getStackTrace: function(e) {
       var
          getChromeStack = function() {
             var obj = {};
@@ -7665,13 +7983,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             // ie11 thinks he is in strict mode. Yes, some kind of...
             try {
                stack = other(arguments.callee);
-            } catch(e) {
+            } catch (e) {
                stack = '';
             }
          }
       }
       return stack;
    },
+
    /**
     * Преобразование массива объектов в коллекцию
     * @param {Array} arr
@@ -7709,120 +8028,122 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     *    });
     * </pre>
     */
-   collection: function(arr){
+   collection: function(arr) {
       arr._eventBusChannel = $ws.single.EventBus.channel({
-         strictMode : true
+         strictMode: true
       });
-      arr._eventBusChannel.publish("onChange", "onRemoveItem", "onInsertItem", "onMove", "onChangeOrder");
-      var notifyChanges = function(){
-         this._eventBusChannel.notify("onChange");
-      },
-      notifyChagesAndChangeOrder = function(){
-         notifyChanges.apply(this);
-         this._eventBusChannel.notify("onChangeOrder");
-      },
-      toCollection = function(){
-         return $ws.helpers.collection(arguments[arguments.length - 1]);
-      },
-      onInsertItems = function(items, indexes){
-         notifyChanges.apply(this, []);
-         this._eventBusChannel.notify("onInsertItem", items, indexes);
-      },
-      onRemoveItems = function(items, indexes){
-         notifyChanges.apply(this, []);
-         this._eventBusChannel.notify("onRemoveItem", items, indexes);
-      },
-      callMethod = function(methodName, args){
-         this._eventBusChannel[methodName].apply(this._eventBusChannel, args);
-         return this;
-      },
-      getItems = function(){
-         return Array.prototype.slice.apply(arguments, [0, arguments.length - 1]);
-      },
-      getIndexes = function(start, length){
-         var indexes = [];
-         for(var i = 0; i < length; i++){
-            indexes.push(start + i);
-         }
-         return indexes;
-      };
-      arr.subscribe = function(event, $handler){
+      arr._eventBusChannel.publish('onChange', 'onRemoveItem', 'onInsertItem', 'onMove', 'onChangeOrder');
+      var notifyChanges = function() {
+            this._eventBusChannel.notify('onChange');
+         },
+         notifyChagesAndChangeOrder = function() {
+            notifyChanges.apply(this);
+            this._eventBusChannel.notify('onChangeOrder');
+         },
+         toCollection = function() {
+            return $ws.helpers.collection(arguments[arguments.length - 1]);
+         },
+         onInsertItems = function(items, indexes) {
+            notifyChanges.apply(this, []);
+            this._eventBusChannel.notify('onInsertItem', items, indexes);
+         },
+         onRemoveItems = function(items, indexes) {
+            notifyChanges.apply(this, []);
+            this._eventBusChannel.notify('onRemoveItem', items, indexes);
+         },
+         callMethod = function(methodName, args) {
+            this._eventBusChannel[methodName].apply(this._eventBusChannel, args);
+            return this;
+         },
+         getItems = function() {
+            return Array.prototype.slice.apply(arguments, [0, arguments.length - 1]);
+         },
+         getIndexes = function(start, length) {
+            var indexes = [];
+            for (var i = 0; i < length; i++) {
+               indexes.push(start + i);
+            }
+            return indexes;
+         };
+      arr.subscribe = function(event, $handler) {
          this._eventBusChannel.subscribe(event, $handler, this);
          return this;
       };
-      arr.once = function(){
-         return callMethod.apply(this, ["once", arguments]);
+      arr.once = function() {
+         return callMethod.apply(this, ['once', arguments]);
       };
-      arr.unsubscribe = function(){
-         return callMethod.apply(this, ["unsubscribe", arguments]);
+      arr.unsubscribe = function() {
+         return callMethod.apply(this, ['unsubscribe', arguments]);
       };
-      arr.unbind = function(){
-         return callMethod.apply(this, ["unbind", arguments]);
+      arr.unbind = function() {
+         return callMethod.apply(this, ['unbind', arguments]);
       };
       arr.slice = Array.prototype.slice.callNext(toCollection.bind(arr));
       arr.concat = Array.prototype.concat.callNext(toCollection.bind(arr));
-      arr.pop = Array.prototype.pop.callNext(function(element){
-         if(this._eventBusChannel.hasEventHandlers("onRemoveItem")){
+      arr.pop = Array.prototype.pop.callNext(function(element) {
+         if (this._eventBusChannel.hasEventHandlers('onRemoveItem')) {
             onRemoveItems.apply(this, [[element], [this.length]]);
-         } else if(this._eventBusChannel.hasEventHandlers("onChange")){
+         } else if (this._eventBusChannel.hasEventHandlers('onChange')) {
             notifyChanges.apply(this, []);
          }
       });
-      arr.push = Array.prototype.push.callNext(function(){
-         if(this._eventBusChannel.hasEventHandlers("onInsertItem")){
+      arr.push = Array.prototype.push.callNext(function() {
+         if (this._eventBusChannel.hasEventHandlers('onInsertItem')) {
             var items = getItems.apply(this, arguments),
-                l = items.length,
-                indexes = getIndexes(this.length - l, l);
+               l = items.length,
+               indexes = getIndexes(this.length - l, l);
             onInsertItems.apply(this, [items, indexes]);
-         } else if(this._eventBusChannel.hasEventHandlers("onChange")){
+         } else if (this._eventBusChannel.hasEventHandlers('onChange')) {
             notifyChanges.apply(this, []);
          }
       });
       arr.reverse = Array.prototype.reverse.callNext(notifyChagesAndChangeOrder.bind(arr));
-      arr.shift = Array.prototype.shift.callNext(function(){
-         if(this._eventBusChannel.hasEventHandlers("onRemoveItem")){
+      arr.shift = Array.prototype.shift.callNext(function() {
+         if (this._eventBusChannel.hasEventHandlers('onRemoveItem')) {
             onRemoveItems.apply(this, [Array.prototype.slice.apply(arguments, []), [0]]);
-         } else if(this._eventBusChannel.hasEventHandlers("onChange")){
+         } else if (this._eventBusChannel.hasEventHandlers('onChange')) {
             notifyChanges.apply(this, []);
          }
       });
-      arr.unshift = Array.prototype.unshift.callNext(function(){
-         if(this._eventBusChannel.hasEventHandlers("onInsertItem")){
+      arr.unshift = Array.prototype.unshift.callNext(function() {
+         if (this._eventBusChannel.hasEventHandlers('onInsertItem')) {
             var items = getItems.apply(this, arguments).reverse(),
-                indexes = getIndexes(0, items.length);
+               indexes = getIndexes(0, items.length);
             onInsertItems.apply(this, [items, indexes]);
-         } else if(this._eventBusChannel.hasEventHandlers("onChange")){
+         } else if (this._eventBusChannel.hasEventHandlers('onChange')) {
             notifyChanges.apply(this, []);
          }
       });
       arr.sort = Array.prototype.sort.callNext(notifyChagesAndChangeOrder.bind(arr));
-      arr.splice = Array.prototype.splice.callNext(function(start, deleteCount){
+      arr.splice = Array.prototype.splice.callNext(function(start, deleteCount) {
          var ln = arguments.length,
-             needNotifyChanges = true;
-         if(this._eventBusChannel.hasEventHandlers("onRemoveItem") && deleteCount > 0){
+            needNotifyChanges = true;
+         if (this._eventBusChannel.hasEventHandlers('onRemoveItem') && deleteCount > 0) {
             var deletedItems = arguments[ln - 1];
             needNotifyChanges = false;
             onRemoveItems.apply(this, [deletedItems, getIndexes(start, deletedItems.length)]);
          }
-         if(this._eventBusChannel.hasEventHandlers("onInsertItem") && ln > 3){
+         if (this._eventBusChannel.hasEventHandlers('onInsertItem') && ln > 3) {
             var items = Array.prototype.slice.apply(arguments, [2, ln - 1]);
             needNotifyChanges = false;
             onInsertItems.apply(this, [items, getIndexes(start, items.length)]);
          }
-         if(needNotifyChanges)
+         if (needNotifyChanges) {
             notifyChanges.apply(this, []);
+         }
          return toCollection.apply(this, arguments);
       });
-      arr.move = function(from, to){
+      arr.move = function(from, to) {
          var element = this[from];
          Array.prototype.splice.apply(this, [from, 1]);
          Array.prototype.splice.apply(this, [to, 0, element]);
-         this._eventBusChannel.notify("onMove", from, to);
+         this._eventBusChannel.notify('onMove', from, to);
          notifyChagesAndChangeOrder.bind(arr).apply(this);
          return this;
       };
       return arr;
    },
+
    /**
     * Возвращает координаты первого нажатия по jQuery-событию
     * @param {Object} event jQuery-событие
@@ -7841,7 +8162,8 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return {'x': x, 'y': y};
    },
-    /**
+
+   /**
      * <wiTag group="Данные">
      * Проверяет, является ли объект экземпляром класса, определённого в модуле.
      * @param {*} inst Проверяемый объект.
@@ -7854,12 +8176,13 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
      *     }
      * </pre>
      */
-   instanceOfModule: function(inst, moduleName){
-      return requirejs.defined("js!" + moduleName) ? (inst instanceof requirejs("js!" + moduleName)) : false;
+   instanceOfModule: function(inst, moduleName) {
+      return requirejs.defined('js!' + moduleName) ? (inst instanceof requirejs('js!' + moduleName)) : false;
    },
    instanceOfMixin: function(inst, mixin) {
-      return requirejs.defined("js!" + mixin) ? Array.indexOf(inst._mixins || [], requirejs("js!" + mixin)) !== -1 : false;
+      return requirejs.defined('js!' + mixin) ? Array.indexOf(inst._mixins || [], requirejs('js!' + mixin)) !== -1 : false;
    },
+
    /**
     * Метод для поиска только "своих" элементов верстки (не отосящихся в верстке вложенных компонентов, если они есть)
     * @param {jQuery} root корневой элемент, в котором осуществляется поиск
@@ -7867,23 +8190,22 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @returns {Array} массив найденных элементов
     * @protected
     */
-   getChildContainers: function(root, selector){
+   getChildContainers: function(root, selector) {
       var
          topParent = root.get(0),
          components = root.find(selector),
          deadCollection = [];
 
-      components.each(function(){
+      components.each(function() {
          var
             elem = this,
             p = elem;
 
-         while((p = p.parentNode) !== null){
-            if (p === topParent){
+         while ((p = p.parentNode) !== null) {
+            if (p === topParent) {
                deadCollection.push(elem);
                break;
-            }
-            else if(p.getAttribute("hasMarkup") == "true" || $ws.helpers.getTagName(p) == 'component'){
+            } else if (p.getAttribute('hasMarkup') == 'true' || $ws.helpers.getTagName(p) == 'component') {
                break;
             }
          }
@@ -7891,30 +8213,31 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       return deadCollection;
    },
+
    /**
     * Метод для поиска контейнеров дочерних компонентов 1ой вложенности
     * @param {jQuery} root корневой элемент, в котором осуществляется поиск
     * @returns {Array} массив найденных элементов
     * @protected
     */
-   getNestedComponents: function(root){
+   getNestedComponents: function(root) {
       var
          topParent = root.get(0),
          components,
          deadCollection = [];
 
-      if (topParent.id){
-         components = topParent.querySelectorAll('[data-pid="'+ topParent.id +'"]');
-         for (var i = 0, l = components.length; i < l; i++){
+      if (topParent.id) {
+         components = topParent.querySelectorAll('[data-pid="' + topParent.id + '"]');
+         for (var i = 0, l = components.length; i < l; i++) {
             deadCollection.push(components[i]);
          }
-      }
-      else{
+      } else {
          deadCollection = $ws.helpers.getChildContainers(root, '[data-component]');
       }
 
       return deadCollection;
    },
+
    /**
     * Метод для определения типа элемента.
     * @remark
@@ -7946,12 +8269,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     */
    type: function(elem) {
       // обработка null для старых версий IE
-      if (elem === null)
+      if (elem === null) {
          return 'null';
+      }
 
       // обработка DOM-элементов
-      if (elem && (elem.nodeType === 1 || elem.nodeType === 9))
+      if (elem && (elem.nodeType === 1 || elem.nodeType === 9)) {
          return 'element';
+      }
 
       var regexp = /\[object (.*?)\]/,
          match = Object.prototype.toString.call(elem).match(regexp),
@@ -7959,14 +8284,17 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       // обработка NaN и Infinity
       if (type === 'number') {
-         if (isNaN(elem))
+         if (isNaN(elem)) {
             return 'nan';
-         if (!isFinite(elem))
+         }
+         if (!isFinite(elem)) {
             return 'infinity';
+         }
       }
 
       return type;
    },
+
    /**
     * Проверить видимость элемента
     * Метод выполняет для переданного элемента две проверки:
@@ -7990,26 +8318,28 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             elem = elem.parentNode;
          }
          return elem === doc;
-      }
+      };
    })(),
+
    /**
     * Приводит innerHTML, отдаваемый ie8 к стандарту
     * @param html
     * @returns {XML|string|void}
     */
-   ieFixInnerHTML: function (html){
+   ieFixInnerHTML: function(html) {
       var
          tRegExp = /<(?:[A-Z][A-Z0-9]*)\b[^>]*>/gi,
          aRegExp = /\s+\S+=[^'"\s>]+/g;
 
-      return html.replace(tRegExp, function(tag){
-         return tag.replace(aRegExp, function(attr){
+      return html.replace(tRegExp, function(tag) {
+         return tag.replace(aRegExp, function(attr) {
             var a = attr.split('=');
-            a[1] = '"'+a[1]+'"';
+            a[1] = '"' + a[1] + '"';
             return a.join('=');
          });
       });
    },
+
    /**
     * Возвращает набор дефолтных опций для переданного конструктора класса
     * @param {Function} ctor
@@ -8026,35 +8356,36 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             var cfg = {};
             ctor.prototype._initializer.call(cfg);
 
-            if (options){
+            if (options) {
                finalConfig = cfg._options || {};
                $ws.core.propertyMerge(options, finalConfig);
-               if (ctor.prototype._contentAliasing){
+               if (ctor.prototype._contentAliasing) {
                   //finalConfig надо давать вторым аргументом в качестве "актуального конфига" - чтобы _contentAliasing мог понять
                   //дана ли ему в актуальном конфиге (а не дефолтом в опциях) альяснутая опция, и решить, заменять ли её на опцию content
                   finalConfig = ctor.prototype._contentAliasing.apply(cfg, [finalConfig, finalConfig]);
                }
-            }
-            else{
+            } else {
                finalConfig = cfg._options || {};
             }
          } else {
             finalConfig = $ws.core.merge(
                this.resolveOptions(ctor.superclass && ctor.superclass.$constructor),
                ctor.prototype.$protected && ctor.prototype.$protected._options || {},
-               { clone:true });
+               { clone: true });
 
-            if (options){
+            if (options) {
                finalConfig = $ws.core.merge(finalConfig, options);
-               if (ctor.prototype._contentAliasing){
+               if (ctor.prototype._contentAliasing) {
                   finalConfig = ctor.prototype._contentAliasing(finalConfig, finalConfig);
                }
             }
          }
          return finalConfig;
-      } else
+      } else {
          return {};
+      }
    },
+
    /**
     * Сравнивает два слова
     * @param {String} firstWord
@@ -8064,7 +8395,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * Если слова одинаковые вернёт false
     */
    searchSymbolsDifference: function(firstWord, secondWord) {
-      if(typeof firstWord === 'string' && typeof secondWord === 'string' && firstWord.length && secondWord.length){
+      if (typeof firstWord === 'string' && typeof secondWord === 'string' && firstWord.length && secondWord.length) {
          for (var i = 0, len = firstWord.length; i < len; i++) {
             if (firstWord[i] !== secondWord[i]) {
                return [firstWord.substr(0, i), firstWord.substr(i), secondWord.substr(i)];
@@ -8073,13 +8404,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return false;
       }
    },
+
    /**
     * Проверка на равенство двух параметров. Спецпроверка, если оба пакраметра являются массивами
     * @param {Array || SimpleType} first
     * @param {Array || SimpleType} second
     * @returns {boolean}
     */
-   isEqualValues: function(first, second){
+   isEqualValues: function(first, second) {
       if (first instanceof Array && second instanceof Array && first.length === second.length) {
          for (var i = 0, len = first.length; i > len; i++) {
             if (first[i] !== second[i]) {
@@ -8090,6 +8422,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
       }
       return first === second;
    },
+
    /**
     * Сравнение двух дат без учета времени.
     *
@@ -8100,13 +8433,14 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param sign - тип сравнения дат. Например, " >= " - первая дата больше или равна второй
     * @returns {boolean}
     */
-   compareDates: function(date1, sign, date2){
-      if(!date1 || !date2)
+   compareDates: function(date1, sign, date2) {
+      if (!date1 || !date2) {
          return false;
+      }
 
       var equal = date1.toSQL() == date2.toSQL();
 
-      switch(sign) {
+      switch (sign) {
          case '<':
             return !equal && date1 < date2;
          case '<=':
@@ -8132,12 +8466,12 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          '&': '%26',
          '{': '%7b',
          '}': '%7d'
-      }
+      };
       return function(str) {
          return str.replace(/"|'|%|&|{|}/g, function(s) {
             return s == '\'' ? '&apos;' : table[s];
-         })
-      }
+         });
+      };
    })(),
    wsCfgDec: (function() {
       var table = {
@@ -8151,37 +8485,36 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return str.replace(/%(22|25|26|7b|7d)|(&apos;)/g, function(_, code, apos) {
             return code ? table[code] : '\'';
          });
-      }
+      };
    })(),
-   encodeCfgAttr: function(json){
+   encodeCfgAttr: function(json) {
       return $ws.helpers.wsCfgEnc(JSON.stringify(json));
    },
-   decodeCfgAttr: (function(){
-      var global = (function() { return this || (0,eval)('this') })(),
+   decodeCfgAttr: (function() {
+      var global = (function() {
+            return this || (0, eval)('this'); 
+         })(),
          serializer;
 
-      function JSONreviver(key, value){
-         if (typeof value === 'string'){
-            if(value.beginsWith('wsFuncDecl::')) {
+      function JSONreviver(key, value) {
+         if (typeof value === 'string') {
+            if (value.beginsWith('wsFuncDecl::')) {
                return $ws.helpers.getFuncFromDeclaration(value.replace('wsFuncDecl::', ''));
-            }
-            else if(value.beginsWith('wsGlobalFnDecl::')){
+            } else if (value.beginsWith('wsGlobalFnDecl::')) {
                var
                   sKey = value.replace('wsGlobalFnDecl::', ''),
                   result = this[sKey];
                delete this[sKey];
                return result;
-            }
-            else if (value.beginsWith('moduleFunc#')){
+            } else if (value.beginsWith('moduleFunc#')) {
                var
-                  m = value.replace(/^moduleFunc#/, '').split("/"),
+                  m = value.replace(/^moduleFunc#/, '').split('/'),
                   fName = m.length > 1 ? m.pop() : '',
                   mName = m.join('/');
-               try{
-                  value = global.requirejs("js!" + mName)[fName];
-               }
-               catch(e){
-                  throw new Error('Parsing moduleFunc "' + value + '" failed. Original message: ' + e.message)
+               try {
+                  value = global.requirejs('js!' + mName)[fName];
+               } catch (e) {
+                  throw new Error('Parsing moduleFunc "' + value + '" failed. Original message: ' + e.message);
                }
             } else if (value.beginsWith('datasource!')) {
                return $ws.helpers.getDataSourceFromDeclaration(value);
@@ -8193,27 +8526,25 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          return serializer.deserialize(key, value);
       }
 
-      return function(encodedCfg, fnStorage, noRevive){
+      return function(encodedCfg, fnStorage, noRevive) {
          var
             reviver = noRevive ? undefined : JSONreviver.bind(fnStorage),
             result;
 
-         try{
+         try {
             serializer = new $ws.proto.Serializer();
             result = JSON.parse($ws.helpers.wsCfgDec(encodedCfg), reviver);
             serializer = undefined;
-         }
-         catch(e){
-            try{
+         } catch (e) {
+            try {
                result = JSON.parse(encodedCfg, reviver);
-            }
-            catch(error){
+            } catch (error) {
                throw new Error('Ошибка разбора конфигурации компонента!');
             }
          }
 
          return result;
-      }
+      };
    }()),
 
    detectCommonDataContainer: function(value) {
@@ -8291,7 +8622,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       function isFixedState($element) {
          var isFixed = false;
-         $element.parents().each(function(i, elem){
+         $element.parents().each(function(i, elem) {
             if ($(elem).css('position') === 'fixed') {
                isFixed = true;
                return false;
@@ -8302,21 +8633,21 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       function getState($element) {
          var isVisible = $ws.helpers.isElementVisible($element),
-             isFixed = isFixedState($element),
-             el = $element.get(0),
-             win = $ws._const.$win,
-             bcr = isVisible && el && el.getBoundingClientRect(),
-             width = bcr ? bcr.right  - bcr.left : 0,
-             height = bcr ? bcr.bottom - bcr.top : 0;
+            isFixed = isFixedState($element),
+            el = $element.get(0),
+            win = $ws._const.$win,
+            bcr = isVisible && el && el.getBoundingClientRect(),
+            width = bcr ? bcr.right  - bcr.left : 0,
+            height = bcr ? bcr.bottom - bcr.top : 0;
 
          return {
             visible: isVisible && (width > 0 || height > 0),
             fixed: isFixed,
-            left:   bcr ? bcr.left + win.scrollLeft() : 0,
-            top:    bcr ? bcr.top + win.scrollTop() : 0,
-            winLeft:   bcr ? bcr.left : 0,
-            winTop:    bcr ? bcr.top : 0,
-            width:  width,
+            left: bcr ? bcr.left + win.scrollLeft() : 0,
+            top: bcr ? bcr.top + win.scrollTop() : 0,
+            winLeft: bcr ? bcr.left : 0,
+            winTop: bcr ? bcr.top : 0,
+            width: width,
             height: height
          };
       }
@@ -8352,8 +8683,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
             lastPos = lastState;
             if (pos.fixed !== lastPos.fixed || pos.left !== lastPos.left || pos.top !== lastPos.top ||
                 pos.width !== lastPos.width || pos.height !== lastPos.height ||
-                pos.winLeft !== lastPos.winLeft || pos.winTop !== lastPos.winTop)
-            {
+                pos.winLeft !== lastPos.winLeft || pos.winTop !== lastPos.winTop) {
                channel.notify('onMove', currentState, isInitial);
             }
          }
@@ -8398,11 +8728,11 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          }
 
          return channel;
-      }
+      };
    })(),
    compareValues: function(a, b) {
-      var comparisonResult
-      if(a && a.equals) {
+      var comparisonResult;
+      if (a && a.equals) {
          comparisonResult = a.equals(b);
       } else {
          comparisonResult = (a == b);
@@ -8413,23 +8743,26 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
 
       var
          n = 'A' + [ 'ctiv' ].concat('bject').join('eXO'),
-         w = (function(){ return this || (0,eval)('this'); }()),
+         w = (function() {
+            return this || (0, eval)('this'); 
+         }()),
          axo = w[n];
 
       if (axo) {
          return function mkAxo(name) {
             return new axo(name);
-         }
+         };
       }
 
    })(),
+
    /**
     * Профайлер кода на препроцессоре
     * @param {String} profile
     * @returns function
     * @type function
     * */
-   profilingStart: function (profile) {
+   profilingStart: function(profile) {
       return nop;
    },
 
@@ -8489,6 +8822,7 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
          reload(element[i]);
       }
    },
+
    /**
     * Проверяет значение на соответсвие типу Деньги, дополняет нулями слева или обрезает, вещественную часть до заданной точности
     * Используется при сериализации значений в рекордсетах, рекордах, моделях итд.
@@ -8499,22 +8833,24 @@ $ws.helpers = /** @lends $ws.helpers.prototype */{
     * @param {Numeric} precision длинна вещественной части, по умолчанию 4
     * @returns {String}
     */
-   prepareMoneyByPrecision: function (value, precision ) {
+   prepareMoneyByPrecision: function(value, precision) {
       var groups = /^\-?(\d+)(\.\d{0,})?$/.exec(value);
       if (groups !== null) {
-         precision = +precision||4;
+         precision = +precision || 4;
          var floatPart = groups[2],
-            realPart = groups[1] ;
+            realPart = groups[1];
          if (typeof floatPart === 'undefined') {
             floatPart = '.';
          }
          var len = precision - floatPart.length + 1;
          if (len > 0) {
-            for (var i=0;i < len; i++)  floatPart += '0';
-         } else if(len < 0) {
+            for (var i = 0; i < len; i++)  {
+               floatPart += '0';
+            }
+         } else if (len < 0) {
             floatPart = floatPart.slice(0, len);
          }
-         return realPart+floatPart;
+         return realPart + floatPart;
       } else {
          $ws.single.ioc.resolve('ILogger').error('prepareMoneyByPrecision', 'Value containing not valid characters only numbers allowed.');
       }
@@ -8575,8 +8911,8 @@ $ws.single.RightsManager =  /** @lends $ws.single.RightsManager.prototype */{
     *   }
     * </pre>
     */
-   checkRights: function (zones) {
-      var r = typeof(window) == 'undefined' ? false : window.rights || false;
+   checkRights: function(zones) {
+      var r = typeof (window) == 'undefined' ? false : window.rights || false;
       var checkRights = r && !Object.isEmpty(r);
       var result = {};
 
@@ -8584,8 +8920,8 @@ $ws.single.RightsManager =  /** @lends $ws.single.RightsManager.prototype */{
          zones = [zones];
       }
 
-      for(var i in zones){
-         if(zones.hasOwnProperty(i)) {
+      for (var i in zones) {
+         if (zones.hasOwnProperty(i)) {
             var zone = zones[i];
             if (checkRights) {
                result[zone] = r && r[zone] || {allow: false, access: 0};
@@ -8599,6 +8935,7 @@ $ws.single.RightsManager =  /** @lends $ws.single.RightsManager.prototype */{
    }
 
 };
+
 /**
  * Получение информации о текущем пользователе
  * @class $ws.single.UserInfo
@@ -8606,7 +8943,8 @@ $ws.single.RightsManager =  /** @lends $ws.single.RightsManager.prototype */{
  * @author Егоров Артем
  */
 $ws.single.UserInfo = {
-  /**
+
+   /**
    * Метод получения значения по ключу
    * @param {String} key Ключ для поиска.
    * @return {String} value Значение
@@ -8616,7 +8954,7 @@ $ws.single.UserInfo = {
    *    console.log(userName); // 'Демо Д.'
    * </pre>
    */
-   get: function (key) {
+   get: function(key) {
       var info = window.userInfo || {};
       return info[key];
    }
@@ -8640,8 +8978,8 @@ $ws.single.LicenseManager = /** @lends $ws.single.LicenseManager.prototype */{
     *    $ws.single.LicenseManager.checkLicense(['param0', 'param1', 'param2']);
     * </pre>
     */
-   checkLicense: function (params) {
-      var r = typeof(window) == 'undefined' ? false : window.userLicense || false;
+   checkLicense: function(params) {
+      var r = typeof (window) == 'undefined' ? false : window.userLicense || false;
       var checkLicense = r && !Object.isEmpty(r);
       var result = {};
 
@@ -8672,7 +9010,8 @@ $ws.single.LicenseManager = /** @lends $ws.single.LicenseManager.prototype */{
  * @public
  */
 $ws.single.Storage = /** @lends $ws.single.Storage.prototype */{
-   _storage : {},
+   _storage: {},
+
    /**
     *
     * @param {string} name Уникальное имя асинхронной операции.
@@ -8682,24 +9021,27 @@ $ws.single.Storage = /** @lends $ws.single.Storage.prototype */{
     * @returns {$ws.proto.Deferred}
     * @see isStored
     */
-   store : function(name, constructor){
+   store: function(name, constructor) {
       // помещаем ресурс в хранилище и блокируем возможность повторной загрузки
-      if(!(name in this._storage)) {
-         if(typeof(constructor) != 'function')
-            throw new Error("Constructor is not specified for newly created async resource");
+      if (!(name in this._storage)) {
+         if (typeof (constructor) != 'function') {
+            throw new Error('Constructor is not specified for newly created async resource');
+         }
          this._storage[name] = new $ws.proto.Deferred();
+
          // запускаем асинхронное событие
          constructor(this._storage[name]);
       }
       return new $ws.proto.Deferred().dependOn(this._storage[name]);
    },
+
    /**
     * Проверяет существует ли deferred с данным именем.
     * @param {string} name Имя.
     * @return {Boolean} Результат проверки существования deferred с указанным именем.
     * @see store
     */
-   isStored : function(name){
+   isStored: function(name) {
       return name in this._storage;
    },
    isReady: function(name) {
@@ -8718,7 +9060,8 @@ $ws.proto.Serializer = (/** @lends $ws.proto.Serializer.prototype */function() {
       this._instanceStorage = {};
       this.serialize = this.serialize.bind(this);
       this.deserialize = this.deserialize.bind(this);
-   }
+   };
+
    /**
     * @member {Number} Счетчик экземпляров
     */
@@ -8747,12 +9090,13 @@ $ws.proto.Serializer = (/** @lends $ws.proto.Serializer.prototype */function() {
     * @param {*} value Значение сериализуемого свойства
     * @returns {*}
     */
-   Serializer.prototype.serialize = function (name, value) {
+   Serializer.prototype.serialize = function(name, value) {
       if (typeof value === 'function') {
          this._functionStorage.push(value);
          return {
             $serialized$: 'func',
             id: this._functionStorage.length - 1
+
             //TODO: При сериализации на сервере надо ли сохранять код функций-"не членов класса"?
             //code: $ws.single.base64.encode(value.toString())
          };
@@ -8780,7 +9124,7 @@ $ws.proto.Serializer = (/** @lends $ws.proto.Serializer.prototype */function() {
     * @param {*} value Значение десериализуемого свойства
     * @returns {*}
     */
-   Serializer.prototype.deserialize = function (name, value) {
+   Serializer.prototype.deserialize = function(name, value) {
       var result = value;
 
       if ((value instanceof Object) &&
@@ -8850,13 +9194,14 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
       _currentTransport: null,
       _useGet: false,
       _options: {
-          /**
+
+         /**
            * @cfg {String} Адрес сервиса БЛ
            */
          serviceUrl: ''
       }
    },
-   $constructor : function(){
+   $constructor: function() {
       this._transportPOST = $ws.single.ioc.resolve('ITransport', {
          url: this._options.serviceUrl || $ws._const.defaultServiceUrl,
          method: 'POST',
@@ -8869,16 +9214,16 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
       var
          error = response.error,
          transportError = new TransportError(
-               error.message,
-               '',
-               error.code,
-               method,
-               error.details || '',
-               this._options.serviceUrl || $ws._const.defaultServiceUrl,
-               error.data && error.data.classid || '',
-               error.type || 'error',
-               error.data && error.data.addinfo || '',
-               error.data && error.data.error_code || ''
+            error.message,
+            '',
+            error.code,
+            method,
+            error.details || '',
+            this._options.serviceUrl || $ws._const.defaultServiceUrl,
+            error.data && error.data.classid || '',
+            error.type || 'error',
+            error.data && error.data.addinfo || '',
+            error.data && error.data.error_code || ''
          );
 
       $ws.single.EventBus.channel('errors').notify('onRPCError', transportError);
@@ -8886,16 +9231,16 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
    },
    _handleHTTPError: function(dResult, method, args, error) {
       var errInst,
-          payload;
-      if(error instanceof HTTPError) {
+         payload;
+      if (error instanceof HTTPError) {
          var message = error.message, details = '', code = 0, classid = '', errType = '', addinfo = '', error_code = '';
          try {
             payload = JSON.parse(error.payload);
-            if(payload.error) {
+            if (payload.error) {
                message = payload.error.message || message;
                details = payload.error.details;
                code = payload.error.code;
-               if(payload.error.data) {
+               if (payload.error.data) {
                   classid = payload.error.data.classid || classid;
                   addinfo = payload.error.data.addinfo || addinfo;
                   error_code = payload.error.data.error_code || error_code;
@@ -8905,12 +9250,14 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
          } catch (e) {}
          errInst = new TransportError(message, error.httpError, code, method, details, error.url, classid, errType || 'error', addinfo || '', error_code);
          $ws.single.EventBus.channel('errors').notify('onRPCError', errInst);
-      } else
+      } else {
          errInst = error;
+      }
 
       dResult.errback(errInst);
-      if(errInst.processed)
+      if (errInst.processed) {
          error.processed = true;
+      }
    },
    _useGetMethod: function(method) {
       return Array.indexOf(window.cachedMethods || [], method) > -1;
@@ -8919,20 +9266,21 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
       var sid = $ && $.cookie && $.cookie('sid');
       if (sid) {
          var tmp = sid.split('-'),
-             client = tmp[0],
-             user = tmp[1];
+            client = tmp[0],
+            user = tmp[1];
 
          req.reqHeaders['X-SbisSessionsID'] = sid;
          req.reqHeaders['X-CID'] = client;
          req.reqHeaders['X-UID'] = user;
       }
    },
+
    /**
     * @param {String} method
     * @param {Array|Object} args
     * @returns {$ws.proto.Deferred}
     */
-   callMethod: function(method, args){
+   callMethod: function(method, args) {
       var
          dResult = new $ws.proto.Deferred({
             cancelCallback: this.abort.bind(this)
@@ -8962,37 +9310,36 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
 
       if ($ws._const.debug) {
          dExecute.addCallbacks(
-            function(r){
-               $ws.single.ioc.resolve('ILogger').info( method, '(args:', args, ') =', 'error' in r ? r.error : r.result );
+            function(r) {
+               $ws.single.ioc.resolve('ILogger').info(method, '(args:', args, ') =', 'error' in r ? r.error : r.result);
                return r;
             },
-            function(e){
-               $ws.single.ioc.resolve('ILogger').info( method, '(args:', args, ') =', e ? e.details || e : e );
+            function(e) {
+               $ws.single.ioc.resolve('ILogger').info(method, '(args:', args, ') =', e ? e.details || e : e);
                return e;
             }
          );
       }
 
       dExecute.addCallbacks(
-         function(r){
+         function(r) {
             r = r || {
                error: {
-                  message: "Получен пустой ответ от сервиса",
-                  code: "",
-                  details: ""
+                  message: 'Получен пустой ответ от сервиса',
+                  code: '',
+                  details: ''
                }
             };
-            if('error' in r) {
+            if ('error' in r) {
                // Это 200 ОК, но внутри - ошибка или нет JSON
                rpcErrorHandler(r);
-            }
-            else {
+            } else {
                // Пробросим результат дальше
                dResult.callback(r.result);
             }
             return r;
          },
-         function(e){
+         function(e) {
             // НЕ 200 ОК, какая-то ошибка, возможно не просто HTTP.
             httpErrorHandler(e);
             return e;
@@ -9001,6 +9348,7 @@ $ws.proto.RPCJSON = $ws.core.extend({}, /** @lends $ws.proto.RPCJSON.prototype *
 
       return dResult;
    },
+
    /**
     * Прерывает загрузку
     */
@@ -9023,8 +9371,8 @@ $ws.proto.ITransport = $ws.core.extend({}, /** @lends $ws.proto.ITransport.proto
     * @param {Object} [headers] Заголовки запроса
     * @returns {$ws.proto.Deferred}
     */
-   execute: function(data, headers){
-      throw new Error("Method not implemented");
+   execute: function(data, headers) {
+      throw new Error('Method not implemented');
    }
 });
 
@@ -9050,10 +9398,11 @@ $ws.proto.ILogger = $ws.core.extend({}, /** @lends $ws.proto.ILogger.prototype *
     * @see error
     * @see info
     */
-   log: function(tag, message){
-      throw new Error("ILogger::log method is not implemented");
+   log: function(tag, message) {
+      throw new Error('ILogger::log method is not implemented');
    },
-    /**
+
+   /**
      * Задать текст сообщения об ошибке.
      * Текст будет со специальной пометкой "ошибка" в начале и красным цветом.
      * Удобно использовать для представления информации об ошибках и критических условиях.
@@ -9067,10 +9416,11 @@ $ws.proto.ILogger = $ws.core.extend({}, /** @lends $ws.proto.ILogger.prototype *
      * @see log
      * @see info
      */
-   error: function(tag, message){
-      throw new Error("ILogger::error method is not implemented");
+   error: function(tag, message) {
+      throw new Error('ILogger::error method is not implemented');
    },
-    /**
+
+   /**
      * Задать тест выводимой информации.
      * Текст будет со специальной пометкой "информация" в начале.
      * Данный метод удобно использовать для предупреждения о различных событиях.
@@ -9081,7 +9431,7 @@ $ws.proto.ILogger = $ws.core.extend({}, /** @lends $ws.proto.ILogger.prototype *
      * @see log
      * @see error
      */
-   info: function(){
+   info: function() {
       // чтобы серверный скрипт не падал, не кидаем исключение
    }
 });
@@ -9099,8 +9449,8 @@ $ws.proto.IAttachLoader = $ws.core.extend({}, /** @lends $ws.proto.IAttachLoader
     * @param {$ws.proto.Deferred} resource Deferred, который будет зависеть от загрузки файла.
     * @param {Object} [options] Опции.
     */
-   attach: function (URL, resource, options) {
-      throw new Error("IAttachLoader::attach method is not implemented");
+   attach: function(URL, resource, options) {
+      throw new Error('IAttachLoader::attach method is not implemented');
    }
 });
 
@@ -9139,44 +9489,45 @@ $ws.proto.ConsoleLogger = $ws.proto.ILogger.extend(/** @lends $ws.proto.ConsoleL
    $protected: {
       _con: null
    },
-   $constructor: function(){
-      if("jstestdriver" in window)
+   $constructor: function() {
+      if ('jstestdriver' in window) {
          this._con = window['jstestdriver']['console'];
-      else
-         if("console" in window && window['console']['log'])
-            this._con = window['console'];
+      } else
+      if ('console' in window && window['console']['log']) {
+         this._con = window['console'];
+      }
    },
    log: function(tag, message) {
-      BOOMR.plugins.WS.reportMessage(tag + ": " + message);
-      if(this._con && typeof(this._con) === 'object' &&'log' in this._con && typeof(this._con.log) == 'function')
-         this._con.log(tag + ": " + message + "\n");
-      else {
+      BOOMR.plugins.WS.reportMessage(tag + ': ' + message);
+      if (this._con && typeof (this._con) === 'object' && 'log' in this._con && typeof (this._con.log) == 'function') {
+         this._con.log(tag + ': ' + message + '\n');
+      } else {
          try {
-            this._con.log(tag + ": " + message + "\n");
-         } catch(e) {
+            this._con.log(tag + ': ' + message + '\n');
+         } catch (e) {
          }
       }
    },
    error: function(tag, message, exception) {
-      exception && exception.httpError !== 0 && BOOMR.plugins.WS.reportError(exception, tag + ": " + message, $ws.helpers.getStackTrace(exception));
+      exception && exception.httpError !== 0 && BOOMR.plugins.WS.reportError(exception, tag + ': ' + message, $ws.helpers.getStackTrace(exception));
       message = message + (exception && exception.stack ? '\nStack: ' + exception.stack : '');
-      if(this._con && typeof(this._con) === 'object' &&'error' in this._con && typeof(this._con.error) === 'function'){
-         this._con.error(tag + ": " + message);
-      } else{
-         try{
-            this._con.error(tag + ": " + message + "\n");
-         } catch(e){
+      if (this._con && typeof (this._con) === 'object' && 'error' in this._con && typeof (this._con.error) === 'function') {
+         this._con.error(tag + ': ' + message);
+      } else {
+         try {
+            this._con.error(tag + ': ' + message + '\n');
+         } catch (e) {
             this.log(tag, message);
          }
       }
    },
-   info: function(){
-      if(this._con && typeof(this._con) === 'object' && 'info' in this._con && typeof(this._con.info) === 'function'){
-         this._con.info.apply( this._con, arguments );
+   info: function() {
+      if (this._con && typeof (this._con) === 'object' && 'info' in this._con && typeof (this._con.info) === 'function') {
+         this._con.info.apply(this._con, arguments);
       } else {
-         try{
-            this._con.info.apply( this._con, arguments );
-         } catch(e){
+         try {
+            this._con.info.apply(this._con, arguments);
+         } catch (e) {
          }
       }
    }
@@ -9188,61 +9539,65 @@ $ws.proto.ConsoleLogger = $ws.proto.ILogger.extend(/** @lends $ws.proto.ConsoleL
  * @public
  */
 $ws.proto.WindowAttachLoader = $ws.proto.IAttachLoader.extend(/** @lends $ws.proto.WindowAttachLoader.prototype */{
-   attach: function (URL, resource, options) {
+   attach: function(URL, resource, options) {
       var
-          nodeType = URL.replace(/^.*\.([^\.]+)(\?.*)?$/ig, "$1").toLowerCase(),
-          nodePath = URL,
-          nodeAttr = {
-             css:{
-                tag : "LINK",
-                rel : "stylesheet",
-                type : "text/css",
-                href : nodePath
-             },
-             js:{
-                tag : "SCRIPT",
-                charset: options && options.charset || 'UTF-8',
-                type : "text/javascript",
-                src : nodePath
-             }
-          }[nodeType],
-          global = (function() { return this || (0,eval)('this') })();
+         nodeType = URL.replace(/^.*\.([^\.]+)(\?.*)?$/ig, '$1').toLowerCase(),
+         nodePath = URL,
+         nodeAttr = {
+            css: {
+               tag: 'LINK',
+               rel: 'stylesheet',
+               type: 'text/css',
+               href: nodePath
+            },
+            js: {
+               tag: 'SCRIPT',
+               charset: options && options.charset || 'UTF-8',
+               type: 'text/javascript',
+               src: nodePath
+            }
+         }[nodeType],
+         global = (function() {
+            return this || (0, eval)('this'); 
+         })();
 
       // создаем ресурс в контексте документа
       if (nodeAttr !== undefined) {
          var
-             head = document.getElementsByTagName("head")[0],
-             node = document.createElement(nodeAttr.tag),
-             ready = false;
+            head = document.getElementsByTagName('head')[0],
+            node = document.createElement(nodeAttr.tag),
+            ready = false;
          delete nodeAttr.tag;
-         for (var i in nodeAttr)
+         for (var i in nodeAttr) {
             node.setAttribute(i, nodeAttr[i]);
+         }
 
-         var span = BOOMR.plugins.WS.startSpan('Loading resource: '+nodePath);
-         node.onerror = function (exception) {
+         var span = BOOMR.plugins.WS.startSpan('Loading resource: ' + nodePath);
+         node.onerror = function(exception) {
             span.stop();
-            BOOMR.plugins.WS.reportError(exception, "Error loading resource: "+nodePath);
+            BOOMR.plugins.WS.reportError(exception, 'Error loading resource: ' + nodePath);
             resource.errback(new Error('attach: cannot load resource: ' + nodePath));
          };
 
          switch (node.tagName.toUpperCase()) {
-            case "LINK":
-               global.requirejs(['native-css!' + nodePath], function () {
+            case 'LINK':
+               global.requirejs(['native-css!' + nodePath], function() {
                   span.stop();
                   resource.callback();
                }, function(error) {
                   span.stop();
-                  BOOMR.plugins.WS.reportError(error, "Error loading resource: "+nodePath);
+                  BOOMR.plugins.WS.reportError(error, 'Error loading resource: ' + nodePath);
                   resource.errback(error);
                });
                break;
-            case "SCRIPT":
-               node.onload = node.onreadystatechange = function () {
+            case 'SCRIPT':
+               node.onload = node.onreadystatechange = function() {
                   var state = this.readyState;
-                  if (!ready && (!state || state == "loaded" || state == "complete")) {
+                  if (!ready && (!state || state == 'loaded' || state == 'complete')) {
                      ready = true;
                      node.onload = node.onreadystatechange = null;
                      span.stop();
+
                      // Такой результат здесь нужен для корректной работы attachComponent,
                      // в случае, если мы сделали сначала attach, а потом attachComponent и он загрузил
                      // тот же файл
@@ -9252,8 +9607,9 @@ $ws.proto.WindowAttachLoader = $ws.proto.IAttachLoader.extend(/** @lends $ws.pro
                head.appendChild(node);
                break;
          }
-      } else
-         resource.errback(new Error("attach: Unknown resource type specified: " + URL));
+      } else {
+         resource.errback(new Error('attach: Unknown resource type specified: ' + URL));
+      }
    }
 });
 
@@ -9289,31 +9645,41 @@ $ws.proto.EventObject.prototype = /** @lends $ws.proto.EventObject.prototype */{
    /**
     * Отменить дальнейшую обработку
     */
-   cancelBubble: function(){ this._isBubbling = false; },
+   cancelBubble: function() {
+      this._isBubbling = false; 
+   },
 
    /**
     * Будет ли продолжена дальнейшая обработка
     * @returns {Boolean}
     */
-   isBubbling: function() { return this._isBubbling; },
+   isBubbling: function() {
+      return this._isBubbling; 
+   },
 
    /**
     * Возвращает результат
     * @returns {*}
     */
-   getResult: function(){ return this._result; },
+   getResult: function() {
+      return this._result; 
+   },
 
    /**
     * Устанавливает результат
     * @param {*} r
     */
-   setResult: function(r){ this._result = r; },
+   setResult: function(r) {
+      this._result = r; 
+   },
 
    /**
     * Возвращает объект, инициировавший событие
     * @returns {*}
     */
-   getTarget: function(){ return this._target; }
+   getTarget: function() {
+      return this._target; 
+   }
 };
 
 /**
@@ -9322,10 +9688,11 @@ $ws.proto.EventObject.prototype = /** @lends $ws.proto.EventObject.prototype */{
  * @class $ws.proto.EventBusChannel
  * @public
  */
-$ws.proto.EventBusChannel = (function(){
+$ws.proto.EventBusChannel = (function() {
 
    var DEFAULT_MAX_LISTENERS = 10;
-  /**
+
+   /**
    * @alias $ws.proto.EventBusChannel
    */
    function EventBusChannel(cfg) {
@@ -9334,6 +9701,7 @@ $ws.proto.EventBusChannel = (function(){
       this._eventsAllowed = false;
       this._isDestroyed = false;
       this._onceEvents = {};
+
       // Очередь нотификаций события для отложенной подписки. Обрабатывается слева-на-право. 0 индекс будет взят первым
       this._notificationQueue = {};
       this._queueSize = {};
@@ -9352,7 +9720,7 @@ $ws.proto.EventBusChannel = (function(){
     * @returns {Boolean} true - объект удалён, false - объект не удалён, функция {@link destroy} не отработала.
     * @see destroy
     */
-   EventBusChannel.prototype.isDestroyed = function(){
+   EventBusChannel.prototype.isDestroyed = function() {
       return this._isDestroyed;
    };
 
@@ -9360,8 +9728,8 @@ $ws.proto.EventBusChannel = (function(){
     * Декларирует наличие у объекта событий
     * События могут быть переданы в виде строки, в виде массива строк.
     */
-   EventBusChannel.prototype.publish = function(/*$event*/){
-      for (var i = 0, li = arguments.length; i < li; i++){
+   EventBusChannel.prototype.publish = function(/*$event*/) {
+      for (var i = 0, li = arguments.length; i < li; i++) {
          var event = arguments[i];
          if (event && !event.charAt) {
             throw new Error('Аргументами функции publish должно быть несколько строк - имён событий');
@@ -9434,10 +9802,10 @@ $ws.proto.EventBusChannel = (function(){
             handler.fn.apply(handler.ctx, args);
          }
 
-         if(!eventState.isBubbling() || !this._events) {
+         if (!eventState.isBubbling() || !this._events) {
             return false;
          }
-      } catch(e) {
+      } catch (e) {
          $ws.single.ioc.resolve('ILogger').error(
             (handler.ctx && handler.ctx.describe) ? handler.ctx.describe() : 'Unknown Object',
             'Event handler for "' + eventName + '" returned error: ' + e.message,
@@ -9452,9 +9820,9 @@ $ws.proto.EventBusChannel = (function(){
     * @param [arg1, [...]] Параметры, получаемые подписантами.
     * @returns {Boolean|String|Object} Результат выполнения цепочки.
     */
-   EventBusChannel.prototype.notify = function (event/*, payload*/) {
+   EventBusChannel.prototype.notify = function(event/*, payload*/) {
       var args = new Array(arguments.length - 1);
-      for(var i = 1; i < arguments.length; i++) {
+      for (var i = 1; i < arguments.length; i++) {
          args[i - 1] = arguments[i];
       }
       return this._notifyWithTarget(event, undefined, args);
@@ -9468,15 +9836,15 @@ $ws.proto.EventBusChannel = (function(){
     * @param [arg1, [...]] Параметры, получаемые подписантами.
     * @returns {Boolean|String|Object} Результат выполнения цепочки.
     */
-   EventBusChannel.prototype.notifyWithTarget = function (event, target/*, payload*/) {
+   EventBusChannel.prototype.notifyWithTarget = function(event, target/*, payload*/) {
       var args = new Array(arguments.length - 2);
-      for(var i = 2; i < arguments.length; i++) {
+      for (var i = 2; i < arguments.length; i++) {
          args[i - 2] = arguments[i];
       }
       return this._notifyWithTarget(event, target, args);
    };
 
-   EventBusChannel.prototype._notifyWithTarget = function (event, target, args) {
+   EventBusChannel.prototype._notifyWithTarget = function(event, target, args) {
       var
          result = undefined,
          queueLimit = this._queueSize[event] || this._queueSize['*'] || 0,
@@ -9486,19 +9854,17 @@ $ws.proto.EventBusChannel = (function(){
          // Здесь и далее намеренно не используется Array.prototype.slice или что-то подобное
          // см. https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
          argsCopy = new Array(arguments.length);
-         for(i = 0, l = arguments.length; i < l; i++) {
+         for (i = 0, l = arguments.length; i < l; i++) {
             argsCopy[i] = arguments[i];
          }
          this._eventQueue.push(argsCopy);
-      }
-      else {
+      } else {
          handlers = this._events[event];
 
          if (!handlers) {
             if (this._strictMode) {
                throw new Error('Event "' + event + '" have not published yet');
-            }
-            else {
+            } else {
                handlers = [];
                this._events[event] = handlers;
             }
@@ -9520,11 +9886,13 @@ $ws.proto.EventBusChannel = (function(){
          // Если включена запись нотификаций для событий...
          if (queueLimit > 0) {
             notifyQueue = (this._notificationQueue[event] = this._notificationQueue[event] || []);
+
             // Если в очереди накопилось больше чем положено
             if (notifyQueue.length >= queueLimit) {
                // Уберем первый элемент
                notifyQueue.shift();
             }
+
             // Добавим новый в конец очереди
             notifyQueue.push([target, args]);
          }
@@ -9538,7 +9906,7 @@ $ws.proto.EventBusChannel = (function(){
     * после вызова метода allowEvents. Подробнее см. метод allowEvents.
     * @returns {boolean}
     */
-   EventBusChannel.prototype.eventsAllowed = function () {
+   EventBusChannel.prototype.eventsAllowed = function() {
       return this._eventsAllowed;
    };
 
@@ -9547,10 +9915,10 @@ $ws.proto.EventBusChannel = (function(){
     * Откладывание отсылки событий используется при конструировании контролов, чтобы события остылались после окончания работы всей
     * цепочки конструкторов по иерархии наследования.
     */
-   EventBusChannel.prototype.allowEvents = function(){
-      if(this._eventsAllowed === false) {
+   EventBusChannel.prototype.allowEvents = function() {
+      if (this._eventsAllowed === false) {
          this._eventsAllowed = true;
-         for(var i = 0, l = this._eventQueue.length; i < l; i++){
+         for (var i = 0, l = this._eventQueue.length; i < l; i++) {
             this._notifyWithTarget.apply(this, this._eventQueue[i]);
          }
          this._eventQueue.length = 0;
@@ -9583,13 +9951,14 @@ $ws.proto.EventBusChannel = (function(){
             wrapper: handlerWrapper
          };
 
-      if(!this._onceEvents[event]) {
+      if (!this._onceEvents[event]) {
          this._onceEvents[event] = [];
       }
       this._onceEvents[event].push(object);
 
       return this.subscribe(event, handlerWrapper, ctx, first);
    };
+
    /**
     * <wiTag group="Управление">
     * Добавить обработчик на событие.
@@ -9605,7 +9974,7 @@ $ws.proto.EventBusChannel = (function(){
     *    });
     * </pre>
     */
-   EventBusChannel.prototype.subscribe = function(event, handler, ctx, first){
+   EventBusChannel.prototype.subscribe = function(event, handler, ctx, first) {
 
       var handlerObject;
 
@@ -9614,7 +9983,7 @@ $ws.proto.EventBusChannel = (function(){
       } else if (this._strictMode && !(event in this._events)) {
          throw new Error("Event '" + event + "' is not registered");
       } else {
-         if (typeof handler === 'function'){
+         if (typeof handler === 'function') {
             /**
              * Да, ты совершенно прав. Этот код делает ничего.
              *
@@ -9626,13 +9995,13 @@ $ws.proto.EventBusChannel = (function(){
              *
              * Это необходимо выпилить после того, как Chrome 33 пропадет с наших радаров...
              */
-           /* if (arguments[100]) {
+            /* if (arguments[100]) {
                void(0);
             }*/
 
             handlerObject = {
-               fn : handler,
-               ctx : ctx
+               fn: handler,
+               ctx: ctx
             };
 
             this._events[event] = this._events[event] || [];
@@ -9640,13 +10009,13 @@ $ws.proto.EventBusChannel = (function(){
 
             if (false && this._events[event].length > this._maxListeners) {
                $ws.single.ioc.resolve('ILogger').error(
-                     'EventBusChannel',
-                     'Потенциальная проблема производительности! ' +
+                  'EventBusChannel',
+                  'Потенциальная проблема производительности! ' +
                      'На событие "' + event + '" канала "' + (this._name || 'noname') + '" добавлено слишком много обработчиков!');
             }
 
             if (this._notificationQueue[event] && this._notificationQueue[event].length) {
-               $ws.helpers.forEach(this._notificationQueue[event], function (savedEvent) {
+               $ws.helpers.forEach(this._notificationQueue[event], function(savedEvent) {
                   var
                      target = savedEvent[0],
                      args = savedEvent[1],
@@ -9676,18 +10045,18 @@ $ws.proto.EventBusChannel = (function(){
          i, elem,
          events = this._onceEvents[event],
          found = [];
-      if(!events) {
+      if (!events) {
          return;
       }
-      for(i = 0; i < events.length; ++i) {
+      for (i = 0; i < events.length; ++i) {
          elem = events[i];
-         if(elem.handler === handler && (!ctx || elem.ctx === ctx) && (!wrapper || wrapper === elem.wrapper)) {
+         if (elem.handler === handler && (!ctx || elem.ctx === ctx) && (!wrapper || wrapper === elem.wrapper)) {
             found.push(i);
          }
       }
-      for(i = found.length - 1; i >= 0; --i) {
+      for (i = found.length - 1; i >= 0; --i) {
          this.unsubscribe(event, events[found[i]].wrapper, ctx);
-         this._onceEvents[event].splice(found[i],1);
+         this._onceEvents[event].splice(found[i], 1);
       }
    };
 
@@ -9704,8 +10073,8 @@ $ws.proto.EventBusChannel = (function(){
     * </pre>
     */
    EventBusChannel.prototype.unsubscribe = function(event, handler, ctx) {
-      if (!handler || typeof handler !== 'function'){
-         throw new TypeError("Unsubscribe: second argument is not a function");
+      if (!handler || typeof handler !== 'function') {
+         throw new TypeError('Unsubscribe: second argument is not a function');
       }
       var handlers = this._strictMode ? this._events[event] : this._events[event] = this._events[event] || [];
       if (handlers) {
@@ -9713,15 +10082,16 @@ $ws.proto.EventBusChannel = (function(){
          handlers = this._events[event];
          var newHandlers, i, last, ln;
          for (i = 0, ln = handlers.length; i !== ln; i++) {
-            if (handlers[i]["fn"] === handler && (handlers[i]["ctx"] && ctx ? handlers[i]["ctx"] === ctx : true)) {
+            if (handlers[i]['fn'] === handler && (handlers[i]['ctx'] && ctx ? handlers[i]['ctx'] === ctx : true)) {
                newHandlers = handlers.slice(0, i);
 
                i++;
                last = i;
                for (; i !== ln; i++) {
-                  if (handlers[i]["fn"] === handler && (handlers[i]["ctx"] && ctx ? handlers[i]["ctx"] === ctx : true)) {
-                     if (last !== i)
+                  if (handlers[i]['fn'] === handler && (handlers[i]['ctx'] && ctx ? handlers[i]['ctx'] === ctx : true)) {
+                     if (last !== i) {
                         newHandlers = newHandlers.concat(handlers.slice(last, i));
+                     }
                      last = i + 1;
                   }
                }
@@ -9746,7 +10116,7 @@ $ws.proto.EventBusChannel = (function(){
     * Снять все подписки со всех событий.
     */
    EventBusChannel.prototype.unsubscribeAll = function() {
-      $ws.helpers.forEach(this._events, function (handlers, eventName, events) {
+      $ws.helpers.forEach(this._events, function(handlers, eventName, events) {
          if (events[eventName]) {
             events[eventName].length = 0;
          }
@@ -9762,11 +10132,11 @@ $ws.proto.EventBusChannel = (function(){
     *     class.getName();
     * </pre>
     */
-   EventBusChannel.prototype.getName = function(){
+   EventBusChannel.prototype.getName = function() {
       return this._name;
    };
 
-   EventBusChannel.prototype.destroy = function(){
+   EventBusChannel.prototype.destroy = function() {
       //Нужно делать notifyWithTarget, чтобы у тех, кто подписался прямо на этот EventBusChannel, правильно
       //работала автоотписка (чтобы там таргет в событии onDestroy был правильный)
       this.notifyWithTarget('onDestroy', this);
@@ -9786,7 +10156,7 @@ $ws.proto.EventBusChannel = (function(){
     *    eventBusChannel.unbind('onSome');
     * </pre>
     */
-   EventBusChannel.prototype.unbind = function(event){
+   EventBusChannel.prototype.unbind = function(event) {
       this._events[event] = [];
 
       return this;
@@ -9802,7 +10172,7 @@ $ws.proto.EventBusChannel = (function(){
     *       eventBusChannel.unbind('onSome');
     * </pre>
     */
-   EventBusChannel.prototype.hasEvent = function(name){
+   EventBusChannel.prototype.hasEvent = function(name) {
       return !this._strictMode || this._events && !!this._events[name];
    };
 
@@ -9815,7 +10185,7 @@ $ws.proto.EventBusChannel = (function(){
     *     eventBusChannel.getEvents();
     * </pre>
     */
-   EventBusChannel.prototype.getEvents = function(){
+   EventBusChannel.prototype.getEvents = function() {
       return Object.keys(this._events);
    };
 
@@ -9829,7 +10199,7 @@ $ws.proto.EventBusChannel = (function(){
     *     class.hasEventHandlers();
     * </pre>
     */
-   EventBusChannel.prototype.hasEventHandlers = function(name){
+   EventBusChannel.prototype.hasEventHandlers = function(name) {
       return !!this._events[name] && this._events[name].length > 0;
    };
 
@@ -9844,8 +10214,10 @@ $ws.proto.EventBusChannel = (function(){
     *     log('Событие onSomeEvent имеет ' + handlers.length + ' обработчиков');
     * </pre>
     */
-   EventBusChannel.prototype.getEventHandlers = function(name){
-      return $ws.helpers.map(this._events[name] || [], function(i){ return i.fn });
+   EventBusChannel.prototype.getEventHandlers = function(name) {
+      return $ws.helpers.map(this._events[name] || [], function(i) {
+         return i.fn; 
+      });
    };
 
    return EventBusChannel;
@@ -9858,7 +10230,8 @@ $ws.proto.EventBusChannel = (function(){
  * @single
  */
 $ws.single.EventBus = /** @lends $ws.single.EventBus */{
-   _channels : {},
+   _channels: {},
+
    /**
     * Возвращает канал с указанным именем, если он есть, в противном случае создает новый
     * <wiTag group="Управление">
@@ -9866,10 +10239,10 @@ $ws.single.EventBus = /** @lends $ws.single.EventBus */{
     * @param [options] - опции канала.
     * @returns {$ws.proto.EventBusChannel}
     */
-   channel : function(name, options){
+   channel: function(name, options) {
       var channel;
 
-      if (arguments.length == 1 && typeof name == "object"){
+      if (arguments.length == 1 && typeof name == 'object') {
          options = name;
          name = '';
       }
@@ -9883,21 +10256,23 @@ $ws.single.EventBus = /** @lends $ws.single.EventBus */{
          return new $ws.proto.EventBusChannel(options);
       }
    },
+
    /**
     * Удаляет канал с указанным именем
     * <wiTag group="Управление">
     * @param {String} name имя канала.
     */
-   removeChannel : function(name){
+   removeChannel: function(name) {
       delete this._channels[name];
    },
+
    /**
     * Проверяет наличие канала с указанным имененм
     * <wiTag group="Управление">
     * @param {String} name имя канала.
     * @returns {Boolean}
     */
-   hasChannel: function(name){
+   hasChannel: function(name) {
       return this._channels[name] !== undefined;
    },
 
@@ -10024,12 +10399,14 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * </pre>
     */
    $protected: {
-      _eventBusChannel : null,
-      _isDestroyed : false,
+      _eventBusChannel: null,
+      _isDestroyed: false,
+
       /**
        * Показывает, окончен ли процесс конструирования и инициализации этого объекта.
        */
       _isInitialized: false,
+
       /**
        * @cfg {object} handlers Обработчики событий
        * <wiTag group="Управление">
@@ -10056,16 +10433,16 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
        *    });
        * </pre>
        */
-      _handlers : {},
+      _handlers: {},
       _subscriptions: [],
       _subDestroyControls: [],
 
-      _options : {
-         eventBusId : null
+      _options: {
+         eventBusId: null
       }
    },
-   $constructor : function(cfg){
-      if (cfg && cfg.handlers && typeof cfg.handlers == "object"){
+   $constructor: function(cfg) {
+      if (cfg && cfg.handlers && typeof cfg.handlers == 'object') {
          this._handlers = cfg.handlers;
       }
       this._publish('onInit', 'onInitComplete', 'onReady', 'onDestroy');
@@ -10098,8 +10475,8 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
 
    _subscribeTo: function(control, event, handler, once) {
       if (!control.isDestroyed() && !this.isDestroyed()) {
-         if (typeof handler !== 'function'){
-            throw new Error("Аргумент handler у метода subscribeTo должен быть функцией");
+         if (typeof handler !== 'function') {
+            throw new Error('Аргумент handler у метода subscribeTo должен быть функцией');
          }
 
          var sub, onceWrapper, contr;
@@ -10118,9 +10495,8 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
             });
 
             control.once(event, onceWrapper);
-         }
-         else {
-            sub = $ws.helpers.find(this._subscriptions, function (sub) {
+         } else {
+            sub = $ws.helpers.find(this._subscriptions, function(sub) {
                return sub.control === control && sub.handler === handler &&
                       sub.event   === event   && sub.onceWrapper === undefined;
             });
@@ -10189,7 +10565,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
 
       function filterControlDestroys(needUnsub) {
          return $ws.helpers.filter(self._subDestroyControls, function(controlSub) {
-            var ok = !$ws.helpers.find(self._subscriptions, function (sub) {
+            var ok = !$ws.helpers.find(self._subscriptions, function(sub) {
                return sub.control === controlSub.control;
             });
             return needUnsub ? ok : !ok;
@@ -10203,7 +10579,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       //если _unsubscribeFrom вызывается из onceWrapper (см. subscribeTo+once), то источник - sub.control
       //уже сам отписал обработчики у себя, и приёмнику отписываться не надо (и нельзя, потому что тогда источник отпишет не once-обработчики с таким вот handler)
       if (!onceWrapper) {
-         $ws.helpers.forEach(unsubs, function (sub) {
+         $ws.helpers.forEach(unsubs, function(sub) {
             if (!sub.control.isDestroyed()) {
                sub.control.unsubscribe(sub.event, sub.handler);
             }
@@ -10231,6 +10607,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       }
       return this._eventBusChannel;
    },
+
    /**
     * <wiTag group="Управление">
     * Возвращает признак того, удалён объект или нет (отработала ли функция destroy).
@@ -10267,6 +10644,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       // а потом запустит отложенные события через _allowEvents()
       this._notify('onInit');
    },
+
    /**
     * Этот метод вызывается конструирующей функцией ($ws.core.extend) тогда, когда отработали init всех классов в цепочке наследования,
     * контрол совсем готов, его можно класть в ControlStorage, и запускать его отложенные события.
@@ -10297,19 +10675,19 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
    describe: function() {
       return 'Abstract';
    },
+
    /**
     * Декларирует наличие у объекта событий
     * События могут быть переданы в виде строки, в виде массива строк.
     */
-   _publish : function(/*$event*/){
-      for (var i = 0, li = arguments.length; i < li; i++){
+   _publish: function(/*$event*/) {
+      for (var i = 0, li = arguments.length; i < li; i++) {
          var event = arguments[i], handlers = this._handlers[event], j, lh;
-         if (handlers){
+         if (handlers) {
             if (typeof handlers === 'function') {
                this._getChannel().subscribe(event, handlers, this);
                this._handlers[event] = null;
-            }
-            else {
+            } else {
                lh = handlers.length;
                if (lh) {
                   for (j = 0; j < lh; j++) {
@@ -10321,6 +10699,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
          }
       }
    },
+
    /**
     * Извещает всех подписантов события
     * Все аргументы после имени события будут переданы подписантам.
@@ -10328,7 +10707,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @param [arg1, [...]] Параметры, получаемые подписантами.
     * @returns {*} Результат выполнения цепочки.
     */
-   _notify : function(event/*, payload*/){
+   _notify: function(event/*, payload*/) {
       var
          channel = this._getChannel(),
          args = Array.prototype.slice.call(arguments, 1),
@@ -10344,7 +10723,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * Включает отсылку событий.
     * Подробнее см. метод $ws.proto.EventBusChannel.allowEvents.
     */
-   _allowEvents: function(){
+   _allowEvents: function() {
       this._getChannel().allowEvents();
    },
 
@@ -10353,7 +10732,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * Подробнее см. метод $ws.proto.EventBusChannel.eventsAllowed.
     * @returns {boolean}
     */
-   _eventsAllowed: function(){
+   _eventsAllowed: function() {
       return this._getChannel().eventsAllowed();
    },
 
@@ -10376,9 +10755,10 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @see getEventHandlers
     * @see hasEventHandlers
     */
-   once : function(event, handler) {
+   once: function(event, handler) {
       this._getChannel().once(event, handler, this);
    },
+
    /**
     * Добавить обработчик на событие контрола.
     * <wiTag group="Управление">
@@ -10402,10 +10782,11 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @see getEventHandlers
     * @see hasEventHandlers
     */
-   subscribe : function(event, $handler){
+   subscribe: function(event, $handler) {
       this._getChannel().subscribe(event, $handler, this);
       return this;
    },
+
    /**
     * <wiTag group="Управление">
     * Снять обработчик с указанного события.
@@ -10438,6 +10819,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       this._getChannel().unsubscribe(event, handler);
       return this;
    },
+
    /**
     *  <wiTag group="Управление">
     * Снять все обработчики с указанного события.
@@ -10462,6 +10844,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       this._getChannel().unbind(event);
       return this;
    },
+
    /**
     * <wiTag group="Управление">
     * Разрушить экземпляр класса.
@@ -10491,6 +10874,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
       this._handlers = {};
       this._isDestroyed = true;
    },
+
    /**
     * <wiTag group="Управление">
     * Получить список событий контрола.
@@ -10523,6 +10907,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
    getEvents: function() {
       return this._getChannel().getEvents();
    },
+
    /**
     * <wiTag group="Управление">
     * Проверить наличие указанного события у контрола.
@@ -10545,9 +10930,10 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @see getEventHandlers
     * @see hasEventHandlers
     */
-   hasEvent : function(name){
+   hasEvent: function(name) {
       return this._getChannel().hasEvent(name);
    },
+
    /**
     * <wiTag group="Управление">
     * Проверить наличие обработчиков на указанное событие у контрола.
@@ -10570,9 +10956,10 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @see getEvents
     * @see getEventHandlers
     */
-   hasEventHandlers : function(name){
+   hasEventHandlers: function(name) {
       return this._getChannel().hasEventHandlers(name);
    },
+
    /**
     * <wiTag group="Управление">
     * Получить обработчики указанного события у контрола.
@@ -10600,7 +10987,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
     * @see getEvents
     * @see hasEventHandlers
     */
-   getEventHandlers : function(name){
+   getEventHandlers: function(name) {
       return this._getChannel().getEventHandlers(name);
    }
 });
@@ -10761,7 +11148,7 @@ $ws.proto.Abstract = $ws.core.extend({}, /** @lends $ws.proto.Abstract.prototype
  * @class $ws.proto.Deferred
  * @public
  */
-$ws.proto.Deferred = (function(){
+$ws.proto.Deferred = (function() {
    function DeferredCanceledError(message) {
       this.message = message;
       this.canceled = true;
@@ -10802,7 +11189,7 @@ $ws.proto.Deferred = (function(){
       return isCancelValue(res) ? CANCELED : isErrorValue(res) ? FAILED : SUCCESS;
    }
 
-    /**
+   /**
      * @alias $ws.proto.Deferred
      * @param {Object} [cfg] Конфигурация. Содержит опцию: cancelCallback - функция, реализующая отмену на уровне кода, управляющего этим Deferred-ом.
      * @example
@@ -10840,7 +11227,7 @@ $ws.proto.Deferred = (function(){
     * она вызовется (только если Deferred ещё не сработал и не отменён).
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.cancel = function () {
+   Deferred.prototype.cancel = function() {
       if (this._fired === WAITING) {
          //Состояние CANCELED нужно выставить в самом начале, чтобы вызов методов callback/errback,
          //возможный из cancelCallback, срабатывал бы вхолостую, и не мешал бы выполняться обработчикам, вызванным из
@@ -10854,7 +11241,7 @@ $ws.proto.Deferred = (function(){
             try {
                cbk();
             } catch (err) {
-               $ws.single.ioc.resolve('ILogger').error("Deferred", "Cancel function throwing an error: " + err.message, err);
+               $ws.single.ioc.resolve('ILogger').error('Deferred', 'Cancel function throwing an error: ' + err.message, err);
             }
          }
 
@@ -10863,7 +11250,7 @@ $ws.proto.Deferred = (function(){
       return this;
    };
 
-    /**
+   /**
      * Запускает на выполнение цепочку коллбэков.
      * Метод должен вызываться только на несработавшем или отменённом объекте, иначе он выдаст ошибку.
      * На отменённом объекте (после вызова метода cancel) callback/errback можно вызывать сколько угодно - ошибки не будет,
@@ -10871,14 +11258,14 @@ $ws.proto.Deferred = (function(){
      * @param [res] результат асинхронной операции, передаваемой в коллбэк.
      * @returns {$ws.proto.Deferred}
      */
-    Deferred.prototype.callback = function (res){
-       if (notCanceled(this)) {
-          this._resback(this._check(res));
-       }
-       return this;
-    };
+   Deferred.prototype.callback = function(res) {
+      if (notCanceled(this)) {
+         this._resback(this._check(res));
+      }
+      return this;
+   };
 
-    /**
+   /**
      * Запуск цепочки обработки err-бэков.
      * Метод должен вызываться только на несработавшем или отменённом объекте, иначе он выдаст ошибку.
      * На отменённом объекте (после вызова метода cancel) callback/errback можно вызывать сколько угодно - ошибки не будет,
@@ -10886,14 +11273,14 @@ $ws.proto.Deferred = (function(){
      * @param [res] результат асинхронной операции.
      * @returns {$ws.proto.Deferred}
      */
-    Deferred.prototype.errback = function (res){
-       if (notCanceled(this)) {
-          this._resback(this._check(res, true));
-       }
-       return this;
-    };
+   Deferred.prototype.errback = function(res) {
+      if (notCanceled(this)) {
+         this._resback(this._check(res, true));
+      }
+      return this;
+   };
 
-   Deferred.prototype._resback = function (res){
+   Deferred.prototype._resback = function(res) {
       //после вызова callback/errback/cancel отмена работает вхолостую, поэтому функция отмены (cancelCallback) после
       //_resback точно не понадобится, и её можно обнулить, чтобы GC её мог собрать пораньше
       this._cancelCallback = null;
@@ -10903,22 +11290,23 @@ $ws.proto.Deferred = (function(){
       this._fire();
    };
 
-   Deferred.prototype._check = function (res, isError) {
+   Deferred.prototype._check = function(res, isError) {
       if (this._fired !== WAITING) {
          throw new Error("Deferred is already fired with state '" + STATE_NAMES[this._fired] + "'");
       }
 
       if (isDeferredValue(res)) {
-         throw new Error("Deferred instances can only be chained if they are the result of a callback");
+         throw new Error('Deferred instances can only be chained if they are the result of a callback');
       }
 
       if (isError && !isErrorValue(res)) {
          res = new Error(res);
+
          // Исправляем поведение IE8. Error(1) == { number: 1 }, Error("1") == { number: 1 }, Error("x1") == { message: "x1" }
          // Если после создания ошибки в ней есть поле number, содержащее число, а в message - пусто,
          // скастуем к строке и запишем в message
          if (!isNaN(res.number) && !res.message) {
-            res.message = "" + res.number;
+            res.message = '' + res.number;
          }
       }
 
@@ -10930,9 +11318,9 @@ $ws.proto.Deferred = (function(){
     * @param {Function} fn общий коллбэк.
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.addBoth = function (fn){
+   Deferred.prototype.addBoth = function(fn) {
       if (arguments.length != 1) {
-         throw new Error("No extra args supported");
+         throw new Error('No extra args supported');
       }
       return this.addCallbacks(fn, fn);
    };
@@ -10942,9 +11330,9 @@ $ws.proto.Deferred = (function(){
     * @param {Function} fn коллбэк на успех.
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.addCallback = function (fn){
+   Deferred.prototype.addCallback = function(fn) {
       if (arguments.length != 1) {
-         throw new Error("No extra args supported");
+         throw new Error('No extra args supported');
       }
       return this.addCallbacks(fn, null);
    };
@@ -10954,9 +11342,9 @@ $ws.proto.Deferred = (function(){
     * @param {Function} fn коллбэк на ошибку.
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.addErrback = function (fn){
+   Deferred.prototype.addErrback = function(fn) {
       if (arguments.length != 1) {
-         throw new Error("No extra args supported");
+         throw new Error('No extra args supported');
       }
       return this.addCallbacks(null, fn);
    };
@@ -10967,17 +11355,17 @@ $ws.proto.Deferred = (function(){
     * @param {Function} eb коллбэк на ошибку.
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.addCallbacks = function (cb, eb){
-      if (this._chained){
-         throw new Error("Chained Deferreds can not be re-used");
+   Deferred.prototype.addCallbacks = function(cb, eb) {
+      if (this._chained) {
+         throw new Error('Chained Deferreds can not be re-used');
       }
 
-      if((cb !== null && typeof(cb) !== 'function') || (eb !== null && typeof(eb) !== 'function')) {
-         throw new Error("Both arguments required in addCallbacks");
+      if ((cb !== null && typeof (cb) !== 'function') || (eb !== null && typeof (eb) !== 'function')) {
+         throw new Error('Both arguments required in addCallbacks');
       }
 
       var fired = this._fired,
-          waiting = fired === WAITING || this._running || this._paused > 0;
+         waiting = fired === WAITING || this._running || this._paused > 0;
 
       if (waiting || (cb && fired === SUCCESS) || (eb && (fired === FAILED || fired === CANCELED))) {
          this._chain.push([cb, eb]);
@@ -10995,7 +11383,7 @@ $ws.proto.Deferred = (function(){
     * Вся логика обработки результата.
     * Вызов коллбэков-еррбэков, поддержка вложенного Deferred
     */
-   Deferred.prototype._fire = function (){
+   Deferred.prototype._fire = function() {
       var chain = this._chain;
       var fired = this._fired;
       var res = this._results[CHAIN_INDEXES[fired]];
@@ -11004,8 +11392,9 @@ $ws.proto.Deferred = (function(){
       while (chain.length > 0 && this._paused === 0) {
          var pair = chain.shift();
          var f = pair[CHAIN_INDEXES[fired]];
-         if (f === null)
+         if (f === null) {
             continue;
+         }
 
          try {
             this._running = true; // Признак того, что Deferred сейчас выполняет цепочку
@@ -11024,18 +11413,19 @@ $ws.proto.Deferred = (function(){
                err = new Error(err);
             }
             res = err;
-            $ws.single.ioc.resolve('ILogger').error("Deferred", "Callback function throwing an error: " + err.message, err);
+            $ws.single.ioc.resolve('ILogger').error('Deferred', 'Callback function throwing an error: ' + err.message, err);
          } finally {
             this._running = false;
          }
       }
       this._fired = fired;
       this._results[CHAIN_INDEXES[fired]] = res;
-      if (cb && this._paused){
+      if (cb && this._paused) {
          res.addBoth(cb);
          res._chained = true;
       }
    };
+
    /**
     * Объявляет данный текущий Deferred зависимым от другого.
     * Колбэк/Еррбэк текущего Deferred будет вызван при соотвествтующем событии в "мастер"-Deferred.
@@ -11043,12 +11433,12 @@ $ws.proto.Deferred = (function(){
     * @param {$ws.proto.Deferred} dDependency Deferred, от которого будет зависеть данный.
     * @returns {$ws.proto.Deferred}
     */
-   Deferred.prototype.dependOn = function(dDependency){
+   Deferred.prototype.dependOn = function(dDependency) {
       var self = this;
-      dDependency.addCallbacks(function(v){
+      dDependency.addCallbacks(function(v) {
          self.callback(v);
          return v;
-      }, function(e){
+      }, function(e) {
          self.errback(e);
          return e;
       });
@@ -11069,7 +11459,7 @@ $ws.proto.Deferred = (function(){
    /**
     * @returns {Boolean} Готов или нет этот экземпляр (стрельнул с каким-то результатом)
     */
-   Deferred.prototype.isReady = function(){
+   Deferred.prototype.isReady = function() {
       //Признак _paused тут учитывать не надо, потому что isReady говорит именно о наличии результата этого
       //Deferred-а (и возможности или невозможности вызывать методы callback/errback),
       //а не о состоянии цепочки его обработчиков.
@@ -11088,7 +11478,7 @@ $ws.proto.Deferred = (function(){
    /**
     * @returns {Boolean} Завершился ли данный экземпляр успехом
     */
-   Deferred.prototype.isSuccessful = function(){
+   Deferred.prototype.isSuccessful = function() {
       return this._fired === SUCCESS;
    };
 
@@ -11098,14 +11488,14 @@ $ws.proto.Deferred = (function(){
     * @throws {Error} Когда значения еще нет.
     */
    Deferred.prototype.getResult = function() {
-      if(this.isReady()) {
+      if (this.isReady()) {
          return this._results[CHAIN_INDEXES[this._fired]];
-      }
-      else {
-         throw new Error("No result at this moment. Deferred is still not ready");
+      } else {
+         throw new Error('No result at this moment. Deferred is still not ready');
       }
    };
-    /**
+
+   /**
      * Возвращает Deferred, который завершится успехом через указанное время.
      * @param {Number} delay Значение в миллисекундах.
      * @returns {$ws.proto.Deferred}
@@ -11123,7 +11513,8 @@ $ws.proto.Deferred = (function(){
       setTimeout(d.callback.bind(d), delay);
       return d;
    };
-    /**
+
+   /**
      * Возвращает Deferred, завершившийся успехом.
      * @param {*} result Результат выполнения.
      * @returns {$ws.proto.Deferred}
@@ -11140,7 +11531,8 @@ $ws.proto.Deferred = (function(){
    Deferred.success = function(result) {
       return new $ws.proto.Deferred().callback(result);
    };
-    /**
+
+   /**
      * Возвращает Deferred, завершившийся ошибкой.
      * @param {*|Error}result - результат выполнения.
      * @returns {$ws.proto.Deferred}
@@ -11157,7 +11549,8 @@ $ws.proto.Deferred = (function(){
       var err = result instanceof Error ? result : new Error('' + result);
       return new $ws.proto.Deferred().errback(err);
    };
-    /**
+
+   /**
      * Возвращает Deferred, который завершится успехом или ошибкой, сразу же как завершится успехом или ошибкой любой из переданных Deferred.
      * @param {Array} steps Набор из нескольких отложенных результатов.
      * @returns {$ws.proto.Deferred}
@@ -11183,8 +11576,8 @@ $ws.proto.Deferred = (function(){
    Deferred.nearestOf = function(steps) {
       var dResult = new $ws.proto.Deferred();
 
-      $ws.helpers.forEach(steps, function(step, key){
-         step.addBoth(function(r){
+      $ws.helpers.forEach(steps, function(step, key) {
+         step.addBoth(function(r) {
             if (!dResult.isReady()) {
                if (r instanceof Error) {
                   var res = new Error();
@@ -11270,7 +11663,7 @@ $ws.proto.Deferred = (function(){
  *
  */
 $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDeferred */{
-    /**
+   /**
      * @cfg {$ws.proto.Deferred[]} Порядковые индексы шагов
      * @name $ws.proto.ParallelDeferred#steps
      * @see done
@@ -11292,7 +11685,8 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
       _lazyQueue: [],  // очередь на выполнение функций, возвращающих deferred
 
       _options: {
-          /**
+
+         /**
            * @cfg {boolean} Этот флаг показывает то, что готовность этого объекта ParallelDeferred наступит при первой
            * ошибке в любом из объектов-процессов, переданных в метод push (ленивых или энергичных - см. описание метода
            * {@link push}).
@@ -11307,6 +11701,7 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
          maxRunningCount: 10
       }
    },
+
    /**
     * @param {Object} cfg
     * @param {$ws.proto.Deferred[]} cfg.steps
@@ -11314,14 +11709,14 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
    $constructor: function(cfg) {
       this._dResult = new $ws.proto.Deferred();
 
-      if(cfg && cfg.steps) {
-         $ws.helpers.forEach(cfg.steps, function(deferred, stepId){
+      if (cfg && cfg.steps) {
+         $ws.helpers.forEach(cfg.steps, function(deferred, stepId) {
             this.push(deferred, stepId);
          }, this);
       }
    },
 
-   _successHandler: function(stepId, res){
+   _successHandler: function(stepId, res) {
       this._stepsFinish++;
       this._stepsSuccess++;
 
@@ -11331,10 +11726,11 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
       return res;
    },
 
-   _errorHandler: function(stepId, res){
+   _errorHandler: function(stepId, res) {
       this._stepsFinish++;
 
       this._errors.push(res.message);
+
       // Оставим старое поведение, и добавим новое
       // Если у нас стоит флаг "не останавливаться при ошибке",
       // то надо получить все результаты, включая ошибки
@@ -11378,12 +11774,13 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
     * @see steps
     */
    push: function(dOperation, stepId) {
-      if(this._locked)
+      if (this._locked) {
          return this;
+      }
 
       var self = this,
-          isEager = dOperation instanceof $ws.proto.Deferred,
-          isLazy = typeof dOperation == 'function';
+         isEager = dOperation instanceof $ws.proto.Deferred,
+         isLazy = typeof dOperation == 'function';
 
       function checkStepId() {
          if (stepId === undefined) {
@@ -11402,13 +11799,11 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
       if (isEager || isLazy) {
          if (this._locked) {
             throw new Error('Нельзя вызывать push после done.');
-         }
-         else if (!this._isFinishedByError()) { //после остановки по ошибке новые операции игнорируем
+         } else if (!this._isFinishedByError()) { //после остановки по ошибке новые операции игнорируем
             if (isEager) {
                checkStepId();
                this._runDfr(dOperation, false, stepId);
-            }
-            else if (isLazy) {
+            } else if (isLazy) {
                checkStepId();
 
                // Если количество выполняющихся процессов меньше максимального, то запускаем новую операцию, иначе добавляем в очередь
@@ -11425,6 +11820,7 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
 
       return this;
    },
+
    /**
     * Данная функция должна быть вызвана, когда закончено добавление всех элементов в набор.
     * ВНИМАНИЕ: При инициализации набора через конструктор done сам НЕ вызывается.
@@ -11434,20 +11830,21 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
     * @see steps
     * @see getStepsDone
     */
-   done: function(successResult){
+   done: function(successResult) {
       this._locked = true;
       this._successResult = successResult;
       this._check();
       return this;
    },
+
    /**
     * Функция, выполняющая проверку, выполнен ли набор, и выполнен ли он успешно
     */
-   _check: function(){
+   _check: function() {
       function checkQueue() {
          var op, queueLn = this._lazyQueue.length,
-             runningCnt = this._stepsCount - this._stepsFinish - queueLn,
-             needUnqueue = queueLn > 0 && runningCnt < this._options.maxRunningCount;
+            runningCnt = this._stepsCount - this._stepsFinish - queueLn,
+            needUnqueue = queueLn > 0 && runningCnt < this._options.maxRunningCount;
 
          if (needUnqueue) {
             op = this._lazyQueue.shift();
@@ -11463,10 +11860,11 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
 
          if (this._ready) {
             this._lazyQueue = [];
-            if (this._isFinishedByError())
+            if (this._isFinishedByError()) {
                this._dResult.errback(this._errors.join('\n'));
-            else
+            } else {
                this._dResult.callback(this._successResult !== undefined ? this._successResult : this._results);
+            }
          } else {
             var ok = checkQueue.call(this);
             while (ok) {
@@ -11475,6 +11873,7 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
          }
       }
    },
+
    /**
     * Метод получения результирующего Deferred, который будет служить индикатором всего набора
     * Сам Deferred в случае успеха в качестве результата вернет successResult, если он был задан в методе done(),
@@ -11514,10 +11913,11 @@ $ws.proto.ParallelDeferred = $ws.core.extend({}, /** @lends $ws.proto.ParallelDe
     * @see push
     * @see steps
     */
-   getStepsSuccess: function(){
+   getStepsSuccess: function() {
       return this._stepsSuccess;
    }
 });
+
 /**
  * Цепочка кода указанной длины.
  * Код добавляется в произвольные места.
@@ -11531,14 +11931,17 @@ $ws.proto.CodeChain = $ws.core.extend({}, /** @lends $ws.proto.CodeChain.prototy
       _chain: [],
       _length: 0
    },
+
    /**
     * @param {Number} chainLen Длинна цепочки
     */
-   $constructor: function(chainLen){
+   $constructor: function(chainLen) {
       this._length = chainLen;
-      for (var i = 0; i < chainLen; i++)
+      for (var i = 0; i < chainLen; i++) {
          this._chain[i] = 0;
+      }
    },
+
    /**
     * Добавляет код в цепочку
     *
@@ -11546,35 +11949,38 @@ $ws.proto.CodeChain = $ws.core.extend({}, /** @lends $ws.proto.CodeChain.prototy
     * @param {string} code Код для добавления.
     * @returns {Boolean} true, если цепочка полностью выполнилась, false в противном случае.
     */
-   setCode: function(idx, code){
-      if (idx >= this._length || idx < 0)
-         throw new RangeError("Setting chain element above the range: Idx: " + idx + ", Len: " + this._length);
-      if (this._chain[idx] !== 0)
-         throw new Error("Setting chain element what is already processed! Erroneous usage detected! Idx: " + idx);
+   setCode: function(idx, code) {
+      if (idx >= this._length || idx < 0) {
+         throw new RangeError('Setting chain element above the range: Idx: ' + idx + ', Len: ' + this._length);
+      }
+      if (this._chain[idx] !== 0) {
+         throw new Error('Setting chain element what is already processed! Erroneous usage detected! Idx: ' + idx);
+      }
       this._chain[idx] = code;
       return this._check();
    },
+
    /**
     * Проверяет цепочку.
     * Заменяет успешно выполненный код пустой строкой.
     * @returns {Boolean} True - когда вся цепочка выполнена.
     */
-   _check: function(){
-      for (var i = 0, l = this._length; i < l; i++){
-         if (typeof this._chain[i] == 'string'){
-            if (this._chain[i] !== ''){
-               try{
-                  var block = BOOMR.plugins.WS.startBlock("eval");
+   _check: function() {
+      for (var i = 0, l = this._length; i < l; i++) {
+         if (typeof this._chain[i] == 'string') {
+            if (this._chain[i] !== '') {
+               try {
+                  var block = BOOMR.plugins.WS.startBlock('eval');
                   eval(this._chain[i]);
                   block.close();
                   this._chain[i] = '';
-               } catch(e){
-                  throw new EvalError("Chain failed due to erroneous code: " + e.message);
+               } catch (e) {
+                  throw new EvalError('Chain failed due to erroneous code: ' + e.message);
                }
             }
-         }
-         else
+         } else {
             return false;
+         }
       }
       return true;
    }
@@ -11589,36 +11995,41 @@ $ws.proto.CodeChain = $ws.core.extend({}, /** @lends $ws.proto.CodeChain.prototy
 $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTransport.prototype */{
    $protected: {
       _options: {
-          /**
+
+         /**
            * @cfg {String} Метод запроса. POST или GET. По умолчанию = Get.
            */
          method: 'GET',
-          /**
+
+         /**
            * @cfg {String} Тип данных, который Вы ожидаете от сервера. По умолчанию text.
            */
          dataType: 'text',
-          /**
+
+         /**
            * @cfg {String} contentType Тип данных при отсылке данных на сервер. По умолчанию application/x-www-form-urlencoded.
            */
-          contentType : 'application/x-www-form-urlencoded',
-          /**
+         contentType: 'application/x-www-form-urlencoded',
+
+         /**
            * @cfg {String} url URL, по которому отправляется запрос.
            */
-          url: ''
+         url: ''
       },
       _xhr: undefined      //Последний запрос
    },
-   $constructor: function(){
-      if(this._options.url === '') {
-         throw new Error("Request with no URL is ambiguous");
+   $constructor: function() {
+      if (this._options.url === '') {
+         throw new Error('Request with no URL is ambiguous');
       }
    },
+
    /**
     * @param {String} data Данные для отправки
     * @param {Object} [headers] Заголовки
     * @return {$ws.proto.Deferred}
     */
-   execute: function(data, headers){
+   execute: function(data, headers) {
       var
          block = this._boomrStartBlock(data),
          dResult = new $ws.proto.Deferred({
@@ -11640,14 +12051,14 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
                beforeSend: function(xhr, settings) {
                   var channel = $ws.single.EventBus.channel('Transport'),
-                      res = channel.notify('onBeforeSend', xhr, settings);
+                     res = channel.notify('onBeforeSend', xhr, settings);
 
                   return res;
                },
 
                success: function(result) {
                   var channel = $ws.single.EventBus.channel('Transport'),
-                      resultDfr = $ws.proto.Deferred.success(result);
+                     resultDfr = $ws.proto.Deferred.success(result);
 
                   block.close();
                   self._validateCookies();
@@ -11656,6 +12067,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                   dResult.dependOn(resultDfr);
                   return result;
                },
+
                // null
                // "timeout"
                // "error"
@@ -11679,14 +12091,14 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                         504: 'Сервис недоступен. Повторите попытку позже.'
                      },
                      textError = ((xhr.status in humanReadableErrors) ? humanReadableErrors[xhr.status]
-                               : ((textStatus in humanReadableErrors) ? humanReadableErrors[textStatus]
-                               :  humanReadableErrors['error'])),
+                        : ((textStatus in humanReadableErrors) ? humanReadableErrors[textStatus]
+                           :  humanReadableErrors['error'])),
                      channel,
                      resultDfr,
                      error;
 
                   // Запрос был отменен пользователем по esc
-                  if( xhr.status === 0 && xhr.getAllResponseHeaders() === "" ) {
+                  if (xhr.status === 0 && xhr.getAllResponseHeaders() === '') {
                      textError = 'Запрос был прерван пользователем';
                   }
 
@@ -11696,7 +12108,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                   $ws.single.EventBus.channel('errors').notify('onHTTPError', error);
 
                   //обрабатываем ситуацию истекшей сессии
-                  if (xhr.status == "401"){
+                  if (xhr.status == '401') {
 
                      // Новый вариант рассылки ошибки о проблеме аутентификации
                      if ($ws.single.EventBus.channel('errors').notify('onAuthError') === true) {
@@ -11704,7 +12116,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                      }
 
                      // Старый способ. Надо выпилить в 3.8
-                     if (typeof $ws.core._authError == "function"){
+                     if (typeof $ws.core._authError == 'function') {
                         $ws.core._authError();
                         return;
                      }
@@ -11719,20 +12131,21 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                      dResult.callback(result);
                   }).addErrback(function(error) {
                      dResult.errback(error);
-                     if ((xhr.status == "403" || xhr.status == "423") &&  !error.processed) {
-                        $ws.core.alert(textError, "error");
+                     if ((xhr.status == '403' || xhr.status == '423') &&  !error.processed) {
+                        $ws.core.alert(textError, 'error');
                      }
                   });
                }
             });
-         } catch(e) {
-            dResult.errback("JavaScript exception while trying to execute request: " + e.message);
+         } catch (e) {
+            dResult.errback('JavaScript exception while trying to execute request: ' + e.message);
          }
 
       }
 
       return dResult;
    },
+
    /**
     * Заменяет url
     * @param {String} url
@@ -11742,6 +12155,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          this._options.url = url;
       }
    },
+
    /**
     * Заменяет url
     * @param {String} url
@@ -11751,63 +12165,66 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          this._options.url = url;
       }
    },
+
    /**
     * Прерывает загрузку
     */
-   abort: function(){
-      if(this._xhr){
+   abort: function() {
+      if (this._xhr) {
          this._xhr.abort();
       }
    },
+
    /**
     * Проверка куки, если изменилась - кидаем ошибку авторизации
     * @returns {Boolean} true если с сессией все в порядке
     */
-   _validateCookies : function(){
+   _validateCookies: function() {
       var storedSID = $ws.single.GlobalContext.getValue('sid'), cookieSID;
       if ($ws._const.checkSessionCookie && 'jQuery' in window && 'cookie' in window.jQuery) {
          cookieSID = $.cookie('sid');
+
          // Если у нас сохранен ранее SID и если в куке тоже есть SID
-         if (storedSID && cookieSID){
+         if (storedSID && cookieSID) {
             var
-               w = storedSID.split("-"),
-               n = cookieSID.split("-");
+               w = storedSID.split('-'),
+               n = cookieSID.split('-');
 
             //если изменились пользователи или клиент, то покажем ошибку авторизации
-            if(w[0] !== n[0] || w[1] !== n[1]) {
+            if (w[0] !== n[0] || w[1] !== n[1]) {
                // Новый способ извещения об ошибке аутентицикации
                $ws.single.EventBus.channel('errors').notify('onAuthError');
 
                // Старый способ. Удалить с 3.8
-               if (typeof $ws.core._authError == "function") {
+               if (typeof $ws.core._authError == 'function') {
                   $ws.core._authError();
                }
 
                return false;
             }
-         }
-         else {
+         } else {
             // ... если SID ранее не сохранен - сохраним
             $ws.single.GlobalContext.setValue('sid', cookieSID);
          }
       }
       return true;
    },
+
    /**
     * Создает фрейм для статистики
     */
-   _boomrStartBlock : function(data){
+   _boomrStartBlock: function(data) {
       var name = this._options.url;
 
-      if (BOOMR.version){
-         if (/.*\.dll$/.test(name)){
+      if (BOOMR.version) {
+         if (/.*\.dll$/.test(name)) {
             if (data) {
                var d = $.parseJSON(data);
                if (d && d.method) {
                   name = [
                      name,
                      d.method
-                  ].join("?");
+                  ].join('?');
                }
             }
          }
@@ -11818,7 +12235,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 });
 
 
-(function () {
+(function() {
 
    var
       Context,
@@ -11828,10 +12245,10 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          REMOVE: 'FindIntent.REMOVE'
       },
       RestrictFlags = {
-         NONE:    0,
-         GET:     1,
-         SET:     2,
-         GETSET:  3,
+         NONE: 0,
+         GET: 1,
+         SET: 2,
+         GETSET: 3,
          UNDEFINEDS_AS_EXISTENT: 4
       },
 
@@ -11839,7 +12256,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
       STRUCTURE_SEPARATOR = '/',
       LINK_SEPARATOR = '.',
 
-      notImplemented = function () {
+      notImplemented = function() {
          throw new Error('Метод не должен вызываться');
       },
       NonExistentValue = function() {},
@@ -11848,7 +12265,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
          get: constant(NonExistentValue),
 
-         set: function (oldValue, keyPath, value) {
+         set: function(oldValue, keyPath, value) {
             return value;
          },
 
@@ -11863,16 +12280,16 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
          is: constant(true),
 
-         equals: function (v1, v2) {
-            return (v1 === v2) || (v1 && v2 && typeof(v1.equals) === 'function' && v1.equals(v2));
+         equals: function(v1, v2) {
+            return (v1 === v2) || (v1 && v2 && typeof (v1.equals) === 'function' && v1.equals(v2));
          },
 
-         get: function (value, keyPath) {
+         get: function(value, keyPath) {
             var result, subValue, subType;
 
             if (keyPath.length === 0) {
                result = value;
-            } else if (value === null || typeof(value) !== 'object' || !(keyPath[0] in value)) {
+            } else if (value === null || typeof (value) !== 'object' || !(keyPath[0] in value)) {
                result = NonExistentValue;
             } else {
                subValue = value[keyPath[0]];
@@ -11883,12 +12300,12 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             return result;
          },
 
-         setWillChange: function (oldValue, keyPath, value) {
+         setWillChange: function(oldValue, keyPath, value) {
             var result, subValue, subType, key;
 
             if (keyPath.length === 0) {
                result = !SimpleFieldType.equals(oldValue, value);
-            } else if (oldValue === null || typeof(oldValue) !== 'object') {
+            } else if (oldValue === null || typeof (oldValue) !== 'object') {
                result = false;
             } else {
                key = keyPath[0];
@@ -11903,14 +12320,13 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             return result;
          },
 
-         set: function (oldValue, keyPath, value) {
+         set: function(oldValue, keyPath, value) {
             var subValue, newSubValue, subType, key, result,
-                isEqual, equals = SimpleFieldType.equals;
+               isEqual, equals = SimpleFieldType.equals;
 
             if (keyPath.length === 0) {
                result = value;
-            }
-            else if (oldValue !== null && typeof(oldValue) === 'object') {
+            } else if (oldValue !== null && typeof (oldValue) === 'object') {
                key = keyPath[0];
                subValue = oldValue[key];
 
@@ -11945,7 +12361,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             return result;
          },
 
-         remove: function (value, keyPath) {
+         remove: function(value, keyPath) {
             var
                subValue, subType, changed, key, newValue, res, idx,
                equals = SimpleFieldType.equals;
@@ -11953,7 +12369,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             changed = keyPath.length !== 0;
             if (changed) {
                key = keyPath[0];
-               changed = value !== null && typeof(value) === 'object' && key in value;
+               changed = value !== null && typeof (value) === 'object' && key in value;
                if (changed) {
                   if (keyPath.length === 1) {
                      if ($ws.helpers.isPlainArray(value)) {
@@ -12001,15 +12417,15 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             };
          },
 
-         toJSON: function (value, deep) {
-            var useToJson = deep && value !== null && typeof(value) === 'object' && typeof(value['toJSON']) === 'function';
+         toJSON: function(value, deep) {
+            var useToJson = deep && value !== null && typeof (value) === 'object' && typeof (value['toJSON']) === 'function';
 
             return useToJson ? value.toJSON() : value;
          }
       },
       AllFieldTypes = [SimpleFieldType];
 
-/**
+   /**
  * Объект контекста.
  * Содержит в себе ВСЕ данные контекста и умеет отличать, какие лежат в рекорде, а какие нет.
  * При изменении данных рекорд актуализируется.
@@ -12018,19 +12434,20 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * ContextObject
  */
    var ContextObject = $ws.core.extend({}, {
-   $protected: {
-      _options: {
-          /**
+      $protected: {
+         _options: {
+
+            /**
            * @cfg {$ws.proto.Record | Object} Объект с начальными данными. Может быть рекордом.
            */
-         objectData: null
+            objectData: null
+         },
+         _isEmpty: true,
+         _contextObject: {}
       },
-      _isEmpty: true,
-      _contextObject: {}
-   },
-   $constructor : function(){
-      this._contextObject = {};
-      if(this._options.objectData){
+      $constructor: function() {
+         this._contextObject = {};
+         if (this._options.objectData) {
             var data = this._options.objectData;
 
             if (!$ws.helpers.isPlainObject(data)) {
@@ -12038,30 +12455,30 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             }
 
             //перелопачиваем объект переданный в конфигурации в свой формат
-            $ws.helpers.forEach(data, function (value, key) {
+            $ws.helpers.forEach(data, function(value, key) {
                var type = this._getValueType(value);
                this._contextObject[key] = this._createTypedValue(value, type);
                this._isEmpty = false;
             }, this);
-            }
-   },
+         }
+      },
 
-   /**
+      /**
        * @param value
        * @return {number}
        * @private
     */
-      _getValueType: function (value) {
+      _getValueType: function(value) {
          return Context.getValueType(value);
-   },
+      },
 
-   /**
+      /**
        *
        * @param qname
        * @return {number}
        * @private
     */
-      _getFieldType: function (qname) {
+      _getFieldType: function(qname) {
          var
             data = this._contextObject,
             hasKey = qname in data;
@@ -12069,7 +12486,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          return hasKey ? data[qname].type : UndefinedFieldType;
       },
 
-      _getFieldValue: function (qname) {
+      _getFieldValue: function(qname) {
          var
             data = this._contextObject,
             hasKey = qname in data;
@@ -12081,19 +12498,19 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * Проверка на пустоту
     * @return {Boolean} пуст контекст или нет.
     */
-   isEmpty : function(){
-      return this._isEmpty;
-   },
+      isEmpty: function() {
+         return this._isEmpty;
+      },
 
-      _createTypedValue: function (value, type) {
+      _createTypedValue: function(value, type) {
          return {
             value: value,
             type: type
          };
-   },
+      },
 
-      toObject: function (recursive) {
-         return $ws.helpers.reduce(this._contextObject, function (result, _, key) {
+      toObject: function(recursive) {
+         return $ws.helpers.reduce(this._contextObject, function(result, _, key) {
             var
                ftype = this._getFieldType(key),
                v = this._getFieldValue(key);
@@ -12101,22 +12518,22 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             result[key] = ftype.toJSON(v, recursive);
             return result;
          }, {}, this);
-   },
+      },
 
-   has: function(fieldName) {
+      has: function(fieldName) {
          var
             descr = this._getFieldDescr(fieldName),
             value = descr && this.get(descr.qname, descr.keyPath);
 
          return !!(descr && value !== NonExistentValue);
-   },
+      },
 
-   /**
+      /**
     * Меняет значение поля
     * @param {String} fieldName имя поля.
     * @param value значение поля.
     */
-      set: function (qname, keyPath, value) {
+      set: function(qname, keyPath, value) {
          var
             vtype, newValue,
             oldValue = this._getFieldValue(qname),
@@ -12128,30 +12545,30 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
             newValue = ftype.set(oldValue, keyPath, value);
             vtype = this._getValueType(newValue);
             data[qname] = this._createTypedValue(newValue, vtype);
-      this._isEmpty = false;
+            this._isEmpty = false;
          }
 
          return changed;
-   },
+      },
 
-   /**
+      /**
        * @param {string} name
        * @param {Boolean} [undefiniedAsExistent]
        * @param {Boolean} [createNonExistent]
        * @return {{qname: string, keyPath: Array}}
        * @private
        */
-      _getFieldDescr: function (name, undefiniedAsExistent, createNonExistent) {
+      _getFieldDescr: function(name, undefiniedAsExistent, createNonExistent) {
          var
             path = name.split(STRUCTURE_SEPARATOR),
-            pathSlices = $ws.helpers.map(path, function (_, i) {
+            pathSlices = $ws.helpers.map(path, function(_, i) {
                return path.slice(0, path.length - i);
             }),
             data = this._contextObject,
-            foundSlice = $ws.helpers.find(pathSlices, function (slice) {
+            foundSlice = $ws.helpers.find(pathSlices, function(slice) {
                var fieldName = slice.join(STRUCTURE_SEPARATOR),
-                   hasValue = fieldName in data,
-                   value = data[fieldName];
+                  hasValue = fieldName in data,
+                  value = data[fieldName];
 
                return value !== undefined || (undefiniedAsExistent && hasValue && value === undefined);
             }),
@@ -12182,37 +12599,37 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * @param {String} fieldName имя поля.
     * @return value значение поля или undefined при его отсутствии.
     */
-      get: function (qname, keyPath) {
+      get: function(qname, keyPath) {
          var
             ftype = this._getFieldType(qname),
             fvalue = this._getFieldValue(qname);
 
          return ftype.get(fvalue, keyPath);
-   },
+      },
 
-      getRaw: function (qname) {
+      getRaw: function(qname) {
          var data = this._contextObject;
 
          return qname in data ? data[qname].value : NonExistentValue;
       },
 
-      removeRaw: function (qname) {
+      removeRaw: function(qname) {
          delete this._contextObject[qname];
       },
 
-      setRaw: function (qname, value) {
+      setRaw: function(qname, value) {
          this._contextObject[qname] = {
             value: value,
             type: this._getValueType(value)
          };
       },
 
-   /**
+      /**
     * Удаляет поле из объекта контекста.
     * @param {String} fieldName имя поля, которое необходимо удалить.
     * @return {Boolean} result результат удаления, произошло оно или нет.
     */
-      remove: function (qname, keyPath) {
+      remove: function(qname, keyPath) {
          var
             ftype = this._getFieldType(qname),
             data = this._contextObject,
@@ -12235,13 +12652,13 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                data[qname].value = res.value;
                result = res.changed;
             }
+         }
+         return result;
       }
-      return result;
-   }
-});
+   });
 
    function withGroupChangeEvent(func) {
-      return function () {
+      return function() {
          var
             eventsCnt,
             result;
@@ -12269,7 +12686,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
       };
    }
 
-/**
+   /**
  * Контекст области.
  * Отвечает за управление данными в объекте.
  * Здесь логика наследования контекстов и проброса методов.
@@ -12316,190 +12733,195 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
        * @see insert
        * @see runInBatchUpdate
        */
-   $protected: {
-      _options: {
-          /**
+      $protected: {
+         _options: {
+
+            /**
            * @cfg {Boolean} Является ли данный контекст глобальным.
            * Глобальный контекст - это контекст верхнего уровня.
            */
-         isGlobal: false,
-         /**
+            isGlobal: false,
+
+            /**
           * @cfg {String} Ограничение на запись или чтения
           * Работа только с текущим контекстом, игнорируется previousContext
           * Если значение set, то запись происходит только в текущий контекст, чтение не ограничено
           * Если значение setget, то запись происходит только в текущий контекст, чтение только из текущего контекста
           */
-         restriction: ''
-      },
+            restriction: ''
+         },
          _restrictFlags: 0,
-      _previousContext: null,
-      _context: null,
+         _previousContext: null,
+         _context: null,
          _record: null,
          _parentContextDataBindHandler: null,
-      _parentContextFieldUpdateHandler: null,
+         _parentContextFieldUpdateHandler: null,
          _updateLockCnt: 0,
          _updatedEventsCnt: 0,
          _fieldSubscriptions: {}
-   },
-   $constructor: function() {
+      },
+      $constructor: function() {
          this._context = new ContextObject();
 
-      switch(this._options.restriction) {
-         case 'setget':
+         switch (this._options.restriction) {
+            case 'setget':
                this._restrictFlags = this._restrictFlags | RestrictFlags.GETSET;
-         // break; пропущен специально, так как ограничиваем и на set тоже
-         case 'set':
-               this._restrictFlags = this._restrictFlags | RestrictFlags.SET;
-      }
 
-         this._parentContextDataBindHandler = withGroupChangeEvent(function () {
+               // break; пропущен специально, так как ограничиваем и на set тоже
+            case 'set':
+               this._restrictFlags = this._restrictFlags | RestrictFlags.SET;
+         }
+
+         this._parentContextDataBindHandler = withGroupChangeEvent(function() {
             if (!this._hasGetRestrictions()) {
                this._updatedEventsCnt++;
                this._notify('onDataBind');
-         }
+            }
          }).bind(this);
 
-         this._parentContextFieldsChangedHandler = withGroupChangeEvent(function () {
+         this._parentContextFieldsChangedHandler = withGroupChangeEvent(function() {
             if (!this._hasGetRestrictions()) {
                this._updatedEventsCnt++;
             }
          }).bind(this);
 
-      this._parentContextFieldUpdateHandler = function(event, field, value, initiator) {
+         this._parentContextFieldUpdateHandler = function(event, field, value, initiator) {
             if (!this._hasGetRestrictions()) {
                var descr = this._getFieldDescr(field, FindIntent.GET, RestrictFlags.GET);
                if (!descr) {
-            // если у нас самих нет такого значения ...
+                  // если у нас самих нет такого значения ...
                   this._notify('onFieldChange', field, value, initiator); // ... известим ниже о смене выше
-         }
+               }
             }
          }.bind(this);
 
-      if(this._options.isGlobal === false) {
-         this._previousContext = $ws.single.GlobalContext;
-      }
+         if (this._options.isGlobal === false) {
+            this._previousContext = $ws.single.GlobalContext;
+         }
 
-      this._subscribeOnParentUpdates();
+         this._subscribeOnParentUpdates();
 
          this._publish('onDataBind', 'onFieldChange', 'onFieldsChanged');
-   },
-   _subscribeOnParentUpdates: function() {
+      },
+      _subscribeOnParentUpdates: function() {
          var prev = this._previousContext;
          if (prev) {
             prev.subscribe('onDataBind', this._parentContextDataBindHandler);
             prev.subscribe('onFieldsChanged', this._parentContextFieldsChangedHandler);
             prev.subscribe('onFieldChange', this._parentContextFieldUpdateHandler);
-      }
-   },
-   _unsubscribeOnParentUpdates: function() {
+         }
+      },
+      _unsubscribeOnParentUpdates: function() {
          var prev = this._previousContext;
          if (prev) {
             prev.unsubscribe('onDataBind', this._parentContextDataBindHandler);
             prev.unsubscribe('onFieldsChanged', this._parentContextFieldsChangedHandler);
             prev.unsubscribe('onFieldChange', this._parentContextFieldUpdateHandler);
-      }
-   },
+         }
+      },
 
-      _unsubscribeFromFields: function () {
-         $ws.helpers.forEach(this._fieldSubscriptions, function (sub, key) {
+      _unsubscribeFromFields: function() {
+         $ws.helpers.forEach(this._fieldSubscriptions, function(sub, key) {
             this._setFieldSubscription(key, this._context.getRaw(key), NonExistentValue);
          }, this);
          this._fieldSubscriptions = {};
       },
 
-   /**
+      /**
     * Получить текущее ограничение контекста
     * @return {string}
     */
-   getRestriction: function() {
-      return this._options.restriction;
-   },
-   /**
+      getRestriction: function() {
+         return this._options.restriction;
+      },
+
+      /**
     * Установить ограничение контекста
     * @param {String} restriction Ограничение на запись или чтения
     * Работа только с текущим контекстом, игнорируется previousContext
     * Если значение set, то запись происходит только в текущий контекст, чтение не ограничено
     * Если значение setget, то запись происходит только в текущий контекст, чтение только из текущего контекста
     */
-   setRestriction: function(restriction) {
-      this._options.restriction = restriction;
+      setRestriction: function(restriction) {
+         this._options.restriction = restriction;
 
          this._restrictFlags = this._restrictFlags & (~RestrictFlags.GETSET);
 
-      switch(restriction) {
-         case 'setget':
+         switch (restriction) {
+            case 'setget':
                this._restrictFlags = this._restrictFlags | RestrictFlags.GET;
-         // break; пропущен специально, так как ограничиваем и на set тоже
-         case 'set':
-               this._restrictFlags = this._restrictFlags | RestrictFlags.SET;
-      }
-   },
 
-      _hasGetRestrictions: function () {
+               // break; пропущен специально, так как ограничиваем и на set тоже
+            case 'set':
+               this._restrictFlags = this._restrictFlags | RestrictFlags.SET;
+         }
+      },
+
+      _hasGetRestrictions: function() {
          return this._hasRestrictions(RestrictFlags.GET);
       },
 
-      _hasSetRestrictions: function () {
+      _hasSetRestrictions: function() {
          return this._hasRestrictions(RestrictFlags.SET);
       },
 
-      _hasRestrictions: function (flags) {
+      _hasRestrictions: function(flags) {
          return (this._restrictFlags & flags) !== 0;
       },
 
-   /**
+      /**
     * Установить предыдущий контекст
     * @param {$ws.proto.Context} previous Контекст, который необходимо привязать предыдущим к текущему.
     * @return {$ws.proto.Context}  Текущий контекст.
     * @see getPrevious
     */
-      setPrevious: withGroupChangeEvent(function (previous) {
-      if (this.isGlobal()) {
+      setPrevious: withGroupChangeEvent(function(previous) {
+         if (this.isGlobal()) {
             throw new Error('Attempt to set a previous context to a global context');
-      }
+         }
 
          if (previous !== null && !previous instanceof $ws.proto.Context) {
             throw new Error('"previous" argument should be instance of $ws.proto.Context');
          }
 
          if (previous !== this._previousContext) {
-         this._unsubscribeOnParentUpdates();
-         this._previousContext = previous;
-         this._subscribeOnParentUpdates();
+            this._unsubscribeOnParentUpdates();
+            this._previousContext = previous;
+            this._subscribeOnParentUpdates();
 
             if (!this._hasGetRestrictions()) {
                this._updatedEventsCnt++;
-      }
+            }
          }
-      return this;
+         return this;
       }),
 
-   /**
+      /**
     * Получить предыдущий контекст.
     * @return {$ws.proto.Context} Предыдущий контекст или null, если он отсутствует.
     * @see setPrevious
     */
-   getPrevious: function(){
-      return this._previousContext;
-   },
+      getPrevious: function() {
+         return this._previousContext;
+      },
 
-   /**
+      /**
     * Навешивает/снимает обработчики с _context._record. Вызывает callback(newData).
     * @param {Object|$ws.proto.Record} newData Новый контекст.
     * @param {Function} callback Функция для выполнения дополнительного кода
     * @private
     */
-      _changeContextData: withGroupChangeEvent(function (newData, callback) {
+      _changeContextData: withGroupChangeEvent(function(newData, callback) {
          var
             RecordFieldProxy = Context.RecordFieldProxy,
             proxy, old;
 
          callback.apply(this);
 
-      if(newData instanceof $ws.proto.Record) {
+         if (newData instanceof $ws.proto.Record) {
             this._record = newData;
 
-            this._record.each(function (colName) {
+            this._record.each(function(colName) {
                proxy = new RecordFieldProxy(this._record, colName);
                old = this._context.getRaw(colName);
 
@@ -12507,75 +12929,80 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                this._context.setRaw(colName, proxy);
             }.bind(this));
          } else {
-            $ws.helpers.forEach(newData, function (value, colName) {
+            $ws.helpers.forEach(newData, function(value, colName) {
                old = this._context.getRaw(colName);
                this._setFieldSubscription(colName, old, value);
                this._context.setRaw(colName, value);
             }, this);
-      }
+         }
 
          this._updatedEventsCnt++;
-      this._notify('onDataBind');
+         this._notify('onDataBind');
       }),
-   /**
+
+      /**
     * Изменить данные, хранимые контекстом.
     * Стирает всё, что было и записывает новые значения. В контексте будет только то, что передали в параметре context.
     * @param {Object|$ws.proto.Record} context Новый контекст.
     * @see replaceRecord
     * @see {@link $ws.proto.RecordSet#getContext getContext}
     */
-   setContextData: function(context) {
+      setContextData: function(context) {
          this._unsubscribeFromFields();
 
-         this._changeContextData(context, function () {
+         this._changeContextData(context, function() {
             this._context = new ContextObject();
-      });
-   },
-   /**
+         });
+      },
+
+      /**
     * Смена записи в контексте.
     * Оставляет без изменения всё, кроме записи - её подменяет на новую.
     * @param {$ws.proto.Record} record Новая запись.
     * @see setContextData
     * @see {@link $ws.proto.RecordSet#getContext getContext}
     */
-   replaceRecord: function(record) {
+      replaceRecord: function(record) {
          if (this._record) {
             //Отписываюсь от полей рекорда
-            this._record.each(function (colName) {
+            this._record.each(function(colName) {
                this._setFieldSubscription(colName, this._context.getRaw(colName), null);
                this._context.removeRaw(colName);
             }.bind(this));
          }
 
          this._changeContextData(record, $ws.helpers.nop);
-   },
-   /**
+      },
+
+      /**
     * Проверить контекст на то, является он глобальным или нет.
     * @return {Boolean} Флаг глобальности.
     */
-   isGlobal: function(){
-      return this._options.isGlobal;
-   },
-   /**
+      isGlobal: function() {
+         return this._options.isGlobal;
+      },
+
+      /**
     * Проверить пуст ли контекст
     * @return {Boolean} true - контекст пуст, false - контекст не пуст.
     * @see setValue
     * @see getValue
     */
-   isEmpty: function(){
-      return this.isDestroyed() ? true : this._context.isEmpty();
-   },
-   /**
+      isEmpty: function() {
+         return this.isDestroyed() ? true : this._context.isEmpty();
+      },
+
+      /**
     * Получить запись, по которой построен контекст
     * Если контекст построен без записи, вернет null.
     * @returns {$ws.proto.Record} Если в контекст положили запись, то возвращаем её.
     */
-   getRecord: function() {
+      getRecord: function() {
          return this._record;
-   },
+      },
 
-      _getValue: function (fieldName, func, selfOnly, nonExistentAsIs) {
-         if (func !== undefined && typeof(func) !== 'function') {
+      _getValue: function(fieldName, func, selfOnly, nonExistentAsIs) {
+         if (func !== undefined && typeof (func) !== 'function') {
             throw new Error('Параметр func должен быть функцией, если он есть');
          }
 
@@ -12592,7 +13019,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          return result === NonExistentValue && !nonExistentAsIs ? undefined : result;
       },
 
-   /**
+      /**
     * Получить значение поля из контекста
     * Если поле не найдено в текущем контексте, то ищется в предыдущем. И так, пока не найдётся.
     * @param {String} fieldName Имя поля, значение которого необходимо вернуть.
@@ -12602,26 +13029,27 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * @see isEmpty
     * @see setValue
     */
-   getValue: function(fieldName, func) {
-      return fieldName ? this._getValue(fieldName, func, false) : undefined;
-   },
-   /**
+      getValue: function(fieldName, func) {
+         return fieldName ? this._getValue(fieldName, func, false) : undefined;
+      },
+
+      /**
     * Получить значение поля из контекста
     * Отличается от {@link getValue} тем, что не ищет в "родительских" контекстах.
     * @param {String} fieldName Название поля.
     * @returns {*} Значение поля из контекста. Если такого поля нет, то вернёт undefined.
     */
-   getValueSelf: function(fieldName) {
+      getValueSelf: function(fieldName) {
          return this._getValue(fieldName, undefined, true);
-   },
+      },
 
-   /**
+      /**
        * Функция возвращает true, если поле subField лежит внутри поля parentField, или является тем же самым полем.
        * @param {String} subField - предполагаемое под-поле (или то же самое поле)
        * @param {String} parentField - предполагаемое родительское (или то же самое поле)
        * @return {boolean}
        */
-      isFieldSameOrSubField: function (subField, parentField) {
+      isFieldSameOrSubField: function(subField, parentField) {
          var
             subDescr = this._getFieldDescr(subField),
             parentDescr = this._getFieldDescr(parentField),
@@ -12629,7 +13057,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
          result = subDescr.context === parentDescr.context && subDescr.qname === parentDescr.qname;
          if (result) {
-            result = $ws.helpers.findIdx(parentDescr.keyPath, function (val, idx) {
+            result = $ws.helpers.findIdx(parentDescr.keyPath, function(val, idx) {
                return subDescr.keyPath[idx] !== val;
             }) === -1;
          }
@@ -12644,7 +13072,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
        * @return {{qname: string, keyPath: Array, context: $ws.proto.Context, contextData: ContextObject}}
        * @private
        */
-      _getFieldDescr: function (fieldName, intent, restrictionsOvrerride, validateFn) {
+      _getFieldDescr: function(fieldName, intent, restrictionsOvrerride, validateFn) {
          var
             context = this,
             result = null,
@@ -12696,7 +13124,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
          return result;
       },
 
-      _setFieldSubscription: function (qname, oldValue, newValue) {
+      _setFieldSubscription: function(qname, oldValue, newValue) {
          var subscriptions = this._fieldSubscriptions, sub, newType;
 
          if (oldValue !== newValue) {
@@ -12710,7 +13138,7 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
             newType = Context.getValueType(newValue);
             if (newValue && newValue !== NonExistentValue && newType.subscribe) {
-               sub = function () {
+               sub = function() {
                   //если это внешнее изменение, от самого поля, а не из setValue
                   if (this._updateLockCnt === 0) {
                      withGroupChangeEvent(function() {
@@ -12732,29 +13160,30 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * @param {Boolean} [setRestriction] - Учесть ограничение на set
     * @return {$ws.proto.Context|undefined} Объект контекста или undefined.
     */
-   getFieldOrigin: function (fieldName, setRestriction) {
+      getFieldOrigin: function(fieldName, setRestriction) {
          var
             intent = FindIntent[setRestriction ? 'SET' : 'GET'],
             descr = this._getFieldDescr(fieldName, intent);
 
          return descr && descr.context;
-   },
-   /**
+      },
+
+      /**
     * Проверить, есть ли указанное поле в данном контексте
     * @param {String} fieldName Имя поля.
     * @returns {Boolean} true - указанное поле есть в данном контексте, false - нет.
     */
-   hasField: function(fieldName) {
+      hasField: function(fieldName) {
          var value = this._getValue(fieldName, undefined, true, true);
          return value !== NonExistentValue;
-   },
+      },
 
-   /**
+      /**
        * Проверить, есть ли указанное поле в данном контексте, или в его родительских контекстах.
        * @param {String} fieldName Имя поля.
        * @returns {Boolean} true - указанное поле есть в данном контексте, false - нет.
        */
-      hasFieldWithParents: function (fieldName) {
+      hasFieldWithParents: function(fieldName) {
          var value = this._getValue(fieldName, undefined, false, true);
          return value !== NonExistentValue;
       },
@@ -12766,13 +13195,14 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     * @param {String} fieldName Имя поля.
     * @returns {$ws.proto.Context} Объект контекста.
     */
-   getFieldOrigin2: function(fieldName) {
+      getFieldOrigin2: function(fieldName) {
          var
             descr = this._getFieldDescr(fieldName, FindIntent.GET, RestrictFlags.UNDEFINEDS_AS_EXISTENT);
 
          return descr && descr.context;
-   },
-   /**
+      },
+
+      /**
     * Установка значения в контекст
     * @param {String|Object} fieldName Имя поля, в которое будет установлено значение. Можно передать объект.
     * Его ключи - поля, значения - соответственно значения контекста.
@@ -12798,16 +13228,16 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     *     });
     * </pre>
     */
-      setValue: withGroupChangeEvent(function (fieldName, value, toSelf, initiator) {
+      setValue: withGroupChangeEvent(function(fieldName, value, toSelf, initiator) {
       // пустые названия полей вообще не принимаем
-      if (!fieldName) {
-         throw new Error('Нельзя писать значения в контекст по пустому полю ""');
-      }
-      function setV(fieldName, val, toSelf, initiator) {
+         if (!fieldName) {
+            throw new Error('Нельзя писать значения в контекст по пустому полю ""');
+         }
+         function setV(fieldName, val, toSelf, initiator) {
             var
                descr = this._getFieldDescr(fieldName, FindIntent.SET, RestrictFlags[toSelf ? 'SET' : 'NONE']),
                context = descr.context,
-               updateContext = withGroupChangeEvent(function () {
+               updateContext = withGroupChangeEvent(function() {
                   var
                      oldRaw = this._context.getRaw(descr.qname),
                      changed = this._context.set(descr.qname, descr.keyPath, val),
@@ -12817,27 +13247,27 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
                      this._setFieldSubscription(descr.qname, oldRaw, newRaw);
                      this._updatedEventsCnt++;
                      this._notify('onFieldChange', fieldName, val, initiator); // ... известим
-      }
+                  }
                }).bind(context);
 
             updateContext();
          }
 
-      // А вдруг кто-то передал объект
-      if (typeof(fieldName) == 'object') {
+         // А вдруг кто-то передал объект
+         if (typeof (fieldName) == 'object') {
             if (!$ws.helpers.isPlainObject(fieldName)) {
                throw new Error('setValue supports simple JSON objects only');
             }
 
             var toSelf_ = value, initiator_ = toSelf;
 
-            $ws.helpers.forEach(fieldName, function (value, key) {
+            $ws.helpers.forEach(fieldName, function(value, key) {
             // Смещаем параметры
                setV.call(this, key, value, toSelf_, initiator_);
             }, this);
-      } else {
+         } else {
             setV.call(this, fieldName, value, toSelf, initiator);
-      }
+         }
       }),
 
       /** Эта функция позволяет вызвать несколько методов контекста, и получить по итогам выполнения этих методов только
@@ -12845,16 +13275,16 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
        * которая и вызывает эти методы.
        * @param {Function} fn Функция, которая вызывает у контекста несколько методов.
        */
-      runInBatchUpdate: withGroupChangeEvent(function (fn) {
+      runInBatchUpdate: withGroupChangeEvent(function(fn) {
          return fn.call(this);
       }),
 
-   /**
+      /**
     * Удалить значения из контекста
     * @param {String} fieldName Имя поля, из которого удалять.
     * @param {Boolean} [toSelf=false]  Если false и не удалил в текущем, то пытается удалить в предыдущем.
     */
-      removeValue: withGroupChangeEvent(function (fieldName, toSelf) {
+      removeValue: withGroupChangeEvent(function(fieldName, toSelf) {
          var
             restrOvr = toSelf ? RestrictFlags.SET : RestrictFlags.NONE,
             descr = this._getFieldDescr(fieldName, FindIntent.REMOVE, restrOvr),
@@ -12871,12 +13301,13 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
 
                this._updatedEventsCnt++;
             }
-      } else {
+         } else {
             result = false;
          }
          return result;
       }),
-   /**
+
+      /**
     * Установка значения в себя, без проброса в родительский контекст
     * @param {String|Object} fieldName имя поля, в которое будет установлено значение или объект с данными для установки в контекст ({ имяПоля: значение })
     * @param [value] значение, которое будет установлено.
@@ -12889,133 +13320,138 @@ $ws.proto.XHRTransport = $ws.proto.ITransport.extend(/** @lends $ws.proto.XHRTra
     *    }, control);
     * </pre>
     */
-   setValueSelf: function(fieldName, value, initiator) {
-      if (typeof fieldName == 'object') {
-         this.setValue(fieldName, true, initiator);
-      } else {
-         this.setValue(fieldName, value, true, initiator);
-      }
-   },
-   /**
+      setValueSelf: function(fieldName, value, initiator) {
+         if (typeof fieldName == 'object') {
+            this.setValue(fieldName, true, initiator);
+         } else {
+            this.setValue(fieldName, value, true, initiator);
+         }
+      },
+
+      /**
     * Вставить в контекст объект как связанный
     * @param {$ws.proto.Record || Object} values Значения для вставки
     * @param {String} link Имя связи
     */
-   insert: function(values, link){
-      this._multiOperation(values, link, 'insert');
-   },
-   /**
+      insert: function(values, link) {
+         this._multiOperation(values, link, 'insert');
+      },
+
+      /**
     * Удалить из контекста объект по связи
     * @param {$ws.proto.Record | Object} values Значения для удаления
     * @param {String} link Имя связи
     */
-   remove: function(values, link){
-      this._multiOperation(values, link, 'remove');
-   },
-   /**
+      remove: function(values, link) {
+         this._multiOperation(values, link, 'remove');
+      },
+
+      /**
     * Метод работы со связанными объектами
     * @param {$ws.proto.Record | Object} values значения для вставки.
     * @param {String} link Имя связи.
     * @param {String} type  Тип действия 'insert' || 'remove'.
     */
-      _multiOperation: withGroupChangeEvent(function (values, link, type) {
+      _multiOperation: withGroupChangeEvent(function(values, link, type) {
          if (link !== null && link !== undefined && typeof link !== 'string') {
             throw new Error('Параметр link должен быть строкой - именем связи');
          }
 
          var linkS = link ? link + LINK_SEPARATOR : '';
 
-      if (values instanceof $ws.proto.Record) {
-         values = values.toObject();
-      }
+         if (values instanceof $ws.proto.Record) {
+            values = values.toObject();
+         }
 
-         if (typeof(values) === 'object') {
+         if (typeof (values) === 'object') {
             if (!$ws.helpers.isPlainObject(values) && !$ws.helpers.isPlainArray(values)) {
                throw new Error('"values" argument error: _multiOperation supports simple JSON objects only');
             }
 
-         for (var i in values){
-            if(values.hasOwnProperty(i)) {
+            for (var i in values) {
+               if (values.hasOwnProperty(i)) {
                   if (type == 'remove') {
                      this.removeValue(linkS + i, true);
-            }
+                  }
                   if (type == 'insert') {
                      this.setValueSelf(linkS + i, values[i]);
-         }
+                  }
                }
             }
-      } else if(values === false || values === null || values === undefined) {
+         } else if (values === false || values === null || values === undefined) {
          // Вычищение связанных значений из контекста с попыткой понять, что же вычищать
             var
                record = this.getRecord(),
-               removeValue = function (key) {
+               removeValue = function(key) {
                   if (key.indexOf(link) === 0) {
                      this.removeValue(key, true);
-         }
+                  }
                }.bind(this);
 
             if (record) {
-               $ws.helpers.forEach(record.getColumns(), function (key) {
+               $ws.helpers.forEach(record.getColumns(), function(key) {
                   removeValue(key);
                });
             } else {
-               $ws.helpers.forEach(this.toObject(false), function (_, key) {
+               $ws.helpers.forEach(this.toObject(false), function(_, key) {
                   removeValue(key);
                });
-      }
-      }
+            }
+         }
 
-      this._notify('onDataBind');
+         this._notify('onDataBind');
       }),
-   destroy: function() {
+      destroy: function() {
          this._record = null;
 
-      this._unsubscribeOnParentUpdates();
+         this._unsubscribeOnParentUpdates();
          this._unsubscribeFromFields();
          this._context = new ContextObject();
 
-      $ws.proto.Context.superclass.destroy.apply(this, arguments);
-   },
-   /**
+         $ws.proto.Context.superclass.destroy.apply(this, arguments);
+      },
+
+      /**
     * Создать дочерний контекст
     * Создаёт новый контекст, зависимый от текущего.
     * @returns {$ws.proto.Context} Дочерний контекст
     */
-   createDependent: function() {
+      createDependent: function() {
          var result = new $ws.proto.Context();
-      result.setPrevious(this);
-      return result;
-   },
-   /**
+         result.setPrevious(this);
+         return result;
+      },
+
+      /**
     * Представляет контекст в виде объекта, содержащего поля контекста со значениями в строковом виде
     * @param {Boolean} recursive Флаг, позволяющий при значени true получить полное содержимое контекста включая всех родителей.
     * @returns {Object} Объект, содержащий поля контекста в строковом виде
     */
-   toObject: function(recursive) {
+      toObject: function(recursive) {
          var result = this._context.toObject(recursive);
 
-      if(recursive) {
-         var parent = this.getPrevious();
-         if(parent) {
-            var parentObj = parent.toObject(true);
-            for(var i in parentObj) {
-               if(parentObj.hasOwnProperty(i) && !(i in result)) {
-                  result[i] = parentObj[i];
+         if (recursive) {
+            var parent = this.getPrevious();
+            if (parent) {
+               var parentObj = parent.toObject(true);
+               for (var i in parentObj) {
+                  if (parentObj.hasOwnProperty(i) && !(i in result)) {
+                     result[i] = parentObj[i];
+                  }
                }
             }
          }
+
+         return result;
       }
+   });
 
-      return result;
-   }
-});
-
-   Context.registerFieldType = function (type) {
+   Context.registerFieldType = function(type) {
       AllFieldTypes.unshift(type);
    };
 
-   Context.getValueType = function (value) {
-      return $ws.helpers.find(AllFieldTypes, function (ftype) {
+   Context.getValueType = function(value) {
+      return $ws.helpers.find(AllFieldTypes, function(ftype) {
          return ftype.is(value);
       });
    };
@@ -13076,7 +13512,7 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
     * @param {string} commandName Имя команды
     * @param {Function} commandHandler Обработчик команды. На данном контроле для данной команды может быть зарегистрирован только один обработчик
     */
-   declareCommand: function(control, commandName, commandHandler){
+   declareCommand: function(control, commandName, commandHandler) {
       var commandStorage;
       if (control && $ws.proto.Control && control instanceof $ws.proto.Control) {
          commandStorage = control.getUserData('commandStorage') || {};
@@ -13084,6 +13520,7 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
          control.setUserData('commandStorage', commandStorage);
       }
    },
+
    /**
     * Удаление всех команд для объекта. Должно ОБЯЗАТЕЛЬНО выполняться для удаляемых объектов (вызываться в деструкторах, например).
     * @param object
@@ -13093,6 +13530,7 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
          object.setUserData('commandStorage');
       }
    },
+
    /**
     * Отправка команды.
     * Команда отправляется либо объекту хозяину (см. {@link $ws.proto.Control#owner}),
@@ -13126,12 +13564,12 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
     *
     * @return {*} Возвращает результат обработчика команды или true, если было вызвано несколько обработчиков; или false, если ни один обработчик не был вызван.
     */
-   sendCommand: function(eventSender, commandName){
+   sendCommand: function(eventSender, commandName) {
       var payload = Array.prototype.slice.call(arguments, 2),
-          commandDestination,
-          commandHandler,
-          result,
-          owner;
+         commandDestination,
+         commandHandler,
+         result,
+         owner;
       if (eventSender) {
          commandHandler = this._getCommand(eventSender, commandName);
          if (commandHandler !== null) {
@@ -13160,8 +13598,9 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
             }
          }
          return flag;
-      } else
+      } else {
          return false;
+      }
    },
 
    /**
@@ -13170,7 +13609,7 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
     * @param {String} commandName Имя команды.
     * @return {Function} Возвращает обработчик команды или null, если передаваемый элемент не декларировал обработку данной команды.
     */
-   _getCommand: function(owner, commandName){
+   _getCommand: function(owner, commandName) {
       if (owner && $ws.proto.Control && owner instanceof $ws.proto.Control) {
          var commandStorage = owner.getUserData('commandStorage');
          if (commandStorage) {
@@ -13190,7 +13629,7 @@ $ws.single.CommandDispatcher = new ($ws.core.extend({}, /** @lends $ws.single.Co
  * @name $ws.proto.Enum
  * @public
  */
-$ws.proto.Enum = (function(){
+$ws.proto.Enum = (function() {
 
    var toS = Object.prototype.toString;
 
@@ -13222,13 +13661,13 @@ $ws.proto.Enum = (function(){
 
       curValue = (curValue === null || curValue === 'null') ? 'null' : parseInt(curValue, 10);
 
-      if(toS.call(avValues) == '[object Object]' && avValues){
-         for(var i in avValues){
-            if(avValues.hasOwnProperty(i)) {
+      if (toS.call(avValues) == '[object Object]' && avValues) {
+         for (var i in avValues) {
+            if (avValues.hasOwnProperty(i)) {
                var v = avValues[i];
                if (v === null || (typeof v) in SUPPORTED) {
                   iKey = (i === null || i === 'null') ? 'null' : parseInt(i, 10);
-                  if(this._fallbackVal === undefined) {
+                  if (this._fallbackVal === undefined) {
                      this._fallbackVal = iKey;
                   }
                   if (curValue === iKey) {
@@ -13239,18 +13678,19 @@ $ws.proto.Enum = (function(){
             }
          }
       } else {
-         throw new Error ('Class Enum. Option availableValues must be set to object');
+         throw new Error('Class Enum. Option availableValues must be set to object');
       }
-      if(this._curValIndex === undefined) {
-         if(this._fallbackVal === undefined)
-            throw new Error ('Class Enum. No values to build');
-         else
+      if (this._curValIndex === undefined) {
+         if (this._fallbackVal === undefined) {
+            throw new Error('Class Enum. No values to build');
+         } else {
             this._curValIndex = iKey;
+         }
       }
       this._initialValue = this._curValIndex;
    }
 
-   Enum.prototype.valueOf = function(){
+   Enum.prototype.valueOf = function() {
       return this.getCurrentValue();
    };
 
@@ -13267,7 +13707,7 @@ $ws.proto.Enum = (function(){
     * </pre>
     */
    Enum.prototype.getCurrentValue = function() {
-      return this._curValIndex == "null" ? null : this._curValIndex;
+      return this._curValIndex == 'null' ? null : this._curValIndex;
    };
 
    /**
@@ -13284,19 +13724,20 @@ $ws.proto.Enum = (function(){
     * @param index индекс нового текущего значения
     * @throws {Error} в случае, если указанный индекс отсутствует в текущем Enum'е
     */
-   Enum.prototype.set = function(index){
+   Enum.prototype.set = function(index) {
       // null преобразовываем к строке 'null'
       index = (index === null) ? 'null' : index;
-      if(index in this._availableValues) {
+      if (index in this._availableValues) {
          this._hashCode = 0;
          this._curValIndex = index;
-      }
-      else {
+      } else {
          // Попытались сбросить Enum, но null не допускается.
-         if(index === 'null')
+         if (index === 'null') {
             this.set(this._initialValue);
-         else // Что-то иное
+         } else // Что-то иное
+         {
             throw new Error('Class Enum. Unsupported index: ' + index);
+         }
       }
    };
 
@@ -13312,13 +13753,13 @@ $ws.proto.Enum = (function(){
       return {
          availableValues: this.getValues(),
          currentValue: this.getCurrentValue()
-      }
+      };
    };
 
    Enum.prototype.hashCode = function() {
-      if(this._hashCode === 0) {
+      if (this._hashCode === 0) {
          this._hashCode = 17 + 31 * Object.keys(this._availableValues).length;
-         $ws.helpers.forEach(this._availableValues, function(val, key){
+         $ws.helpers.forEach(this._availableValues, function(val, key) {
             var v = parseInt(key, 10);
             this._hashCode += 31 * ((isNaN(v) ? -1 : v) + strToHash(val));
          }, this);
@@ -13339,7 +13780,7 @@ $ws.proto.Enum = (function(){
          this.getCurrentValue() == obj.getCurrentValue();  // current value is the same
    };
 
-   Enum.prototype.rollback = function(val){
+   Enum.prototype.rollback = function(val) {
       this.set(val);
    };
 
@@ -13352,14 +13793,14 @@ $ws.proto.Enum = (function(){
     * </pre>
     */
    Enum.prototype.toString = function() {
-      return "" + this._availableValues[this._curValIndex];
+      return '' + this._availableValues[this._curValIndex];
    };
 
    /**
     * Клонирует текущий объект
     * @return {$ws.proto.Enum}
     */
-   Enum.prototype.clone = function(){
+   Enum.prototype.clone = function() {
       return new Enum({
          currentValue: this.getCurrentValue(),
          availableValues: this.getValues()
@@ -13438,8 +13879,7 @@ $ws.proto.TimeInterval = (function() {
       return parseFloat(number) || 0;
    }
 
-   function truncate(number)
-   {
+   function truncate(number) {
       return number > 0
          ? Math.floor(number)
          : Math.ceil(number);
@@ -13474,6 +13914,7 @@ $ws.proto.TimeInterval = (function() {
                if (i === (regexResult.length - 1)) {
                   // секунды
                   intervalArray.push(truncate(regexResult[i]));
+
                   // миллисекунды
                   intervalArray.push(toFixedNumber((regexResult[i] % 1) * 1000));
                } else {
@@ -13498,7 +13939,7 @@ $ws.proto.TimeInterval = (function() {
    function fromIntervalObjToMilliseconds(intervalObj) {
       var milliseconds = 0;
 
-      $ws.helpers.forEach(millisecondsConst, function(val, key){
+      $ws.helpers.forEach(millisecondsConst, function(val, key) {
          milliseconds += val * toNumber(intervalObj[key]);
       });
 
@@ -13508,7 +13949,7 @@ $ws.proto.TimeInterval = (function() {
    function fromMillisecondsToNormIntervalObj(milliseconds) {
       var normIntervalObj = {};
 
-      $ws.helpers.forEach(millisecondsConst, function(val, key){
+      $ws.helpers.forEach(millisecondsConst, function(val, key) {
          normIntervalObj[key] = truncate(milliseconds / val);
          milliseconds = milliseconds % val;
       });
@@ -13534,10 +13975,10 @@ $ws.proto.TimeInterval = (function() {
 
    function isInteger(number) {
       if (typeof number === 'number' && (number % 1) === 0) {
-         return true
+         return true;
       }
 
-      return false
+      return false;
    }
 
    // вызывать с помощью call или apply
@@ -13779,12 +14220,15 @@ $ws.proto.TimeInterval = (function() {
       switch (type) {
          case 'intervalStr':
             source = fromIntervalStrToIntervalArray(source);
+
             // pass through
          case 'intervalArray':
             source = fromIntervalArrayToIntervalObj(source);
+
             // pass through
          case 'intervalObj':
             source = fromIntervalObjToMilliseconds(source);
+
             // pass through
          case 'milliseconds':
             this._normIntervalObj = source = fromMillisecondsToNormIntervalObj(source, false);
@@ -13950,11 +14394,11 @@ $ws.proto.TimeInterval = (function() {
  * @public
  */
 $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
-   _available : true,
-   _ms : {},
-   _msid : null,
-   _storage : null,
-   _sessionsLimit : 5,
+   _available: true,
+   _ms: {},
+   _msid: null,
+   _storage: null,
+   _sessionsLimit: 5,
    _storageChangeHandler: function(e) {
       if (!e) {
          e = window.event;
@@ -13980,7 +14424,7 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
    _syncMsid: function() {
       this._set('ws-msid', this._msid);
    },
-   init : function(){
+   init: function() {
 
       function syncMsidOnLinkClick(event) {
          event = event || window.event;
@@ -14001,19 +14445,19 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
       this._msid = this.getId();
       this._ms = this._get(this._msid);
 
-      if (this._ms){
+      if (this._ms) {
          try {
             this._ms = $.parseJSON(this._ms);
          } catch (e) {
             throw new Error('microsession : parse json error');
          }
-      } else{
+      } else {
          var
             prevSessionId = this._get('ws-msid'),
             prevSession = prevSessionId ? this._get(prevSessionId) : false;
 
          this._ms = {};
-         if (prevSession){
+         if (prevSession) {
             prevSession = $.parseJSON(prevSession);
             $.extend(true, this._ms, prevSession);
          }
@@ -14035,7 +14479,7 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
          } else {
             window.attachEvent('onstorage', this._storageChangeHandler.bind(this));
          }
-      };
+      }
 
       $(window).unload(this._syncMsid.bind(this));
 
@@ -14046,11 +14490,11 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
          document.attachEvent('onclick', syncMsidOnLinkClick.bind(self));
       }
 
-      (function(open){
-         window.open = function(){
+      (function(open) {
+         window.open = function() {
             self._syncMsid();
             var res;
-            switch (arguments.length){
+            switch (arguments.length) {
                case 1:
                   res = open(arguments[0]);
                   break;
@@ -14065,71 +14509,77 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
          };
       })(window.open);
    },
+
    /**
     * Подготавливает хранилище
     * @private
     */
-   _prepareStorage : function(){
-      if(typeof localStorage !== "undefined"){
+   _prepareStorage: function() {
+      if (typeof localStorage !== 'undefined') {
          //use localStorage
          this._storage = window.localStorage;
-      } else{
+      } else {
          this._available = false;
       }
    },
+
    /**
     * Записывает идентификатор сессии в адресную строку
     * @param {String} id идентификатор сессии
     * @private
     */
-   _prepareHash : function(id){
+   _prepareHash: function(id) {
       $ws.single.HashManager.set('msid', id, true);
    },
+
    /**
     * Возвращает значение непосредственно из localStorage
     * @param {String} key - ключ.
     * @return {*}
     * @private
     */
-   _get : function(key){
+   _get: function(key) {
       var result;
       result = this._storage.getItem(key);
-      result = result === "undefined" ? undefined : result;
+      result = result === 'undefined' ? undefined : result;
       return result ? result.toString() : undefined;
    },
+
    /**
     * Записывает значение непосредственно в localStorage
     * @param {String} key - ключ.
     * @param {String} value - значение.
     * @private
     */
-   _set : function(key, value){
+   _set: function(key, value) {
       try {
          this._storage.setItem(key, value);
       } catch (e) {
          // ignore
       }
    },
+
    /**
     * Сборщик мусора, не позволяет накапливаться сессиям. Держит _sessionsLimit сессий
     * @private
     */
-   _garbageCollector : function(){
+   _garbageCollector: function() {
       var keys = [],
-          sid = $.cookie('sid'),
-          ms, i, l, len, msVal;
+         sid = $.cookie('sid'),
+         ms, i, l, len, msVal;
 
       //collect session keys
-      for (i in this._storage){
-         if (/^s\d+$/.exec(i))
+      for (i in this._storage) {
+         if (/^s\d+$/.exec(i)) {
             keys.push(parseInt(i.substr(1), 10));
+         }
       }
 
       //sort
       keys.sort();
 
       //remove old keys
-      while (keys.length > this._sessionsLimit){
+      while (keys.length > this._sessionsLimit) {
          try {
             this._storage.removeItem('s' + keys[0]);
          } catch (e) {
@@ -14146,102 +14596,114 @@ $ws.single.MicroSession = /** @lends $ws.single.MicroSession */{
          } else {
             ms = null;
          }
+
          // ms может быть null
          if (!sid || (ms && (!ms.hasOwnProperty('sid') || (sid !== ms.sid)))) {
             this._storage.removeItem('s' + keys[i]);
          }
       }
    },
+
    /**
     * Очищает ВСЁ хранилище
     */
-   _clear : function(){
+   _clear: function() {
       this._storage.clear();
    },
-   clearCurrentSession : function(){
-      if (this._available){
+   clearCurrentSession: function() {
+      if (this._available) {
          this._ms = {};
-         this._set(this._msid, "{}");
-      }
-      else
+         this._set(this._msid, '{}');
+      } else {
          return false;
+      }
    },
+
    /**
     * Проверяет является ли сессия пустой
     * @return {Boolean}
     */
-   isEmpty : function(){
+   isEmpty: function() {
       return Object.isEmpty(this.toObject());
    },
+
    /**
     * Возвращает если уже есть, иначе генерирует идентификатор текущей сессии
     * @return {String} идентификатор сессии.
     * @private
     */
-   getId : function(){
-      if (this._available)
-         return $ws.single.HashManager.get("msid") || ["s", ("" + new Date().getTime())].join("");
-      else
+   getId: function() {
+      if (this._available) {
+         return $ws.single.HashManager.get('msid') || ['s', ('' + new Date().getTime())].join('');
+      } else {
          return false;
+      }
    },
+
    /**
     * Устанавливает значение
     * @param {String} key - ключ.
     * @param {String} value - значение.
     */
-   set : function(key, value){
-      if (this._available){
+   set: function(key, value) {
+      if (this._available) {
          this._ms[key] = value;
          this._set(this._msid, JSON.stringify(this._ms));
-      }
-      else
+      } else {
          return false;
+      }
    },
+
    /**
     * Возвращает значение
     * @param {String} key - ключ.
     * @return {*}
     */
-   get : function(key){
-      if (this._available)
+   get: function(key) {
+      if (this._available) {
          return this._ms[key];
-      else
+      } else {
          return false;
+      }
    },
+
    /**
     * Устанавливает значение постоянно. Не зависит от текущей микросессии.
     * Сделано оберткой, может понадобиться еще доработать.
     * @param {String} key - ключ.
     * @param {String} value - значение.
     */
-   setPermanently : function(key, value){
+   setPermanently: function(key, value) {
       this._set(key, value);
    },
+
    /**
     * Возвращает значение из постоянного хранилища
     * @param {String} key - ключ.
     * @return {*}
     */
-   getPermanently : function(key){
-      return this._get( key );
+   getPermanently: function(key) {
+      return this._get(key);
    },
+
    /**
     * Удаляет значение из сессии по ключу
     * @param {String} key - ключ.
     */
-   remove : function(key){
-      if (this._available){
+   remove: function(key) {
+      if (this._available) {
          delete this._ms[key];
          this._set(this._msid, JSON.stringify(this._ms));
-      }
-      else
+      } else {
          return false;
+      }
    },
+
    /**
     * Возвращает текущую сессию в виде объекта
     * @return {*}
     */
-   toObject : function(){
+   toObject: function() {
       return this._ms;
    }
 };
@@ -14271,7 +14733,7 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     *   });
     * </pre>
     */
-   _windows : [],
+   _windows: [],
    _tabEventEnable: true,
    _focusIn: undefined,
    _focusOut: undefined,
@@ -14286,6 +14748,7 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    _currentVisibleIndicator: null,
    _zIndexChangedFlag: false,
    _zIndexChanged: 0,
+
    /**
     * Поднять окно в стеке.
     * Поднимает окно вверх в стеке окон если это возможно.
@@ -14301,48 +14764,49 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
          i,
          item,
          stack = [];
-      if( movable === true ) {
+      if (movable === true) {
          // Обычное поведение, просто пушим окно наверх.
          this.popBack(window);
          this._windowsStack.push({
-            visible: function(){
+            visible: function() {
                return window.isVisible();
             },
-            window:  window
+            window: window
          });
          return true;
-      } else if( movable === null ) {
+      } else if (movable === null) {
          // Нужно пропушить индикатор, над которым есть скрытые индикаторы — пропушим их все сразу.
-         for(i = this._windowsStack.length - 1; i >= 0 && !found; --i) {
+         for (i = this._windowsStack.length - 1; i >= 0 && !found; --i) {
             item = this._windowsStack[i];
-            if(!found && item.window._isIndicator) {
+            if (!found && item.window._isIndicator) {
                stack.push(item);
                found = item.window === window;
-               this._windowsStack.splice(i,1);
+               this._windowsStack.splice(i, 1);
             }
          }
-         for(i = stack.length - 1; i >= 0; --i) {
+         for (i = stack.length - 1; i >= 0; --i) {
             this._windowsStack.push(stack[i]);
          }
          return true;
-      } else if ( movable === false ) {
+      } else if (movable === false) {
          // Либо не нужно пушить,
-         if(!window._isIndicator) {
+         if (!window._isIndicator) {
             return false;
          }
+
          //    либо нужно пушить индикатор, над которым есть видимые индикаторы.
          i = 0;
-         while(i < this._windowsStack.length && found !== null) {
+         while (i < this._windowsStack.length && found !== null) {
             item = this._windowsStack[i];
-            if( found === false ) {
+            if (found === false) {
                found = item.window === window;
             }
-            if( found === true && item.window._isIndicator ) {
-               if(item.window !== window && item.visible()) {
+            if (found === true && item.window._isIndicator) {
+               if (item.window !== window && item.visible()) {
                   found = null;
-                  Array.prototype.splice.apply(this._windowsStack, [i,0].concat(stack));
+                  Array.prototype.splice.apply(this._windowsStack, [i, 0].concat(stack));
                } else {
-                  stack.push(this._windowsStack.splice(i,1)[0]);
+                  stack.push(this._windowsStack.splice(i, 1)[0]);
                   i--;
                }
             }
@@ -14351,45 +14815,47 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       }
       return false;
    },
+
    /**
     * Удалить окно из стека
     * Удаляет окно из стека без всяких проверок.
     * @param {$ws.proto.Window} window
     */
    popBack: function(window) {
-      this._windowsStack = $ws.helpers.filter(this._windowsStack, function(item){
+      this._windowsStack = $ws.helpers.filter(this._windowsStack, function(item) {
          return item.window !== window;
       });
    },
+
    /**
     * Убрать окно из стека.
     * Пытается удалить окно из стека и показать следующее видимое окно и рассчитать положение следующего видимого индикатора.
     * @param {$ws.proto.Window} window
     */
    popAndShowNext: function(window) {
-      if(!window._isIndicator) {
+      if (!window._isIndicator) {
          this.popBack(window);
       }
       var
          windowVisible = false,
          stack = this._windowsStack;
+
       // возможно стоит добавить проверку, что скрыли верхнее окно? но вроде бы и так хуже не станет
-      for(var i = stack.length - 1; i >= 0; i--) {
+      for (var i = stack.length - 1; i >= 0; i--) {
          var stackItem = stack[i];
-         if(stackItem.window._isIndicator && stackItem.window._isIndicatorVisible) {
+         if (stackItem.window._isIndicator && stackItem.window._isIndicatorVisible) {
             // Нашли индикатор (который сейчас был скрыт). Покажем его.
-            if(stackItem.window !== window) { // ... кроме случая, когда его же только что и скрыли
-               if(!windowVisible) {
+            if (stackItem.window !== window) { // ... кроме случая, когда его же только что и скрыли
+               if (!windowVisible) {
                   // Должны показать индикатор с оверлеем поверх всего.
-                  if(stackItem.window._myIndicator) {
+                  if (stackItem.window._myIndicator) {
                      // sbisdoc://1+ОшРазраб+27.02.14+84600+2DBDF88C-35F7-4D89-A64B-3FFA3E7584F+
                      stackItem.window._myIndicator.show();
                   }
-               } else if(this._pendingIndicator === stackItem.window._myIndicator) {
+               } else if (this._pendingIndicator === stackItem.window._myIndicator) {
                   // Пытаемся показать индикатор, который покажем поверх всего чуть позже,
                   //    ... поэтому здесь и сейчас ничего не будем с ним делать.
-               }
-               else {
+               } else {
                   // У нас есть окна над индикатором. Покажем индикатор с оверлеем под окнами.
                   stackItem.window.show(true);
                   this.setCurrentVisibleIndicator(stackItem.window._myIndicator);
@@ -14397,16 +14863,18 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
                }
             }
             return;
-         } else if(stackItem.visible()) {
+         } else if (stackItem.visible()) {
             // Нашли окно. Оно уже видмо. Ничего не неужно делать. Запомним это.
             windowVisible = true;
+
             // Если скрывали не индикатор, то ничего делать больше не нужно.
-            if(!window._isIndicator) {
+            if (!window._isIndicator) {
                break;
             }
          }
       }
    },
+
    /**
     * Получить стек окон
     * @returns {Array}
@@ -14414,6 +14882,7 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    getStack: function() {
       return this._windowsStack;
    },
+
    /**
     * Получить текущий видимый индикатор
     * @returns {null|$ws.proto.LoadingIndicator}
@@ -14421,6 +14890,7 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    getCurrentVisibleIndicator: function() {
       return this._currentVisibleIndicator;
    },
+
    /**
     * Установить текущий видимый индикатор
     * @param {null|$ws.proto.LoadingIndicator} indicator
@@ -14432,12 +14902,15 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       this._acquireIndex += 10;
       var index = this._acquireIndex;
       this._acquiredIndexes.push(index);
-      if(isModal)
+      if (isModal) {
          this._modalIndexes.push(index);
-      if(isMaximized)
+      }
+      if (isMaximized) {
          this._maximizedIndexes.push(index);
-      if(isHint)
+      }
+      if (isHint) {
          this._hintIndexes.push(index);
+      }
 
       this._notifyZIndexChanged();
 
@@ -14454,9 +14927,9 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
             maxIndex;
 
          maxIndex = $ws.helpers.reduce(this._modalIndexes.concat(this._maximizedIndexes).concat(this._hintIndexes), function(memo, value) {
-            return isVisible(value) ?
-               Math.min(value, memo) :
-               memo;
+            return isVisible(value)
+               ? Math.min(value, memo)
+               : memo;
          }, Infinity);
 
          $ws.helpers.forEach(this._acquiredIndexes, function(value) {
@@ -14484,14 +14957,14 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       }
    },
    setVisible: function(index) {
-      if(Array.indexOf(this._visibleIndexes, index) == -1) {
+      if (Array.indexOf(this._visibleIndexes, index) == -1) {
          this._visibleIndexes.push(index);
          this._notifyZIndexChanged();
       }
    },
    setHidden: function(index) {
       var pos = Array.indexOf(this._visibleIndexes, index);
-      if(pos >= 0) {
+      if (pos >= 0) {
          this._visibleIndexes.splice(pos, 1);
          this._notifyZIndexChanged();
       }
@@ -14500,8 +14973,8 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    releaseZIndex: function(index) {
       $ws.helpers.forEach(['acquired', 'visible', 'modal', 'maximized', 'hint'], function(name) {
          var arr = this['_' + name + 'Indexes'],
-             pos = Array.indexOf(arr, index);
-         if(pos >= 0) {
+            pos = Array.indexOf(arr, index);
+         if (pos >= 0) {
             arr.splice(pos, 1);
          }
       }.bind(this));
@@ -14512,9 +14985,10 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    },
    getMaxVisibleZIndex: function() {
       var r = 0;
-      $ws.helpers.forEach(this._visibleIndexes, function(n){
-         if(n > r && Array.indexOf(this._modalIndexes, n) != -1)
+      $ws.helpers.forEach(this._visibleIndexes, function(n) {
+         if (n > r && Array.indexOf(this._modalIndexes, n) != -1) {
             r = n;
+         }
       }, this);
       return r;
    },
@@ -14525,45 +14999,48 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    /**
     * Инициализирует менеджер
     */
-   init: function(){
+   init: function() {
       this._publish('onAreaFocus', 'zIndexChanged');
    },
+
    /**
     * Инициализация, требующая jQuery
     */
    postInit: function() {
-      $(function(){
+      $(function() {
          this._createFirstElementToFocus();
          this._createLastElementToFocus();
       }.bind(this));
    },
+
    /**
     * Находит окно, у котрого нужно активировать первый/последний контрол
     * @return {$ws.proto.AreaAbstract|undefined}
     */
-   _findActiveWindow: function(){
+   _findActiveWindow: function() {
       var activeWindow = $ws.single.WindowManager.getActiveWindow(true);
-      if(activeWindow){
-         activeWindow = activeWindow.findParent(function(area){
+      if (activeWindow) {
+         activeWindow = activeWindow.findParent(function(area) {
             return $ws.proto.FloatArea && area instanceof $ws.proto.FloatArea;
          }) || activeWindow.getTopParent();
          return activeWindow;
       }
       return undefined;
    },
+
    /**
     * Создаёт первый элемент для фокуса
     * @private
     */
-   _createFirstElementToFocus: function(){
-      if(this._focusIn){
+   _createFirstElementToFocus: function() {
+      if (this._focusIn) {
          this._focusIn.remove();
       }
       var self = this,
-         moveFocus = function(){
-            if(!self._focusControlled){
+         moveFocus = function() {
+            if (!self._focusControlled) {
                var activeWindow = self._findActiveWindow();
-               if(activeWindow){
+               if (activeWindow) {
                   activeWindow.activateFirstControl();
                }
             }
@@ -14571,40 +15048,43 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       this._focusIn = $('<a class="ws-focus-in" tabindex="1"></a>').prependTo('body')
          .bind('focusin', moveFocus);
    },
+
    /**
     * Создаёт последний элемент для фокуса
     * @private
     */
-   _createLastElementToFocus: function(){
-      if(this._focusOut){
+   _createLastElementToFocus: function() {
+      if (this._focusOut) {
          this._focusOut.remove();
       }
       var self = this;
       this._focusOut = $('<a class="ws-focus-out" tabindex="0"></a>').appendTo('body')
-         .bind('focusin', function(){
-            if(!self._focusControlled){
+         .bind('focusin', function() {
+            if (!self._focusControlled) {
                var activeWindow = self._findActiveWindow();
-               if(activeWindow){
+               if (activeWindow) {
                   activeWindow.activateLastControl();
                }
             }
          });
    },
+
    /**
     * Переносит фокус на первый элемент
     */
-   focusToFirstElement: function(){
-      if(this._focusIn){
+   focusToFirstElement: function() {
+      if (this._focusIn) {
          this._focusControlled = true;
          this._focusIn.focus();
          this._focusControlled = false;
       }
    },
+
    /**
     * Переносит фокус на последний элемент
     */
-   focusToLastElement: function(){
-      if(this._focusOut){
+   focusToLastElement: function() {
+      if (this._focusOut) {
          this._focusControlled = true;
          $('body').append(this._focusOut);
          this._focusOut.focus();
@@ -14615,8 +15095,9 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    _findWindowIndex: function(window) {
       var i, windows = this._windows, ln = windows.length;
       for (i = 0; i !== ln; i++) {
-         if (windows[i] === window)
+         if (windows[i] === window) {
             return i;
+         }
       }
       return -1;
    },
@@ -14626,10 +15107,11 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       this._checkRegisterBatchUpdaterActions = function() {};
 
       var self = this;
+
       //Активирует последний активный контрол с последнего активного окна
       $ws.single.ControlBatchUpdater.registerDelayedAction('WindowManager.activateControl', function() {
          var nextWindow = self.getActiveWindow();
-         if (nextWindow){
+         if (nextWindow) {
             nextWindow.onBringToFront();
          }
       }, 'FocusActions');
@@ -14638,15 +15120,15 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
    /**
     * @param {$ws.proto.AreaAbstract} window
     */
-   addWindow : function(window){
+   addWindow: function(window) {
       if (this._findWindowIndex(window) === -1) {
          var self = this;
 
          this._checkRegisterBatchUpdaterActions();
          this._windows.push(window);
 
-          if($ws.helpers.instanceOfModule(window, 'SBIS3.CORE.AreaAbstract')){
-            window.subscribe('onActivate', function(event){
+         if ($ws.helpers.instanceOfModule(window, 'SBIS3.CORE.AreaAbstract')) {
+            window.subscribe('onActivate', function(event) {
                if (event.getTarget() === this) {
                   self.onActivateWindow(this);
                }
@@ -14659,7 +15141,7 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     * Удаляет окно из менеджера
     * @param {$ws.proto.AreaAbstract} window Окно, которое необходимо удалить
     */
-   removeWindow: function(window){
+   removeWindow: function(window) {
       this.deactivateWindow(window, function(idx) {
          if (idx !== -1) {
             this._windows.splice(idx, 1);
@@ -14687,30 +15169,31 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     * Обработчик события активации окна
     * @param window
     */
-   onActivateWindow : function(window) {
-      if(window){
+   onActivateWindow: function(window) {
+      if (window) {
          window.setActivationIndex(this.getMaxActivisionIndex() + 1);
          this._notify('onAreaFocus', window);
       }
    },
 
-   disableTabEvent: function(){
+   disableTabEvent: function() {
       this._tabEventEnable = false;
    },
-   enableTabEvent: function(){
+   enableTabEvent: function() {
       this._tabEventEnable = true;
    },
-   getTabEvent: function(){
+   getTabEvent: function() {
       return this._tabEventEnable;
    },
+
    /**
     * Получить отображаемое окно с максимальным z-index
     * @param {Function} [filterFunc] функция-фильтр, указывающая, учитывать ли окно в поиске
     */
-   getMaxZWindow : function(filterFunc) {
+   getMaxZWindow: function(filterFunc) {
       var maxZ = -1, maxWindow, i, zIndex,
          windows = this._windows, ln = windows.length, win;
-      for(i = 0; i !== ln; i++) {
+      for (i = 0; i !== ln; i++) {
          win = windows[i];
          if ((!filterFunc || filterFunc(win)) && win.isShow()) {
             zIndex = win.getZIndex();
@@ -14722,28 +15205,33 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
       }
       return maxWindow;
    },
+
    /**
     * Получить отображаемое _модальное_ окно с максимальным z-index среди модальных
     */
-   getMaxZModalWindow : function() {
-      return this.getMaxZWindow(function(win) { return win.isModal(); });
+   getMaxZModalWindow: function() {
+      return this.getMaxZWindow(function(win) {
+         return win.isModal(); 
+      });
    },
+
    /**
     * Возвращает максимальный z-index из всех окон
     * @return {Number}
     */
-   getMaxZIndex: function(){
+   getMaxZIndex: function() {
       var maxWindow = this.getMaxZWindow();
       return maxWindow && maxWindow.getZIndex() || 1000;
    },
+
    /**
     * Возвращает, может ли область получить фокус с учётом родителей
     * @private
     */
-   _isWindowAcceptFocus: function(window){
+   _isWindowAcceptFocus: function(window) {
       var parent = window;
-      while(parent){
-         if(!parent.canAcceptFocus()){
+      while (parent) {
+         if (!parent.canAcceptFocus()) {
             return false;
          }
          parent = parent.getParent();
@@ -14756,18 +15244,18 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     * @param {$ws.proto.AreaAbstract} window
     * @private
     */
-   _isWindowActivable: function(window){
+   _isWindowActivable: function(window) {
       //_isWindowActivable должна принимать и выключенные области, поскольку иначе возвращение фокуса после закрытия панели/диалога,
       //открытых из панели, где выключены все контролы, приведёт к закрытию этой панели
       return window.isVisibleWithParents();
    },
 
-   _getActiveWindow: function(filterFn){
+   _getActiveWindow: function(filterFn) {
       var
          idxMax = -1, winMax = undefined, i, idx, win,
          windows = this._windows, ln = windows.length;
 
-      for(i = 0; i !== ln; i++){
+      for (i = 0; i !== ln; i++) {
          win = windows[i];
          if (!filterFn || filterFn(win)) {
             idx = win.getActivationIndex();
@@ -14788,12 +15276,15 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     * @param {Boolean} [forDeactivation] Использовать при деактивации, начинает искать среди всех окон, даже скрытых. Актуально, если не forFocus.
     * @return {$ws.proto.AreaAbstract}
     */
-   getActiveWindow: function(forFocus, forDeactivation){
-      var filterFn = forFocus ?
-         this._isWindowAcceptFocus :
-         forDeactivation ?
-            function() {return true;} :
-            this._isWindowActivable;
+   getActiveWindow: function(forFocus, forDeactivation) {
+      var filterFn = forFocus
+         ? this._isWindowAcceptFocus
+         : forDeactivation
+            ? function() {
+               return true;
+            }
+            : this._isWindowActivable;
+
       //Для параметра forFocus: Если нет активного окно, могущего взять фокус, отдадим просто последнее активированное окно
       // (чтобы getActiveWindow всегда возвращал окно)
       return this._getActiveWindow(filterFn.bind(this));
@@ -14813,21 +15304,22 @@ $ws.single.WindowManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.
     * Возвращает индекс последнего активного окна
     * @return {$ws.proto.AreaAbstract}
     */
-   getMaxActivisionIndex: function(){
+   getMaxActivisionIndex: function() {
       //для получения макс. индекса нужно учитывать все области, даже невидимые,
       //(иначе новые индексы будут перемешиваться с индексами скрытых)
       var maxWindow = this.getActiveWindow(false, true);
       return maxWindow && maxWindow.getActivationIndex() || 0;
    },
+
    /**
     * Выключает последний активный контрол
     * @param {$ws.proto.Control} control Контрол, на который перешёл фокус
     */
-   disableLastActiveControl: function(control){
+   disableLastActiveControl: function(control) {
       var window = this.getActiveWindow();
       if (window) {
          var prevActive = window.getActiveChildControl();
-         if(prevActive && prevActive.getParent() === window && prevActive !== control){
+         if (prevActive && prevActive.getParent() === window && prevActive !== control) {
             prevActive.setActive(false, undefined, undefined, control);
          }
       }
@@ -14845,40 +15337,43 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
     * @event onChange Событие, происходящее при изменении хэша
     * @param {Object} eventObject Дескриптор события
     */
-   $constructor: function(){
-      if (window){
+   $constructor: function() {
+      if (window) {
          var self = this;
          this._replace = true;
          this._publish('onChange');
 
-         window.onhashchange = function(){
+         window.onhashchange = function() {
             self._notify('onChange');
          };
       }
    },
-   _getLocWithoutHash : function(){
+   _getLocWithoutHash: function() {
       var
          loc = window.location.toString(),
          hPos = loc.indexOf('#');
-      if(hPos !== -1)
+      if (hPos !== -1) {
          loc = loc.substring(0, hPos);
+      }
       return loc;
    },
+
    /**
     * Возвращает параметр из хэша
     * @param {String} name имя параметра.
     * @return {*}
     */
-   get : function(name){
-      var result = "";
-      if (window){
+   get: function(name) {
+      var result = '';
+      if (window) {
          var
             hash = decodeURI(window.location.hash),
-            reg = new RegExp("(?:#|&)" + name + "=(?:[^&]+$|[^&]+(?=&))", "");
+            reg = new RegExp('(?:#|&)' + name + '=(?:[^&]+$|[^&]+(?=&))', '');
          result = hash.match(reg);
       }
-      return result ? (result[0].replace(/^./,"").replace(name + "=", "")).replace(/:a:/g, "&") : undefined;
+      return result ? (result[0].replace(/^./, '').replace(name + '=', '')).replace(/:a:/g, '&') : undefined;
    },
+
    /**
     * Устанавливает значение в хэш
     * @param {String|Object} name имя параметра или набор параметров и их значений.
@@ -14897,13 +15392,13 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
      *   }, true);
     * </pre>
     */
-   set : function(name, value, replace, forceReplace){
+   set: function(name, value, replace, forceReplace) {
       if (window && name) {
          var map = {},
-             toSet = {},
-             toRemove = [],
-             paramName,
-             paramValue;
+            toSet = {},
+            toRemove = [],
+            paramName,
+            paramValue;
 
          //Normalize arguments
          if (typeof name === 'object') {
@@ -14939,12 +15434,12 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
 
             for (paramName in toSet) {
                if (toSet.hasOwnProperty(paramName)) {
-                  var v = (toSet[paramName] + '').replace(/&/g, ":a:"),
-                      reg = new RegExp(paramName + "=[^&]+$|" + paramName + "=[^&]+(?=&)", ""),
-                      param = [paramName, v].join("=");
+                  var v = (toSet[paramName] + '').replace(/&/g, ':a:'),
+                     reg = new RegExp(paramName + '=[^&]+$|' + paramName + '=[^&]+(?=&)', ''),
+                     param = [paramName, v].join('=');
 
                   if (hash.length) {
-                     hash = hash.match(reg) ? hash.replace(reg, param) : [hash, param].join("&");
+                     hash = hash.match(reg) ? hash.replace(reg, param) : [hash, param].join('&');
                   } else {
                      hash = param;
                   }
@@ -14955,25 +15450,27 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
          }
       }
    },
-   setHash: function(hashValue, replace, forceReplace){
+   setHash: function(hashValue, replace, forceReplace) {
       var sLoc = this._getLocWithoutHash();
-      if(forceReplace || this._replace){
+      if (forceReplace || this._replace) {
          window.location.replace(sLoc + '#' + hashValue);
       } else {
          window.location = sLoc + '#' + hashValue;
       }
       !forceReplace && (this._replace = replace);
    },
+
    /**
     * Записывает текущее состояние в историю браузера
     */
-   pushState: function(){
+   pushState: function() {
       this._replace = false;
       this.set('ws-dummy', '1');
       this._replace = true;
       this.remove('ws-dummy', true);
       $ws.single.NavigationController.saveAllStates();
    },
+
    /**
     * Удаляет значение из хэша
     * @param {String|Array} name имя параметра или набор имен параметров.
@@ -14985,20 +15482,21 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
     *    $ws.single.HashManager.remove(['p1', 'p2'], true);
     * </pre>
     */
-   remove: function(name, replace){
+   remove: function(name, replace) {
       if (window) {
          if (!(name instanceof Array)) {
             name = [name];
          }
          var hash = decodeURI(window.location.hash),
-             sLoc = this._getLocWithoutHash();
+            sLoc = this._getLocWithoutHash();
 
-         if (hash.indexOf('#') === 0)
+         if (hash.indexOf('#') === 0) {
             hash = hash.substring(1);
+         }
 
          for (var i = 0; i < name.length; i++) {
-            var reg = new RegExp("&?" + name[i] + "=[^&]+$|" + name[i] + "=[^&]+&", "g");
-            hash = hash.replace(reg, "");
+            var reg = new RegExp('&?' + name[i] + '=[^&]+$|' + name[i] + '=[^&]+&', 'g');
+            hash = hash.replace(reg, '');
          }
 
          if (this._replace) {
@@ -15030,13 +15528,13 @@ $ws.single.HashManager = new ($ws.proto.Abstract.extend(/** @lends $ws.single.Ha
  * @extends HTTPError
  * @public
  */
-function TransportError(message, httpError, code, methodName, details, url, classid, errType, addinfo, error_code){
+function TransportError(message, httpError, code, methodName, details, url, classid, errType, addinfo, error_code) {
    this.message = message;
-   this.httpError = httpError === undefined ? "" : httpError;
+   this.httpError = httpError === undefined ? '' : httpError;
    this.code = code || 0;
    this.name = 'Transport error';
-   this.methodName = methodName || "";
-   this.details = details || "";
+   this.methodName = methodName || '';
+   this.details = details || '';
    this.url = url || '';
    this.classid = classid || '';
    this.errType = errType || 'error';
@@ -15070,18 +15568,20 @@ function HTTPError(message, httpError, url, payload) {
  * Наследуем HTTPError от Error
  */
 $ws.core.classicExtend(HTTPError, Error);
+
 /**
  * Наследуем TransportError от HTTPError
  */
 $ws.core.classicExtend(TransportError, HTTPError);
+
 /**
  * Переопределяем метод toString
  */
-TransportError.prototype.toString = function(){
-   return [this.name, ': ', this.message, '; method: ', this.methodName, '; code: ', this.code,'; httpError: ', this.httpError, '; details: ', this.details].join('');
+TransportError.prototype.toString = function() {
+   return [this.name, ': ', this.message, '; method: ', this.methodName, '; code: ', this.code, '; httpError: ', this.httpError, '; details: ', this.details].join('');
 };
 
-HTTPError.prototype.toString = function(){
+HTTPError.prototype.toString = function() {
    return [this.name, ': ', this.message, '; httpError: ', this.httpError, '; url: ', this.url].join('');
 };
 
@@ -15143,10 +15643,10 @@ $ws.context = {};
  * @public
  */
 $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
-   _keyStr : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-   utf8 : 'UTF-8',
-   win1251 : 'WINDOWS-1251',
-   auto : 'AUTO',
+   _keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+   utf8: 'UTF-8',
+   win1251: 'WINDOWS-1251',
+   auto: 'AUTO',
    noConvert: 'NOCONVERT',
 
    /**
@@ -15158,7 +15658,7 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
     */
    encode: function(input, format) {
       var output;
-      format = !format || typeof format !== 'string'? this.utf8 : format.toUpperCase();
+      format = !format || typeof format !== 'string' ? this.utf8 : format.toUpperCase();
       if (format === this.utf8) {
          input = $ws.single.iconv.unicode2utf(input);
       } else if (format === this.win1251) {
@@ -15190,7 +15690,7 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
    decode: function(input, format) {
       var output;
 
-      input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+      input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
 
       if (typeof atob !== 'function') {
          output = this._decode(input);
@@ -15199,7 +15699,7 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
       }
 
       // Попытка определить кодировку, медленно
-      format = !format || typeof format !== 'string'? this.utf8 : format.toUpperCase();
+      format = !format || typeof format !== 'string' ? this.utf8 : format.toUpperCase();
       if (format === this.utf8) {
          output = $ws.single.iconv.utf2unicode(output);
       } else if (format === this.win1251) {
@@ -15222,10 +15722,10 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
     * @private
     */
    _encode: function(input) {
-      var output = "",
-          i = 0,
-          chr1, chr2, chr3,
-          enc1, enc2, enc3, enc4;
+      var output = '',
+         i = 0,
+         chr1, chr2, chr3,
+         enc1, enc2, enc3, enc4;
 
       while (i < input.length) {
          chr1 = input.charCodeAt(i++);
@@ -15259,9 +15759,9 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
     */
    _decode: function(input) {
       var output = '',
-          i = 0,
-          chr1, chr2, chr3,
-          enc1, enc2, enc3, enc4;
+         i = 0,
+         chr1, chr2, chr3,
+         enc1, enc2, enc3, enc4;
 
       while (i < input.length) {
          enc1 = this._keyStr.indexOf(input.charAt(i++));
@@ -15293,24 +15793,24 @@ $ws.single.base64 = /** @lends $ws.single.base64.prototype */{
  */
 $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
    _CP1251ToUnicode: {
-      128:1026 , 129:1027, 130:8218, 131:1107, 132:8222, 133:8230, 134:8224, 135:8225,
-      136:8364 , 137:8240, 138:1033, 139:8249, 140:1034, 141:1036, 142:1035, 143:1039,
-      144:1106 , 145:8216, 146:8217, 147:8220, 148:8221, 149:8226, 150:8211, 151:8212,
-      152:65533, 153:8482, 154:1113, 155:8250, 156:1114, 157:1116, 158:1115, 159:1119,
-      160:160  , 161:1038, 162:1118, 163:1032, 164:164 , 165:1168, 166:166 , 167:167 ,
-      168:1025 , 169:169 , 170:1028, 171:171 , 172:172 , 173:173 , 174:174 , 175:1031,
-      176:176  , 177:177 , 178:1030, 179:1110, 180:1169, 181:181 , 182:182 , 183:183 ,
-      184:1105 , 185:8470, 186:1108, 187:187 , 188:1112, 189:1029, 190:1109, 191:1111
+      128: 1026, 129: 1027, 130: 8218, 131: 1107, 132: 8222, 133: 8230, 134: 8224, 135: 8225,
+      136: 8364, 137: 8240, 138: 1033, 139: 8249, 140: 1034, 141: 1036, 142: 1035, 143: 1039,
+      144: 1106, 145: 8216, 146: 8217, 147: 8220, 148: 8221, 149: 8226, 150: 8211, 151: 8212,
+      152: 65533, 153: 8482, 154: 1113, 155: 8250, 156: 1114, 157: 1116, 158: 1115, 159: 1119,
+      160: 160, 161: 1038, 162: 1118, 163: 1032, 164: 164, 165: 1168, 166: 166, 167: 167,
+      168: 1025, 169: 169, 170: 1028, 171: 171, 172: 172, 173: 173, 174: 174, 175: 1031,
+      176: 176, 177: 177, 178: 1030, 179: 1110, 180: 1169, 181: 181, 182: 182, 183: 183,
+      184: 1105, 185: 8470, 186: 1108, 187: 187, 188: 1112, 189: 1029, 190: 1109, 191: 1111
    },
    _UnicodeToCP1251: {
-      1026:128 , 1027:129, 8218:130, 1107:131, 8222:132, 8230:133, 8224:134, 8225:135,
-      8364:136 , 8240:137, 1033:138, 8249:139, 1034:140, 1036:141, 1035:142, 1039:143,
-      1106:144 , 8216:145, 8217:146, 8220:147, 8221:148, 8226:149, 8211:150, 8212:151,
-      65533:152, 8482:153, 1113:154, 8250:155, 1114:156, 1116:157, 1115:158, 1119:159,
-      160:160  , 1038:161, 1118:162, 1032:163, 164:164 , 1168:165, 166:166 , 167:167 ,
-      1025:168 , 169:169 , 1028:170, 171:171 , 172:172 , 173:173 , 174:174 , 1031:175,
-      176:176  , 177:177 , 1030:178, 1110:179, 1169:180, 181:181 , 182:182 , 183:183 ,
-      1105:184 , 8470:185, 1108:186, 187:187 , 1112:188, 1029:189, 1109:190, 1111:191
+      1026: 128, 1027: 129, 8218: 130, 1107: 131, 8222: 132, 8230: 133, 8224: 134, 8225: 135,
+      8364: 136, 8240: 137, 1033: 138, 8249: 139, 1034: 140, 1036: 141, 1035: 142, 1039: 143,
+      1106: 144, 8216: 145, 8217: 146, 8220: 147, 8221: 148, 8226: 149, 8211: 150, 8212: 151,
+      65533: 152, 8482: 153, 1113: 154, 8250: 155, 1114: 156, 1116: 157, 1115: 158, 1119: 159,
+      160: 160, 1038: 161, 1118: 162, 1032: 163, 164: 164, 1168: 165, 166: 166, 167: 167,
+      1025: 168, 169: 169, 1028: 170, 171: 171, 172: 172, 173: 173, 174: 174, 1031: 175,
+      176: 176, 177: 177, 1030: 178, 1110: 179, 1169: 180, 181: 181, 182: 182, 183: 183,
+      1105: 184, 8470: 185, 1108: 186, 187: 187, 1112: 188, 1029: 189, 1109: 190, 1111: 191
    },
 
    /**
@@ -15319,17 +15819,17 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
     * @returns {String} Строка в кодировке win1251.
     */
    unicode2win: function(input) {
-      var output = "";
+      var output = '';
       for (var i = 0; i < input.length; i++) {
          var ord = input.charCodeAt(i);
          if (ord < 128) {
             output += String.fromCharCode(ord);
          } else if (ord >= 0x410 && ord <= 0x44f) {
-            output += String.fromCharCode( ord - 848 );
+            output += String.fromCharCode(ord - 848);
          } else if (ord in this._UnicodeToCP1251) {
             output += String.fromCharCode(this._UnicodeToCP1251[ord]);
          } else {
-            output += "";
+            output += '';
          }
       }
 
@@ -15341,18 +15841,18 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
     * @param {String} input Строка в кодировке win1251.
     * @returns {String} Строка в кодировке Unicode (16-bit).
     */
-   win2unicode: function(input){
-      var output = "";
+   win2unicode: function(input) {
+      var output = '';
       for (var i = 0; i < input.length; i++) {
          var ord = input.charCodeAt(i);
          if (ord < 128) {
             output += String.fromCharCode(ord);
          } else if (ord >= 192 && ord <= 255) {
-            output +=  String.fromCharCode( ord + 848 );
+            output +=  String.fromCharCode(ord + 848);
          } else if (ord in this._CP1251ToUnicode) {
             output += String.fromCharCode(this._CP1251ToUnicode[ord]);
          } else {
-            output += "";
+            output += '';
          }
       }
 
@@ -15376,16 +15876,17 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
     * @see http://www.2ality.com/2013/09/javascript-unicode.html
     */
    unicode2utf: function(input) {
-      var output = "";
+      var output = '';
+
       //input = input.replace(/\r\n/g,"\n");
       for (var n = 0; n < input.length; n++) {
          var c1 = input.charCodeAt(n);
          if (c1 < 0x80) {
             output += String.fromCharCode(c1);
-         } else if(c1 <= 0x7FF) {
+         } else if (c1 <= 0x7FF) {
             output += String.fromCharCode((c1 >> 6) | 0xC0);
             output += String.fromCharCode((c1 & 0x3F) | 0x80);
-         } else if(c1 <= 0xFFFF) {
+         } else if (c1 <= 0xFFFF) {
             output += String.fromCharCode((c1 >> 12) | 0xE0);
             output += String.fromCharCode(((c1 >> 6) & 0x3F) | 0x80);
             output += String.fromCharCode((c1 & 0x3F) | 0x80);
@@ -15431,11 +15932,11 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
     * @see http://phpjs.org/functions/utf8_decode/
     */
    utf2unicode: function(input) {
-      var output = "",
-          i = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+      var output = '',
+         i = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
 
       /* remove BOM */
-      if (input.substr(0,3) === 'ï»¿') {
+      if (input.substr(0, 3) === 'ï»¿') {
          input = input.substr(3);
       }
 
@@ -15451,32 +15952,50 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
          } else if (c1 < 0xC2) { // continuation or overlong 2-byte sequence
             throw Error('Invalid UTF-8 detected');
          } else if (c1 < 0xE0) { // 2-byte sequence
-            c2 = input.charCodeAt(i+1);
-            if ((c2 & 0xC0) != 0x80) sequenceError(i+1, c2);
+            c2 = input.charCodeAt(i + 1);
+            if ((c2 & 0xC0) != 0x80) {
+               sequenceError(i + 1, c2);
+            }
 
             output += String.fromCharCode(((c1 & 0x1F) << 6) | (c2 & 0x3F));
             i += 2;
          } else if (c1 < 0xF0) { // 3-byte sequence
             c2 = input.charCodeAt(i + 1);
-            if ((c2 & 0xC0) != 0x80) sequenceError(i + 1, c2);
-            if (c1 == 0xE0 && c2 < 0xA0) sequenceError(i + 1, c2); // overlong
+            if ((c2 & 0xC0) != 0x80) {
+               sequenceError(i + 1, c2);
+            }
+            if (c1 == 0xE0 && c2 < 0xA0) {
+               sequenceError(i + 1, c2);
+            } // overlong
 
             c3 = input.charCodeAt(i + 2);
-            if ((c3 & 0xC0) != 0x80) sequenceError(i + 2, c3);
+            if ((c3 & 0xC0) != 0x80) {
+               sequenceError(i + 2, c3);
+            }
 
             output += String.fromCharCode(((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F));
             i += 3;
          } else if (c1 < 0xF5) { // 4-byte sequence
             c2 = input.charCodeAt(i + 1);
-            if ((c2 & 0xC0) != 0x80) sequenceError(i + 1, c2);
-            if (c1 == 0xF0 && c2 < 0x90) sequenceError(i + 1, c2); // overlong
-            if (c1 == 0xF4 && c2 >= 0x90) sequenceError(i + 1, c2);  // > U+10FFFF
+            if ((c2 & 0xC0) != 0x80) {
+               sequenceError(i + 1, c2);
+            }
+            if (c1 == 0xF0 && c2 < 0x90) {
+               sequenceError(i + 1, c2);
+            } // overlong
+            if (c1 == 0xF4 && c2 >= 0x90) {
+               sequenceError(i + 1, c2);
+            }  // > U+10FFFF
 
             c3 = input.charCodeAt(i + 2);
-            if ((c3 & 0xC0) != 0x80) sequenceError(i + 2, c3);
+            if ((c3 & 0xC0) != 0x80) {
+               sequenceError(i + 2, c3);
+            }
 
             c4 = input.charCodeAt(i + 3);
-            if ((c4 & 0xC0) != 0x80) sequenceError(i + 3, c4);
+            if ((c4 & 0xC0) != 0x80) {
+               sequenceError(i + 3, c4);
+            }
 
             c1 = ((c1 & 0x07) << 18) | ((c2 & 0x3F) << 12) | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
             c1 -= 0x10000;
@@ -15502,18 +16021,20 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
       if (encode) {
          try {
             output = $ws.single.iconv.unicode2utf(input);
-         } catch(e) {
+         } catch (e) {
             output = $ws.single.iconv.unicode2win(input);
          }
       } else {
          try {
             var deltaUtf, deltaWin, // Погрешность
-                j, charCode;
+               j, charCode;
 
             output = $ws.single.iconv.utf2unicode(input);
+
             // Сначала пытаемся узнать не UTF-8 ли у нас
             for (deltaUtf = 0, j = 0; j < output.length; j++) {
                charCode = output.charCodeAt(j);
+
                // Русские символы в UNICODE
                if (charCode >= 0x410 && charCode <= 0x44F) {
                   deltaUtf++;
@@ -15524,6 +16045,7 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
             // но все равно проверим, может есть символы из диаппазона 192-255 кодовой таблицы windows-1251
             for (deltaWin = 0, j = 0; j < input.length; j++) {
                charCode = input.charCodeAt(j);
+
                // Русские символы в windows-1251
                if (charCode > 0xC0 && charCode < 0xFF) {
                   deltaWin++;
@@ -15532,7 +16054,7 @@ $ws.single.iconv = /** @lends $ws.single.iconv.prototype */{
 
             // если дельта cp1251 больше, предположим, что строка в windows-1251
             output = deltaUtf >= deltaWin ? output : $ws.single.iconv.win2unicode(input);
-         } catch(e) {
+         } catch (e) {
             // Если не смогли декодировать из UTF-8, предположим, что это windows-1251
             output = $ws.single.iconv.win2unicode(input);
          }
@@ -15665,7 +16187,7 @@ $ws.proto.AbstractConfig = $ws.proto.Abstract.extend(/** @lends $ws.proto.Abstra
                }
                self._processingParam('update', obj);
                return rs;
-            })
+            });
          });
       } else {
          return new $ws.proto.Deferred().callback({});
@@ -15850,7 +16372,8 @@ $ws.single.UserConfig = new ($ws.proto.AbstractConfig.extend(/** @lends $ws.sing
 $ws.proto.OrderedHashMap = (function() {
 
    'use strict';
-    /**
+
+   /**
      * @alias $ws.proto.OrderedHashMap
      */
    function OrderedHashMap() {
@@ -15858,7 +16381,7 @@ $ws.proto.OrderedHashMap = (function() {
       this._values = [];
       this._reading = false;
       this._helperHash = {};
-   };
+   }
 
    /**
     * Добавляет элемент с указанным ключем
@@ -15870,7 +16393,7 @@ $ws.proto.OrderedHashMap = (function() {
    OrderedHashMap.prototype.put = function(key, value) {
       this._checkConcurent();
       key = key + '';
-      if(!this.contains(key)) {
+      if (!this.contains(key)) {
          this._keys.push(key);
          this._values.push(value);
          this._helperHash[key] = null;
@@ -15886,19 +16409,18 @@ $ws.proto.OrderedHashMap = (function() {
     * @param {String|Number} [after] После какого элемента вставлять.
     * @return {Boolean} Удалось ли вставить.
     */
-   OrderedHashMap.prototype.insert = function(key, value, after){
+   OrderedHashMap.prototype.insert = function(key, value, after) {
       this._checkConcurent();
       key = key + '';
-      if(!this.contains(key)){
+      if (!this.contains(key)) {
          var index;
-         if(after !== undefined){
+         if (after !== undefined) {
             after = after + '';
-            if(!this.contains(after)){
+            if (!this.contains(after)) {
                return false;
             }
             index = Array.indexOf(this._keys, after) + 1;
-         }
-         else{
+         } else {
             index = 0;
          }
          this._keys.splice(index, 0, key);
@@ -15928,7 +16450,7 @@ $ws.proto.OrderedHashMap = (function() {
    OrderedHashMap.prototype.remove = function(key) {
       this._checkConcurent();
       var idx = this._getKeyIndex(key);
-      if(idx !== -1) {
+      if (idx !== -1) {
          this._keys.splice(idx, 1);
          this._values.splice(idx, 1);
          this._helperHash[key] = undefined;
@@ -15943,9 +16465,9 @@ $ws.proto.OrderedHashMap = (function() {
     * @returns {Boolean} true, если все ключи были удалены.
     */
    OrderedHashMap.prototype.removeAll = function(keys) {
-      if(keys instanceof Array) {
+      if (keys instanceof Array) {
          var r = true;
-         for(var i = 0, l = keys.length; i < l; i++) {
+         for (var i = 0, l = keys.length; i < l; i++) {
             r &= this.remove(keys[i]);
          }
          return !!r;
@@ -15963,8 +16485,9 @@ $ws.proto.OrderedHashMap = (function() {
       this._reading = true;
       try {
          for (var i = 0, l = this._keys.length; i < l; i++) {
-            if (f.apply(this, [ this._keys[i], this._values[i] ]) === false)
+            if (f.apply(this, [ this._keys[i], this._values[i] ]) === false) {
                break;
+            }
          }
       } finally {
          this._reading = false;
@@ -15995,17 +16518,18 @@ $ws.proto.OrderedHashMap = (function() {
     * @param {String} key Ключ.
     * @returns {Boolean} Найден ли ключ.
     */
-   OrderedHashMap.prototype.contains = function(key){
+   OrderedHashMap.prototype.contains = function(key) {
       return this._helperHash[key] !== undefined;
    };
 
    OrderedHashMap.prototype._checkConcurent = function() {
-      if(this._reading)
-         throw new ReferenceError("Конкурентная модификация объекта. Попытка изменения при переборе");
+      if (this._reading) {
+         throw new ReferenceError('Конкурентная модификация объекта. Попытка изменения при переборе');
+      }
    };
 
    OrderedHashMap.prototype._getKeyIndex = function(key) {
-      return Array.indexOf(this._keys, key + "");
+      return Array.indexOf(this._keys, key + '');
    };
 
    return OrderedHashMap;
@@ -16019,6 +16543,7 @@ $ws.proto.OrderedHashMap = (function() {
  * @public
  */
 $ws.single.i18n = {
+
    /**
     * Инициализация синглтона
     */
@@ -16030,8 +16555,10 @@ $ws.single.i18n = {
          $('body').addClass(this._currentLang);
       }
 
-      var global = (function(){ return this || (0,eval)('this'); }());
-      global.rk = $ws.single.i18n.rk.bind( $ws.single.i18n );
+      var global = (function() {
+         return this || (0, eval)('this'); 
+      }());
+      global.rk = $ws.single.i18n.rk.bind($ws.single.i18n);
    },
 
    detectLanguage: function() {
@@ -16041,9 +16568,9 @@ $ws.single.i18n = {
       }
 
       var hostname = location.hostname,
-          domain = hostname.substring(hostname.lastIndexOf('.') + 1, hostname.length).toUpperCase(),
-          avLang = this.getAvailableLang(),
-          detectedLng, parts;
+         domain = hostname.substring(hostname.lastIndexOf('.') + 1, hostname.length).toUpperCase(),
+         avLang = this.getAvailableLang(),
+         detectedLng, parts;
 
       // get from cookie
       detectedLng = $.cookie('lang') || '';
@@ -16056,6 +16583,7 @@ $ws.single.i18n = {
       // get from navigator
       if (!detectedLng) {
          detectedLng = navigator.language || navigator.userLanguage;
+
          // Здесь надо проверить, если формат ru-RU, то совпадает ли страна с доменом
          if (detectedLng.indexOf('-') > -1) {
             parts = detectedLng.split('-');
@@ -16088,7 +16616,7 @@ $ws.single.i18n = {
     * В двухсимвольном виде (EN, RU, DE и т.п.).
     * @returns {string}
     */
-   getLang: function(){
+   getLang: function() {
       return this._currentLang;
    },
 
@@ -16096,7 +16624,7 @@ $ws.single.i18n = {
     * Возвращает список доступных языков, на которые переведена платформа
     * @returns {Object}
     */
-   getAvailableLang: function(){
+   getAvailableLang: function() {
       return $ws._const.availableLanguage;
    },
 
@@ -16117,7 +16645,7 @@ $ws.single.i18n = {
    setLang: function(language) {
       var changeLang = false,
          oldLang = this._currentLang;
-      if (language && typeof(language) === 'string' && /..-../.test(language) && language !== this._currentLang) {
+      if (language && typeof (language) === 'string' && /..-../.test(language) && language !== this._currentLang) {
          var parts = language.split('-');
          this._currentLang = parts[0].toLowerCase() + '-' + parts[1].toUpperCase();
          changeLang = true;
@@ -16156,12 +16684,13 @@ $ws.single.i18n = {
       if (this._dict[this._currentLang]) {
          var trans_key = this._dict[this._currentLang][ctx ? '' + ctx + this._separator +  key : '' + key];
          if (trans_key) {
-            return trans_key.replace(/</g,'&lt;').replace(/>/g,'&gt;'); // Простое экранирование
+            return trans_key.replace(/</g, '&lt;').replace(/>/g, '&gt;'); // Простое экранирование
          }
       }
 
       return key;
    },
+
    /**
     * Проверят наличие словаря по его имени
     * @param {String} dictName.
@@ -16177,7 +16706,7 @@ $ws.single.i18n = {
     * @param {String} name.
     * @parma {String} [lang=this.getLang()]
     */
-   setDict: function(dict, name, lang){
+   setDict: function(dict, name, lang) {
       lang = lang || this.getLang();
       if (lang && !this.hasDict(name)) {
          if (name) {
@@ -16191,36 +16720,41 @@ $ws.single.i18n = {
 
    /** Разделитель между контекстом и ключом */
    _separator: '@@',
+
    /** Текущий язык */
    _currentLang: '',
+
    /** Все загруженные словари, где ключ - слово на языке оригинала */
    _dict: {},
+
    /** Все загруженные словари, где ключ - имя словаря */
    _dictNames: {}
 };
 
 (function() {
 
-   "use strict";
+   'use strict';
 
-   $ws.requireModule = function(mods){
+   $ws.requireModule = function(mods) {
       mods = mods instanceof Array ? mods : [mods];
       var modules = [];
-      $ws.helpers.forEach(mods, function(mod){
-         modules.push("js!" + mod);
+      $ws.helpers.forEach(mods, function(mod) {
+         modules.push('js!' + mod);
       });
       return $ws.require(modules);
    };
 
-   $ws.require = function(modulesArg){
+   $ws.require = function(modulesArg) {
       var
          dReady = new $ws.proto.Deferred(),
          isResultSet = false,
-         global = (function(){ return this || (0,eval)('this'); }()),
+         global = (function() {
+            return this || (0, eval)('this'); 
+         }()),
          mods = modulesArg instanceof Array ? modulesArg : [modulesArg],
          resultMods = new Array(mods.length),
          idsToLoad = [],
-         fireResult = function () {
+         fireResult = function() {
             var
                nameArray,
                moduleName,
@@ -16231,11 +16765,11 @@ $ws.single.i18n = {
                resultMods[modIdx] = mod;
             });
 
-            $ws.helpers.forEach(mods, function(mod, index){
+            $ws.helpers.forEach(mods, function(mod, index) {
                glob = global;
-               nameArray = /[^!]*$/.exec(mod)[0].split(".");
+               nameArray = /[^!]*$/.exec(mod)[0].split('.');
                moduleName = nameArray.pop();
-               $ws.helpers.forEach(nameArray, function(elem){
+               $ws.helpers.forEach(nameArray, function(elem) {
                   glob = glob[elem] = glob[elem] || {};
                });
                glob[moduleName] = resultMods[index];
@@ -16254,7 +16788,7 @@ $ws.single.i18n = {
       });
 
       if (idsToLoad.length > 0) {
-         modsToLoad = $ws.helpers.map(idsToLoad, function (id) {
+         modsToLoad = $ws.helpers.map(idsToLoad, function(id) {
             return mods[id];
          });
 
@@ -16281,6 +16815,7 @@ $ws.single.i18n = {
 $ws.single.DependencyResolver = {
    _store: {},
    _parents: {},
+
    /**
     * Метод регистрации зависимостей
     * @param {String} control Имя класса контрола, для которого регистрируются зависимости.
@@ -16291,6 +16826,7 @@ $ws.single.DependencyResolver = {
       this._store[control] = dependency;
       this._parents[control] = parentsControl;
    },
+
    /**
     *
     * @param {String} control Имя класса, для которого требуется выяснить зависимости.
@@ -16299,19 +16835,20 @@ $ws.single.DependencyResolver = {
     */
    resolve: function(control, config) {
       var
-            result = [],
-            components = control.split('/' ),
-            parents = this._parents[control] ? this._parents[control].split('/') : [];
-      while(components.length) {
+         result = [],
+         components = control.split('/'),
+         parents = this._parents[control] ? this._parents[control].split('/') : [];
+      while (components.length) {
          this._addDependency(result, components.join('/'), config, true);
          components.pop();
       }
 
-      while(parents.length) {
+      while (parents.length) {
          this._addDependency(result, parents.pop(), config, true);
       }
       return result.sort();
    },
+
    /**
     * Добавляет зависимость в массив store, если ее там еще нет.
     * Вычисляет дополнительные зависимости по данным, зарегистрированным через register.
@@ -16322,18 +16859,20 @@ $ws.single.DependencyResolver = {
     * @param {Boolean} [excludeSelf] исключает сам переданный класс из результата, по умолчанию == false.
     * @private
     */
-   _addDependency: function (store, dependency, config, excludeSelf) {
+   _addDependency: function(store, dependency, config, excludeSelf) {
       var self = this;
       dependency = $ws.single.ClassMapper.getClassMapping(dependency);
-      if(Array.indexOf(store, dependency) == -1) {
-         if(!excludeSelf)
+      if (Array.indexOf(store, dependency) == -1) {
+         if (!excludeSelf) {
             store.push(dependency);
-         if(this._store[dependency]) {
+         }
+         if (this._store[dependency]) {
             var resolved = typeof this._store[dependency] == 'function' ? this._store[dependency](config) : this._store[dependency];
-            if(resolved && resolved instanceof Array)
-               $ws.helpers.forEach(resolved, function(dep){
+            if (resolved && resolved instanceof Array) {
+               $ws.helpers.forEach(resolved, function(dep) {
                   self._addDependency(store, dep);
                });
+            }
          }
       }
    }
@@ -16348,122 +16887,127 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
    _container: undefined,
    _ready: false,
    _dReady: undefined,
-   _init: function(cfg){
+   _init: function(cfg) {
       var self = this;
-      if(!cfg)
+      if (!cfg) {
          cfg = {};
+      }
       cfg.handlers = {
-         'onReady': function(){
+         'onReady': function() {
             self._ready = true;
          }
       };
-      if(!this._dReady){
-         this._dReady = $ws.core.attachInstance('SBIS3.CORE.LoadingIndicator',cfg).addCallback(function(inst){
+      if (!this._dReady) {
+         this._dReady = $ws.core.attachInstance('SBIS3.CORE.LoadingIndicator', cfg).addCallback(function(inst) {
             self._container = inst;
             return inst;
          });
       }
       return this._dReady;
    },
+
    /**
     * Показывает индикатор
     * @returns {Object} возвращает самого себя.
     */
-   show: function(){
-      if(!this._ready){
-         this._init().addCallback(function(inst){
+   show: function() {
+      if (!this._ready) {
+         this._init().addCallback(function(inst) {
             inst.show();
             return inst;
          });
-      }
-      else
+      } else {
          this._container.show();
+      }
       return this;
    },
+
    /**
     * Устанавливает сообщение и показывает индикатор, если он скрыт
     * @param {String} message - сообщение.
     * @returns {Object} возвращает самого себя.
     */
-   setMessage: function(message){
-      if(!this._ready){
-         this._init().addCallback(function(inst){
+   setMessage: function(message) {
+      if (!this._ready) {
+         this._init().addCallback(function(inst) {
             inst.setMessage(message);
-            inst.subscribe('onReady', function(){
+            inst.subscribe('onReady', function() {
                this.setMessage(message);
             });
             return inst;
          });
-      }
-      else{
+      } else {
          this._container.setMessage(message);
          this._container.show();
       }
       return this;
    },
+
    /**
     * Скрывет индикатор
     * @returns {Object} возвращает самого себя.
     */
-   hide: function(){
-      if(this._ready)
+   hide: function() {
+      if (this._ready) {
          this._container.hide();
-      else{
-         this._init().addCallback(function(inst){
+      } else {
+         this._init().addCallback(function(inst) {
             inst.hide();
             return inst;
          });
       }
       return this;
    },
+
    /**
     * Переключает вид индикатора: true - индикатор с прогрессбаром, false - без него
     * @param {Boolean} state.
     * @returns {Object} возвращает самого себя.
     */
-   progressBar: function(state){
+   progressBar: function(state) {
       var self = this;
-      if(!this._ready){
+      if (!this._ready) {
          this.destroy();
          this._init({progressBar: state});
-      }
-      else{
-         if(!(this._container._myProgressBar && state)){
+      } else {
+         if (!(this._container._myProgressBar && state)) {
             this.destroy();
             this._init({progressBar: state});
          }
       }
       return self;
    },
+
    /**
     * Устанавливает прогресс идкатора в режиме прогрессбара
     * Предварительно нужно переключить вид индикатора $ws.single.Indicatior.progressBar(true).
     * @param {Number} progress - количество процентов.
     * @returns {Object} возвращает самого себя.
     */
-   setProgress: function(progress){
-      if(!this._ready)
-         this._init().addCallback(function(inst){
+   setProgress: function(progress) {
+      if (!this._ready) {
+         this._init().addCallback(function(inst) {
             inst.setProgress(progress);
-            inst.subscribe('onReady', function(){
+            inst.subscribe('onReady', function() {
                this.setProgress(progress);
             });
             return inst;
          });
-      else
+      } else {
          this._container.setProgress(progress);
+      }
       return this;
    },
+
    /**
     * Уничтожает индикатор
     * @returns {Object} возвращает самого себя.
     */
-   destroy: function(){
-      if(this._ready){
+   destroy: function() {
+      if (this._ready) {
          this._container.destroy();
-      }
-      else{
-         this._init().addCallback(function(inst){
+      } else {
+         this._init().addCallback(function(inst) {
             inst.destroy();
             return inst;
          });
@@ -16483,9 +17027,11 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
  */
 (function() {
 
-   "use strict";
+   'use strict';
 
-   var global = (function(){ return this || (1,eval)('this') }());
+   var global = (function() {
+      return this || (1, eval)('this'); 
+   }());
 
    var bindings = $ws.core.merge({
       ITransport: 'XHRTransport',
@@ -16510,13 +17056,13 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
       }
    }, global.wsBindings || {}, { rec: false });
 
-   $ws.helpers.forEach(bindings, function(target, iface){
+   $ws.helpers.forEach(bindings, function(target, iface) {
       var single = false;
-      if(target.single) {
+      if (target.single) {
          target = target.name;
          single = true;
       }
-      if(single) {
+      if (single) {
          $ws.single.ioc.bindSingle(iface, target);
       } else {
          $ws.single.ioc.bind(iface, target);
@@ -16524,44 +17070,48 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
    });
 
    $ws.single.ClassMapper.setClassMapping({
-      'Control/FieldImageGallery':        'Control/ImageGallery',
-      'Control/Field:FieldImage':         'Control/FieldImage',
-      'Control/Field:FieldDropdown':      'Control/FieldDropdown',
-      'Control/Field:FieldCheckbox':      'Control/FieldCheckbox',
-      'Control/Field:FieldRadio':         'Control/FieldRadio',
-      'Control/Field:FieldNumeric':       'Control/FieldNumeric',
-      'Control/Field:FieldInteger':       'Control/FieldInteger',
-      'Control/Field:FieldMoney':         'Control/FieldMoney',
-      'Control/Field:FieldLabel':         'Control/FieldLabel',
-      'Control/Field:FieldFormatAbstract':'Control/FieldMask',
-      'Control/Field:FieldMask':          'Control/FieldMask',
-      'Control/Field:FieldDate':          'Control/FieldDate',
-      'Control/Field:FieldLinkNew':       'Control/FieldLink',
-      'Control/Field:FieldMonth':         'Control/FieldMonth',
-      'Control/Field:FieldButton':        'Control/Button',
-      'Control/Field:FileScaner':         'Control/FileScaner',
-      'Control/Field:FileBrowse':         'Control/FileBrowse',
-      'Control/Field:FieldDatePicker':    'Control/FieldDatePicker',
-      'Control/Area:ToolBar':             'Control/ToolBar',
-      'Control/Area:GroupCheckBox':       'Control/GroupCheckBox',
-      'Control/Area:Tabs':                'Control/Tabs',
-      'Control/Area:HTMLView':            'Control/HTMLView',
-      'Control/Area:FiltersArea':         'Control/FiltersArea',
-      'Control/Area:FiltersDialog':       'Control/FiltersDialog',
-      'Control/Area:FiltersWindow':       'Control/FiltersWindow',
-      'Control/DataView/TableView':       'Control/TableView',
-      'Control/DataViewAbstract/TableView/TreeView':       'Control/TreeView'
+      'Control/FieldImageGallery': 'Control/ImageGallery',
+      'Control/Field:FieldImage': 'Control/FieldImage',
+      'Control/Field:FieldDropdown': 'Control/FieldDropdown',
+      'Control/Field:FieldCheckbox': 'Control/FieldCheckbox',
+      'Control/Field:FieldRadio': 'Control/FieldRadio',
+      'Control/Field:FieldNumeric': 'Control/FieldNumeric',
+      'Control/Field:FieldInteger': 'Control/FieldInteger',
+      'Control/Field:FieldMoney': 'Control/FieldMoney',
+      'Control/Field:FieldLabel': 'Control/FieldLabel',
+      'Control/Field:FieldFormatAbstract': 'Control/FieldMask',
+      'Control/Field:FieldMask': 'Control/FieldMask',
+      'Control/Field:FieldDate': 'Control/FieldDate',
+      'Control/Field:FieldLinkNew': 'Control/FieldLink',
+      'Control/Field:FieldMonth': 'Control/FieldMonth',
+      'Control/Field:FieldButton': 'Control/Button',
+      'Control/Field:FileScaner': 'Control/FileScaner',
+      'Control/Field:FileBrowse': 'Control/FileBrowse',
+      'Control/Field:FieldDatePicker': 'Control/FieldDatePicker',
+      'Control/Area:ToolBar': 'Control/ToolBar',
+      'Control/Area:GroupCheckBox': 'Control/GroupCheckBox',
+      'Control/Area:Tabs': 'Control/Tabs',
+      'Control/Area:HTMLView': 'Control/HTMLView',
+      'Control/Area:FiltersArea': 'Control/FiltersArea',
+      'Control/Area:FiltersDialog': 'Control/FiltersDialog',
+      'Control/Area:FiltersWindow': 'Control/FiltersWindow',
+      'Control/DataView/TableView': 'Control/TableView',
+      'Control/DataViewAbstract/TableView/TreeView': 'Control/TreeView'
    });
 
-// Old style configuration scheme...
-   if('WSRootPath' in global)
+   // Old style configuration scheme...
+   if ('WSRootPath' in global) {
       $ws._const.wsRoot = global.WSRootPath;
-   if('ResourcePath' in global)
+   }
+   if ('ResourcePath' in global) {
       $ws._const.resourceRoot = global.ResourcePath;
-   if('ServicesPath' in global)
+   }
+   if ('ServicesPath' in global) {
       $ws._const.defaultServiceUrl = global.ServicesPath;
-   if('WSTheme' in global)
+   }
+   if ('WSTheme' in global) {
       $ws._const.theme = global.WSTheme;
+   }
 
    // New style configration scheme
    $ws.core.merge($ws._const, global.wsConfig || {}, { rec: false });
@@ -16570,7 +17120,7 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
    global.HTTPError = HTTPError;
 }());
 
-(function(){
+(function() {
 
    if (typeof window !== 'undefined') {
       var
@@ -16582,16 +17132,16 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
          ticker = $ws.single.EventBus.channel('ticker'),
          timerSlow, timer, timerFast;
 
-      timerSlow = setInterval(function(){
-         ticker.notify('onTickSlow')
+      timerSlow = setInterval(function() {
+         ticker.notify('onTickSlow');
       }, TICKER_INTERVAL_SLOW);
 
-      timer = setInterval(function(){
-         ticker.notify('onTick')
+      timer = setInterval(function() {
+         ticker.notify('onTick');
       }, TICKER_INTERVAL);
 
-      timerFast = setInterval(function(){
-         ticker.notify('onTickFast')
+      timerFast = setInterval(function() {
+         ticker.notify('onTickFast');
       }, TICKER_INTERVAL_FAST);
    }
 
@@ -16599,15 +17149,15 @@ $ws.single.Indicator = /** @lends $ws.single.Indicator.prototype */{
 
 $ws.core.ready = new $ws.proto.Deferred().callback();
 
-if(window){
+if (window) {
 
-   $ws.core.ready.addCallback(function(){
+   $ws.core.ready.addCallback(function() {
       Error.stackTraceLimit && (Error.stackTraceLimit = 40);
       var dResult = new $ws.proto.Deferred(),
-          jQw = 'jQuery' in window,
-          vernums = (jQw && window.jQuery.fn.jquery.split('.')) || [0,0];
-      if(!(jQw && 'proxy' in jQuery && (parseInt(vernums[0]) == 1 && parseInt(vernums[1]) >= 11))) { // Check for jQ 1.11+
-         dResult.dependOn($ws.core.attach("ext/jquery-min.js") );
+         jQw = 'jQuery' in window,
+         vernums = (jQw && window.jQuery.fn.jquery.split('.')) || [0, 0];
+      if (!(jQw && 'proxy' in jQuery && (parseInt(vernums[0]) == 1 && parseInt(vernums[1]) >= 11))) { // Check for jQ 1.11+
+         dResult.dependOn($ws.core.attach('ext/jquery-min.js'));
       } else {
          dResult.callback();
       }
@@ -16615,24 +17165,24 @@ if(window){
    }).addCallback(function() {
       $ws._const.$win = $(window);
       $ws._const.$doc = $(document);
-      if(!$ws._const.nostyle) {
-         return $ws.core.attach("css/core.css").addErrback(function() {
-            $ws.single.ioc.resolve('ILogger').log("Core", "Core style loading failed");
-            return "";
+      if (!$ws._const.nostyle) {
+         return $ws.core.attach('css/core.css').addErrback(function() {
+            $ws.single.ioc.resolve('ILogger').log('Core', 'Core style loading failed');
+            return '';
          });
       }
-   }).addCallback(function(){
+   }).addCallback(function() {
 
       // При выгрузке документа заблокируем все сообщения пользователю
-      $(window).unload(function(){
+      $(window).unload(function() {
          $ws.helpers._messageBox = $ws.core.alert = $ws.helpers.question = function() {
             return $ws.proto.Deferred.success();
          };
       });
 
-      $(document).bind('mousemove keyup', function(){
+      $(document).bind('mousemove keyup', (function() {
          var last;
-         return function(e){
+         return function(e) {
             if (e.type == 'mousemove') {
                if (last && last.pageX == e.pageX && last.pageY == e.pageY) {
                   return;
@@ -16645,25 +17195,25 @@ if(window){
             $ws.single.EventBusGlobalChannel.notify('userActivity');
             BOOMR.plugins.WS.logUserActivity();
          }.throttle(5000);
-      }());
+      }()));
 
       /**
        * Поддержка css3-transform в разных браузерах через .css
        */
-      (function( $ ) {
-            if ($ws._const.compatibility.cssTransformProperty !== 'transform') {
-               $.cssHooks["transform"] = {
-                  get: function(elem) {
-                     return $.css(elem, $ws._const.compatibility.cssTransformProperty);
-                  },
-                  set: function(elem, value) {
-                     elem.style[$ws._const.compatibility.cssTransformProperty] = value;
-                  }
-               };
-            }
-      })( jQuery );
+      (function($) {
+         if ($ws._const.compatibility.cssTransformProperty !== 'transform') {
+            $.cssHooks['transform'] = {
+               get: function(elem) {
+                  return $.css(elem, $ws._const.compatibility.cssTransformProperty);
+               },
+               set: function(elem, value) {
+                  elem.style[$ws._const.compatibility.cssTransformProperty] = value;
+               }
+            };
+         }
+      })(jQuery);
 
-      $ws._const.$win.bind('scroll.accordeon resize.accordeon', function(){
+      $ws._const.$win.bind('scroll.accordeon resize.accordeon', function() {
          /*
           * Преимущественно сделано для фиксации аккордеона, но можно подписаться на событие глобального контекста
           * и не быть привязанным к тому есть ли флоат панель или нет...
@@ -16671,68 +17221,70 @@ if(window){
          $ws.single.EventBus.globalChannel().notify('ContentScrolling', $ws._const.$win.scrollTop());
       });
       var d = new $ws.proto.ParallelDeferred();
-      if(!('cookie' in jQuery))
+      if (!('cookie' in jQuery)) {
          d.push($ws.core.attach('ext/jquery-cookie-min.js'));
-      if($ws._const.theme !== '' && !$ws._const.nostyle)
-         d.push($ws.core.attach('css/themes/' + $ws._const.theme + '.css').addErrback(function(){
-            $ws.single.ioc.resolve('ILogger').log("Core", "Theme '" + $ws._const.theme + "' is not found. Continue with default.");
-            return "";
+      }
+      if ($ws._const.theme !== '' && !$ws._const.nostyle) {
+         d.push($ws.core.attach('css/themes/' + $ws._const.theme + '.css').addErrback(function() {
+            $ws.single.ioc.resolve('ILogger').log('Core', "Theme '" + $ws._const.theme + "' is not found. Continue with default.");
+            return '';
          }));
+      }
 
       $ws._const.$win.bind('orientationchange', function() {
          $ws._const.$win.trigger('resize');
       });
 
       return d.done().getResult();
-   }).addCallback(function(){
-      if(window.contents && !Object.isEmpty(window.contents)) {
+   }).addCallback(function() {
+      if (window.contents && !Object.isEmpty(window.contents)) {
          $ws.core.loadContents(window.contents, false, {
             resources: $ws._const.resourceRoot
          });
       }
-      if(window && ('cookie' in jQuery)){
+      if (window && ('cookie' in jQuery)) {
          $.cookie('tz', new Date().getTimezoneOffset());
       }
-   }).addCallback(function(){
+   }).addCallback(function() {
       // Вычитка параметров из адресной строки в глобальный контекст
       var args = location.search;
-      if(args.indexOf('?') === 0) {
+      if (args.indexOf('?') === 0) {
          var argsArr = args.substr(1).split('&');
-         for(var i = 0, l = argsArr.length; i < l; i++) {
+         for (var i = 0, l = argsArr.length; i < l; i++) {
             // Шилов Д.А. не будем сплитить, надо найти только первый символ =
             var
-               index = argsArr[i].indexOf( '='),
+               index = argsArr[i].indexOf('='),
                name = decodeURIComponent(argsArr[i].substring(0, index));
 
             if (name) {
                $ws.single.GlobalContext.setValue(name, decodeURIComponent(argsArr[i].substring(index + 1)));
             }
-          }
+         }
       }
-   }).addCallback(function(){
-      $(document).ready( function applySpecificCssClasses() {
+   }).addCallback(function() {
+      $(document).ready(function applySpecificCssClasses() {
          var
             body = $('body'),
             classes = [];
          if ($ws._const.browser.isIE) {
             classes.push('ws-is-ie');
          }
-         if($ws._const.browser.isIE8) {
+         if ($ws._const.browser.isIE8) {
             classes.push('ws-is-ie8');
          }
-         if($ws._const.browser.isIE9) {
+         if ($ws._const.browser.isIE9) {
             classes.push('ws-is-ie9');
          }
-         if($ws._const.browser.isIE10) {
+         if ($ws._const.browser.isIE10) {
             classes.push('ws-is-ie10');
          }
-         if($ws._const.browser.isIE12) {
+         if ($ws._const.browser.isIE12) {
             classes.push('ws-is-ie12');
          }
-         if($ws._const.browser.firefox) {
+         if ($ws._const.browser.firefox) {
             classes.push('ws-is-firefox');
          }
-         if($ws._const.browser.chrome) {
+         if ($ws._const.browser.chrome) {
             classes.push('ws-is-chrome');
             if ($ws._const.browser.isMobileIOS) {
                classes.push('ws-is-mobile-chrome-ios');
@@ -16747,7 +17299,7 @@ if(window){
                classes.push('ws-is-mobile-safari-ios-below-8');
             }
          }
-         if ($ws._const.browser.isMobilePlatform){
+         if ($ws._const.browser.isMobilePlatform) {
             classes.push('ws-is-mobile-platform');
          }
          if ($ws._const.compatibility.touch) {
@@ -16756,19 +17308,21 @@ if(window){
          if ($ws._const.browser.isMacOSDesktop) {
             classes.push('ws-is-desktop-safari');
          }
-         if(classes.length) {
+         if (classes.length) {
             body.addClass(classes.join(' '));
          }
 
          $ws._const.$body = body;
       });
-   }).addCallback(function(){
+   }).addCallback(function() {
       // Инициализация интернационализации
       $ws.single.i18n.init();
+
       // Инициализация микросессий
       if (window) {
          if ($ws._const.browser.isIE) {
             var def = new $ws.proto.Deferred();
+
             /**
              * В IE, если страница отдалась с кодом не 200 (в нашем случае это 401 когда доступ запрещен)
              * работа с локейшеном, даже если меняется только hash? (например .replace(...)) приводит к перезагрузке страницы.
@@ -16776,7 +17330,7 @@ if(window){
              * Если отложить работу с локейшеном - проблема пропадает.
              * Спасибо вам, авторы IE.
              */
-            setTimeout(function(){
+            setTimeout(function() {
                $ws.single.MicroSession.init();
                def.callback();
             }, 0);
@@ -16787,25 +17341,26 @@ if(window){
       }
    }).addCallback(function() {
       return $ws.core.attachComponent('Source');
-   }).addCallback(function(){
+   }).addCallback(function() {
 
       // Инициализация HashManager
       if (window) {
          var
-            pU = $ws.single.MicroSession.get("previousUrl"),
-            helper = $ws.single.MicroSession.get("previousUrlHelper");
+            pU = $ws.single.MicroSession.get('previousUrl'),
+            helper = $ws.single.MicroSession.get('previousUrlHelper');
 
-         if (pU != window.location.toString())
-            $ws.single.MicroSession.set("previousUrlHelper", pU);
-         else
+         if (pU != window.location.toString()) {
+            $ws.single.MicroSession.set('previousUrlHelper', pU);
+         } else {
             pU = helper;
+         }
 
          window.previousPageURL = pU;
 
-         $ws.single.MicroSession.set("previousUrl", window.location.toString());
+         $ws.single.MicroSession.set('previousUrl', window.location.toString());
 
-         $ws.single.HashManager.subscribe('onChange', function(){
-            $ws.single.MicroSession.set("previousUrl", window.location.toString());
+         $ws.single.HashManager.subscribe('onChange', function() {
+            $ws.single.MicroSession.set('previousUrl', window.location.toString());
          });
          $ws.single.WindowManager.postInit();
       }
@@ -16817,7 +17372,7 @@ if(window){
 
       pd.push($ws.require(['Core/SessionStorage']));
 
-      if($ws._const.globalConfigSupport) {
+      if ($ws._const.globalConfigSupport) {
          if (window.globalClientConfig && !Object.isEmpty(window.globalClientConfig)) {
             validatedConfig = $ws.helpers.reduce(window.globalClientConfig, function(res, value, name) {
                if (name) {
@@ -16834,7 +17389,7 @@ if(window){
       return pd.done().getResult()
          .addCallback(function() {
             if ($ws._const.userConfigSupport) {
-               if (!$ws.single.SessionStorage.get("userParamsDefined")) {
+               if (!$ws.single.SessionStorage.get('userParamsDefined')) {
                   return $ws.single.UserConfig.getParams();
                } else {
                   var
@@ -16850,16 +17405,18 @@ if(window){
                }
             }
          })
-         .addErrback(function(e){
+         .addErrback(function(e) {
             //проверим ошибку на корректность
-            if(e instanceof HTTPError && e.httpError !== 0){
-               $ws.single.ioc.resolve('ILogger').error("Ошибка при загрузке параметров", e.message, e);
+            if (e instanceof HTTPError && e.httpError !== 0) {
+               $ws.single.ioc.resolve('ILogger').error('Ошибка при загрузке параметров', e.message, e);
             }
+
             // Очищаем ошибку чтобы не ломать старт ядра
             return '';
          });
    });
 }
+
 /**
  * Это должна быть ПОСЛЕДНЯЯ строка в этом файле. Не добавляйте ничего ниже.
  * Просто для того, чтобы было легко найти код конфигурации ядра.

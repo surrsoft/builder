@@ -1,9 +1,11 @@
-(function(){
+(function() {
 
    'use strict';
 
-   var global = (function(){ return this || (0,eval)('this'); }()),
-       define = global.define || (global.requirejs && global.requirejs.define);
+   var global = (function() {
+         return this || (0, eval)('this'); 
+      }()),
+      define = global.define || (global.requirejs && global.requirejs.define);
 
    function mkTemplate(f, name) {
 
@@ -11,7 +13,7 @@
 
       // Это обертка для улучшения логов. Создается именованая функция с понятным названием чтобы из стэка можно было понять битый шаблон
       var factory = new Function('f',
-         "return function " + fname + "(){ return f.apply(this, arguments); }"
+         'return function ' + fname + '(){ return f.apply(this, arguments); }'
       );
 
       var result = factory(f);
@@ -45,7 +47,7 @@
             try {
                var path = $ws.helpers.requirejsPathResolver(name, 'html');
 
-               require(["text!" + path], function(html) {
+               require(['text!' + path], function(html) {
                   config = doT.getSettings();
                   config.strip = false;
                   if (doEncode) {
@@ -66,6 +68,6 @@
                load.error(e);
             }
          }
-      }
+      };
    });
 })();

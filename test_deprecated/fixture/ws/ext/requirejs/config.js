@@ -1,10 +1,12 @@
-(function () {
-   var global = (function(){ return this || (0,eval)('this'); }());
+(function() {
+   var global = (function() {
+      return this || (0, eval)('this'); 
+   }());
    var wsPath = ((global.wsConfig ? global.wsConfig.WSRootPath || global.wsConfig.wsRoot : undefined) || '/ws/').replace(/^\//, '');
    var resourcesPath = ((global.wsConfig ? global.wsConfig.ResourcePath || global.wsConfig.resourceRoot : undefined) || '/resources/').replace(/^\//, '');
    var pathjoin;
    var cacheSettings = {
-      buildnumber:""
+      buildnumber: ''
    };
 
    if (typeof module !== 'undefined') {
@@ -58,7 +60,7 @@
             'template': pathjoin(wsPath, 'ext/requirejs/plugins/template'),
             'cdn': pathjoin(wsPath, 'ext/requirejs/plugins/cdn'),
             'datasource': pathjoin(wsPath, 'ext/requirejs/plugins/datasource'),
-            'bootup' : pathjoin(wsPath, 'res/js/bootup'),
+            'bootup': pathjoin(wsPath, 'res/js/bootup'),
             'xml': pathjoin(wsPath, 'ext/requirejs/plugins/xml'),
             'preload': pathjoin(wsPath, 'ext/requirejs/plugins/preload'),
             'browser': pathjoin(wsPath, 'ext/requirejs/plugins/browser')
