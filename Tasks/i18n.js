@@ -24,7 +24,7 @@ module.exports = function(grunt) {
       if (cache) {
          cache = cache.replace(/"/g, '');
       }
-      const jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
+      var jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
 
       //Приводит повторяющиеся ключи в словарях к единому значению
       grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
