@@ -2,25 +2,23 @@
 
 const path = require('path');
 const fs = require('fs');
-const helpers = require('../lib/helpers');
 const humanize = require('humanize');
 const async = require('async');
 const DoT = global.requirejs('Core/js-template-doT');
-const UglifyJS = require('uglify-js');
 const tmplLocalizator = require('./../lib/i18n/tmplLocalizator');
 const oldToNew = require('../resources/old_to_new.json');
 const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
 
 function warnTmplBuild(err, fullPath) {
-   grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
+   global.grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
 }
 
 function errorTmplBuild(err, fullName, fullPath) {
-   grunt.log.error(`Resources error. An ERROR occurred while building template!
+   global.grunt.log.error(`Resources error. An ERROR occurred while building template!
     ---------File name: ${fullName}
     ---------File path: ${fullPath}`);
-   grunt.fail.fatal(err);
+   global.grunt.fail.fatal(err);
 }
 
 function stripBOM(x) {
@@ -204,16 +202,16 @@ module.exports = function(grunt) {
 
                               creatTemplate(fullName, contents, original, nodes, applicationRoot, callback, _deps);
 
-                           } catch (err) {
-                              warnTmplBuild(err, fullPath);
+                           } catch (error) {
+                              warnTmplBuild(error, fullPath);
                               setImmediate(callback);
                            }
-                        }, function(err) {
-                           warnTmplBuild(err, fullPath);
+                        }, function(error) {
+                           warnTmplBuild(error, fullPath);
                            setImmediate(callback);
                         });
-                  } catch (err) {
-                     errorTmplBuild(err, fullName, fullPath);
+                  } catch (error) {
+                     errorTmplBuild(error, fullName, fullPath);
                   }
                });
             } else {
@@ -227,8 +225,8 @@ module.exports = function(grunt) {
             try {
                mDeps.nodes = nodes;
                grunt.file.write(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(mDeps, null, 2));
-            } catch (err) {
-               grunt.fail.fatal(err);
+            } catch (error) {
+               grunt.fail.fatal(error);
             }
 
             console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
@@ -287,8 +285,8 @@ module.exports = function(grunt) {
 
                   creatTemplate(fullName, contents, original, nodes, applicationRoot, callback);
 
-               } catch (err) {
-                  warnTmplBuild(err, fullPath);
+               } catch (error) {
+                  warnTmplBuild(error, fullPath);
                   setImmediate(callback);
                }
             });
@@ -303,8 +301,8 @@ module.exports = function(grunt) {
          try {
             mDeps.nodes = nodes;
             grunt.file.write(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(mDeps, null, 2));
-         } catch (err) {
-            grunt.fail.fatal(err);
+         } catch (error) {
+            grunt.fail.fatal(error);
          }
 
          console.log(`Duration: ${(Date.now() - start) / 1000} sec`);

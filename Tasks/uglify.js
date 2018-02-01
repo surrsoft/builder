@@ -105,7 +105,7 @@ module.exports = function uglifyJsTask(grunt) {
                   data = minified;
                }
             } catch (minerr) {
-               grunt.log.warn(`Error while minifiing js! ${minerr.message}, in file: ${fullPath}`);
+               grunt.log.warn(`Error while minifiing js! ${minerr.message}, in file: ${sourceJSPath ? sourceJSPath : currentPath}`);
             }
             fs.writeFileSync(currentPath, data.code);
             if (isPresentationService) {

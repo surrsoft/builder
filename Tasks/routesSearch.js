@@ -19,7 +19,7 @@ function getRoutes(script, file) {
          }
       });
    } catch (e) {
-      grunt.fail.fatal(`Routes-search: ERROR while parsing file: ${file}
+      global.grunt.fail.fatal(`Routes-search: ERROR while parsing file: ${file}
         Message: ${e.message}`);
    }
 

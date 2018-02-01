@@ -17,11 +17,11 @@
       "fix": "node ./node_modules/eslint/bin/eslint -c=.eslintrc --fix ."
    },
    "dependencies": {
-      "async": "^2.0.1",
+      "async": "^2.6.0",
       "escodegen": "^1.9.0",
-      "esprima": "^3.0.0",
+      "esprima": "^4.0.0",
       "estraverse": "^4.2.0",
-      "fs-extra": "^0.30.0",
+      "fs-extra": "^5.0.0",
       "grunt": "^1.0.1",
       "grunt-cli": "^1.2.0",
       "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.18.100",
@@ -46,7 +46,8 @@
    },
    "devDependencies": {
       "chai": "^4.1.2",
-      "mocha": "^4.1.0",
+      "chai-as-promised": "^7.1.1",
+      "mocha": "^5.0.0",
       "eslint": "^4.16.0"
    },
    "engines": {
