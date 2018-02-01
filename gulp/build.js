@@ -25,7 +25,7 @@ const copyTaskGenerator = function(moduleInfo, changesStore) {
    };
 };
 
-const htmlTmplTaskGenerator = function(moduleInfo, changesStore) {
+const htmlTmplTaskGenerator = function(moduleInfo) {
    const moduleInput = path.join(moduleInfo.path,  '/**/*.html.tmpl');
 
    return function htmlTmpl() {

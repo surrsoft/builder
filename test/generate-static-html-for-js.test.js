@@ -7,12 +7,10 @@ const chai = require('chai'),
 //логгер - глобальный, должен быть определён до инициализации WS
 require('../lib/logger').setGulpLogger(require('gulplog'));
 
-const helpers = require('../lib/helpers'),
-   generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
+const generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
-const expect = chai.expect;
 
 const config = {
    root: path.join(__dirname, 'fixture/generate-static-html-for-js'),
@@ -72,7 +70,8 @@ describe('generate static html for js', function() {
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
          result.text.should.equal('<INCLUDE1/>\n\n' +
-            '<INCLUDE2/>\n\n');
+            '<INCLUDE2/>\n' +
+            '<INCLUDE1/>\n\n\n');
       });
       it('paths', async() => {
          const componentInfo = {
