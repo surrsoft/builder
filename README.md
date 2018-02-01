@@ -89,13 +89,8 @@ ESLint умеет самостоятельно исправлять некото
         logger.info('Сообщение будет видно пользователям и будет в логах');
         logger.warning('Текст предупреждения');
         logger.error('Текст ошибки');
-        logger.warning({
-            message: 'Текст предупреждения', //обязательно
-            filePath: filePath, //полный путь до файла, крайне желательно
-            moduleInfo: moduleInfo // экземпляр класса ModuleInfo, если есть. актуально для Gulp.
-        });
-        logger.error({
-            message: 'Текст ошибки', //обязательно
+        logger.error({ //аналогично можно вызывать logger.warning.
+            message: 'Текст ошибки', //если не задать, то будет выведено error.message
             filePath: filePath, //полный путь до файла, крайне желательно
             moduleInfo: moduleInfo, // экземпляр класса ModuleInfo, если есть. актуально для Gulp.
             error: error //пойманное исключение, если есть
