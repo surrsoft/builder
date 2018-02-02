@@ -4,10 +4,10 @@ const process = require('process'); //только одна зависимост
 
 try {
    //В самом начале проверим версию node. используем минимум возможностей node.js и ES6
-   if (process.versions.node.split('.')[0] < 6) {
+   if (process.versions.node.split('.')[0] < 8) {
       // не рискуем выводить через logger
       // eslint-disable-next-line no-console
-      console.log('[00:00:00] [ERROR] Builder_0002 Для запуска требуется Node.js v6.0.0 или выше');
+      console.log('[00:00:00] [ERROR] Builder_0002 Для запуска требуется Node.js v8.0.0 или выше');
       process.exit(1);
    }
 

@@ -1,84 +1,95 @@
 'use strict';
 
-var path = require('path');
-var dblSlashes = /\\/g;
+const path = require('path');
+const dblSlashes = /\\/g;
 
 module.exports = function(grunt) {
-   var ver = process.versions.node;
+   try {
+      const ver = process.versions.node;
 
-   if (ver.split('.')[0] < 4) {
-      console.error('nodejs >= v4.x required');
-      process.exit(1);
-   }
+      if (ver.split('.')[0] < 8) {
+         //eslint-disable-next-line no-console
+         console.error('nodejs >= v8.x required');
+         process.exit(1);
+      }
 
-   // Read options
-   var root = grunt.option('root') || '';
-   var app = grunt.option('application') || '/';
-   var versionize = grunt.option('versionize');
-   var packaging = grunt.option('package');
+      // Read options
+      const root = grunt.option('root') || '';
+      const app = grunt.option('application') || '/';
+      const versionize = grunt.option('versionize');
+      const packaging = grunt.option('package');
 
-   // Init environment
-   var target = path.resolve(root);
-   var application = path.join('/', app, '/').replace(dblSlashes, '/');
-   require('./lib/logger').setGruntLogger(grunt);
-   global.grunt = grunt; //это нужно для поддержки логов в grunt-wsmod-packer
+      // Init environment
+      const target = path.resolve(root);
+      const application = path.join('/', app, '/').replace(dblSlashes, '/');
+      require('./lib/logger').setGruntLogger(grunt);
+      global.grunt = grunt; //это нужно для поддержки логов в grunt-wsmod-packer
 
-   var configBuilder = require('./lib/config-builder.js');
+      const configBuilder = require('./lib/config-builder.js');
 
-   process.env.ROOT = target;
-   process.env.APPROOT = app;
+      process.env.ROOT = target;
+      process.env.APPROOT = app;
 
-   grunt.option('color', process.stdout.isTTY);
+      grunt.option('color', process.stdout.isTTY);
 
-   // Load tasks
-   grunt.loadNpmTasks('grunt-wsmod-packer');
-   grunt.loadNpmTasks('grunt-text-replace');
-   grunt.loadNpmTasks('grunt-contrib-cssmin');
+      // Load tasks
+      //для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
+      const oldVerbose = grunt.option('verbose');
+      grunt.option('verbose', true);
+      grunt.loadNpmTasks('grunt-wsmod-packer');
+      grunt.loadNpmTasks('grunt-text-replace');
+      grunt.loadNpmTasks('grunt-contrib-cssmin');
+      grunt.loadTasks('Tasks');
+      grunt.option('verbose', oldVerbose);
 
-   grunt.loadTasks('Tasks');
+      // Init config
+      grunt.file.mkdir(target);
+      grunt.file.setBase(target);
+      grunt.initConfig(configBuilder(grunt, target, application));
 
-   // Init config
-   grunt.file.mkdir(target);
-   grunt.file.setBase(target);
-   grunt.initConfig(configBuilder(grunt, target, application));
+      const defaultTasks = [];
 
-   var defaultTasks = [];
+      if (packaging) {
+         defaultTasks.push('deanonymize');
+      }
 
-   if (packaging) {
-      defaultTasks.push('deanonymize');
-   }
+      if (versionize && typeof versionize === 'string') {
+         defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
+      }
 
-   if (versionize && typeof versionize == 'string') {
-      defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
-   }
+      defaultTasks.push('i18n', 'collect-dependencies', 'routsearch', 'less1by1');
 
-   defaultTasks.push('i18n', 'collect-dependencies', 'routsearch', 'less1by1');
+      //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
+      if (packaging) {
+         defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
+         if (versionize && typeof versionize === 'string') {
+            defaultTasks.push('replace:html');
+         }
 
-   //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
-   if (packaging) {
-      defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
-      if (versionize && typeof versionize == 'string') {
+         /**
+          * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
+          * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
+          */
+         defaultTasks.push('uglify', 'packjs', 'packcss', 'owndepspack', 'custompack', 'packwsmod', 'gzip');
+      }
+
+      if (!packaging && versionize && typeof versionize === 'string') {
          defaultTasks.push('replace:html');
       }
 
-      /**
-       * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
-       * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
-       */
-      defaultTasks.push('uglify', 'packjs', 'packcss', 'owndepspack', 'custompack', 'packwsmod', 'gzip');
+      grunt.fail.warn = grunt.fail.fatal;
+
+      grunt.registerTask('default', defaultTasks);
+
+      grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
+
+   } catch (error) {
+      //eslint-disable-next-line no-console
+      console.log('Критическая ошибка в работе builder\'а: ', error.stack);
    }
-
-   if (!packaging && versionize && typeof versionize == 'string') {
-      defaultTasks.push('replace:html');
-   }
-
-   grunt.fail.warn = grunt.fail.fatal;
-
-   grunt.registerTask('default', defaultTasks);
-
-   grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
 };
 
-if (require.main == module) {
+if (require.main === module) {
+   //eslint-disable-next-line no-console
    console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
 }
