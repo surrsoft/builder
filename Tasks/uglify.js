@@ -4,9 +4,9 @@
  * Created by fa.kolbeshin on 21.12.2017.
  */
 
-var
+const
    fs = require('fs'),
-   uglifyES = require('uglify-es'),
+   uglifyJS = require('uglify-js'),
    humanize = require('humanize'),
    path = require('path'),
    async = require('async'),
@@ -19,7 +19,7 @@ module.exports = function uglifyJsTask(grunt) {
    grunt.registerMultiTask('uglify', 'Задача минификации JS', function() {
       grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача uglify.`);
       const taskDone = this.async();
-      var
+      const
          getAvailableFiles = function(filesArray) {
             return filesArray.filter(function(filepath) {
                if (!grunt.file.exists(filepath)) {
@@ -39,25 +39,31 @@ module.exports = function uglifyJsTask(grunt) {
 
       // Iterate over all src-dest file pairs.
       async.eachSeries(this.files, function(currentFile, done) {
-         var availableFiles = getAvailableFiles(currentFile.src);
+         const availableFiles = getAvailableFiles(currentFile.src);
          if (availableFiles.length === 0) {
             grunt.log.warn('Destination ' + currentFile.dest + ' not written because src files were empty.');
             return;
          }
          availableFiles.forEach(function(file) {
-            var
+            const
                currentPath = path.normalize(file),
-               data = fs.readFileSync(currentPath, 'utf8'),
+               originalText = fs.readFileSync(currentPath, 'utf8'),
                dataObject = {},
-               currentEXT = currentPath.match(jsEXT) ? jsEXT : currentPath.match(tmplEXT) ? tmplEXT : xhtmlEXT,
-               currentEXTString = currentEXT.toString(),
+               currentEXT = currentPath.match(jsEXT) ? jsEXT : currentPath.match(tmplEXT) ? tmplEXT : xhtmlEXT;
 
-               /**
-                * если минифицируется обычная js-ка, то передаём правильный набор опций для
-                * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
-                */
-               minifyOptions = !data.match(/define\("(tmpl!|html!)/) ? {
-                  /* eslint-disable id-match */
+
+            let minifyOptions,
+               sourceJSPath,
+               sourceMapPath,
+               currentEXTString = currentEXT.toString();
+
+            /**
+             * если минифицируется обычная js-ка, то передаём правильный набор опций для
+             * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
+             */
+            if (!originalText.match(/define\("(tmpl!|html!)/)) {
+               /* eslint-disable id-match */
+               minifyOptions = {
                   compress: {
                      sequences: true,
                      properties: false,
@@ -77,9 +83,13 @@ module.exports = function uglifyJsTask(grunt) {
                      keep_fargs: true,
                      collapse_vars: true
                   }
-                  /* eslint-enable id-match */
-               } : {mangle: {eval: true}},
-               sourceJSPath, sourceMapPath;
+               };
+               /* eslint-enable id-match */
+            } else {
+               minifyOptions = {
+                  mangle: {eval: true}
+               };
+            }
 
             currentEXTString = currentEXTString.slice(2, currentEXTString.length - 2);
 
@@ -93,7 +103,7 @@ module.exports = function uglifyJsTask(grunt) {
             if (isPresentationService) {
                sourceJSPath = currentPath.replace(currentEXT, `.source${currentEXTString}`);
                sourceMapPath = `${currentPath}.map`;
-               fs.writeFileSync(sourceJSPath, data);
+               fs.writeFileSync(sourceJSPath, originalText);
                if (currentEXTString === '.js') {
                   minifyOptions.sourceMap = {
                      url: path.basename(sourceMapPath)
@@ -101,10 +111,11 @@ module.exports = function uglifyJsTask(grunt) {
                }
             }
 
-            dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = data;
+            dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = originalText;
 
+            let minified;
             try {
-               const minified = uglifyES.minify(dataObject, minifyOptions);
+               minified = uglifyJS.minify(dataObject, minifyOptions);
                if (minified.error) {
                   logger.error({
                      message: 'Ошибка при минификации файла',
@@ -112,18 +123,19 @@ module.exports = function uglifyJsTask(grunt) {
                      filePath: sourceJSPath ? sourceJSPath : currentPath
                   });
                }
-               if (!minified.error && minified.code) {
-                  data = minified;
-               }
             } catch (error) {
                logger.error({
                   message: `Ошибка в builder'е при минификации файла ${sourceJSPath ? sourceJSPath : currentPath}`,
                   error: error
                });
             }
-            fs.writeFileSync(currentPath, data.code);
-            if (isPresentationService) {
-               fs.writeFileSync(sourceMapPath, data.map);
+            if (minified && !minified.error && minified.code) {
+               fs.writeFileSync(currentPath, minified.code);
+               if (isPresentationService) {
+                  fs.writeFileSync(sourceMapPath, minified.map);
+               }
+            } else {
+               fs.writeFileSync(currentPath, originalText);
             }
          });
 
