@@ -6,7 +6,7 @@
 
 var
    fs = require('fs'),
-   uglifyES = require('uglify-es'),
+   uglifyJS = require('uglify-js'),
    humanize = require('humanize'),
    path = require('path'),
    async = require('async'),
@@ -104,7 +104,7 @@ module.exports = function uglifyJsTask(grunt) {
             dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = data;
 
             try {
-               const minified = uglifyES.minify(dataObject, minifyOptions);
+               const minified = uglifyJS.minify(dataObject, minifyOptions);
                if (minified.error) {
                   logger.error({
                      message: 'Ошибка при минификации файла',
