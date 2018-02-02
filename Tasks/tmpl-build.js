@@ -58,15 +58,17 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
     https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
     */
    for (var name in oldToNew) {
-      if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
-         secondName = nameModule;
-         nameNotPlugin = oldToNew[name];
-         nameModule = plugin + oldToNew[name];
-         break;
-      }
-      if (oldToNew[name] === nameNotPlugin && nameNotPlugin !== name) {
-         secondName = plugin + name;
-         break;
+      if (oldToNew.hasOwnProperty(name)) {
+         if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
+            secondName = nameModule;
+            nameNotPlugin = oldToNew[name];
+            nameModule = plugin + oldToNew[name];
+            break;
+         }
+         if (oldToNew[name] === nameNotPlugin && nameNotPlugin !== name) {
+            secondName = plugin + name;
+            break;
+         }
       }
    }
 
