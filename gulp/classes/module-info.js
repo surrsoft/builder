@@ -15,8 +15,7 @@ class ModuleInfo {
       this.contents = {
          'htmlNames': {},
          'jsModules': {},
-         'modules': {},
-         'requirejsPaths': {}
+         'modules': {}
       };
    }
 

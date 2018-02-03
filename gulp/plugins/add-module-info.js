@@ -2,7 +2,8 @@
 
 const through = require('through2'),
    Vinyl = require('vinyl'),
-   logger = require('../../lib/logger').logger();
+   logger = require('../../lib/logger').logger(),
+   transliterate = require('../../lib/transliterate');
 
 module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {
@@ -11,6 +12,8 @@ module.exports = function(moduleInfo) {
       callback();
    }, function(callback) {
       try {
+         moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
+
          const contentsText = JSON.stringify(moduleInfo.contents, null, 3);
          const contentsJsFile = new Vinyl({
             path: 'contents.js',
