@@ -3,7 +3,8 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../lib/logger').logger(),
-   transliterate = require('../../lib/transliterate');
+   transliterate = require('../../lib/transliterate'),
+   processingRoutes = require('../../lib/processing-routes');
 
 module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {
@@ -31,6 +32,7 @@ module.exports = function(moduleInfo) {
          this.push(contentsJsonFile);
 
          //подготовим routes-info.json
+         processingRoutes(moduleInfo.routesInfo, Object.keys(moduleInfo.contents.jsModules));
          const routesInfoText = JSON.stringify(moduleInfo.routesInfo, null, 3);
          const routesInfoFile = new Vinyl({
             path: 'routes-info.json',

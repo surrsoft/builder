@@ -10,11 +10,11 @@ chai.should();
 const expect = chai.expect;
 
 describe('parse js component', function() {
-   it('basic', async() => {
+   it('empty file', async() => {
       const result = parseJsComponent('');
       Object.getOwnPropertyNames(result).length.should.equal(0);
    });
-   it('error', async() => {
+   it('file with error', async() => {
       expect(() => {
          parseJsComponent('define(');
       }).to.throw('Line 1: Unexpected end of input');
