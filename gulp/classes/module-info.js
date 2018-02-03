@@ -9,7 +9,15 @@ class ModuleInfo {
       this.responsible = moduleResponsible;
       this.path = modulePath;
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
-      this.contents = {};
+
+      //объект для записи contents.json
+      //availableLanguage, defaultLanguage и dictionary добавляются только при локализации
+      this.contents = {
+         'htmlNames': {},
+         'jsModules': {},
+         'modules': {},
+         'requirejsPaths': {}
+      };
    }
 
    get nameWithResponsible() {
@@ -18,6 +26,11 @@ class ModuleInfo {
       }
       return this.name;
    }
+
+   get folderName() {
+      return path.basename(this.path);
+   }
+
 }
 
 module.exports = ModuleInfo;
