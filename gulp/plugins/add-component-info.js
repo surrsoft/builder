@@ -8,23 +8,37 @@ const through = require('through2'),
 
 module.exports = function() {
    return through.obj(function(file, encoding, callback) {
-      if (file.extname === '.js') {
-         try {
-            file.componentInfo = parseJsComponent(file.contents.toString());
-            if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
-               const relativePath = path.join(file.moduleInfo.folderName, file.relative);
-               file.moduleInfo.contents.jsModules[file.componentInfo.componentName] = transliterate(relativePath);
-            }
-         } catch (error) {
-            logger.error({
-               message: 'Ошибка при парсинге JS файла',
-               filePath: file.history[0],
-               error: error,
-               moduleInfo: file.moduleInfo
-            });
-         }
+      //нас не интересуют:
+      //  не js-файлы
+      //  contents.js - мы его сами и сгенерировали
+      //  *.test.js - тесты
+      //  *.worker.js - воркеры
+      //  *.routes.js - роутинг. обрабатывается в отдельном плагине
+      //  файлы в папках node_modules - модули node.js
+      //  файлы в папках design - файлы для макетирования в genie
+      if (file.extname !== '.js' ||
+         file.basename === 'contents' ||
+         file.path.endsWith('.worker.js') ||
+         file.path.endsWith('.test.js') ||
+         file.path.includes('/node_modules/') ||
+         file.path.includes('/design/')) {
+         return callback(null, file);
       }
-      this.push(file);
-      callback();
+
+      try {
+         file.componentInfo = parseJsComponent(file.contents.toString());
+         if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
+            const relativePath = path.join(file.moduleInfo.folderName, file.relative);
+            file.moduleInfo.contents.jsModules[file.componentInfo.componentName] = transliterate(relativePath);
+         }
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка при обработке JS компонента',
+            filePath: file.history[0],
+            error: error,
+            moduleInfo: file.moduleInfo
+         });
+      }
+      callback(null, file);
    });
 };
