@@ -12,6 +12,7 @@ module.exports = function(moduleInfo) {
       callback();
    }, function(callback) {
       try {
+         //подготовим contents.json и contents.js
          moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
 
          const contentsText = JSON.stringify(moduleInfo.contents, null, 3);
@@ -28,9 +29,19 @@ module.exports = function(moduleInfo) {
 
          this.push(contentsJsFile);
          this.push(contentsJsonFile);
+
+         //подготовим routes-info.json
+         const routesInfoText = JSON.stringify(moduleInfo.routesInfo, null, 3);
+         const routesInfoFile = new Vinyl({
+            path: 'routes-info.json',
+            contents: new Buffer(routesInfoText),
+            moduleInfo: moduleInfo
+         });
+         this.push(routesInfoFile);
+
       } catch (error) {
          logger.error({
-            message: 'Ошибка при записи contents.json',
+            message: 'Ошибка Builder\'а',
             error: error,
             moduleInfo: moduleInfo
          });

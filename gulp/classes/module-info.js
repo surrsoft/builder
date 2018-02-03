@@ -17,6 +17,10 @@ class ModuleInfo {
          'jsModules': {},
          'modules': {}
       };
+
+      //объект для записи routes-info.json
+      this.routesInfo = {};
+
    }
 
    get nameWithResponsible() {
