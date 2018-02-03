@@ -122,8 +122,8 @@ module.exports = function(grunt) {
                   grunt.log.ok('Читаем js-модуль по пути: ' + file);
                   fs.readFile(file, function(err, text) {
                      const componentInfo = parseJsComponent(text.toString());
-                     if (componentInfo.hasOwnProperty('moduleName')) {
-                        const parts = componentInfo.moduleName.split('!');
+                     if (componentInfo.hasOwnProperty('componentName')) {
+                        const parts = componentInfo.componentName.split('!');
                         if (parts[0] === 'js') {
                            jsModules[parts[1]] = path.join(tsdModuleName,
                               transliterate(path.relative(input, file))).replace(dblSlashes, '/');

@@ -26,7 +26,7 @@ describe('generate static html for js', function() {
    describe('module with web page', function() {
       it('empty', async() => {
          const componentInfo = {
-            moduleName: 'MyModule',
+            componentName: 'MyModule',
             webPage: {
                htmlTemplate: 'Тема Скрепка/empty.html',
                outFileName: 'testOutFileName',
@@ -41,7 +41,7 @@ describe('generate static html for js', function() {
       });
       it('flags', async() => {
          const componentInfo = {
-            moduleName: 'MyModule',
+            componentName: 'MyModule',
             webPage: {
                htmlTemplate: 'Тема Скрепка/flags.html',
                outFileName: 'testOutFileName',
@@ -58,7 +58,7 @@ describe('generate static html for js', function() {
       });
       it('includes', async() => {
          const componentInfo = {
-            moduleName: 'MyModule',
+            componentName: 'MyModule',
             webPage: {
                htmlTemplate: 'Тема Скрепка/includes.html',
                outFileName: 'testOutFileName',
@@ -75,7 +75,7 @@ describe('generate static html for js', function() {
       });
       it('paths', async() => {
          const componentInfo = {
-            moduleName: 'MyModule',
+            componentName: 'MyModule',
             webPage: {
                htmlTemplate: 'Тема Скрепка/paths.html',
                outFileName: 'testOutFileName',
@@ -93,7 +93,7 @@ describe('generate static html for js', function() {
       });
       it('title', async() => {
          const componentInfo = {
-            moduleName: 'MyModule',
+            componentName: 'MyModule',
             webPage: {
                htmlTemplate: 'Тема Скрепка/title.html',
                outFileName: 'testOutFileName',
@@ -109,7 +109,7 @@ describe('generate static html for js', function() {
       });
       it('module without web page', async() => {
          const componentInfo = {
-            moduleName: 'MyModule'
+            componentName: 'MyModule'
          };
          const contents = {};
          const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);

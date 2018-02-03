@@ -11,9 +11,9 @@ module.exports = function() {
       if (file.extname === '.js') {
          try {
             file.componentInfo = parseJsComponent(file.contents.toString());
-            if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('moduleName')) {
+            if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
                const relativePath = path.join(file.moduleInfo.folderName, file.relative);
-               file.moduleInfo.contents.jsModules[file.componentInfo.moduleName] = transliterate(relativePath);
+               file.moduleInfo.contents.jsModules[file.componentInfo.componentName] = transliterate(relativePath);
             }
          } catch (error) {
             logger.error({
