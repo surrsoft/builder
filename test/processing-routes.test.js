@@ -68,4 +68,37 @@ describe('processing routes.js', function() {
          }).to.throw('Экспортируется не объект и не функция');
       });
    });
+
+   describe('prepare to save', function() {
+      it('routes info is empty', function() {
+         const routesInfo = {};
+         const jsModules = [];
+         processingRoutes.prepareToSave(routesInfo, jsModules);
+         Object.getOwnPropertyNames(routesInfo).length.should.equal(0);
+      });
+      it('controller exist', function() {
+         const routesInfo = {
+            'resources/Test.routes.js': {
+               '/test.html': {
+                  'controller': 'js!SBIS3.Test'
+               }
+            }
+         };
+         const jsModules = ['SBIS3.Test'];
+         processingRoutes.prepareToSave(routesInfo, jsModules);
+         routesInfo['resources/Test.routes.js']['/test.html'].isMasterPage.should.equal(true);
+      });
+      it('controller not exist', function() {
+         const routesInfo = {
+            'resources/Test.routes.js': {
+               '/test.html': {
+                  'controller': 'js!SBIS3.Test'
+               }
+            }
+         };
+         const jsModules = [];
+         processingRoutes.prepareToSave(routesInfo, jsModules);
+         routesInfo['resources/Test.routes.js']['/test.html'].isMasterPage.should.equal(false);
+      });
+   });
 });
