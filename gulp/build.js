@@ -1,22 +1,31 @@
 'use strict';
 
-const gulp = require('gulp'),
-   gulpRename = require('gulp-rename'),
-   gulpHtmlTmpl = require('./plugins/html-tmpl'),
+const
    path = require('path'),
-   transliterate = require('../lib/transliterate'),
-   ChangesStore = require('./classes/changes-store'),
+   gulp = require('gulp'),
+   gulpRename = require('gulp-rename'),
+   clean = require('gulp-clean');
+
+const
+   gulpHtmlTmpl = require('./plugins/html-tmpl'),
    changedInPlace = require('./plugins/changed-in-place'),
-   clean = require('gulp-clean'),
+   addComponetInfo = require('./plugins/add-component-info'),
+   buildStaticHtml = require('./plugins/build-static-html'),
    addModuleInfo = require('./plugins/add-module-info');
 
+const
+   transliterate = require('../lib/transliterate'),
+   ChangesStore = require('./classes/changes-store');
+
 const copyTaskGenerator = function(moduleInfo, changesStore) {
-   const moduleInput = path.join(moduleInfo.path,  '/**/*.*');
+   const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
          .pipe(addModuleInfo(moduleInfo))
+         .pipe(addComponetInfo())
+         .pipe(buildStaticHtml())
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
@@ -26,12 +35,12 @@ const copyTaskGenerator = function(moduleInfo, changesStore) {
 };
 
 const htmlTmplTaskGenerator = function(moduleInfo) {
-   const moduleInput = path.join(moduleInfo.path,  '/**/*.html.tmpl');
+   const moduleInput = path.join(moduleInfo.path, '/**/*.html.tmpl');
 
    return function htmlTmpl() {
       return gulp.src(moduleInput)
 
-         //.pipe(changedInPlace(changesStore, module.path))
+      //.pipe(changedInPlace(changesStore, module.path))
          .pipe(addModuleInfo(moduleInfo))
          .pipe(gulpHtmlTmpl())
          .pipe(gulpRename(file => {
@@ -45,14 +54,19 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 module.exports = {
    'create': function buildTask(config) {
-      let buildTasks = [],
+      const buildTasks = [],
          changesStore = new ChangesStore(config.cachePath);
 
       for (let moduleInfo of config.modules) {
          buildTasks.push(
+            copyTaskGenerator(moduleInfo, changesStore));
+
+         /*
+         buildTasks.push(
             gulp.parallel(
                copyTaskGenerator(moduleInfo, changesStore),
                htmlTmplTaskGenerator(moduleInfo, changesStore)));
+               */
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -65,7 +79,7 @@ module.exports = {
                   let files = changesStore.store[modulePath]['files'];
                   for (let filePath in files) {
                      if (files.hasOwnProperty(filePath)) {
-                        let fileInfo  = files[filePath];
+                        let fileInfo = files[filePath];
                         if (!fileInfo.hasOwnProperty('exist')) {
                            const moduleName = path.basename(modulePath);
                            pattern.push(transliterate(path.join(moduleName, filePath)));
@@ -90,7 +104,7 @@ module.exports = {
       };
 
       return gulp.series(
-         gulp.series(buildTasks),
+         gulp.parallel(buildTasks),
          gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };

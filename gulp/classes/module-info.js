@@ -9,6 +9,7 @@ class ModuleInfo {
       this.responsible = moduleResponsible;
       this.path = modulePath;
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
+      this.contents = {};
    }
 
    get nameWithResponsible() {
