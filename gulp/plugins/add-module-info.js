@@ -32,7 +32,7 @@ module.exports = function(moduleInfo) {
          this.push(contentsJsonFile);
 
          //подготовим routes-info.json
-         processingRoutes(moduleInfo.routesInfo, Object.keys(moduleInfo.contents.jsModules));
+         processingRoutes.prepareToSave(moduleInfo.routesInfo, Object.keys(moduleInfo.contents.jsModules));
          const routesInfoText = JSON.stringify(moduleInfo.routesInfo, null, 3);
          const routesInfoFile = new Vinyl({
             path: 'routes-info.json',

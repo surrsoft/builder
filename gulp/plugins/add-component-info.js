@@ -29,7 +29,8 @@ module.exports = function() {
          file.componentInfo = parseJsComponent(file.contents.toString());
          if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
             const relativePath = path.join(file.moduleInfo.folderName, file.relative);
-            file.moduleInfo.contents.jsModules[file.componentInfo.componentName] = transliterate(relativePath);
+            const componentName = file.componentInfo.componentName.replace('js!', '');
+            file.moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
          }
       } catch (error) {
          logger.error({

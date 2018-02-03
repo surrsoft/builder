@@ -11,6 +11,7 @@ const
    changedInPlace = require('./plugins/changed-in-place'),
    addComponetInfo = require('./plugins/add-component-info'),
    buildStaticHtml = require('./plugins/build-static-html'),
+   addRoutesInfo = require('./plugins/add-routes-info'),
    addModuleInfo = require('./plugins/add-module-info');
 
 const
@@ -25,6 +26,7 @@ const copyTaskGenerator = function(moduleInfo, changesStore) {
          .pipe(changedInPlace(changesStore, moduleInfo.path))
          .pipe(addModuleInfo(moduleInfo))
          .pipe(addComponetInfo())
+         .pipe(addRoutesInfo())
          .pipe(buildStaticHtml())
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
@@ -59,14 +61,9 @@ module.exports = {
 
       for (let moduleInfo of config.modules) {
          buildTasks.push(
-            copyTaskGenerator(moduleInfo, changesStore));
-
-         /*
-         buildTasks.push(
             gulp.parallel(
                copyTaskGenerator(moduleInfo, changesStore),
                htmlTmplTaskGenerator(moduleInfo, changesStore)));
-               */
       }
       const clearTask = function remove(done) {
          let pattern = [];
