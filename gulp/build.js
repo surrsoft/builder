@@ -1,39 +1,50 @@
 'use strict';
 
-const gulp = require('gulp'),
-   gulpRename = require('gulp-rename'),
-   gulpHtmlTmpl = require('./plugins/html-tmpl'),
+const
    path = require('path'),
-   transliterate = require('../lib/transliterate'),
-   ChangesStore = require('./classes/changes-store'),
-   changedInPlace = require('./plugins/changed-in-place'),
-   clean = require('gulp-clean'),
-   addModuleInfo = require('./plugins/add-module-info');
+   gulp = require('gulp'),
+   gulpRename = require('gulp-rename'),
+   clean = require('gulp-clean');
 
-const copyTaskGenerator = function(moduleInfo, changesStore) {
-   const moduleInput = path.join(moduleInfo.path,  '/**/*.*');
+const
+   gulpHtmlTmpl = require('./plugins/html-tmpl'),
+   changedInPlace = require('./plugins/changed-in-place'),
+   addComponentInfo = require('./plugins/add-component-info'),
+   buildStaticHtml = require('./plugins/build-static-html'),
+   createRoutesInfoJson = require('./plugins/create-routes-info-json'),
+   createContentsJson = require('./plugins/create-contents-json');
+
+const
+   transliterate = require('../lib/transliterate'),
+   logger = require('../lib/logger').logger(),
+   ChangesStore = require('./classes/changes-store');
+
+const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore) {
+   const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
-         .pipe(addModuleInfo(moduleInfo))
+         .pipe(addComponentInfo(moduleInfo))
+         .pipe(buildStaticHtml(moduleInfo, modulesMap))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
+         .pipe(createRoutesInfoJson(moduleInfo))
+         .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulp.dest(moduleInfo.output));
    };
 };
 
 const htmlTmplTaskGenerator = function(moduleInfo) {
-   const moduleInput = path.join(moduleInfo.path,  '/**/*.html.tmpl');
+   const moduleInput = path.join(moduleInfo.path, '/**/*.html.tmpl');
 
    return function htmlTmpl() {
       return gulp.src(moduleInput)
 
-         //.pipe(changedInPlace(changesStore, module.path))
-         .pipe(addModuleInfo(moduleInfo))
-         .pipe(gulpHtmlTmpl())
+      //.pipe(changedInPlace(changesStore, module.path))
+         .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
@@ -45,14 +56,29 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 module.exports = {
    'create': function buildTask(config) {
-      let buildTasks = [],
+      const buildTasks = [],
          changesStore = new ChangesStore(config.cachePath);
+
+      let countCompletedModules = 0;
+
+      const printPercentComplete = function(done) {
+         countCompletedModules += 1;
+         logger.progress(100 * countCompletedModules / config.modules.length);
+         done();
+      };
+
+      const modulesMap = new Map();
+      for (let moduleInfo of config.modules) {
+         modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
+      }
 
       for (let moduleInfo of config.modules) {
          buildTasks.push(
-            gulp.parallel(
-               copyTaskGenerator(moduleInfo, changesStore),
-               htmlTmplTaskGenerator(moduleInfo, changesStore)));
+            gulp.series(
+               gulp.parallel(
+                  copyTaskGenerator(moduleInfo, modulesMap, changesStore),
+                  htmlTmplTaskGenerator(moduleInfo, changesStore)),
+               printPercentComplete));
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -65,7 +91,7 @@ module.exports = {
                   let files = changesStore.store[modulePath]['files'];
                   for (let filePath in files) {
                      if (files.hasOwnProperty(filePath)) {
-                        let fileInfo  = files[filePath];
+                        let fileInfo = files[filePath];
                         if (!fileInfo.hasOwnProperty('exist')) {
                            const moduleName = path.basename(modulePath);
                            pattern.push(transliterate(path.join(moduleName, filePath)));
@@ -90,7 +116,7 @@ module.exports = {
       };
 
       return gulp.series(
-         gulp.series(buildTasks),
+         gulp.parallel(buildTasks),
          gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };

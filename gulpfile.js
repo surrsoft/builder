@@ -30,7 +30,7 @@ try {
       BuildConfiguration = require('./gulp/classes/build-configuration.js');
 
 
-   logger.info('Параметры запуска: ' + JSON.stringify(process.argv));
+   logger.debug('Параметры запуска: ' + JSON.stringify(process.argv));
 
    let config = new BuildConfiguration();
    err = config.load(process.argv);
