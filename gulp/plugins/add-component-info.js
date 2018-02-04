@@ -10,14 +10,12 @@ module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {
       //нас не интересуют:
       //  не js-файлы
-      //  contents.js - мы его сами и сгенерировали
       //  *.test.js - тесты
       //  *.worker.js - воркеры
       //  *.routes.js - роутинг. обрабатывается в отдельном плагине
       //  файлы в папках node_modules - модули node.js
       //  файлы в папках design - файлы для макетирования в genie
       if (file.extname !== '.js' ||
-         file.basename === 'contents' ||
          file.path.endsWith('.worker.js') ||
          file.path.endsWith('.test.js') ||
          file.path.includes('/node_modules/') ||
