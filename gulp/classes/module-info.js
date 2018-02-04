@@ -9,6 +9,20 @@ class ModuleInfo {
       this.responsible = moduleResponsible;
       this.path = modulePath;
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
+
+      //объект для записи contents.json
+      //availableLanguage, defaultLanguage и dictionary добавляются только при локализации
+      this.contents = {
+         'htmlNames': {},
+         'jsModules': {},
+         'modules': {},
+         'requirejsPaths': {}, //TODO: Удалить
+         'xmlContents': {} //TODO: Удалить
+      };
+
+      //объект для записи routes-info.json
+      this.routesInfo = {};
+
    }
 
    get nameWithResponsible() {
@@ -17,6 +31,11 @@ class ModuleInfo {
       }
       return this.name;
    }
+
+   get folderName() {
+      return path.basename(this.path);
+   }
+
 }
 
 module.exports = ModuleInfo;
