@@ -16,6 +16,7 @@ const
 
 const
    transliterate = require('../lib/transliterate'),
+   logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
 const copyTaskGenerator = function(moduleInfo, changesStore) {
@@ -58,11 +59,21 @@ module.exports = {
       const buildTasks = [],
          changesStore = new ChangesStore(config.cachePath);
 
+      let countCompletedModules = 0;
+
+      const printPercentComplete = function(done) {
+         countCompletedModules += 1;
+         logger.progress(100 * countCompletedModules / config.modules.length);
+         done();
+      };
+
       for (let moduleInfo of config.modules) {
          buildTasks.push(
-            gulp.parallel(
-               copyTaskGenerator(moduleInfo, changesStore),
-               htmlTmplTaskGenerator(moduleInfo, changesStore)));
+            gulp.series(
+               gulp.parallel(
+                  copyTaskGenerator(moduleInfo, changesStore),
+                  htmlTmplTaskGenerator(moduleInfo, changesStore)),
+               printPercentComplete));
       }
       const clearTask = function remove(done) {
          let pattern = [];
