@@ -6,7 +6,7 @@ const through = require('through2'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
-module.exports = function() {
+module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {
       //нас не интересуют:
       //  не js-файлы
@@ -28,16 +28,16 @@ module.exports = function() {
       try {
          file.componentInfo = parseJsComponent(file.contents.toString());
          if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
-            const relativePath = path.join(file.moduleInfo.folderName, file.relative);
+            const relativePath = path.join(moduleInfo.folderName, file.relative);
             const componentName = file.componentInfo.componentName.replace('js!', '');
-            file.moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
+            moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
          }
       } catch (error) {
          logger.error({
             message: 'Ошибка при обработке JS компонента',
             filePath: file.history[0],
             error: error,
-            moduleInfo: file.moduleInfo
+            moduleInfo: moduleInfo
          });
       }
       callback(null, file);

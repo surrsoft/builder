@@ -4,7 +4,7 @@ const through = require('through2'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function() {
+module.exports = function(moduleInfo) {
    return through.obj(async function(file, encoding, callback) {
       this.push(file);
 
@@ -17,7 +17,7 @@ module.exports = function() {
 
          const config = {};
 
-         const result = await generateStaticHtmlForJs(file.componentInfo, file.moduleInfo.contents, config, true);
+         const result = await generateStaticHtmlForJs(file.componentInfo, moduleInfo.contents, config, true);
          if (result) {
             const htmlFile = file.clone({contents: false});
             htmlFile.contents = new Buffer(result.text);
@@ -30,7 +30,7 @@ module.exports = function() {
             message: 'Ошибка при генерации статической html для JS',
             filePath: file.history[0],
             error: error,
-            moduleInfo: file.moduleInfo
+            moduleInfo: moduleInfo
          });
       }
       callback();

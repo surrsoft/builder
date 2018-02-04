@@ -4,7 +4,7 @@ const through = require('through2'),
    convertHtmlTmpl = require('../../lib/convert-html-tmpl'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function() {
+module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, cb) {
       convertHtmlTmpl(file.contents.toString(), '')
          .then(
@@ -19,7 +19,7 @@ module.exports = function() {
                      code: 1,
                      message: 'Ошибка при обработке шаблона',
                      error: error,
-                     moduleInfo: file.moduleInfo,
+                     moduleInfo: moduleInfo,
                      filePath: file.history[0]
                   }
                );

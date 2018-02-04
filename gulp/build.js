@@ -11,8 +11,8 @@ const
    changedInPlace = require('./plugins/changed-in-place'),
    addComponetInfo = require('./plugins/add-component-info'),
    buildStaticHtml = require('./plugins/build-static-html'),
-   addRoutesInfo = require('./plugins/add-routes-info'),
-   addModuleInfo = require('./plugins/add-module-info');
+   createRoutesInfoJson = require('./plugins/create-routes-info-json'),
+   createContentsJson = require('./plugins/create-contents-json');
 
 const
    transliterate = require('../lib/transliterate'),
@@ -24,14 +24,14 @@ const copyTaskGenerator = function(moduleInfo, changesStore) {
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
-         .pipe(addModuleInfo(moduleInfo))
-         .pipe(addComponetInfo())
-         .pipe(addRoutesInfo())
-         .pipe(buildStaticHtml())
+         .pipe(addComponetInfo(moduleInfo))
+         .pipe(buildStaticHtml(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
+         .pipe(createRoutesInfoJson(moduleInfo))
+         .pipe(createContentsJson(moduleInfo))
          .pipe(gulp.dest(moduleInfo.output));
    };
 };
@@ -43,8 +43,7 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
       return gulp.src(moduleInput)
 
       //.pipe(changedInPlace(changesStore, module.path))
-         .pipe(addModuleInfo(moduleInfo))
-         .pipe(gulpHtmlTmpl())
+         .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);

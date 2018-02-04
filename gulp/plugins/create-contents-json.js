@@ -3,14 +3,11 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../lib/logger').logger(),
-   transliterate = require('../../lib/transliterate'),
-   processingRoutes = require('../../lib/processing-routes');
+   transliterate = require('../../lib/transliterate');
 
 module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {
-      file.moduleInfo = moduleInfo;
-      this.push(file);
-      callback();
+      callback(null, file);
    }, function(callback) {
       try {
          //подготовим contents.json и contents.js
@@ -30,17 +27,6 @@ module.exports = function(moduleInfo) {
 
          this.push(contentsJsFile);
          this.push(contentsJsonFile);
-
-         //подготовим routes-info.json
-         processingRoutes.prepareToSave(moduleInfo.routesInfo, Object.keys(moduleInfo.contents.jsModules));
-         const routesInfoText = JSON.stringify(moduleInfo.routesInfo, null, 3);
-         const routesInfoFile = new Vinyl({
-            path: 'routes-info.json',
-            contents: new Buffer(routesInfoText),
-            moduleInfo: moduleInfo
-         });
-         this.push(routesInfoFile);
-
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',
