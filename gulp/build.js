@@ -9,7 +9,7 @@ const
 const
    gulpHtmlTmpl = require('./plugins/html-tmpl'),
    changedInPlace = require('./plugins/changed-in-place'),
-   addComponetInfo = require('./plugins/add-component-info'),
+   addComponentInfo = require('./plugins/add-component-info'),
    buildStaticHtml = require('./plugins/build-static-html'),
    createRoutesInfoJson = require('./plugins/create-routes-info-json'),
    createContentsJson = require('./plugins/create-contents-json');
@@ -24,14 +24,14 @@ const copyTaskGenerator = function(moduleInfo, changesStore) {
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
-         .pipe(addComponetInfo(moduleInfo))
+         .pipe(addComponentInfo(moduleInfo))
          .pipe(buildStaticHtml(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
          .pipe(createRoutesInfoJson(moduleInfo))
-         .pipe(createContentsJson(moduleInfo))
+         .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulp.dest(moduleInfo.output));
    };
 };
