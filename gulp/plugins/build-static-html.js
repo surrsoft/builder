@@ -1,11 +1,12 @@
 'use strict';
 
 const through = require('through2'),
+   Vinyl = require('vinyl'),
    path = require('path'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function(moduleInfo) {
+module.exports = function(moduleInfo, modulesMap) {
    return through.obj(async function(file, encoding, callback) {
       this.push(file);
 
@@ -16,15 +17,14 @@ module.exports = function(moduleInfo) {
          }
 
          const config = {};
-         const resourcesRoot = path.dirname(moduleInfo.output);
-         const result = await generateStaticHtmlForJs(file.componentInfo, moduleInfo.contents, config, resourcesRoot, true);
+         const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
          if (result) {
-            const htmlFile = file.clone({contents: false});
-            htmlFile.contents = new Buffer(result.text);
-            htmlFile.path = path.join(moduleInfo.output, result.outFileName);
-            this.push(htmlFile);
+            this.push(new Vinyl({
+               base: moduleInfo.output,
+               path: path.join(moduleInfo.output, result.outFileName),
+               contents: new Buffer(result.text)
+            }));
          }
-
       } catch (error) {
          logger.error({
             message: 'Ошибка при генерации статической html для JS',

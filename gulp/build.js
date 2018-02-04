@@ -19,14 +19,14 @@ const
    logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
-const copyTaskGenerator = function(moduleInfo, changesStore) {
+const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
          .pipe(addComponentInfo(moduleInfo))
-         .pipe(buildStaticHtml(moduleInfo))
+         .pipe(buildStaticHtml(moduleInfo, modulesMap))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
@@ -67,11 +67,16 @@ module.exports = {
          done();
       };
 
+      const modulesMap = new Map();
+      for (let moduleInfo of config.modules) {
+         modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
+      }
+
       for (let moduleInfo of config.modules) {
          buildTasks.push(
             gulp.series(
                gulp.parallel(
-                  copyTaskGenerator(moduleInfo, changesStore),
+                  copyTaskGenerator(moduleInfo, modulesMap, changesStore),
                   htmlTmplTaskGenerator(moduleInfo, changesStore)),
                printPercentComplete));
       }

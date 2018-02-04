@@ -38,7 +38,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('\n\n\n');
@@ -53,7 +53,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('true\n' +
@@ -70,7 +70,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('<INCLUDE1/>\n\n' +
@@ -87,7 +87,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('RESOURCE_ROOT:/resources/\n' +
@@ -105,7 +105,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('TITLE:testTitle\n' +
@@ -116,7 +116,7 @@ describe('generate static html for js', function() {
             componentName: 'MyModule'
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, modules, false);
+         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false);
          should.not.exist(result);
       });
       it('component without name', async() => {
@@ -128,7 +128,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         return generateStaticHtmlForJs(componentInfo, contents, config, modules, false).should.be.rejectedWith('Не указано имя компонента');
+         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false).should.be.rejectedWith('Не указано имя компонента');
       });
       it('module not exist', async() => {
          const componentInfo = {
@@ -139,7 +139,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         return generateStaticHtmlForJs(componentInfo, contents, config, modules, false)
+         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false)
             .should.be.rejectedWith('Не указано имя компонента');
       });
       it('recursive includes error', async() => {
@@ -153,7 +153,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const root = path.join(__dirname, 'fixture/generate-static-html-for-js');
-         return generateStaticHtmlForJs(componentInfo, contents, config, modules, false)
+         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, false)
             .should.be.rejectedWith(
                `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
                `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +

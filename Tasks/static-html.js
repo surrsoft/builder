@@ -85,10 +85,20 @@ module.exports = function(grunt) {
          resourcesRoot = path.join(applicationRoot, 'resources'),
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
+         modulesOption = (grunt.option('modules') || '').replace('"', ''),
          forPresentationService = (grunt.option('includes') !== undefined) ? !grunt.option('includes') : false;
 
-      let contents = {};
+      const pathsModules = grunt.file.readJSON(modulesOption);
+      if (!Array.isArray(pathsModules)) {
+         logger.error('Parameter "modules" incorrect');
+         return;
+      }
+      const modules = new Map();
+      for (let pathModule of pathsModules) {
+         modules.set(path.basename(pathModule), pathModule);
+      }
 
+      let contents = {};
       try {
          contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
       } catch (err) {
@@ -140,7 +150,7 @@ module.exports = function(grunt) {
                   return callback(error);
                }
 
-               generateStaticHtmlForJs(componentInfo, contents, config, applicationRoot, forPresentationService)
+               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, forPresentationService)
                   .then(
                      result => {
                         if (result) {
