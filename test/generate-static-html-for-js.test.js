@@ -15,12 +15,12 @@ const should = chai.should();
 const config = {
    root: path.join(__dirname, 'fixture/generate-static-html-for-js'),
    application: '/',
-   applicationRoot: path.join(__dirname, 'fixture/generate-static-html-for-js'),
    servicesPath: '/service/',
    userParams: true,
    globalParams: false
 };
 
+const resourcesPath = path.join(__dirname, 'fixture/generate-static-html-for-js/resources');
 
 describe('generate static html for js', function() {
    describe('module with web page', function() {
@@ -34,9 +34,9 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
+         result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('\n\n\n');
       });
       it('flags', async() => {
@@ -49,9 +49,9 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
+         result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('true\n' +
             'false\n' +
             'false\n');
@@ -66,9 +66,9 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
+         result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('<INCLUDE1/>\n\n' +
             '<INCLUDE2/>\n' +
             '<INCLUDE1/>\n\n\n');
@@ -83,9 +83,9 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
+         result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('RESOURCE_ROOT:/resources/\n' +
             'WI.SBIS_ROOT:/ws/\n' +
             'APPLICATION_ROOT:/\n' +
@@ -101,9 +101,9 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outputPath.should.equal(path.join(__dirname, 'fixture/generate-static-html-for-js/testOutFileName.html'));
+         result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('TITLE:testTitle\n' +
             'START_DIALOG:MyModule\n');
       });
@@ -112,7 +112,7 @@ describe('generate static html for js', function() {
             componentName: 'MyModule'
          };
          const contents = {};
-         const result = await generateStaticHtmlForJs(componentInfo, contents, config, false);
+         const result = await generateStaticHtmlForJs(componentInfo, contents, config, resourcesPath, false);
          should.not.exist(result);
       });
       it('module without name', async() => {

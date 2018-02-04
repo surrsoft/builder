@@ -1,6 +1,7 @@
 'use strict';
 
 const through = require('through2'),
+   path = require('path'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
@@ -11,17 +12,16 @@ module.exports = function(moduleInfo) {
       try {
          if (!file.hasOwnProperty('componentInfo')) {
             //не компонент js
-            callback();
-            return;
+            return callback();
          }
 
          const config = {};
-
-         const result = await generateStaticHtmlForJs(file.componentInfo, moduleInfo.contents, config, true);
+         const resourcesRoot = path.dirname(moduleInfo.output);
+         const result = await generateStaticHtmlForJs(file.componentInfo, moduleInfo.contents, config, resourcesRoot, true);
          if (result) {
             const htmlFile = file.clone({contents: false});
             htmlFile.contents = new Buffer(result.text);
-            htmlFile.path = result.outputPath;
+            htmlFile.path = path.join(moduleInfo.output, result.outFileName);
             this.push(htmlFile);
          }
 

@@ -27,7 +27,8 @@ module.exports = function(moduleInfo) {
 
       try {
          file.componentInfo = parseJsComponent(file.contents.toString());
-         if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName')) {
+         if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName') &&
+            file.componentInfo.componentName.startsWith('js!')) {
             const relativePath = path.join(moduleInfo.folderName, file.relative);
             const componentName = file.componentInfo.componentName.replace('js!', '');
             moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);

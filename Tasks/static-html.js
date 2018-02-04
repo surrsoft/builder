@@ -118,7 +118,6 @@ module.exports = function(grunt) {
       const config = {
          root: root,
          application: application,
-         applicationRoot: applicationRoot,
          servicesPath: servicesPath,
          userParams: userParams,
          globalParams: globalParams
@@ -141,12 +140,13 @@ module.exports = function(grunt) {
                   return callback(error);
                }
 
-               generateStaticHtmlForJs(componentInfo, contents, config, forPresentationService)
+               generateStaticHtmlForJs(componentInfo, contents, config, applicationRoot, forPresentationService)
                   .then(
                      result => {
                         if (result) {
                            logger.info('SUCCESS: ' + result.outputPath);
-                           helpers.writeFile(result.outputPath, result.text, callback);
+                           const outputPath = path.join(applicationRoot, result.outFileName);
+                           helpers.writeFile(outputPath, result.text, callback);
                         } else {
                            callback();
                         }
