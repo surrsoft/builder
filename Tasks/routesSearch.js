@@ -2,6 +2,7 @@
 
 const path = require('path'),
    logger = require('../lib/logger').logger(),
+   helpers = require('../lib/helpers'),
    processingRoutes = require('../lib/processing-routes');
 
 module.exports = function(grunt) {
@@ -39,7 +40,7 @@ module.exports = function(grunt) {
       });
 
       processingRoutes.prepareToSave(routesSource, jsModules);
-      grunt.file.write(sourcePath, JSON.stringify(routesSource, null, 3));
+      grunt.file.write(sourcePath, JSON.stringify(helpers.sortObject(routesSource), null, 2));
       logger.debug(grunt.template.today('hh:MM:ss') + ': Поиск путей роутинга завершен.');
    });
 };

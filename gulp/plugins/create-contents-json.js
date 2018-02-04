@@ -3,6 +3,7 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../lib/logger').logger(),
+   helpers = require('../../lib/helpers'),
    transliterate = require('../../lib/transliterate');
 
 module.exports = function(moduleInfo) {
@@ -13,15 +14,14 @@ module.exports = function(moduleInfo) {
          //подготовим contents.json и contents.js
          moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
 
-         const contentsText = JSON.stringify(moduleInfo.contents, null, 3);
          const contentsJsFile = new Vinyl({
             path: 'contents.js',
-            contents: new Buffer('contents=' + contentsText),
+            contents: new Buffer('contents=' + JSON.stringify(helpers.sortObject(moduleInfo.contents))),
             moduleInfo: moduleInfo
          });
          const contentsJsonFile = new Vinyl({
             path: 'contents.json',
-            contents: new Buffer(contentsText),
+            contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
             moduleInfo: moduleInfo
          });
 

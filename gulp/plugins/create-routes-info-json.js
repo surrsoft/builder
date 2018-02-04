@@ -4,6 +4,7 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../lib/logger').logger(),
+   helpers = require('../../lib/helpers'),
    transliterate = require('../../lib/transliterate'),
    processingRoutes = require('../../lib/processing-routes');
 
@@ -14,7 +15,7 @@ module.exports = function(moduleInfo) {
       }
 
       try {
-         const relativePath = path.join(moduleInfo.folderName, file.relative);
+         const relativePath = path.join('resources', moduleInfo.folderName, file.relative);
          moduleInfo.routesInfo[transliterate(relativePath)] = processingRoutes.parseRoutes(file.contents.toString());
       } catch (error) {
          logger.error({
@@ -27,9 +28,15 @@ module.exports = function(moduleInfo) {
       callback(null, file);
    }, function(callback) {
       try {
+         //если нет данных, то не нужно и сохранять
+         if (!Object.getOwnPropertyNames(moduleInfo.routesInfo).length) {
+            return callback();
+         }
+
          //подготовим routes-info.json
          processingRoutes.prepareToSave(moduleInfo.routesInfo, Object.keys(moduleInfo.contents.jsModules));
-         const routesInfoText = JSON.stringify(moduleInfo.routesInfo, null, 3);
+
+         const routesInfoText = JSON.stringify(helpers.sortObject(moduleInfo.routesInfo), null, 2);
          const routesInfoFile = new Vinyl({
             path: 'routes-info.json',
             contents: new Buffer(routesInfoText),

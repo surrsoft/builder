@@ -172,7 +172,7 @@ module.exports = function(grunt) {
          }
 
          try {
-            let sorted = helpers.sortObject(contents);
+            const sorted = helpers.sortObject(contents);
 
             grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
             grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));

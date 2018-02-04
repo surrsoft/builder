@@ -15,7 +15,9 @@ class ModuleInfo {
       this.contents = {
          'htmlNames': {},
          'jsModules': {},
-         'modules': {}
+         'modules': {},
+         'requirejsPaths': {}, //TODO: Удалить
+         'xmlContents': {} //TODO: Удалить
       };
 
       //объект для записи routes-info.json
