@@ -127,10 +127,9 @@ module.exports = {
          done();
       };
 
-      return gulp.series(buildLessTask(config));
-
-      //return gulp.series(
-      //   gulp.parallel(buildTasks),
-      //   gulp.parallel(buildLessTask, clearTask, saveChangedStoreTask));
+      return gulp.series(
+         gulp.parallel(buildTasks),
+         buildLessTask(config),
+         gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };

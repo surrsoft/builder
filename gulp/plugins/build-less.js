@@ -20,7 +20,7 @@ module.exports = function(resourcePath) {
             }));
          }
       } catch (error) {
-         logger.error({
+         logger.warning({
             message: 'Ошибка при компиляции less',
             filePath: file.history[0],
             error: error
