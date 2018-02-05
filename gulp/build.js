@@ -1,19 +1,23 @@
 'use strict';
 
+//модули из npm
 const
    path = require('path'),
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
    clean = require('gulp-clean');
 
+//наши плагины
 const
    gulpHtmlTmpl = require('./plugins/html-tmpl'),
    changedInPlace = require('./plugins/changed-in-place'),
    addComponentInfo = require('./plugins/add-component-info'),
    buildStaticHtml = require('./plugins/build-static-html'),
    createRoutesInfoJson = require('./plugins/create-routes-info-json'),
-   createContentsJson = require('./plugins/create-contents-json');
+   createContentsJson = require('./plugins/create-contents-json'),
+   buildLess = require('./plugins/build-less');
 
+//разлчные хелперы
 const
    transliterate = require('../lib/transliterate'),
    logger = require('../lib/logger').logger(),
@@ -53,6 +57,16 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
          .pipe(gulp.dest(moduleInfo.output));
    };
 };
+
+function buildLessTask(config) {
+   return function lessTask()
+   {
+      return gulp.src(path.join(config.outputPath, '/**/*.less'))
+         .pipe(buildLess(config.outputPath))
+         .pipe(gulp.dest(config.outputPath));
+   };
+}
+
 
 module.exports = {
    'create': function buildTask(config) {
@@ -102,21 +116,21 @@ module.exports = {
             }
          }
          if (pattern.length) {
-            return gulp.src(pattern, {read: false, cwd: config.output, allowEmpty: true})
+            return gulp.src(pattern, {read: false, cwd: config.outputPath, allowEmpty: true})
                .pipe(clean());
          } else {
             done();
          }
       };
-
-
       const saveChangedStoreTask = function saveChangedStore(done) {
          changesStore.save();
          done();
       };
 
-      return gulp.series(
-         gulp.parallel(buildTasks),
-         gulp.parallel(clearTask, saveChangedStoreTask));
+      return gulp.series(buildLessTask(config));
+
+      //return gulp.series(
+      //   gulp.parallel(buildTasks),
+      //   gulp.parallel(buildLessTask, clearTask, saveChangedStoreTask));
    }
 };
