@@ -13,7 +13,7 @@ module.exports = function less1by1Task(grunt) {
       rootPath = path.join(root, app);
 
    grunt.registerMultiTask('less1by1', 'Компилит каждую лесску, ложит cssку рядом. Умеет в темы', function() {
-      logger.debug(`Запускается задача less1by1.`);
+      logger.debug('Запускается задача less1by1.');
 
       const taskDone = this.async();
 
@@ -48,7 +48,7 @@ module.exports = function less1by1Task(grunt) {
          }
          cb();
       }, function() {
-         logger.debug(`Задача less1by1 выполнена.`);
+         logger.debug('Задача less1by1 выполнена.');
          taskDone();
       });
 
