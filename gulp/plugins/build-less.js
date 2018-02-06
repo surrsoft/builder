@@ -28,6 +28,7 @@ module.exports = function(resourcePath) {
       }
       callback(null, file);
    }, function(callback) {
+      //TODO: убрать запись импортов в файл. они будут нужны для работы кеша
       callback(null, new Vinyl({
          base: resourcePath,
          path: path.join(resourcePath, 'less-imports.log'),
