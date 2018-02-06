@@ -10,15 +10,13 @@ module.exports = function(resourcePath) {
    let lessImports = '';
    return through.obj(async function(file, encoding, callback) {
       try {
-         const results = await buildLess(file.path, file.contents.toString(), resourcePath);
-         for (let result of results) {
-            lessImports += file.path + ' imports: ' + JSON.stringify(result.imports, null, 3) + '\n';
-            this.push(new Vinyl({
-               base: resourcePath,
-               path: path.join(path.dirname(file.path), result.fileName + '.css'),
-               contents: new Buffer(result.text)
-            }));
-         }
+         const result = await buildLess(file.path, file.contents.toString(), resourcePath);
+         lessImports += file.path + ' imports: ' + JSON.stringify(result.imports, null, 3) + '\n';
+         this.push(new Vinyl({
+            base: resourcePath,
+            path: path.join(path.dirname(file.path), result.fileName + '.css'),
+            contents: new Buffer(result.text)
+         }));
       } catch (error) {
          logger.warning({
             message: 'Ошибка при компиляции less',
