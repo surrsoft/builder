@@ -121,6 +121,14 @@ module.exports = function(grunt) {
                if (isModuleJs.test(file)) {
                   grunt.log.ok('Читаем js-модуль по пути: ' + file);
                   fs.readFile(file, function(err, text) {
+                     if (err) {
+                        logger.error({
+                           message: 'Возникла ошибка при чтении файла: ',
+                           filePath: file,
+                           error: err
+                        });
+                        callback(err);
+                     }
                      const componentInfo = parseJsComponent(text.toString());
                      if (componentInfo.hasOwnProperty('componentName')) {
                         const parts = componentInfo.componentName.split('!');
