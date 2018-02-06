@@ -92,12 +92,13 @@ describe('build less', function() {
             `  test-var: \'it is ${themes[i]}\';\n}\n`);
       }
    });
+
+   //важно отобразить корректно строку в которой ошибка
    it('less with error', async() => {
-      //строка, где произошла ошибка определяется не корректно из-за добавляемых импортов
       const filePath = path.join(testDirname, 'AnyModule/bla/bla/long/path/test.less');
       const text = '@import "notExist";';
       return buildLess(filePath, text, testDirname).should.be.rejectedWith(
-         `Ошибка компиляции ${testDirname}/AnyModule/bla/bla/long/path/test.less на строке 4: ` +
+         `Ошибка компиляции ${testDirname}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
          `'notExist.less' wasn't found. Tried - ${testDirname}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
    });
@@ -105,7 +106,7 @@ describe('build less', function() {
       const filePath = path.join(testDirname, 'AnyModule/bla/bla/long/path/test.less');
       const text = '@import "notExist";';
       return buildLess(filePath, text, testDirname).should.be.rejectedWith(
-         `Ошибка компиляции ${testDirname}/AnyModule/bla/bla/long/path/test.less на строке 4: ` +
+         `Ошибка компиляции ${testDirname}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
          `'notExist.less' wasn't found. Tried - ${testDirname}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
    });
