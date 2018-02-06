@@ -128,20 +128,21 @@ module.exports = function(grunt) {
                            error: err
                         });
                         callback(err);
-                     }
-                     const componentInfo = parseJsComponent(text.toString());
-                     if (componentInfo.hasOwnProperty('componentName')) {
-                        const parts = componentInfo.componentName.split('!');
-                        if (parts[0] === 'js') {
-                           jsModules[parts[1]] = path.join(tsdModuleName,
-                              transliterate(path.relative(input, file))).replace(dblSlashes, '/');
-                        }
-                     }
-
-                     if (!dryRun) {
-                        copyFile(file, dest, text, callback);
                      } else {
-                        callback();
+                        const componentInfo = parseJsComponent(text.toString());
+                        if (componentInfo.hasOwnProperty('componentName')) {
+                           const parts = componentInfo.componentName.split('!');
+                           if (parts[0] === 'js') {
+                              jsModules[parts[1]] = path.join(tsdModuleName,
+                                 transliterate(path.relative(input, file))).replace(dblSlashes, '/');
+                           }
+                        }
+
+                        if (!dryRun) {
+                           copyFile(file, dest, text, callback);
+                        } else {
+                           callback();
+                        }
                      }
                   });
                } else if (!dryRun) {
