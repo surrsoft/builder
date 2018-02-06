@@ -123,7 +123,7 @@ module.exports = function(grunt) {
                   fs.readFile(file, function(err, text) {
                      if (err) {
                         logger.error({
-                           message: 'Возникла ошибка при парсинге файла: ',
+                           message: 'Возникла ошибка при чтении файла: ',
                            filePath: file,
                            error: err
                         });
