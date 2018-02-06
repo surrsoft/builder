@@ -123,25 +123,35 @@ module.exports = function(grunt) {
                   fs.readFile(file, function(err, text) {
                      if (err) {
                         logger.error({
-                           message: 'Возникла ошибка при чтении файла: ',
+                           message: 'Возникла ошибка при чтении файла',
                            filePath: file,
                            error: err
                         });
                         callback(err);
                      } else {
-                        const componentInfo = parseJsComponent(text.toString());
-                        if (componentInfo.hasOwnProperty('componentName')) {
-                           const parts = componentInfo.componentName.split('!');
-                           if (parts[0] === 'js') {
-                              jsModules[parts[1]] = path.join(tsdModuleName,
-                                 transliterate(path.relative(input, file))).replace(dblSlashes, '/');
+                        try {
+                           const componentInfo = parseJsComponent(text.toString());
+                           if (componentInfo.hasOwnProperty('componentName')) {
+                              const parts = componentInfo.componentName.split('!');
+                              if (parts[0] === 'js') {
+                                 jsModules[parts[1]] = path.join(tsdModuleName,
+                                    transliterate(path.relative(input, file))).replace(dblSlashes, '/');
+                              }
+                           }
+
+                           if (!dryRun) {
+                              copyFile(file, dest, text, callback);
+                           } else {
+                              callback();
                            }
                         }
-
-                        if (!dryRun) {
-                           copyFile(file, dest, text, callback);
-                        } else {
-                           callback();
+                        catch (e) {
+                           logger.error({
+                              message: 'Возникла ошибка при парсинге файла',
+                              filePath: file,
+                              error: e
+                           });
+                           callback(e);
                         }
                      }
                   });
