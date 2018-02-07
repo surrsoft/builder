@@ -23,6 +23,9 @@ class ModuleInfo {
       //объект для записи routes-info.json
       this.routesInfo = {};
 
+      //объект для записи static_templates.json
+      //соответствие запроса html физическиому расположению файла
+      this.staticTemplates = {};
    }
 
    get nameWithResponsible() {
