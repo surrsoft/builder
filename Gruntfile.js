@@ -40,7 +40,9 @@ module.exports = function(grunt) {
       grunt.loadNpmTasks('grunt-text-replace');
       grunt.loadNpmTasks('grunt-contrib-cssmin');
       grunt.loadTasks('Tasks');
-      grunt.option('verbose', oldVerbose);
+      
+      //TODO: ВЕРНУТЬ!
+      //grunt.option('verbose', oldVerbose);
 
       // Init config
       grunt.file.mkdir(target);
