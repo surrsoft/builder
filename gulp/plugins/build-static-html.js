@@ -3,6 +3,8 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
+   transliterate = require('../../lib/transliterate'),
+   helpers = require('../../lib/helpers'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
@@ -19,6 +21,8 @@ module.exports = function(moduleInfo, modulesMap) {
          const config = {};
          const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
          if (result) {
+            const folderName = transliterate(moduleInfo.folderName);
+            moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
             this.push(new Vinyl({
                base: moduleInfo.output,
                path: path.join(moduleInfo.output, result.outFileName),
@@ -34,5 +38,11 @@ module.exports = function(moduleInfo, modulesMap) {
          });
       }
       callback();
+   }, function(callback) {
+      callback(null, new Vinyl({
+         path: 'static_templates.json',
+         contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
+         moduleInfo: moduleInfo
+      }));
    });
 };

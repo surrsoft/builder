@@ -154,7 +154,6 @@ module.exports = function(grunt) {
                   .then(
                      result => {
                         if (result) {
-                           logger.info('SUCCESS: ' + result.outputPath);
                            const outputPath = path.join(applicationRoot, result.outFileName);
                            helpers.writeFile(outputPath, result.text, callback);
                         } else {

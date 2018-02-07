@@ -3,7 +3,8 @@
 const
    fs = require('fs'),
    humanize = require('humanize'),
-   path = require('path');
+   path = require('path'),
+   helpers = require('../lib/helpers');
 
 
 function isNeededValue(key, value) {
@@ -387,7 +388,8 @@ module.exports = function splitResourcesTask(grunt) {
                   grunt.fail.fatal('Не смог найти файл' + nameHtml + '.\n' + err.stack);
                }
             });
-            fs.writeFileSync(getPath('static_templates.json', nameModules), JSON.stringify(listPathStaticHtml, undefined, 2));
+            const sorted = helpers.sortObject(listPathStaticHtml);
+            fs.writeFileSync(getPath('static_templates.json', nameModules), JSON.stringify(sorted, undefined, 2));
          }
 
       });
