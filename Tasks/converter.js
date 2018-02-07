@@ -144,8 +144,7 @@ module.exports = function(grunt) {
                            } else {
                               callback();
                            }
-                        }
-                        catch (e) {
+                        } catch (e) {
                            logger.error({
                               message: 'Возникла ошибка при парсинге файла',
                               filePath: file,
