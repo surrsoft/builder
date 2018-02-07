@@ -15,7 +15,7 @@ function deleteSlash (str, lead, final) {
       result = result[0] === '/' ? result.substring(1) : result;
    }
    if (final) {
-      result = result[result.length - 1] === '/' ? result.substring(0, result.length - 2) : result;
+      result = result[result.length - 1] === '/' ? result.substring(0, result.length - 1) : result;
    }
 
    return result;
