@@ -2,15 +2,16 @@
 
 const
    path = require('path'),
-   indexDict = require('../lib/i18n/index-dictionary').indexDict,
+   logger = require('../lib/logger').logger(),
+   indexDict = require('../lib/i18n/index-dictionary'),
    prepareXHTML = require('../lib/i18n/prepare-xhtml').prepareXHTML,
-   createResultDict = require('../lib/i18n/create-result-dictionary').createResultDict,
-   jsonGenerator = require('../lib/i18n/run-json-generator'),
-   normalizeKeyDict = require('../lib/i18n/normalize-key').normalize;
+   createResultDict = require('../lib/i18n/create-result-dictionary'),
+   runJsonGenerator = require('../lib/i18n/run-json-generator'),
+   normalizeKeyDict = require('../lib/i18n/normalize-key');
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
+      logger.info(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
 
       const taskDone = this.async();
       let taskCount = 0;
@@ -29,7 +30,13 @@ module.exports = function(grunt) {
       //Приводит повторяющиеся ключи в словарях к единому значению
       grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
 
-      grunt.option('json-generate') && jsonGenerator.run(modules, jsonOutput, ++taskCount && done);
+      if (grunt.option('json-generate')) {
+         ++taskCount;
+         runJsonGenerator(modules, jsonOutput)
+            .then(null, (err) => {
+               done(err);
+            });
+      }
 
       grunt.option('make-dict') && createResultDict(grunt, ++taskCount && done);
 
@@ -43,11 +50,11 @@ module.exports = function(grunt) {
 
       function done(err) {
          if (err) {
-            grunt.fail.fatal(err);
+            logger.error({error: err});
          }
 
          if (!isDone && --taskCount <= 0) {
-            grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача i18n выполнена.');
+            logger.info(grunt.template.today('hh:MM:ss') + ': Задача i18n выполнена.');
             isDone = true;
             taskDone();
          }
