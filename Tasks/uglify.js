@@ -76,7 +76,7 @@ module.exports = function uglifyJsTask(grunt) {
             try {
                const minified = runUglifyJs(targetPath, originalText, isMarkup, sourceMapUrl);
                fs.writeFileSync(currentPath, minified.code);
-               if (minified.hasOwnProperty('map')) {
+               if (minified.hasOwnProperty('map') && minified.map) {
                   fs.writeFileSync(sourceMapPath, minified.map);
                }
             } catch (error) {
