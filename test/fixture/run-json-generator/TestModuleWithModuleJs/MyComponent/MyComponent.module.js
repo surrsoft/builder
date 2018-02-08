@@ -1,3 +1,4 @@
+/* eslint-disable */
 define('js!My.Component',
    [
       'CompoundControl'
@@ -13,11 +14,13 @@ define('js!My.Component',
       var Component = CompoundControl.extend(/** @lends My.Component.prototype */ {
          $protected: {
             _options: {
+
                /**
                 * @cfg {String} Устанавливает надпись на кнопке.
                 * @translatable
                 */
                caption: '',
+
                /**
                 * @cfg {String} Устанавливает изображение иконки на кнопке.
                 */
