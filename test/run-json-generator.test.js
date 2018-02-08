@@ -16,37 +16,48 @@ chai.should();
 const testDirname = path.join(__dirname, 'fixture/run-json-generator');
 const outputPath = path.join(testDirname, 'output');
 
-function clear(){
+function clear() {
    fs.removeSync(outputPath);
 }
+
 function writeModulesListToFile(modules) {
-   mkdirp(outputPath);
+   mkdirp.sync(outputPath);
    const modulesJsonPath = path.join(outputPath, 'modules.json');
    fs.writeFileSync(modulesJsonPath, JSON.stringify(modules));
    return modulesJsonPath;
 }
 
 describe('run json-generator', function() {
-   this.timeout(10000);
-   it('empty modules', async() => {
+   it('tests', async() => {
+      let options,
+         modulesJsonPath,
+         result;
+
+      //пустой список модулей
       clear();
-      const modulesJsonPath = writeModulesListToFile([]);
-      const result = await runJsonGenerator(modulesJsonPath, outputPath, testDirname);
-      result.fileName.should.equal('test');
-      result.imports.length.should.equal(2);
-      result.text.should.equal('');
+      modulesJsonPath = writeModulesListToFile([]);
+      result = await runJsonGenerator(modulesJsonPath, outputPath);
+      Object.keys(result).length.should.equal(0);
+
+      //простой тест
       clear();
-   });
-   it('empty modules', async() => {
-      clear();
-      const modulesJsonPath = writeModulesListToFile([
+      modulesJsonPath = writeModulesListToFile([
          path.join(testDirname, 'TestModuleWithModuleJs'),
          path.join(testDirname, 'TestModuleWithoutModuleJs')
       ]);
-      const result = await runJsonGenerator(modulesJsonPath, outputPath, testDirname);
-      result.fileName.should.equal('test');
-      result.imports.length.should.equal(2);
-      result.text.should.equal('');
+      result = await runJsonGenerator(modulesJsonPath, outputPath);
+      Object.keys(result).length.should.equal(4); //это бага, что в result получается в два раза больше записей, чем нужно
+
+      result.hasOwnProperty('TestModuleWithoutModuleJs/MyComponent').should.equal(true);
+      options = result['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
+      options.caption.translatable.should.equal(true);
+      options.icon.hasOwnProperty('translatable').should.equal(false);
+
+      result.hasOwnProperty('My.Component').should.equal(true);
+      options = result['My.Component'].properties['ws-config'].options;
+      options.caption.translatable.should.equal(true);
+      options.icon.hasOwnProperty('translatable').should.equal(false);
+
       clear();
    });
 });
