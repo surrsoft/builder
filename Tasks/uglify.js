@@ -1,15 +1,11 @@
 'use strict';
 
-/**
- * Created by fa.kolbeshin on 21.12.2017.
- */
-
 const
    fs = require('fs'),
-   uglifyJS = require('uglify-js'),
    humanize = require('humanize'),
    path = require('path'),
    async = require('async'),
+   runUglifyJs = require('../lib/run-uglify-js'),
    jsEXT = /\.js$/,
    tmplEXT = /\.tmpl$/,
    xhtmlEXT = /\.xhtml$/,
@@ -48,48 +44,14 @@ module.exports = function uglifyJsTask(grunt) {
             const
                currentPath = path.normalize(file),
                originalText = fs.readFileSync(currentPath, 'utf8'),
-               dataObject = {},
+               isMarkup = originalText.match(/define\("(tmpl!|html!)/),
                currentEXT = currentPath.match(jsEXT) ? jsEXT : currentPath.match(tmplEXT) ? tmplEXT : xhtmlEXT;
 
 
-            let minifyOptions,
+            let sourceMapUrl,
                sourceJSPath,
                sourceMapPath,
                currentEXTString = currentEXT.toString();
-
-            /**
-             * если минифицируется обычная js-ка, то передаём правильный набор опций для
-             * компрессии. Если же это шаблон, то достаточно mangle { eval: true }
-             */
-            if (!originalText.match(/define\("(tmpl!|html!)/)) {
-               /* eslint-disable id-match */
-               minifyOptions = {
-                  compress: {
-                     sequences: true,
-                     properties: false,
-                     dead_code: true,
-                     drop_debugger: true,
-                     conditionals: false,
-                     comparisons: false,
-                     evaluate: false,
-                     booleans: false,
-                     loops: false,
-                     unused: false,
-                     hoist_funs: false,
-                     if_return: false,
-                     join_vars: true,
-                     warnings: false, //всё равно их не ловим
-                     negate_iife: false,
-                     keep_fargs: true,
-                     collapse_vars: true
-                  }
-               };
-               /* eslint-enable id-match */
-            } else {
-               minifyOptions = {
-                  mangle: {eval: true}
-               };
-            }
 
             currentEXTString = currentEXTString.slice(2, currentEXTString.length - 2);
 
@@ -105,38 +67,27 @@ module.exports = function uglifyJsTask(grunt) {
                sourceMapPath = `${currentPath}.map`;
                fs.writeFileSync(sourceJSPath, originalText);
                if (currentEXTString === '.js') {
-                  minifyOptions.sourceMap = {
-                     url: path.basename(sourceMapPath)
-                  };
+                  sourceMapUrl = path.basename(sourceMapPath);
                }
             }
 
-            dataObject[path.basename(sourceJSPath ? sourceJSPath : currentPath)] = originalText;
+            const targetPath = sourceJSPath ? sourceJSPath : currentPath;
 
-            let minified;
             try {
-               minified = uglifyJS.minify(dataObject, minifyOptions);
-               if (minified.error) {
-                  logger.error({
-                     message: 'Ошибка при минификации файла',
-                     error: new Error(JSON.stringify(minified.error)),
-                     filePath: sourceJSPath ? sourceJSPath : currentPath
-                  });
+               const minified = runUglifyJs(targetPath, originalText, isMarkup, sourceMapUrl);
+               fs.writeFileSync(currentPath, minified.code);
+               if (minified.hasOwnProperty('map')) {
+                  fs.writeFileSync(sourceMapPath, minified.map);
                }
             } catch (error) {
                logger.error({
-                  message: `Ошибка в builder'е при минификации файла ${sourceJSPath ? sourceJSPath : currentPath}`,
-                  error: error
+                  message: 'Ошибка при минификации файла',
+                  error: error,
+                  filePath: targetPath
                });
-            }
-            if (minified && !minified.error && minified.code) {
-               fs.writeFileSync(currentPath, minified.code);
-               if (isPresentationService) {
-                  fs.writeFileSync(sourceMapPath, minified.map);
-               }
-            } else {
                fs.writeFileSync(currentPath, originalText);
             }
+
          });
 
          /**
