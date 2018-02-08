@@ -6,21 +6,7 @@ const
    path = require('path'),
    helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger(),
-   constants = global.requirejs('Core/constants');
-
-
-function deleteSlash (str, lead, final) {
-   let result = str;
-
-   if (lead) {
-      result = result[0] === '/' ? result.substring(1) : result;
-   }
-   if (final) {
-      result = result[result.length - 1] === '/' ? result.substring(0, result.length - 1) : result;
-   }
-
-   return result;
-}
+   resources = 'resources';
 
 function isNeededValue(key, value) {
    let matchs = value.match(key);
@@ -50,7 +36,7 @@ function getName(path, isResources, isRootApp, sep) {
    }
 
    if (isResources) {
-      let index = splitPath.indexOf(deleteSlash(constants.resourceRoot, true, true));
+      let index = splitPath.indexOf(resources);
       if (index === -1) {
          return '';
       }
@@ -68,11 +54,11 @@ module.exports = function splitResourcesTask(grunt) {
       let newPath;
 
       if (isResources) {
-         newPath = path.join(rootPath, constants.resourceRoot + nameFile);
+         newPath = path.join(rootPath, resources, nameFile);
       } else if (nameModule) {
-         newPath = path.join(rootPath, constants.resourceRoot + nameModule + '/' + nameFile);
+         newPath = path.join(rootPath, resources, nameModule, nameFile);
       } else {
-         newPath = path.join(rootPath, '/' + nameFile);
+         newPath = path.join(rootPath, nameFile);
       }
 
       return path.normalize(newPath);
@@ -403,7 +389,7 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          try {
-            pathContents = path.join(rootPath, constants.resourceRoot + nameModules + '/contents.json');
+            pathContents = path.join(rootPath, resources, nameModules, 'contents.json');
             contents = JSON.parse(fs.readFileSync(pathContents, {encoding: 'utf8'}));
          } catch (err) {
             grunt.fail.fatal('Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
