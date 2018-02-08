@@ -4,7 +4,7 @@ const
    path = require('path'),
    logger = require('../lib/logger').logger(),
    indexDict = require('../lib/i18n/index-dictionary'),
-   prepareXHTML = require('../lib/i18n/prepare-xhtml').prepareXHTML,
+   prepareXHTML = require('../lib/i18n/prepare-xhtml'),
    createResultDict = require('../lib/i18n/create-result-dictionary'),
    runJsonGenerator = require('../lib/i18n/run-json-generator'),
    normalizeKeyDict = require('../lib/i18n/normalize-key');
