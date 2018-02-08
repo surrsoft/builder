@@ -4,8 +4,9 @@ const
    fs = require('fs'),
    humanize = require('humanize'),
    path = require('path'),
-   helpers = require('../lib/helpers');
-
+   helpers = require('../lib/helpers'),
+   logger = require('../lib/logger').logger(),
+   resources = 'resources';
 
 function isNeededValue(key, value) {
    let matchs = value.match(key);
@@ -35,7 +36,7 @@ function getName(path, isResources, isRootApp, sep) {
    }
 
    if (isResources) {
-      let index = splitPath.indexOf('resources');
+      let index = splitPath.indexOf(resources);
       if (index === -1) {
          return '';
       }
@@ -53,11 +54,11 @@ module.exports = function splitResourcesTask(grunt) {
       let newPath;
 
       if (isResources) {
-         newPath = path.join(rootPath, '/resources/' + nameFile);
+         newPath = path.join(rootPath, resources, nameFile);
       } else if (nameModule) {
-         newPath = path.join(rootPath, '/resources/' + nameModule + '/' + nameFile);
+         newPath = path.join(rootPath, resources, nameModule, nameFile);
       } else {
-         newPath = path.join(rootPath, '/' + nameFile);
+         newPath = path.join(rootPath, nameFile);
       }
 
       return path.normalize(newPath);
@@ -156,7 +157,7 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function splitRoutes() {
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
+      logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
 
       let
          nameModule,
@@ -185,7 +186,7 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function splitContents(fullContents) {
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения contents.json`);
+      logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения contents.json`);
 
       let
          nameModule,
@@ -234,30 +235,53 @@ module.exports = function splitResourcesTask(grunt) {
       return splitContents;
    }
 
+   //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
+   function replaceWsInModDepend(modDepends) {
+      let
+         pathModule,
+         exception = [],
+         fullModuleDep = {
+            nodes: {},
+            links: {}
+         };
+
+      Object.keys(modDepends.nodes).forEach(function(name) {
+         pathModule = modDepends.nodes[name].path;
+
+
+         if (fs.existsSync(getPath(pathModule))) {
+            fullModuleDep.nodes[name] = modDepends.nodes[name];
+            fullModuleDep.links[name] = modDepends.links[name];
+         } else {
+            exception.push(pathModule);
+            return;
+         }
+
+      });
+
+      //Пока что не будет выводить список файлов которые не были найдены при распили module-dependencies.json
+      /*
+      if(exception.length !== 0) {
+         logger.warning({
+            message: 'Не смог найти файлы',
+            filePath: exception.join(',\n')
+         });
+      }
+      */
+
+      return fullModuleDep;
+   }
+
    function splitModuleDependencies() {
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
+      logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
       let
          existFile,
          nameModule,
          splitModuleDep = {},
-         fullModuleDepCont = JSON.stringify(JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)))),
-         fullModuleDep;
+         fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
 
-      //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
-      let
-         replaceStrDeprect,
-         replaceStrCore;
-      if (path.sep === '\\') {
-         replaceStrDeprect = '"resources\\\\WS.Deprecated\\';
-         replaceStrCore = '"resources\\\\WS.Core\\';
-      } else {
-         replaceStrDeprect = '"resources/WS.Deprecated/';
-         replaceStrCore = '"resources/WS.Core/';
-      }
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]deprecated[\\|/]/g, replaceStrDeprect);
-      fullModuleDepCont = fullModuleDepCont.replace(/\"ws[\\|/]/g, replaceStrCore);
-      fullModuleDep = JSON.parse(fullModuleDepCont);
+      fullModuleDep = replaceWsInModDepend(fullModuleDep);
 
       try {
          Object.keys(fullModuleDep.nodes).forEach(function(node) {
@@ -298,7 +322,7 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function splitPreloadUrls(modules) {
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача разбиения preload_urls.json`);
+      logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения preload_urls.json`);
 
       let
          preloadUrls = {},
@@ -350,7 +374,7 @@ module.exports = function splitResourcesTask(grunt) {
 
 
    function slpitStaticHtml(modules) {
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
+      logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
 
       let
          nameModules,
@@ -365,7 +389,7 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          try {
-            pathContents = path.join(rootPath, '/resources/' + nameModules + '/contents.json');
+            pathContents = path.join(rootPath, resources, nameModules, 'contents.json');
             contents = JSON.parse(fs.readFileSync(pathContents, {encoding: 'utf8'}));
          } catch (err) {
             grunt.fail.fatal('Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
@@ -399,27 +423,27 @@ module.exports = function splitResourcesTask(grunt) {
 
       let fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
 
-      grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
+      logger.info(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
 
       writeFileInModules(splitRoutes(), 'routes-info.json');
-      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена.`);
+      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена.`);
 
       let splitCont = splitContents(fullContents);
       writeFileInModules(splitCont, 'contents.json');
       writeFileInModules(splitCont, 'contents.js');
-      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена.`);
+      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена.`);
 
       writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
-      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена.`);
+      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена.`);
 
       if (fs.existsSync(getPath('preload_urls.json', undefined, true))) {
          writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
-         grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена.`);
+         logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена.`);
       }
 
       slpitStaticHtml(fullContents.requirejsPaths);
-      grunt.log.ok(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
+      logger.debug(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
 
-      grunt.log.ok(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
+      logger.info(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
    });
 };
