@@ -25,7 +25,7 @@ describe('run uglify-js', function() {
       result.code.should.equal('if("undefined"===typeof test1)test2=0;');
 
       const resultForMarkup = runUglifyJs('virtual.js', text, true);
-      resultForMarkup.code.should.equal('"undefined"===typeof test1&&(test2=0);');
+      resultForMarkup.code.should.equal('if("undefined"===typeof test1)test2=0;');
    });
 
    it('complex test for typeof undefined', () => {
@@ -43,7 +43,7 @@ describe('run uglify-js', function() {
       result.code.should.equal('(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();');
 
       const resultForMarkup = runUglifyJs('virtual.js', text, true);
-      resultForMarkup.code.should.equal('!function(){"undefined"===typeof("undefined"!==typeof tclosure&&tclosure?tclosure:arguments[arguments.length-1])&&console.log(1)}();');
+      resultForMarkup.code.should.equal('(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();');
    });
 });
 
