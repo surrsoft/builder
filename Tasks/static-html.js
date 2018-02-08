@@ -8,7 +8,7 @@ const path = require('path'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
-function convertTmpl(resourcesRoot, filePattern, cb) {
+function convertTmpl(resourcesRoot, filePattern, componentsProperties, cb) {
    helpers.recurse(resourcesRoot, function(fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
@@ -23,7 +23,7 @@ function convertTmpl(resourcesRoot, filePattern, cb) {
             return;
          }
 
-         convertHtmlTmpl(html, fullPath)
+         convertHtmlTmpl(html, fullPath, componentsProperties)
             .then(
                result => {
                   const newFullPath = fullPath.replace(/\.tmpl$/, '');
@@ -62,9 +62,10 @@ module.exports = function(grunt) {
          application = this.data.application,
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
-         filePattern = this.data.filePattern;
+         filePattern = this.data.filePattern,
+         componentsProperties = {};
 
-      convertTmpl(resourcesRoot, filePattern, function(err) {
+      convertTmpl(resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
             logger.error({error: err});
          }

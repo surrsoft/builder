@@ -124,7 +124,8 @@ module.exports = function(grunt) {
          application = this.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         componentsProperties = {};
 
       let deps = ['View/Builder/Tmpl', 'View/config'];
 
@@ -135,7 +136,7 @@ module.exports = function(grunt) {
             tclosureStr = 'var tclosure=deps[0];';
          }
 
-         async.eachOfLimit(nodes, 2, function(value, fullName, callback) {
+         async.eachOfLimit(nodes, 20, function(value, fullName, callback) {
             if (fullName.indexOf('tmpl!') === 0) {
                let filename = value.path.replace(dblSlashes, '/'),
                   fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
@@ -168,7 +169,7 @@ module.exports = function(grunt) {
                         _deps.push(dep);
                      });
 
-                     tmplLocalizator.parseTmpl(html, filename)
+                     tmplLocalizator.parseTmpl(html, filename, componentsProperties)
                         .then(function(traversedObj) {
                            const traversed = traversedObj.astResult;
                            try {
