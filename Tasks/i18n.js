@@ -2,11 +2,11 @@
 
 const
    path = require('path'),
-   indexDict = require('../lib/i18n/indexDictionary').indexDict,
-   prepareXHTML = require('../lib/i18n/prepareXHTML').prepareXHTML,
-   createResultDict = require('../lib/i18n/createResultDictionary').createResultDict,
-   jsonGenerator = require('../lib/i18n/jsonGenerator'),
-   normalizeKeyDict = require('../lib/i18n/normalizeKey').normalize;
+   indexDict = require('../lib/i18n/index-dictionary').indexDict,
+   prepareXHTML = require('../lib/i18n/prepare-xhtml').prepareXHTML,
+   createResultDict = require('../lib/i18n/create-result-dictionary').createResultDict,
+   jsonGenerator = require('../lib/i18n/run-json-generator'),
+   normalizeKeyDict = require('../lib/i18n/normalize-key').normalize;
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', function() {
