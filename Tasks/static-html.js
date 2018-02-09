@@ -88,6 +88,10 @@ module.exports = function(grunt) {
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
          forPresentationService = (grunt.option('includes') !== undefined) ? !grunt.option('includes') : false;
 
+      if (!modulesOption) {
+         logger.error('Parameter "modules" not found');
+         return;
+      }
       const pathsModules = grunt.file.readJSON(modulesOption);
       if (!Array.isArray(pathsModules)) {
          logger.error('Parameter "modules" incorrect');
