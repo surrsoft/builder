@@ -2,10 +2,11 @@
 
 const
    path = require('path'),
+   fs = require('fs'),
    logger = require('../lib/logger').logger(),
    indexDict = require('../lib/i18n/index-dictionary'),
    prepareXHTML = require('../lib/i18n/prepare-xhtml'),
-   createResultDict = require('../lib/i18n/create-result-dictionary'),
+   collectWords = require('../lib/i18n/collect-words'),
    runJsonGenerator = require('../lib/i18n/run-json-generator'),
    normalizeKeyDict = require('../lib/i18n/normalize-key');
 
@@ -49,6 +50,64 @@ function runPrepareXHTML(root, componentsProperties, done) {
    done();
 }
 
+async function runCreateResultDict(modules, componentsProperties, out, done) {
+   logger.info('Запускается построение результирующего словаря.');
+
+   if (!out) {
+      logger.error('Parameter "out" is not find');
+      done();
+      return;
+   }
+
+   if (!modules) {
+      logger.error('Parameter "modules" is not find');
+      done();
+      return;
+   }
+
+
+   const paths = JSON.parse(fs.readFileSync(modules).toString());
+
+   let curCountModule = 0;
+   const words = [];
+
+   for (let dir of paths) {
+      const sourceFiles = global.grunt.file.expand({cwd: dir}, ['**/*.xhtml', '**/*.tmpl', '**/*.js']);
+      for (let pathToSource of sourceFiles) {
+         const absPath = path.join(dir, pathToSource);
+         const text = fs.readSync(absPath).toString();
+         let newWords = [];
+         try {
+            newWords = await collectWords(absPath, text, componentsProperties);
+         } catch (error) {
+            logger.error({
+               message: 'Ошибка при сборе фраз для локализации',
+               error: error,
+               filePath: absPath
+            });
+         }
+         Array.prototype.push.apply(words, newWords);
+      }
+      curCountModule += 1;
+      const percent = curCountModule * 100 / paths.length;
+      logger.progress(percent, 'UI ' + path.basename(dir));
+   }
+
+   // Записать в результирующий словарь
+   try {
+      fs.writeFileSync(out, JSON.stringify(words, null, 2));
+   } catch (err) {
+      logger.error({
+         message: 'Could\'t create output file ',
+         filePath: out,
+         error: err
+      });
+   }
+
+   logger.info('Построение результирующего словаря выполнено.');
+   done();
+}
+
 module.exports = function(grunt) {
    grunt.registerMultiTask('i18n', 'Translate static', async function() {
       logger.info(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
@@ -57,28 +116,36 @@ module.exports = function(grunt) {
       let taskCount = 0;
       let isDone = false;
 
-      let modules = grunt.option('modules');
-      if (modules) {
-         modules = modules.replace(/"/g, '');
-      }
-      let cache = grunt.option('json-cache');
-      if (cache) {
-         cache = cache.replace(/"/g, '');
-      }
-      const jsonOutput = cache || path.join(__dirname, '../../../../jsDoc-json-cache');
+      let options = new Map([
+         ['modules', grunt.option('modules')],
+         ['json-cache', grunt.option('json-cache')],
+         ['out', grunt.option('out')],
+         ['index-dict', grunt.option('index-dict')],
+         ['make-dict', grunt.option('make-dict')],
+         ['prepare-xhtml', grunt.option('prepare-xhtml')]
+      ]);
+
+      options = new Map(Array.from(options, ([k, v]) => {
+         if (v) {
+            return [k, v.replace(/"/g, '')];
+         } else {
+            return [k, v];
+         }
+      }));
+
       let componentsProperties;
-      if (modules) {
-         componentsProperties = await runJsonGenerator(modules, jsonOutput);
+      if (options.get('modules') && options.get('json-cache')) {
+         componentsProperties = await runJsonGenerator(options.get('modules'), options.get('json-cache'));
       }
 
       //Приводит повторяющиеся ключи в словарях к единому значению
-      grunt.option('index-dict') && normalizeKeyDict(grunt, this.data, grunt.option('index-dict'));
+      options.get('index-dict') && normalizeKeyDict(this.data, options.get('index-dict'));
 
-      grunt.option('make-dict') && createResultDict(grunt, ++taskCount && done);
+      options.get('make-dict') && runCreateResultDict(options.get('modules'), options.get('json-cache'), options.get('out'), ++taskCount && done);
 
-      grunt.option('prepare-xhtml') && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
+      options.get('prepare-xhtml') && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
 
-      grunt.option('index-dict') && indexDict(grunt, grunt.option('index-dict'), this.data, ++taskCount && done);
+      options.get('index-dict') && indexDict(options.get('index-dict'), this.data, ++taskCount && done);
 
       if (taskCount === 0) {
          done();
