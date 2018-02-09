@@ -23,7 +23,7 @@ describe('i18n', function() {
       });
 
       it('simple div and span', () => {
-         const text = '<div>Текст</div><span>Текст</span>';
+         const text = '<div>Текст</div><span>Текст</span><!--<div>Текст3</div><span>Текст4</span>-->';
          const result = prepareXhtml(text, {});
          result.should.equal('<div>{[Текст]}</div><span>{[Текст]}</span>');
       });

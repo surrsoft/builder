@@ -12,8 +12,8 @@ chai.should();
 
 let collectWords;
 
-describe('transliterate', function() {
-   it('init', function() {
+describe('transliterate', async() => {
+   it('init', () => {
       let err = nodeWS.init();
       if (err) {
          throw new Error(err);
@@ -21,25 +21,25 @@ describe('transliterate', function() {
       collectWords = require('../lib/i18n/collect-words');
    });
 
-   it('empty js', function() {
+   it('empty js', async() => {
       const text = '';
-      const words = collectWords('module', 'file.js', text, []);
+      const words = await collectWords('module', 'file.js', text, []);
       words.length.should.equal(0);
    });
 
-   it('empty xhtml', function() {
+   it('empty xhtml', async() => {
       const text = '';
-      const words = collectWords('module', 'file.xhtml', text, []);
+      const words = await collectWords('module', 'file.xhtml', text, []);
       words.length.should.equal(0);
    });
 
-   it('empty tmpl', function() {
+   it('empty tmpl', async() => {
       const text = '';
-      const words = collectWords('module', 'file.tmpl', text, []);
+      const words = await collectWords('module', 'file.tmpl', text, []);
       words.length.should.equal(0);
    });
 
-   it('collect words in js', function() {
+   it('collect words in js', async() => {
       //TODO: Добавить plural
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.js');
@@ -49,7 +49,7 @@ describe('transliterate', function() {
          'var testVar = rk(\'Test2\', \'TestContext2\');\n' +
          '//var testVar3 = rk(\'Test3\', \'TestContext3\');\n' +
          '/* var testVar3 = rk(\'Test3\', \'TestContext3\'); */\n';
-      const words = collectWords(moduleDir, filePath, text, []);
+      const words = await collectWords(moduleDir, filePath, text, []);
       words.length.should.equal(4); //TODO: очевидно, тут ошибка. должно быть 2
 
       words[0].ui.should.equal(moduleDir);
@@ -63,11 +63,11 @@ describe('transliterate', function() {
       words[1].context.should.equal('TestContext2');
    });
 
-   it('collect words in xhtml. simple div and span', function() {
+   it('collect words in xhtml. simple div and span', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
       const text = '<div>Test1</div><span>TestContext2@@Test2</span><!--<div>Текст3</div><span>Текст4</span>-->';
-      const words = collectWords(moduleDir, filePath, text, []);
+      const words = await collectWords(moduleDir, filePath, text, []);
       words.length.should.equal(2);
 
       words[0].ui.should.equal(moduleDir);
@@ -81,11 +81,11 @@ describe('transliterate', function() {
       words[1].context.should.equal('TestContext2');
    });
 
-   it('collect words in tmpl. simple div and span', function() {
+   it('collect words in tmpl. simple div and span', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.tmpl');
       const text = '<div>Test1</div><span>TestContext2@@Test2</span><!--<div>Текст3</div><span>Текст4</span>-->';
-      const words = collectWords(moduleDir, filePath, text, []);
+      const words = await collectWords(moduleDir, filePath, text, []);
       words.length.should.equal(2);
 
       words[0].ui.should.equal(moduleDir);
