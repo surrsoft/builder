@@ -19,9 +19,7 @@ module.exports = function less1by1Task(grunt) {
 
       helpers.recurse(rootPath, function(filePath, cb) {
          const relativePath = path.relative(rootPath, filePath);
-         const fromWS = helpers.validateFile(relativePath, ['ws/**/*.less']);
-         const fromResources = helpers.validateFile(relativePath, ['resources/**/*.less']);
-         if (fromWS || fromResources) {
+         if (helpers.validateFile(relativePath, ['ws/**/*.less', 'resources/**/*.less'])) {
             fs.readFile(filePath, async function readFileCb(readFileError, data) {
                if (readFileError) {
                   logger.error({
@@ -33,7 +31,7 @@ module.exports = function less1by1Task(grunt) {
                   return;
                }
                try {
-                  let resourcePath = path.join(applicationRoot, fromResources ? 'resources' : 'ws');
+                  let resourcePath = path.join(applicationRoot, 'resources');
                   const result = await buildLess(filePath, data.toString(), resourcePath);
                   const newFullPath = path.join(path.dirname(filePath), result.fileName + '.css');
                   if (fs.existsSync(newFullPath)) {
