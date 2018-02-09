@@ -102,5 +102,13 @@ describe('build less', function() {
 
    });
 
+   it('variables.less from themes', async() => {
+      const filePath = path.join(testDirname, 'Retail/themes/presto/variables.less');
+      const text = '';
+      const result = await buildLess(filePath, text, testDirname);
+      result.fileName.should.equal('variables');
+      result.imports.length.should.equal(0);
+      result.text.should.equal('');
+   });
 });
 
