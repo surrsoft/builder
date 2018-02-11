@@ -7,9 +7,14 @@ try {
    if (process.versions.node.split('.')[0] < 8) {
       // не рискуем выводить через logger
       // eslint-disable-next-line no-console
-      console.log('[00:00:00] [ERROR] Builder_0002 Для запуска требуется Node.js v8.0.0 или выше');
+      console.log('[00:00:00] [ERROR] Для запуска требуется Node.js v8.0.0 или выше');
       process.exit(1);
    }
+
+   process.on('unhandledRejection', (reason, p) => {
+      //eslint-disable-next-line no-console
+      console.log('[00:00:00] [ERROR] Критическая ошибка в работе builder\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   });
 
    //логгер - прежде всего
    const gulplog = require('gulplog');
@@ -47,7 +52,7 @@ try {
 
 } catch (e) {
    // eslint-disable-next-line no-console
-   console.log('[00:00:00] [ERROR] Builder_0001 Необработанное исключение: ' + e.message + '. Stack: ' + e.stack);
+   console.log('[00:00:00] [ERROR] Необработанное исключение: ' + e.message + '. Stack: ' + e.stack);
    process.exit(1);
 }
 

@@ -13,6 +13,11 @@ module.exports = function(grunt) {
          process.exit(1);
       }
 
+      process.on('unhandledRejection', (reason, p) => {
+         //eslint-disable-next-line no-console
+         console.log('[ERROR] Критическая ошибка в работе builder\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+      });
+
       // Read options
       const root = grunt.option('root') || '';
       const app = grunt.option('application') || '/';
@@ -87,7 +92,7 @@ module.exports = function(grunt) {
 
    } catch (error) {
       //eslint-disable-next-line no-console
-      console.log('Критическая ошибка в работе builder\'а: ', error.stack);
+      console.log('[ERROR] Критическая ошибка в работе builder\'а: ', error.stack);
    }
 };
 
