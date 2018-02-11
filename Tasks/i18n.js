@@ -169,10 +169,10 @@ module.exports = function(grunt) {
          optIndexDict = readOption('index-dict'),
          optMakeDict = readOption('make-dict'),
          optPrepareXhtml = readOption('prepare-xhtml'),
-         jsonGenerate = readOption('json-generate');
+         optJsonGenerate = readOption('json-generate');
 
       let componentsProperties = {};
-      if (optPrepareXhtml || optMakeDict || jsonGenerate) {
+      if (optPrepareXhtml || optMakeDict || optJsonGenerate) {
          componentsProperties = await runJsonGenerator(optModules, optJsonCache);
          if (optMakeDict) {
             try {
