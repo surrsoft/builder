@@ -58,11 +58,11 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
    };
 };
 
-function buildLessTask(config) {
+function buildLessTask(moduleInfo) {
    return function lessTask() {
-      return gulp.src(path.join(config.outputPath, '/**/*.less'))
-         .pipe(buildLess(config.outputPath))
-         .pipe(gulp.dest(config.outputPath));
+      return gulp.src(path.join(moduleInfo.output, '/**/*.less'))
+         .pipe(buildLess(moduleInfo))
+         .pipe(gulp.dest(moduleInfo.output));
    };
 }
 
@@ -70,6 +70,7 @@ function buildLessTask(config) {
 module.exports = {
    'create': function buildTask(config) {
       const buildTasks = [],
+         compileLessTasks = [],
          changesStore = new ChangesStore(config.cachePath);
 
       let countCompletedModules = 0;
@@ -92,6 +93,7 @@ module.exports = {
                   copyTaskGenerator(moduleInfo, modulesMap, changesStore),
                   htmlTmplTaskGenerator(moduleInfo, changesStore)),
                printPercentComplete));
+         compileLessTasks.push(buildLessTask(moduleInfo));
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -128,7 +130,7 @@ module.exports = {
 
       return gulp.series(
          gulp.parallel(buildTasks),
-         buildLessTask(config),
+         gulp.parallel(compileLessTasks),
          gulp.parallel(clearTask, saveChangedStoreTask));
    }
 };
