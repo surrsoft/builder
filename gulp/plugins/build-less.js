@@ -3,8 +3,6 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
-
-   //buildLess = require('../../lib/build-less'),
    workerPool = require('workerpool'),
    logger = require('../../lib/logger').logger();
 
@@ -14,8 +12,6 @@ module.exports = function(moduleInfo) {
    return through.obj(async function(file, encoding, callback) {
       try {
          const result = await pool.exec('buildLess', [file.path, path.dirname(moduleInfo.output)]);
-
-         //const result = await buildLess(file.path, file.contents.toString(), path.dirname(moduleInfo.output));
          lessImports += file.path + ' imports: ' + JSON.stringify(result.imports, null, 3) + '\n';
          this.push(new Vinyl({
             base: moduleInfo.output,
