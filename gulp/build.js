@@ -60,7 +60,7 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 function buildLessTask(moduleInfo) {
    return function lessTask() {
-      return gulp.src(path.join(moduleInfo.output, '/**/*.less'))
+      return gulp.src(path.join(moduleInfo.output, '/**/*.less'), {read: false})
          .pipe(buildLess(moduleInfo))
          .pipe(gulp.dest(moduleInfo.output));
    };
