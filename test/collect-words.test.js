@@ -108,7 +108,7 @@ describe('collect words', async() => {
    });
 
    //несколько видов задания простых опций
-   it('collect words in xhtml. simple component option', async () => {
+   it('collect words in xhtml. simple component option', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
       const text = '<component data-component="Test.Component">\n' +
@@ -261,7 +261,7 @@ describe('collect words', async() => {
    });
 
    //проверим, что tmpl обрабатываются с учётом
-   it('collect words in tmpl. simple component option', async () => {
+   it('collect words in tmpl. simple component option', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.tmpl');
       const text = '<ws:Test.Component test1="Текст1"/>' +

@@ -145,7 +145,7 @@ module.exports = function(grunt) {
 
       options.get('prepare-xhtml') && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
 
-      options.get('index-dict') && indexDict(options.get('index-dict'), this.data, ++taskCount && done);
+      options.get('index-dict') && indexDict(grunt, options.get('index-dict'), this.data, ++taskCount && done);
 
       if (taskCount === 0) {
          done();
