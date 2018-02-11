@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const humanize = require('humanize');
 const async = require('async');
+const logger = require('../lib/logger').logger();
 const DoT = global.requirejs('Core/js-template-doT');
 const tmplLocalizator = require('../lib/i18n/tmpl-localizator');
 const oldToNew = require('../resources/old_to_new.json');
@@ -11,15 +12,12 @@ const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
 const runJsonGenerator = require('../lib/i18n/run-json-generator');
 
-function warnTmplBuild(err, fullPath) {
-   global.grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
-}
-
 function errorTmplBuild(err, fullName, fullPath) {
-   global.grunt.log.error(`Resources error. An ERROR occurred while building template!
-    ---------File name: ${fullName}
-    ---------File path: ${fullPath}`);
-   global.grunt.fail.fatal(err);
+   logger.error({
+      message: `Resources error. An ERROR occurred while building template ${fullName}!`,
+      filePath: fullPath,
+      error: err
+   });
 }
 
 function stripBOM(x) {
@@ -58,7 +56,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
     создали список модулей которые подверглись переименованию и проверяем есть ли данный шаблон в списке.
     https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
     */
-   for (var name in oldToNew) {
+   for (let name in oldToNew) {
       if (oldToNew.hasOwnProperty(name)) {
          if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
             secondName = nameModule;
@@ -131,8 +129,8 @@ module.exports = function(grunt) {
 
       //запускаем только при наличии задач локализации
       if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
-         const modules = grunt.options.get('modules').replace(/"/g, '');
-         const jsonCache = grunt.options.get('json-cache').replace(/"/g, '');
+         const modules = grunt.option('modules').replace(/"/g, '');
+         const jsonCache = grunt.option('json-cache').replace(/"/g, '');
          componentsProperties = await runJsonGenerator(modules, jsonCache);
       }
 
@@ -159,12 +157,15 @@ module.exports = function(grunt) {
                let conf = {config: config, filename: filename, fromBuilderTmpl: true};
                fs.readFile(fullPath, 'utf8', function(err, html) {
                   if (err) {
-                     console.log(`Potential 404 error: ${err}`);
-                     warnTmplBuild(err, fullPath);
+                     logger.warning({
+                        message: 'Potential 404 error. An ERROR occurred while building template',
+                        filePath: fullPath,
+                        error: err
+                     });
                      return setImmediate(callback);
                   }
 
-                  var templateRender = Object.create(tmpl);
+                  const templateRender = Object.create(tmpl);
 
                   let original = html;
                   html = stripBOM(html);
@@ -215,11 +216,19 @@ module.exports = function(grunt) {
                               creatTemplate(fullName, contents, original, nodes, applicationRoot, callback, _deps);
 
                            } catch (error) {
-                              warnTmplBuild(error, fullPath);
+                              logger.warning({
+                                 message: 'An ERROR occurred while building template',
+                                 filePath: fullPath,
+                                 error: error
+                              });
                               setImmediate(callback);
                            }
                         }, function(error) {
-                           warnTmplBuild(error, fullPath);
+                           logger.warning({
+                              message: 'An ERROR occurred while building template',
+                              filePath: fullPath,
+                              error: error
+                           });
                            setImmediate(callback);
                         });
                   } catch (error) {
@@ -241,8 +250,7 @@ module.exports = function(grunt) {
                grunt.fail.fatal(error);
             }
 
-            console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
-
+            logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
             done();
          });
       });
@@ -270,8 +278,11 @@ module.exports = function(grunt) {
 
             fs.readFile(fullPath, 'utf8', function(err, html) {
                if (err) {
-                  console.log(`Potential 404 error: ${err}`);
-                  warnTmplBuild(err, fullPath);
+                  logger.warning({
+                     message: 'Potential 404 error. An ERROR occurred while building template',
+                     filePath: fullPath,
+                     error: err
+                  });
                   return setImmediate(callback);
                }
 
@@ -298,7 +309,11 @@ module.exports = function(grunt) {
                   creatTemplate(fullName, contents, original, nodes, applicationRoot, callback);
 
                } catch (error) {
-                  warnTmplBuild(error, fullPath);
+                  logger.warning({
+                     message: 'An ERROR occurred while building template',
+                     filePath: fullPath,
+                     error: error
+                  });
                   setImmediate(callback);
                }
             });
@@ -317,7 +332,7 @@ module.exports = function(grunt) {
             grunt.fail.fatal(error);
          }
 
-         console.log(`Duration: ${(Date.now() - start) / 1000} sec`);
+         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
 
          done();
       });
