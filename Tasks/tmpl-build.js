@@ -247,6 +247,7 @@ module.exports = function(grunt) {
                mDeps.nodes = nodes;
                grunt.file.write(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(mDeps, null, 2));
             } catch (error) {
+               logger.error({error: error});
                grunt.fail.fatal(error);
             }
 
