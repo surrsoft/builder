@@ -9,6 +9,7 @@ const tmplLocalizator = require('../lib/i18n/tmpl-localizator');
 const oldToNew = require('../resources/old_to_new.json');
 const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
+const runJsonGenerator = require('../lib/i18n/run-json-generator');
 
 function warnTmplBuild(err, fullPath) {
    global.grunt.log.warn(`resources error. An ERROR occurred while building template! ${err.message}, in file: ${fullPath}`);
@@ -115,7 +116,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
 }
 
 module.exports = function(grunt) {
-   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', function() {
+   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача tmpl-build.`);
       let start = Date.now();
       const
@@ -124,8 +125,16 @@ module.exports = function(grunt) {
          application = this.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes,
-         componentsProperties = {};
+         nodes = mDeps.nodes;
+
+      let componentsProperties = {};
+
+      //запускаем только при наличии задач локализации
+      if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
+         const modules = grunt.options.get('modules').replace(/"/g, '');
+         const jsonCache = grunt.options.get('json-cache').replace(/"/g, '');
+         componentsProperties = await runJsonGenerator(modules, jsonCache);
+      }
 
       let deps = ['View/Builder/Tmpl', 'View/config'];
 

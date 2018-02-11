@@ -3,6 +3,8 @@
 const
    path = require('path'),
    fs = require('fs'),
+   async = require('async'),
+   helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger(),
    indexDict = require('../lib/i18n/index-dictionary'),
    prepareXHTML = require('../lib/i18n/prepare-xhtml'),
@@ -50,62 +52,96 @@ function runPrepareXHTML(root, componentsProperties, done) {
    done();
 }
 
-async function runCreateResultDict(modules, componentsProperties, out, done) {
-   logger.info('Запускается построение результирующего словаря.');
-
-   if (!out) {
-      logger.error('Parameter "out" is not find');
-      done();
-      return;
-   }
-
-   if (!modules) {
-      logger.error('Parameter "modules" is not find');
-      done();
-      return;
-   }
-
-
-   const paths = JSON.parse(fs.readFileSync(modules).toString());
-
-   let curCountModule = 0;
-   const words = [];
-
-   for (let dir of paths) {
-      const sourceFiles = global.grunt.file.expand({cwd: dir}, ['**/*.xhtml', '**/*.tmpl', '**/*.js']);
-      for (let pathToSource of sourceFiles) {
-         const absPath = path.join(dir, pathToSource);
-         const text = fs.readSync(absPath).toString();
-         let newWords = [];
-         try {
-            newWords = await collectWords(absPath, text, componentsProperties);
-         } catch (error) {
-            logger.error({
-               message: 'Ошибка при сборе фраз для локализации',
-               error: error,
-               filePath: absPath
-            });
+function runCreateResultDictForDir(words, dir, componentsProperties) {
+   return new Promise(function(resolve) {
+      helpers.recurse(dir, function(filePath, fileDone) {
+         if (!helpers.validateFile(filePath, ['**/*.xhtml', '**/*.tmpl', '**/*.js'])) {
+            setImmediate(fileDone);
+            return;
          }
-         Array.prototype.push.apply(words, newWords);
-      }
-      curCountModule += 1;
-      const percent = curCountModule * 100 / paths.length;
-      logger.progress(percent, 'UI ' + path.basename(dir));
-   }
-
-   // Записать в результирующий словарь
-   try {
-      fs.writeFileSync(out, JSON.stringify(words, null, 2));
-   } catch (err) {
-      logger.error({
-         message: 'Could\'t create output file ',
-         filePath: out,
-         error: err
+         fs.readFile(filePath, async function readFileCb(readFileError, textBuffer) {
+            if (readFileError) {
+               logger.error({
+                  message: 'Ошибка при чтении less файла',
+                  error: readFileError,
+                  filePath: filePath
+               });
+               setImmediate(fileDone);
+               return;
+            }
+            try {
+               const newWords = await collectWords(dir, filePath, textBuffer.toString(), componentsProperties);
+               Array.prototype.push.apply(words, newWords);
+            } catch (error) {
+               logger.error({
+                  message: 'Ошибка при сборе фраз для локализации',
+                  error: error,
+                  filePath: filePath
+               });
+            }
+            setImmediate(fileDone);
+         });
+      }, function(err) {
+         if (err) {
+            logger.error({error: err});
+         }
+         resolve();
       });
-   }
+   });
+}
 
-   logger.info('Построение результирующего словаря выполнено.');
-   done();
+
+function runCreateResultDict(modules, componentsProperties, out) {
+   return new Promise(function(resolve, reject) {
+      try {
+         logger.info('Запускается построение результирующего словаря.');
+
+         if (!out) {
+            return reject(new Error('Parameter "out" is not find'));
+         }
+         if (!modules) {
+            return reject(new Error('Parameter "modules" is not find'));
+         }
+
+         const paths = JSON.parse(fs.readFileSync(modules).toString());
+
+         let curCountModule = 0;
+         const words = [];
+
+         async.eachSeries(paths, function(dir, dirDone) {
+            runCreateResultDictForDir(words, dir, componentsProperties)
+               .then(
+                  () => {
+                     dirDone();
+                     curCountModule += 1;
+                     logger.progress(100 * curCountModule / paths.length, path.basename(dir));
+                  },
+                  (error) => {
+                     dirDone(error);
+                  });
+         }, function(err) {
+            if (err) {
+               logger.error({error: err});
+            }
+
+            // Записать в результирующий словарь
+            try {
+               fs.writeFileSync(out, JSON.stringify(words, null, 2));
+            } catch (error) {
+               logger.error({
+                  message: 'Could\'t create output file ',
+                  filePath: out,
+                  error: error
+               });
+            }
+
+            logger.info('Построение результирующего словаря выполнено.');
+            resolve();
+         });
+      } catch (error) {
+         reject(error);
+      }
+   });
 }
 
 module.exports = function(grunt) {
@@ -116,36 +152,45 @@ module.exports = function(grunt) {
       let taskCount = 0;
       let isDone = false;
 
-      let options = new Map([
-         ['modules', grunt.option('modules')],
-         ['json-cache', grunt.option('json-cache')],
-         ['out', grunt.option('out')],
-         ['index-dict', grunt.option('index-dict')],
-         ['make-dict', grunt.option('make-dict')],
-         ['prepare-xhtml', grunt.option('prepare-xhtml')]
-      ]);
-
-      options = new Map(Array.from(options, ([k, v]) => {
-         if (v) {
-            return [k, v.replace(/"/g, '')];
-         } else {
-            return [k, v];
+      const readOption = (name) => {
+         const value = grunt.option(name);
+         if (!value) {
+            return value;
          }
-      }));
+         if (typeof value === 'string') {
+            return value.replace(/"/g, '');
+         }
+         return value;
+      };
 
-      let componentsProperties;
-      if (options.get('modules') && options.get('json-cache')) {
-         componentsProperties = await runJsonGenerator(options.get('modules'), options.get('json-cache'));
+      const optModules = readOption('modules'),
+         optJsonCache = readOption('json-cache'),
+         optOut = readOption('out'),
+         optIndexDict = readOption('index-dict'),
+         optMakeDict = readOption('make-dict'),
+         optPrepareXhtml = readOption('prepare-xhtml');
+
+      let componentsProperties = {};
+      if (optPrepareXhtml || optMakeDict) {
+         componentsProperties = await runJsonGenerator(optModules, optJsonCache);
+         if (optMakeDict) {
+            try {
+               ++taskCount;
+               await runCreateResultDict(optModules, componentsProperties, optOut);
+               done();
+            } catch (error) {
+               logger.error({error: error});
+            }
+         }
+
+         optPrepareXhtml && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
       }
 
-      //Приводит повторяющиеся ключи в словарях к единому значению
-      options.get('index-dict') && normalizeKeyDict(this.data, options.get('index-dict'));
+      if (optIndexDict) {
+         normalizeKeyDict(this.data, optIndexDict); //Приводит повторяющиеся ключи в словарях к единому значению
+         indexDict(grunt, optIndexDict, this.data, ++taskCount && done);
+      }
 
-      options.get('make-dict') && runCreateResultDict(options.get('modules'), options.get('json-cache'), options.get('out'), ++taskCount && done);
-
-      options.get('prepare-xhtml') && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
-
-      options.get('index-dict') && indexDict(grunt, options.get('index-dict'), this.data, ++taskCount && done);
 
       if (taskCount === 0) {
          done();

@@ -63,7 +63,7 @@ module.exports = function(grunt) {
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
          filePattern = this.data.filePattern,
-         componentsProperties = {};
+         componentsProperties = {}; //TODO
 
       convertTmpl(resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
@@ -143,7 +143,6 @@ module.exports = function(grunt) {
                   });
                   return callback();
                }
-
                let componentInfo = {};
                try {
                   componentInfo = parseJsComponent(text.toString());
@@ -193,7 +192,6 @@ module.exports = function(grunt) {
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
-
          done();
       });
    });
