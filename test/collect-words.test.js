@@ -260,4 +260,35 @@ describe('collect words', async() => {
       words[1].context.should.equal('');
    });
 
+   //проверим, что tmpl обрабатываются с учётом
+   it('collect words in tmpl. simple component option', async () => {
+      const moduleDir = 'long/path/moduleName';
+      const filePath = path.join(moduleDir, 'file.tmpl');
+      const text = '<ws:Test.Component test1="Текст1"/>' +
+         '<ws:Test.Component test1="Контекст@@Текст2"/>' +
+         '<ws:Test.Component not_translatable="Контекст@@Текст2"/>';
+      const componentsProperties = {
+         'Test/Component': {
+            'properties': {
+               'ws-config': {
+                  'options': {
+                     'test1': {
+                        'translatable': true
+                     }
+                  }
+               }
+            }
+         }
+      };
+      const words = await collectWords(moduleDir, filePath, text, componentsProperties);
+
+      words.length.should.equal(2);
+
+      words[0].key.should.equal('Текст1');
+      words[0].context.should.equal('');
+
+      words[1].key.should.equal('Текст2');
+      words[1].context.should.equal('Контекст');
+   });
+
 });
