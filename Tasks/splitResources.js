@@ -254,7 +254,7 @@ module.exports = function splitResourcesTask(grunt) {
             fullModuleDep.links[name] = modDepends.links[name];
          } else {
             exception.push(pathModule);
-            return;
+
          }
 
       });
