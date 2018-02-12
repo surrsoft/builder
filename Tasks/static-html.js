@@ -87,7 +87,7 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
-         forPresentationService = (grunt.option('includes') !== undefined) ? !grunt.option('includes') : false;
+         forPresentationService = getTypeApp();
 
       if (!modulesOption) {
          logger.error('Parameter "modules" not found');
@@ -101,6 +101,23 @@ module.exports = function(grunt) {
       const modules = new Map();
       for (let pathModule of pathsModules) {
          modules.set(path.basename(pathModule), pathModule);
+      }
+
+      function getTypeApp() {
+         //поддержка совместимости
+         if (grunt.option('includes') !== undefined) {
+            return grunt.option('includes');
+         }
+
+         let
+            splittedCore = (grunt.option('splitted-core') === undefined) ? false : grunt.option('splitted-core'),
+            multiService = (grunt.option('multi-service') === undefined) ? false : grunt.option('multi-service');
+
+         if (splittedCore && multiService) {
+            return false;
+         }
+
+         return true;
       }
 
       let contents = {};
