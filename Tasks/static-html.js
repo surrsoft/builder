@@ -87,7 +87,9 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
-         forPresentationService = getTypeApp();
+         splittedCore = (grunt.option('splitted-core') === undefined) ? false : grunt.option('splitted-core'),
+         multiService = (grunt.option('multi-service') === undefined) ? false : grunt.option('multi-service'),
+         replacePath = (splittedCore && multiService) ? false : true;
 
       const pathsModules = grunt.file.readJSON(modulesOption);
       if (!Array.isArray(pathsModules)) {
@@ -97,23 +99,6 @@ module.exports = function(grunt) {
       const modules = new Map();
       for (let pathModule of pathsModules) {
          modules.set(path.basename(pathModule), pathModule);
-      }
-
-      function getTypeApp() {
-         //поддержка совместимости
-         if (grunt.option('includes') !== undefined) {
-            return grunt.option('includes');
-         }
-
-         let
-            splittedCore = (grunt.option('splitted-core') === undefined) ? false : grunt.option('splitted-core'),
-            multiService = (grunt.option('multi-service') === undefined) ? false : grunt.option('multi-service');
-
-         if (splittedCore && multiService) {
-            return false;
-         }
-
-         return true;
       }
 
       let contents = {};
@@ -167,7 +152,7 @@ module.exports = function(grunt) {
                   return callback(error);
                }
 
-               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, forPresentationService)
+               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath)
                   .then(
                      result => {
                         if (result) {
