@@ -2,6 +2,7 @@
 
 //модули из npm
 const
+   os = require('os'),
    path = require('path'),
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
@@ -15,7 +16,8 @@ const
    buildStaticHtml = require('./plugins/build-static-html'),
    createRoutesInfoJson = require('./plugins/create-routes-info-json'),
    createContentsJson = require('./plugins/create-contents-json'),
-   buildLess = require('./plugins/build-less');
+   buildLess = require('./plugins/build-less'),
+   workerPool = require('workerpool');
 
 //разлчные хелперы
 const
@@ -23,7 +25,7 @@ const
    logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
-const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore) {
+const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compileLessTasks) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
@@ -34,6 +36,12 @@ const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore) {
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
+            if (file.extname === '.less') {
+               compileLessTasks.push({
+                  path: path.join(moduleInfo.output, file.dirname, file.basename + file.extname),
+                  module: moduleInfo.nameWithResponsible
+               });
+            }
          }))
          .pipe(createRoutesInfoJson(moduleInfo))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
@@ -58,11 +66,24 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
    };
 };
 
-function buildLessTask(moduleInfo) {
-   return function lessTask() {
-      return gulp.src(path.join(moduleInfo.output, '/**/*.less'), {read: false})
-         .pipe(buildLess(moduleInfo))
-         .pipe(gulp.dest(moduleInfo.output));
+function buildLessTask(compileLessTasks, resourcePath) {
+   return function lessTask(done) {
+      const cpus = os.cpus().length;
+      const pool = workerPool.pool(path.join(__dirname, '../lib/build-less-worker.js'), {maxWorkers: cpus});
+      const  sizeChunk = 20;
+      //const  sizeChunk = compileLessTasks.length / cpus;
+      const promises = [];
+      for (let i = 0; i < compileLessTasks.length; i += sizeChunk) {
+         const temp= compileLessTasks.slice(i, i + sizeChunk);
+         promises.push(pool.exec('buildLess', [temp, resourcePath]));
+      }
+      Promise.all(promises).then((results)=>{
+         pool.terminate();
+         for(let info of results){
+            console.log(JSON.stringify(info));
+         }
+         done();
+      });
    };
 }
 
@@ -90,10 +111,11 @@ module.exports = {
          buildTasks.push(
             gulp.series(
                gulp.parallel(
-                  copyTaskGenerator(moduleInfo, modulesMap, changesStore),
-                  htmlTmplTaskGenerator(moduleInfo, changesStore)),
+                  copyTaskGenerator(moduleInfo, modulesMap, changesStore, compileLessTasks),
+                  //htmlTmplTaskGenerator(moduleInfo, changesStore)
+               ),
                printPercentComplete));
-         compileLessTasks.push(buildLessTask(moduleInfo));
+         //compileLessTasks.push(buildLessTask(moduleInfo));
       }
       const clearTask = function remove(done) {
          let pattern = [];
@@ -130,7 +152,8 @@ module.exports = {
 
       return gulp.series(
          gulp.parallel(buildTasks),
-         gulp.parallel(compileLessTasks),
-         gulp.parallel(clearTask, saveChangedStoreTask));
+         buildLessTask(compileLessTasks, config.outputPath),
+         gulp.parallel(clearTask, saveChangedStoreTask)
+      );
    }
 };
