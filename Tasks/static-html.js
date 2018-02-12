@@ -111,7 +111,24 @@ module.exports = function (grunt) {
             resourcesRoot = path.join(applicationRoot, 'resources'),
             patterns = this.data.src,
             oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
-            inclReplace =  (grunt.option('includes') !== undefined) ? grunt.option('includes') : true;
+            inclReplace = getTypeApp();
+
+       function getTypeApp() {
+          //поддержка совместимости
+          if (grunt.option('includes') !== undefined) {
+             return grunt.option('includes');
+          }
+
+          let
+             splittedCore = (grunt.option('splitted-core') === undefined) ? false : grunt.option('splitted-core'),
+             multiService = (grunt.option('multi-service') === undefined) ? false : grunt.option('multi-service');
+
+          if (splittedCore && multiService) {
+             return false;
+          }
+
+          return true;
+       }
 
         let contents = {};
 
