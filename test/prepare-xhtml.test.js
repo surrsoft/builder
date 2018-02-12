@@ -146,5 +146,85 @@ describe('i18n', function() {
             '   </options>\n' +
             '</component>');
       });
+
+      //опции-массивы c рекурсией
+      it('recursive array component option', () => {
+         //меню - классический пример рекурсивных опций
+         const text = '<component data-component="Deprecated/Controls/Menu/Menu" name="Menu">\n' +
+            '   <options name="data" type="array">\n' +
+            '      <options>\n' +
+            '         <option name="caption">Тест1</option>\n' +
+            '         <option name="id">1</option>\n' +
+            '      </options>\n' +
+            '      <options>\n' +
+            '         <option name="caption">Тест2</option>\n' +
+            '         <option name="id">2</option>\n' +
+            '         <options name="subMenu" type="array">\n' +
+            '            <options>\n' +
+            '               <option name="caption">Тест3</option>\n' +
+            '               <option name="id">3</option>\n' +
+            '            </options>\n' +
+            '         </options>\n' +
+            '      </options>\n' +
+            '   </options>\n' +
+            '</component>';
+         const componentsProperties = {
+            'Deprecated/Controls/Menu/Menu': {
+               'properties': {
+                  'ws-config': {
+                     'options': {
+                        'data': {
+                           'itemType': 'Deprecated/Controls/Menu/Menu/Dictionary.typedef',
+                           'title': 'Массив данных для отображения в меню',
+                           'type': 'Array'
+                        }
+                     }
+                  }
+               }
+            },
+            'Deprecated/Controls/Menu/Menu/Dictionary.typedef': {
+               'properties': {
+                  'ws-config': {
+                     'title': 'Базовая конфигурация',
+                     'options': {
+                        'caption': {
+                           'title': 'Заголовок элемента меню.',
+                           'translatable': true,
+                           'type': 'String'
+                        },
+                        'id': {
+                           'title': 'Идентификатор соответствующего пункта меню.',
+                           'type': 'String'
+                        },
+                        'subMenu': {
+                           'itemType': 'Deprecated/Controls/Menu/Menu/Dictionary.typedef',
+                           'title': 'Подменю указанного пункта, описывается аналогично описанному выше.',
+                           'type': 'Array'
+                        }
+                     }
+                  }
+               }
+            }
+         };
+         const result = prepareXhtml(text, componentsProperties);
+         result.should.equal('<component data-component="Deprecated/Controls/Menu/Menu" name="Menu">\n' +
+            '   <options name="data" type="array">\n' +
+            '      <options>\n' +
+            '         <option name="caption">{[Тест1]}</option>\n' +
+            '         <option name="id">1</option>\n' +
+            '      </options>\n' +
+            '      <options>\n' +
+            '         <option name="caption">{[Тест2]}</option>\n' +
+            '         <option name="id">2</option>\n' +
+            '         <options name="subMenu" type="array">\n' +
+            '            <options>\n' +
+            '               <option name="caption">{[Тест3]}</option>\n' +
+            '               <option name="id">3</option>\n' +
+            '            </options>\n' +
+            '         </options>\n' +
+            '      </options>\n' +
+            '   </options>\n' +
+            '</component>');
+      });
    });
 });
