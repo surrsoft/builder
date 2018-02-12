@@ -5,7 +5,10 @@ const
    path = require('path'),
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
-   clean = require('gulp-clean');
+   clean = require('gulp-clean'),
+   os = require('os'),
+   workerPool = require('workerpool');
+
 
 //наши плагины
 const
@@ -25,14 +28,14 @@ const
    logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
-const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compileLessTasks) {
+const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compileLessTasks, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
-         .pipe(addComponentInfo(moduleInfo))
-         .pipe(buildStaticHtml(moduleInfo, modulesMap))
+         .pipe(addComponentInfo(moduleInfo, pool))
+         .pipe(buildStaticHtml(moduleInfo, modulesMap, pool))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
@@ -43,7 +46,7 @@ const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compile
                });
             }
          }))
-         .pipe(createRoutesInfoJson(moduleInfo))
+         .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulp.dest(moduleInfo.output));
    };
@@ -69,6 +72,12 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 module.exports = {
    'create': function buildTask(config) {
+      const pool = workerPool.pool(
+         path.join(__dirname, './workers/build-worker.js'),
+         {
+            maxWorkers: os.cpus().length
+         });
+
       const buildTasks = [],
          compileLessTasks = [],
          changesStore = new ChangesStore(config.cachePath);
@@ -90,7 +99,7 @@ module.exports = {
          buildTasks.push(
             gulp.series(
                gulp.parallel(
-                  copyTaskGenerator(moduleInfo, modulesMap, changesStore, compileLessTasks),
+                  copyTaskGenerator(moduleInfo, modulesMap, changesStore, compileLessTasks, pool),
                   htmlTmplTaskGenerator(moduleInfo, changesStore)
                ),
                printPercentComplete));
@@ -130,8 +139,11 @@ module.exports = {
 
       return gulp.series(
          gulp.parallel(buildTasks),
-         buildLessTask(compileLessTasks, config.outputPath),
-         gulp.parallel(clearTask, saveChangedStoreTask)
+         buildLessTask(compileLessTasks, config.outputPath, pool),
+         gulp.parallel(clearTask, saveChangedStoreTask),
+         ()=>{
+            return pool.terminate();
+         }
       );
    }
 };

@@ -1,8 +1,5 @@
 'use strict';
 const
-   os = require('os'),
-   path = require('path'),
-   workerPool = require('workerpool'),
    logger = require('../../lib/logger').logger();
 
 
@@ -28,18 +25,8 @@ function logWarnings(promiseBuildLess) {
    });
 }
 
-function buildLessTask(filesInfo, resourcePath) {
+function buildLessTask(filesInfo, resourcePath, pool) {
    return function lessTask(done) {
-      const pool = workerPool.pool(
-         path.join(__dirname, '../workers/build-less-worker.js'),
-         {
-            maxWorkers: os.cpus().length
-         });
-      const terminatePoolAndDone = () => {
-         pool.terminate().then(() => {
-            done();
-         });
-      };
       const sizeChunk = 20; //эмпирически подобранная величина для высокой производительности
 
       const promises = [];
@@ -54,10 +41,10 @@ function buildLessTask(filesInfo, resourcePath) {
                   logger.info(JSON.stringify(compiledLess.imports));
                }
             }
-            terminatePoolAndDone();
+            done();
          }, error => {
             logger.error({error: error});
-            terminatePoolAndDone();
+            done();
          });
    };
 }

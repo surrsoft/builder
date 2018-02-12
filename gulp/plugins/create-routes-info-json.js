@@ -8,15 +8,16 @@ const through = require('through2'),
    transliterate = require('../../lib/transliterate'),
    processingRoutes = require('../../lib/processing-routes');
 
-module.exports = function(moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+module.exports = function(moduleInfo, pool) {
+   return through.obj(async function(file, encoding, callback) {
       if (!file.path.endsWith('.routes.js')) {
          return callback(null, file);
       }
 
       try {
          const relativePath = path.join('resources', moduleInfo.folderName, file.relative);
-         moduleInfo.routesInfo[transliterate(relativePath)] = processingRoutes.parseRoutes(file.contents.toString());
+
+         moduleInfo.routesInfo[transliterate(relativePath)] = await pool.exec('parseRoutes', [file.contents.toString()]);
       } catch (error) {
          logger.error({
             message: 'Ошибка при обработке файла роутинга',

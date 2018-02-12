@@ -8,7 +8,7 @@ const through = require('through2'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function(moduleInfo, modulesMap) {
+module.exports = function(moduleInfo, modulesMap, pool) {
    return through.obj(async function(file, encoding, callback) {
       this.push(file);
 
@@ -19,7 +19,10 @@ module.exports = function(moduleInfo, modulesMap) {
          }
 
          const config = {};
-         const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
+
+         const result = file.componentInfo = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
+
+         //const result = file.componentInfo = await pool.exec('generateStaticHtmlForJs', [file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true]);
          if (result) {
             const folderName = transliterate(moduleInfo.folderName);
             moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
