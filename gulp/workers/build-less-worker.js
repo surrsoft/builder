@@ -2,12 +2,12 @@
 
 //логгер - прежде всего
 const gulpLog = require('gulplog');
-require('./logger').setGulpLogger(gulpLog);
+require('../../lib/logger').setGulpLogger(gulpLog);
 
 const workerPool = require('workerpool'),
    fs = require('fs'),
    async = require('async'),
-   buildLess = require('./build-less');
+   buildLess = require('../../lib/build-less');
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
@@ -18,36 +18,41 @@ workerPool.worker({
    buildLess: function(tasks, resourcePath) {
       return new Promise((resolve, reject) => {
          const results = [];
-         async.eachOfLimit(tasks, 20, function(task, ttt, callback) {
+         const limit = 20; //эмпирически подобранная величина для высокой производительности
+         async.eachOfLimit(tasks, limit, function(task, key, callback) {
             fs.readFile(task.path, async(err, buffer) => {
-               if (err) {
+               const finishWithError = (error, prefixForErrorMessage) => {
+                  let prefix = '';
+                  if (prefixForErrorMessage) {
+                     prefix = prefixForErrorMessage + ': ';
+                  }
                   results.push({
-                     error: err
+                     path: task.path,
+                     error: { //ошибка нужно передавать обычным объектом, чтобы красиво stack выводился
+                        message: prefix + error.message,
+                        stack: error.stack ? error.stack.toString() : '',
+                     }
                   });
                   return setImmediate(callback);
+               };
+
+               if (err) {
+                  return finishWithError(err, 'Ошибка при чтении файла');
                }
                let obj;
                try {
                   obj = await buildLess(task.path, buffer.toString(), resourcePath);
                } catch (error) {
-                  if (error) {
-                     results.push({
-                        error: error
-                     });
-                     return setImmediate(callback);
-                  }
+                  return finishWithError(error);
                }
                const newPath = task.path.replace('.less', '.css');
                fs.writeFile(newPath, obj.text, (err) => {
                   if (err) {
-                     results.push({
-                        error: err
-                     });
-                     return setImmediate(callback);
+                     return finishWithError(err, `Ошибка при записи файла ${newPath}`);
                   }
                   results.push({
-                     path: newPath,
-                     //imports: obj.imports
+                     path: task.path,
+                     imports: obj.imports
                   });
                   setImmediate(callback);
                });

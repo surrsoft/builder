@@ -2,7 +2,7 @@
 
 //Задача для предотвращения множественного запуска builder'а на одном кеше для предсказуемого результата.
 const
-   logger = require('./../lib/logger').logger(),
+   logger = require('../../lib/logger').logger(),
    path = require('path'),
    fs = require('fs'),
    mkdirp = require('mkdirp'),

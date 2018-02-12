@@ -39,10 +39,14 @@ module.exports = function(moduleInfo, modulesMap) {
       }
       callback();
    }, function(callback) {
-      callback(null, new Vinyl({
-         path: 'static_templates.json',
-         contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
-         moduleInfo: moduleInfo
-      }));
+      if (Object.keys(moduleInfo.staticTemplates).length > 0) {
+         const file = new Vinyl({
+            path: 'static_templates.json',
+            contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
+            moduleInfo: moduleInfo
+         });
+         return callback(null, file);
+      }
+      callback(null);
    });
 };
