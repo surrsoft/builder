@@ -62,7 +62,7 @@ module.exports = function uglifyJsTask(grunt) {
                grunt.log.ok('Generated template for ' + currentPath + 'doesnt exists. Skipped.');
                return;
             }
-            if (isPresentationService) {
+            if (isPresentationService && !currentPath.includes('.original.js')) {
                sourceJSPath = currentPath.replace(currentEXT, `.source${currentEXTString}`);
                sourceMapPath = `${currentPath}.map`;
                fs.writeFileSync(sourceJSPath, originalText);
