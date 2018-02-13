@@ -87,7 +87,13 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
-         forPresentationService = getTypeApp();
+
+         /*
+         Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
+          false - если у нас разделённое ядро и несколько сервисов.
+          true - если у нас монолитное ядро или один сервис.
+          */
+         replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
 
       if (!modulesOption) {
          logger.error('Parameter "modules" not found');
@@ -101,23 +107,6 @@ module.exports = function(grunt) {
       const modules = new Map();
       for (let pathModule of pathsModules) {
          modules.set(path.basename(pathModule), pathModule);
-      }
-
-      function getTypeApp() {
-         //поддержка совместимости
-         if (grunt.option('includes') !== undefined) {
-            return grunt.option('includes');
-         }
-
-         let
-            splittedCore = (grunt.option('splitted-core') === undefined) ? false : grunt.option('splitted-core'),
-            multiService = (grunt.option('multi-service') === undefined) ? false : grunt.option('multi-service');
-
-         if (splittedCore && multiService) {
-            return false;
-         }
-
-         return true;
       }
 
       let contents = {};
@@ -171,7 +160,7 @@ module.exports = function(grunt) {
                   return callback(error);
                }
 
-               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, forPresentationService)
+               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath)
                   .then(
                      result => {
                         if (result) {
