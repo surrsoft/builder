@@ -141,7 +141,8 @@ module.exports = function(grunt) {
          application: application,
          servicesPath: servicesPath,
          userParams: userParams,
-         globalParams: globalParams
+         globalParams: globalParams,
+         splittedCore: grunt.option('splitted-core')
       };
 
       helpers.recurse(applicationRoot, function(file, callback) {
