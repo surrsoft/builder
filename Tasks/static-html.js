@@ -87,14 +87,12 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
-         splittedCore = !!grunt.option('splitted-core'),
-         multiService = !!grunt.option('multi-service'),
          /*
          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-         replacePath = !(splittedCore && multiService);
+         replacePath = !(!!grunt.option('splitted-core') && !!grunt.option('multi-service'));
 
       const pathsModules = grunt.file.readJSON(modulesOption);
       if (!Array.isArray(pathsModules)) {
