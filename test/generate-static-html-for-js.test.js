@@ -22,9 +22,9 @@ const config = {
 };
 
 const modules = new Map([
-   ['Модуль',  helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Модуль'))],
-   ['Тема Скрепка',  helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Тема Скрепка'))],
-   ['Ошибки',  helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Ошибки'))]
+   ['Модуль', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Модуль'))],
+   ['Тема Скрепка', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Тема Скрепка'))],
+   ['Ошибки', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Ошибки'))]
 ]);
 
 describe('generate static html for js', function() {
@@ -44,21 +44,28 @@ describe('generate static html for js', function() {
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('\n\n\n');
       });
-      it('flags', async() => {
-         const componentInfo = {
-            componentName: 'MyModule',
-            webPage: {
-               htmlTemplate: 'Тема Скрепка/flags.html',
-               outFileName: 'testOutFileName',
-               title: 'testTitle'
-            }
+      it('replacePath', async() => {
+         let test = async(replacePath, expected) => {
+            const componentInfo = {
+               componentName: 'MyModule',
+               webPage: {
+                  htmlTemplate: 'Тема Скрепка/flags.html',
+                  outFileName: 'testOutFileName',
+                  title: 'testTitle'
+               }
+            };
+            const contents = {};
+            const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, replacePath);
+            contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+            result.outFileName.should.equal('testOutFileName.html');
+            result.text.should.equal(expected);
          };
-         const contents = {};
-         const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
-         result.outFileName.should.equal('testOutFileName.html');
-         result.text.should.equal('true\n' +
+
+         await test(true, 'true\n' +
             'false\n' +
+            'false\n');
+         await test(false, '%{CONFIG.USER_PARAMS}\n' +
+            '%{CONFIG.GLOBAL_PARAMS}\n' +
             'false\n');
       });
       it('includes', async() => {
@@ -153,7 +160,7 @@ describe('generate static html for js', function() {
             }
          };
          const contents = {};
-         const root =  helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js'));
+         const root = helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js'));
          return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true)
             .should.be.rejectedWith(
                `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
