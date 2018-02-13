@@ -87,6 +87,7 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
+
          /*
          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
