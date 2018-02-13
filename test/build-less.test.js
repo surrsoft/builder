@@ -6,14 +6,15 @@ require('../lib/logger').setGulpLogger(require('gulplog'));
 const chai = require('chai'),
    chaiAsPromised = require('chai-as-promised'),
    path = require('path'),
+   helpers = require('../lib/helpers'),
    buildLess = require('../lib/build-less');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const testPath = path.join(__dirname, 'fixture/build-less');
-const resourcesPath = path.join(testPath, 'resources');
-const wsPath = path.join(resourcesPath, 'ws');
+const testPath = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less'));
+const resourcesPath = helpers.prettifyPath(path.join(testPath, 'resources'));
+const wsPath = helpers.prettifyPath(path.join(resourcesPath, 'ws'));
 
 describe('build less', function() {
    it('empty less', async() => {
@@ -80,7 +81,7 @@ describe('build less', function() {
 
    //важно отобразить корректно строку в которой ошибка
    it('less with error', async() => {
-      const filePath = path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less');
+      const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
          `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
@@ -88,7 +89,7 @@ describe('build less', function() {
 
    });
    it('less with error from SBIS3.CONTROLS', async() => {
-      const filePath = path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less');
+      const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
          `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
@@ -96,7 +97,7 @@ describe('build less', function() {
 
    });
    it('less with internal error', async() => {
-      const filePath = path.join(resourcesPath, 'AnyModule/test.less');
+      const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/test.less'));
       const text = '@import "Error";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
          `Ошибка компиляции ${resourcesPath}/AnyModule/Error.less на строке 1: ` +
