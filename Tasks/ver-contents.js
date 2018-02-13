@@ -1,12 +1,12 @@
 'use strict';
 
-var path = require('path');
+const path = require('path');
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('ver-contents', 'versionize contents.[js|json]', function() {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача ver-contents.');
 
-      var resourcesPath = path.join(this.data.cwd, 'resources'),
+      let resourcesPath = path.join(this.data.cwd, 'resources'),
          contents = {};
       try {
          contents = grunt.file.readJSON(path.join(resourcesPath, 'contents.json'));

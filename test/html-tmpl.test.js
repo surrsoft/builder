@@ -13,7 +13,7 @@ chai.should();
 
 describe('convert html.tmpl', function() {
    it('init', function() {
-      let err = nodeWS.init();
+      const err = nodeWS.init();
       if (err) {
          throw new Error(err);
       }
