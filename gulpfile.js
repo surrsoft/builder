@@ -37,7 +37,7 @@ try {
 
    logger.debug('Параметры запуска: ' + JSON.stringify(process.argv));
 
-   let config = new BuildConfiguration();
+   const config = new BuildConfiguration();
    err = config.load(process.argv);
    if (err) {
       logger.error(err);

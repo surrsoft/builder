@@ -91,11 +91,11 @@ module.exports = {
       };
 
       const modulesMap = new Map();
-      for (let moduleInfo of config.modules) {
+      for (const moduleInfo of config.modules) {
          modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
       }
 
-      for (let moduleInfo of config.modules) {
+      for (const moduleInfo of config.modules) {
          buildTasks.push(
             gulp.series(
                gulp.parallel(
@@ -105,17 +105,17 @@ module.exports = {
                printPercentComplete));
       }
       const clearTask = function remove(done) {
-         let pattern = [];
+         const pattern = [];
 
-         for (let modulePath in changesStore.store) {
+         for (const modulePath in changesStore.store) {
             if (changesStore.store.hasOwnProperty(modulePath)) {
                if (!changesStore.store[modulePath].exist) {
                   pattern.push(transliterate(path.join(path.basename(modulePath)), '/**/*.*'));
                } else {
-                  let files = changesStore.store[modulePath]['files'];
-                  for (let filePath in files) {
+                  const files = changesStore.store[modulePath].files;
+                  for (const filePath in files) {
                      if (files.hasOwnProperty(filePath)) {
-                        let fileInfo = files[filePath];
+                        const fileInfo = files[filePath];
                         if (!fileInfo.hasOwnProperty('exist')) {
                            const moduleName = path.basename(modulePath);
                            pattern.push(transliterate(path.join(moduleName, filePath)));

@@ -9,7 +9,7 @@ const
    resources = 'resources';
 
 function isNeededValue(key, value) {
-   let matchs = value.match(key);
+   const matchs = value.match(key);
 
    if (matchs && matchs[1]) {
       return true;
@@ -36,7 +36,7 @@ function getName(path, isResources, isRootApp, sep) {
    }
 
    if (isResources) {
-      let index = splitPath.indexOf(resources);
+      const index = splitPath.indexOf(resources);
       if (index === -1) {
          return '';
       }
@@ -48,7 +48,7 @@ function getName(path, isResources, isRootApp, sep) {
 }
 
 module.exports = function splitResourcesTask(grunt) {
-   let rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
+   const rootPath = path.join(grunt.option('root') || '', grunt.option('application') || '');
 
    function getPath(nameFile, nameModule, isResources) {
       let newPath;
@@ -421,14 +421,14 @@ module.exports = function splitResourcesTask(grunt) {
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function() {
 
-      let fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
+      const fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
 
       logger.info(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
 
       writeFileInModules(splitRoutes(), 'routes-info.json');
       logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена.`);
 
-      let splitCont = splitContents(fullContents);
+      const splitCont = splitContents(fullContents);
       writeFileInModules(splitCont, 'contents.json');
       writeFileInModules(splitCont, 'contents.js');
       logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена.`);

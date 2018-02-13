@@ -53,7 +53,7 @@ module.exports = function(grunt) {
       //сохраняем файл modules.json вручную, поскольку он временный
       grunt.file.write(path.join(resourcesPath, 'modules.json'), JSON.stringify(paths, null, 3));
       if (paths.length === 1 && grunt.file.isFile(paths[0])) {
-         let input = paths[0];
+         const input = paths[0];
          try {
             paths = grunt.file.readJSON(input);
             if (!Array.isArray(paths)) {
@@ -67,8 +67,8 @@ module.exports = function(grunt) {
       }
 
       function copyFile(target, dest, data, cb) {
-         let ext = path.extname(target);
-         if (!symlink || (i18n && (ext === '.xhtml' || ext === '.html'))) {
+         const ext = path.extname(target);
+         if (!symlink || i18n && (ext === '.xhtml' || ext === '.html')) {
             helpers.copyFile(target, dest, data, cb);
          } else {
             helpers.mkSymlink(target, dest, cb);
@@ -77,7 +77,7 @@ module.exports = function(grunt) {
 
       function remove(dir) {
          let attempt = 1;
-         let start = Date.now();
+         const start = Date.now();
 
          (function _remove() {
             try {
@@ -103,9 +103,9 @@ module.exports = function(grunt) {
 
       function main() {
          async.eachSeries(paths, function(input, callback) {
-            let parts = input.replace(dblSlashes, '/').split('/');
-            let moduleName = parts[parts.length - 1];
-            let tsdModuleName = transliterate(moduleName);
+            const parts = input.replace(dblSlashes, '/').split('/');
+            const moduleName = parts[parts.length - 1];
+            const tsdModuleName = transliterate(moduleName);
 
             if (applicationName === tsdModuleName) {
                grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName);
@@ -115,7 +115,7 @@ module.exports = function(grunt) {
             requirejsPaths[tsdModuleName] = removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
 
             helpers.recurse(input, function(file, callback) {
-               let dest = path.join(resourcesPath, tsdModuleName,
+               const dest = path.join(resourcesPath, tsdModuleName,
                   transliterate(path.relative(input, file)));
 
                if (isModuleJs.test(file)) {
@@ -179,9 +179,9 @@ module.exports = function(grunt) {
                contents.requirejsPaths = requirejsPaths;
 
                if (serviceMapping) {
-                  let srvArr = serviceMapping.trim().split(' ');
+                  const srvArr = serviceMapping.trim().split(' ');
                   if (srvArr.length % 2 === 0) {
-                     let services = {};
+                     const services = {};
                      for (let i = 0; i < srvArr.length; i += 2) {
                         services[srvArr[i]] = srvArr[i + 1];
                      }
