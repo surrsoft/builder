@@ -26,7 +26,7 @@ describe('parse js component', function() {
    it('normal module name', async() => {
       const result = parseJsComponent('define("My.Module/Name", function(){});');
       Object.getOwnPropertyNames(result).length.should.equal(1);
-      result['componentName'].should.equal('My.Module/Name');
+      result.componentName.should.equal('My.Module/Name');
    });
    it('declare object webpage', async() => {
       const result = parseJsComponent('define("My.Module/Name", function(){' +
@@ -39,11 +39,11 @@ describe('parse js component', function() {
          '};' +
          'return module;});');
       Object.getOwnPropertyNames(result).length.should.equal(2);
-      result['componentName'].should.equal('My.Module/Name');
-      const webPage = result['webPage'];
+      result.componentName.should.equal('My.Module/Name');
+      const webPage = result.webPage;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
-      webPage['htmlTemplate'].should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
-      webPage['outFileName'].should.equal('ca_stub');
+      webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
+      webPage.outFileName.should.equal('ca_stub');
    });
 
    it('declare title and web page', async() => {
@@ -57,12 +57,12 @@ describe('parse js component', function() {
          'module.title = "TestTitle";' +
          'return module;});');
       Object.getOwnPropertyNames(result).length.should.equal(2);
-      result['componentName'].should.equal('My.Module/Name');
-      const webPage = result['webPage'];
+      result.componentName.should.equal('My.Module/Name');
+      const webPage = result.webPage;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
-      webPage['htmlTemplate'].should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
-      webPage['title'].should.equal('TestTitle');
-      webPage['outFileName'].should.equal('ca_stub');
+      webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
+      webPage.title.should.equal('TestTitle');
+      webPage.outFileName.should.equal('ca_stub');
    });
 
    it('declare tricky webpage', async() => {
@@ -74,8 +74,8 @@ describe('parse js component', function() {
          'module.webPage.outFileName = "ca_stub";' +
          'return module;});');
       Object.getOwnPropertyNames(result).length.should.equal(2);
-      result['componentName'].should.equal('My.Module/Name');
-      const webPage = result['webPage'];
+      result.componentName.should.equal('My.Module/Name');
+      const webPage = result.webPage;
 
       //теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);

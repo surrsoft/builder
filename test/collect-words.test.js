@@ -14,7 +14,7 @@ let collectWords;
 
 describe('collect words', async() => {
    it('init', () => {
-      let err = nodeWS.init();
+      const err = nodeWS.init();
       if (err) {
          throw new Error(err);
       }

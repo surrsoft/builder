@@ -35,7 +35,7 @@ class BuildConfiguration {
       }
 
       if (rawConfig.hasOwnProperty('mode')) {
-         let mode = rawConfig['mode'];
+         const mode = rawConfig.mode;
          if (mode !== 'release' && mode !== 'debug') {
             return 'Параметр mode может принимать значения "release" и "debug"';
          }
@@ -44,15 +44,15 @@ class BuildConfiguration {
          return 'Не задан обязательный параметр mode';
       }
 
-      this.outputPath = rawConfig['output'];
-      this.cachePath = rawConfig['cache'];
-      this.localizations = rawConfig['localizations'];
+      this.outputPath = rawConfig.output;
+      this.cachePath = rawConfig.cache;
+      this.localizations = rawConfig.localizations;
       this.defaultLocalization = rawConfig['default-localization'];
-      for (let module of rawConfig['modules']) {
+      for (const module of rawConfig.modules) {
          this.modules.push(new ModuleInfo(
-            module['name'],
-            module['responsible'],
-            module['path'],
+            module.name,
+            module.responsible,
+            module.path,
             this.outputPath
          ));
       }

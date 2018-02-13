@@ -31,7 +31,7 @@ module.exports = function less1by1Task(grunt) {
                   return;
                }
                try {
-                  let resourcePath = path.join(applicationRoot, 'resources');
+                  const resourcePath = path.join(applicationRoot, 'resources');
                   const result = await buildLess(filePath, data.toString(), resourcePath);
                   const newFullPath = path.join(path.dirname(filePath), result.fileName + '.css');
                   if (fs.existsSync(newFullPath)) {

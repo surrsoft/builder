@@ -56,7 +56,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
     создали список модулей которые подверглись переименованию и проверяем есть ли данный шаблон в списке.
     https://online.sbis.ru/opendoc.html?guid=f11afc8b-d8d2-462f-a836-a3172c7839a3
     */
-   for (let name in oldToNew) {
+   for (const name in oldToNew) {
       if (oldToNew.hasOwnProperty(name)) {
          if (name === nameNotPlugin && oldToNew[name] !== nameNotPlugin) {
             secondName = nameModule;
@@ -116,7 +116,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
 module.exports = function(grunt) {
    grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача tmpl-build.`);
-      let start = Date.now();
+      const start = Date.now();
       const
          done = this.async(),
          root = this.data.root,
@@ -134,7 +134,7 @@ module.exports = function(grunt) {
          componentsProperties = await runJsonGenerator(modules, jsonCache);
       }
 
-      let deps = ['View/Builder/Tmpl', 'View/config'];
+      const deps = ['View/Builder/Tmpl', 'View/config'];
 
       global.requirejs(deps.concat(['optional!View/Runner/tclosure']), function(tmpl, config, tclosure) {
          let tclosureStr = '';
@@ -154,7 +154,7 @@ module.exports = function(grunt) {
                }
 
 
-               let conf = {config: config, filename: filename, fromBuilderTmpl: true};
+               const conf = {config: config, filename: filename, fromBuilderTmpl: true};
                fs.readFile(fullPath, 'utf8', function(err, html) {
                   if (err) {
                      logger.warning({
@@ -167,7 +167,7 @@ module.exports = function(grunt) {
 
                   const templateRender = Object.create(tmpl);
 
-                  let original = html;
+                  const original = html;
                   html = stripBOM(html);
 
                   if (html.indexOf('define') === 0) {
@@ -187,7 +187,7 @@ module.exports = function(grunt) {
                                  /**
                                   * Новая версия рендера, для шаблонизатора. В результате функция в строке.
                                   */
-                                 let tmplFunc = templateRender.func(traversed, conf);
+                                 const tmplFunc = templateRender.func(traversed, conf);
                                  result.push(tmplFunc.toString() + ';');
 
                                  if (tmplFunc.includedFunctions) {
@@ -211,7 +211,7 @@ module.exports = function(grunt) {
                                  depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
                               }
 
-                              let contents = tclosureStr + depsStr + result.join('');
+                              const contents = tclosureStr + depsStr + result.join('');
 
                               creatTemplate(fullName, contents, original, nodes, applicationRoot, callback, _deps);
 
@@ -259,7 +259,7 @@ module.exports = function(grunt) {
 
    grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', function() {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача xhtml-build.`);
-      let start = Date.now();
+      const start = Date.now();
       const
          done = this.async(),
          root = this.data.root,
@@ -287,7 +287,7 @@ module.exports = function(grunt) {
                   return setImmediate(callback);
                }
 
-               let original = html;
+               const original = html;
                html = stripBOM(html);
 
                if (html.indexOf('define') === 0) {
@@ -305,7 +305,7 @@ module.exports = function(grunt) {
 
                   template = DoT.template(html, config);
 
-                  let contents = template.toString().replace(/[\n\r]/g, '');
+                  const contents = template.toString().replace(/[\n\r]/g, '');
 
                   creatTemplate(fullName, contents, original, nodes, applicationRoot, callback);
 
