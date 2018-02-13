@@ -101,7 +101,7 @@ module.exports = function(grunt) {
          return;
       }
       const modules = new Map();
-      for (let pathModule of pathsModules) {
+      for (const pathModule of pathsModules) {
          modules.set(path.basename(pathModule), pathModule);
       }
 
@@ -116,7 +116,7 @@ module.exports = function(grunt) {
       }
 
       if (oldHtml && oldHtml.length) {
-         let start = Date.now();
+         const start = Date.now();
          oldHtml.forEach(function(file) {
             const filePath = path.join(applicationRoot, file);
             try {

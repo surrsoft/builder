@@ -37,21 +37,21 @@ class ChangesStore {
       }
 
       //this.store ещё может быть в работе. и нам не нужна информация о несуществующих сущностях
-      let tmpStore = {};
-      for (let modulePath in this.store) {
+      const tmpStore = {};
+      for (const modulePath in this.store) {
          if (!this.store.hasOwnProperty(modulePath)) {
             continue;
          }
-         if (this.store[modulePath]['exist']) {
+         if (this.store[modulePath].exist) {
             tmpStore[modulePath] = {files: {}};
-            const files = this.store[modulePath]['files'];
-            for (let filePath in files) {
+            const files = this.store[modulePath].files;
+            for (const filePath in files) {
                if (!files.hasOwnProperty(filePath)) {
                   continue;
                }
-               if (files[filePath]['exist']) {
-                  tmpStore[modulePath]['files'][filePath] = {
-                     time: files[filePath]['time']
+               if (files[filePath].exist) {
+                  tmpStore[modulePath].files[filePath] = {
+                     time: files[filePath].time
                   };
                }
 
