@@ -92,7 +92,7 @@ module.exports = function(grunt) {
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-         replacePath = !(!!grunt.option('splitted-core') && !!grunt.option('multi-service'));
+         replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
 
       const pathsModules = grunt.file.readJSON(modulesOption);
       if (!Array.isArray(pathsModules)) {
