@@ -87,8 +87,8 @@ module.exports = function(grunt) {
          patterns = this.data.src,
          oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
-         splittedCore = !!(grunt.option('splitted-core')),
-         multiService = !!(grunt.option('multi-service')),
+         splittedCore = !!grunt.option('splitted-core'),
+         multiService = !!grunt.option('multi-service'),
          /*
          Даннный флаг определяет надо ли заменить в статических страничка конструкции типа %{FOO_PATH}, на абсалютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
