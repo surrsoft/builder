@@ -10,7 +10,7 @@ let prepareXhtml;
 
 describe('i18n', function() {
    describe('init', () => {
-      let err = nodeWS.init();
+      const err = nodeWS.init();
       if (err) {
          throw new Error(err);
       }

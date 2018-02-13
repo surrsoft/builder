@@ -1,9 +1,9 @@
 'use strict';
 
-var path = require('path');
+const path = require('path');
 
 module.exports = function(grunt) {
-   var conditionalComments = /<!--(\[[\s\S]*?\])-->/gi,
+   let conditionalComments = /<!--(\[[\s\S]*?\])-->/gi,
       conditionalCommentsReplacements = /<!-#\/CC#(\d+)#->/gi,
       wsExpertComments = /<!--WS-EXPERT([\s\S]+?)WS-EXPERT-->/g,
       wsExpertCommentsReplacements = /<!-#\/WEC#(\d+)#->/gi,
@@ -71,7 +71,7 @@ module.exports = function(grunt) {
 
    function saveSlashes(data) {
       //Пройдет по скрипту и сохранит все вхождения двойных слешей, заключенных в кавычки
-      var correctDoubleSlashes = /".*(\/{2}.*?".*?[\r\n]*)/g,
+      let correctDoubleSlashes = /".*(\/{2}.*?".*?[\r\n]*)/g,
          correctSlashes = /'.*(\/{2}.*?'.*?[\r\n]*)/g,
          savedSlahes = [];
 
@@ -89,7 +89,7 @@ module.exports = function(grunt) {
    }
 
    function minifyScript(data) {
-      var slashes = saveSlashes(data);
+      const slashes = saveSlashes(data);
 
       /**
          * Найдет все вхождения двойных слешей и сравнит с сохраненным массивом
@@ -97,7 +97,7 @@ module.exports = function(grunt) {
          * Остальные вхождения примем за комментарий и удалим. Так же удалим многострочные комментарии и переводы строк
          */
       data = data.replace(possibleComments, function(str) {
-         var isNotComment;
+         let isNotComment;
          slashes.forEach(function(item) {
             if (str.indexOf(item) != -1) {
                isNotComment = true;
@@ -119,7 +119,7 @@ module.exports = function(grunt) {
    }
 
    function minifyFile(data) {
-      var ccStore = [], weStore = [];
+      let ccStore = [], weStore = [];
 
       // WS-EXPERT не трогаем, там все живет своей жизнью
       data = removeWsExpertComments(data, weStore);
@@ -130,7 +130,7 @@ module.exports = function(grunt) {
       // Почистим комментарии
       data = data.replace(htmlComments, '');
 
-      var scriptWord = '<script',
+      let scriptWord = '<script',
          endScriptWord = '</script>',
          startScr = data.indexOf(scriptWord),
          endScr,
@@ -165,11 +165,11 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('xhtmlmin', 'minify xhtml and html', function() {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача xhtmlmin.');
 
-      var applicationRoot = this.data.cwd,
+      let applicationRoot = this.data.cwd,
          files = grunt.file.expand({cwd: applicationRoot}, this.data.src);
 
       files.forEach(function(file) {
-         var data = grunt.file.read(path.join(applicationRoot, file), {encoding: 'utf8'});
+         let data = grunt.file.read(path.join(applicationRoot, file), {encoding: 'utf8'});
          data = minifyFile(data);
          grunt.file.write(file, data);
       });

@@ -40,12 +40,12 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+         contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('\n\n\n');
       });
       it('replacePath', async() => {
-         let test = async(replacePath, expected) => {
+         const test = async(replacePath, expected) => {
             const componentInfo = {
                componentName: 'MyModule',
                webPage: {
@@ -56,7 +56,7 @@ describe('generate static html for js', function() {
             };
             const contents = {};
             const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, replacePath);
-            contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+            contents.htmlNames.MyModule.should.equal('testOutFileName.html');
             result.outFileName.should.equal('testOutFileName.html');
             result.text.should.equal(expected);
          };
@@ -79,7 +79,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+         contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('<INCLUDE1/>\n\n' +
             '<INCLUDE2/>\n' +
@@ -96,7 +96,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+         contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('RESOURCE_ROOT:/resources/\n' +
             'WI.SBIS_ROOT:/ws/\n' +
@@ -114,7 +114,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         contents.htmlNames['MyModule'].should.equal('testOutFileName.html');
+         contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          result.text.should.equal('TITLE:testTitle\n' +
             'START_DIALOG:MyModule\n');

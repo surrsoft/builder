@@ -26,9 +26,9 @@ describe('processing routes.js', function() {
             '};\n');
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1.html']).length.should.equal(1);
-         result['/test_1.html']['controller'].should.equal('js!SBIS3.Test1');
+         result['/test_1.html'].controller.should.equal('js!SBIS3.Test1');
          Object.getOwnPropertyNames(result['/test_2.html']).length.should.equal(1);
-         result['/test_2.html']['controller'].should.equal('js!SBIS3.Test2');
+         result['/test_2.html'].controller.should.equal('js!SBIS3.Test2');
       });
       it('route to function', () => {
          const result = processingRoutes.parseRoutes('module.exports = function (Component, Service) {\n' +
@@ -41,9 +41,9 @@ describe('processing routes.js', function() {
             '};');
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1/']).length.should.equal(1);
-         expect(result['/test_1/']['controller']).to.be.null;
+         expect(result['/test_1/'].controller).to.be.null;
          Object.getOwnPropertyNames(result['/test_2/']).length.should.equal(1);
-         expect(result['/test_2/']['controller']).to.be.null;
+         expect(result['/test_2/'].controller).to.be.null;
       });
       it('no return routes', () => {
          //примеры не корретного роутинга:
