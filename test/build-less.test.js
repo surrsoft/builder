@@ -21,7 +21,6 @@ describe('build less', function() {
       const filePath = path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('test');
       result.imports.length.should.equal(2);
       result.text.should.equal('');
    });
@@ -32,7 +31,6 @@ describe('build less', function() {
          'test-var: @test-var;' +
          '}';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('test');
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -46,7 +44,6 @@ describe('build less', function() {
          'test-var: @test-var;' +
          '}';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('test');
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -59,7 +56,6 @@ describe('build less', function() {
          'test-var: @test-var;' +
          '}';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('test');
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -72,7 +68,6 @@ describe('build less', function() {
          'test-var: @test-var;' +
          '}';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('Button');
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -80,7 +75,7 @@ describe('build less', function() {
    });
 
    //важно отобразить корректно строку в которой ошибка
-   it('less with error', async() => {
+   it('less with error', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
@@ -88,7 +83,7 @@ describe('build less', function() {
          `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
    });
-   it('less with error from SBIS3.CONTROLS', async() => {
+   it('less with error from SBIS3.CONTROLS', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
@@ -96,7 +91,7 @@ describe('build less', function() {
          `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
    });
-   it('less with internal error', async() => {
+   it('less with internal error', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/test.less'));
       const text = '@import "Error";';
       return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
@@ -109,7 +104,6 @@ describe('build less', function() {
       const filePath = path.join(resourcesPath, 'Retail/themes/presto/variables.less');
       const text = '';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('variables');
       result.imports.length.should.equal(0);
       result.text.should.equal('');
    });
@@ -121,7 +115,6 @@ describe('build less', function() {
          'test-var: @test-var;' +
          '}';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.fileName.should.equal('TabControl');
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +

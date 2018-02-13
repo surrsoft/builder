@@ -127,7 +127,7 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          should.not.exist(result);
       });
-      it('component without name', async() => {
+      it('component without name', () => {
          const componentInfo = {
             webPage: {
                htmlTemplate: 'Тема Скрепка/title.html',
@@ -138,7 +138,7 @@ describe('generate static html for js', function() {
          const contents = {};
          return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true).should.be.rejectedWith('Не указано имя компонента');
       });
-      it('module not exist', async() => {
+      it('module not exist', () => {
          const componentInfo = {
             webPage: {
                htmlTemplate: 'Сказочный модуль/title.html',
@@ -150,7 +150,7 @@ describe('generate static html for js', function() {
          return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true)
             .should.be.rejectedWith('Не указано имя компонента');
       });
-      it('recursive includes error', async() => {
+      it('recursive includes error', () => {
          const componentInfo = {
             componentName: 'MyModule',
             webPage: {

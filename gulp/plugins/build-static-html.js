@@ -8,7 +8,7 @@ const through = require('through2'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function(moduleInfo, modulesMap, pool) {
+module.exports = function(moduleInfo, modulesMap) {
    return through.obj(async function(file, encoding, callback) {
       this.push(file);
 

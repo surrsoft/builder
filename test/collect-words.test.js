@@ -12,7 +12,7 @@ chai.should();
 
 let collectWords;
 
-describe('collect words', async() => {
+describe('collect words', () => {
    it('init', () => {
       const err = nodeWS.init();
       if (err) {

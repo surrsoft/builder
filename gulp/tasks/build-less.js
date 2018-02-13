@@ -8,7 +8,7 @@ function logWarnings(promiseBuildLess) {
    return new Promise((resolve, reject) => {
       promiseBuildLess.then(results => {
          const compiledLessList = [];
-         for (let result of results) {
+         for (const result of results) {
             if (result.hasOwnProperty('error')) {
                logger.warning({
                   error: result.error,
@@ -36,8 +36,8 @@ function buildLessTask(filesInfo, resourcePath, pool) {
       }
       Promise.all(promises).then(
          results => {
-            for (let compiledLessList of results) {
-               for (let compiledLess of compiledLessList) {
+            for (const compiledLessList of results) {
+               for (const compiledLess of compiledLessList) {
                   logger.info(JSON.stringify(compiledLess.imports));
                }
             }

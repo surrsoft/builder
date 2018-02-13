@@ -35,12 +35,12 @@ const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compile
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
          .pipe(addComponentInfo(moduleInfo, pool))
-         .pipe(buildStaticHtml(moduleInfo, modulesMap, pool))
+         .pipe(buildStaticHtml(moduleInfo, modulesMap))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
             if (file.extname === '.less') {
-               compileLessTasks.push({
+               compileLessTasks.push({ //TODO: нужно собарать список less в отдельном плагине
                   path: path.join(moduleInfo.output, file.dirname, file.basename + file.extname),
                   module: moduleInfo.nameWithResponsible
                });
@@ -128,9 +128,8 @@ module.exports = {
          if (pattern.length) {
             return gulp.src(pattern, {read: false, cwd: config.outputPath, allowEmpty: true})
                .pipe(clean());
-         } else {
-            done();
          }
+         return done();
       };
       const saveChangedStoreTask = function saveChangedStore(done) {
          changesStore.save();
@@ -141,7 +140,7 @@ module.exports = {
          gulp.parallel(buildTasks),
          buildLessTask(compileLessTasks, config.outputPath, pool),
          gulp.parallel(clearTask, saveChangedStoreTask),
-         ()=>{
+         () => {
             return pool.terminate();
          }
       );
