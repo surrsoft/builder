@@ -71,7 +71,7 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 
 module.exports = {
-   'create': async function buildTask(config) {
+   'create': function buildTask(config) {
       const pool = workerPool.pool(
          path.join(__dirname, './workers/build-worker.js'),
          {
@@ -82,7 +82,13 @@ module.exports = {
          compileLessTasks = {};
 
       const changesStore = new ChangesStore(config.cachePath);
-      await changesStore.load();
+      const loadChangedStoreTask = function loadChangedStoreTask() {
+         return changesStore.load();
+      };
+      const saveChangedStoreTask = function saveChangedStore() {
+         return changesStore.save();
+      };
+
 
       let countCompletedModules = 0;
 
@@ -133,12 +139,9 @@ module.exports = {
          }
          return done();
       };
-      const saveChangedStoreTask = async function saveChangedStore(done) {
-         await changesStore.save();
-         done();
-      };
 
       return gulp.series(
+         loadChangedStoreTask,
          gulp.parallel(buildTasks),
          buildLessTask(compileLessTasks, config.outputPath, pool),
          gulp.parallel(clearTask, saveChangedStoreTask),
