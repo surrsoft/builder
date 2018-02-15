@@ -138,7 +138,8 @@ module.exports = function(grunt) {
          servicesPath: servicesPath,
          userParams: userParams,
          globalParams: globalParams,
-         splittedCore: grunt.option('splitted-core')
+         urlServicePath: grunt.option('url-service-path') ? grunt.option('url-service-path') : application,
+         wsPath: grunt.option('splitted-core') ? 'resources/WS.Core/' : 'ws/'
       };
 
       helpers.recurse(applicationRoot, function(file, callback) {
