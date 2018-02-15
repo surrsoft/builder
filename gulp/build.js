@@ -39,11 +39,11 @@ const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compile
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
+
+            //TODO: нужно собарать список less в отдельном плагине
             if (file.extname === '.less') {
-               compileLessTasks.push({ //TODO: нужно собарать список less в отдельном плагине
-                  path: path.join(moduleInfo.output, file.dirname, file.basename + file.extname),
-                  module: moduleInfo.nameWithResponsible
-               });
+               const lessPath = path.join(moduleInfo.output, file.dirname, file.basename + file.extname);
+               compileLessTasks[lessPath] = moduleInfo;
             }
          }))
          .pipe(createRoutesInfoJson(moduleInfo, pool))
@@ -79,7 +79,7 @@ module.exports = {
          });
 
       const buildTasks = [],
-         compileLessTasks = [],
+         compileLessTasks = {},
          changesStore = new ChangesStore(config.cachePath);
 
       let countCompletedModules = 0;
