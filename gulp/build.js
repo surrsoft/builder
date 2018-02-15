@@ -71,7 +71,7 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
 
 
 module.exports = {
-   'create': function buildTask(config) {
+   'create': async function buildTask(config) {
       const pool = workerPool.pool(
          path.join(__dirname, './workers/build-worker.js'),
          {
@@ -79,8 +79,10 @@ module.exports = {
          });
 
       const buildTasks = [],
-         compileLessTasks = {},
-         changesStore = new ChangesStore(config.cachePath);
+         compileLessTasks = {};
+
+      const changesStore = new ChangesStore(config.cachePath);
+      await changesStore.load();
 
       let countCompletedModules = 0;
 
@@ -131,8 +133,8 @@ module.exports = {
          }
          return done();
       };
-      const saveChangedStoreTask = function saveChangedStore(done) {
-         changesStore.save();
+      const saveChangedStoreTask = async function saveChangedStore(done) {
+         await changesStore.save();
          done();
       };
 

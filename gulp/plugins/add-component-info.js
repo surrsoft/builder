@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -19,7 +21,8 @@ module.exports = function(moduleInfo, pool) {
          file.path.endsWith('.test.js') ||
          file.path.includes('/node_modules/') ||
          file.path.includes('/design/')) {
-         return callback(null, file);
+         callback(null, file);
+         return;
       }
 
       try {

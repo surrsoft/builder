@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -11,7 +13,8 @@ const through = require('through2'),
 module.exports = function(moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       if (!file.path.endsWith('.routes.js')) {
-         return callback(null, file);
+         callback(null, file);
+         return;
       }
 
       try {
@@ -31,7 +34,8 @@ module.exports = function(moduleInfo, pool) {
       try {
          //если нет данных, то не нужно и сохранять
          if (!Object.getOwnPropertyNames(moduleInfo.routesInfo).length) {
-            return callback();
+            callback();
+            return;
          }
 
          //подготовим routes-info.json
@@ -40,7 +44,7 @@ module.exports = function(moduleInfo, pool) {
          const routesInfoText = JSON.stringify(helpers.sortObject(moduleInfo.routesInfo), null, 2);
          const routesInfoFile = new Vinyl({
             path: 'routes-info.json',
-            contents: new Buffer(routesInfoText),
+            contents: Buffer.from(routesInfoText),
             moduleInfo: moduleInfo
          });
          this.push(routesInfoFile);
