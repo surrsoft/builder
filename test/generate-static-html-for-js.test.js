@@ -18,7 +18,9 @@ const config = {
    application: '/',
    servicesPath: '/service/',
    userParams: true,
-   globalParams: false
+   globalParams: false,
+   urlServicePath: '/',
+   wsPath: 'ws/'
 };
 
 const modules = new Map([
