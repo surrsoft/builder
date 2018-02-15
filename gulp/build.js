@@ -5,7 +5,10 @@ const
    path = require('path'),
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
-   clean = require('gulp-clean');
+   clean = require('gulp-clean'),
+   os = require('os'),
+   workerPool = require('workerpool');
+
 
 //наши плагины
 const
@@ -14,8 +17,10 @@ const
    addComponentInfo = require('./plugins/add-component-info'),
    buildStaticHtml = require('./plugins/build-static-html'),
    createRoutesInfoJson = require('./plugins/create-routes-info-json'),
-   createContentsJson = require('./plugins/create-contents-json'),
-   buildLess = require('./plugins/build-less');
+   createContentsJson = require('./plugins/create-contents-json');
+
+const
+   buildLessTask = require('./tasks/build-less');
 
 //разлчные хелперы
 const
@@ -23,19 +28,25 @@ const
    logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
-const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore) {
+const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compileLessTasks, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
    return function copy() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
-         .pipe(addComponentInfo(moduleInfo))
+         .pipe(addComponentInfo(moduleInfo, pool))
          .pipe(buildStaticHtml(moduleInfo, modulesMap))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
+
+            //TODO: нужно собарать список less в отдельном плагине
+            if (file.extname === '.less') {
+               const lessPath = path.join(moduleInfo.output, file.dirname, file.basename + file.extname);
+               compileLessTasks[lessPath] = moduleInfo;
+            }
          }))
-         .pipe(createRoutesInfoJson(moduleInfo))
+         .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulp.dest(moduleInfo.output));
    };
@@ -58,19 +69,26 @@ const htmlTmplTaskGenerator = function(moduleInfo) {
    };
 };
 
-function buildLessTask(config) {
-   return function lessTask() {
-      return gulp.src(path.join(config.outputPath, '/**/*.less'))
-         .pipe(buildLess(config.outputPath))
-         .pipe(gulp.dest(config.outputPath));
-   };
-}
-
 
 module.exports = {
    'create': function buildTask(config) {
+      const pool = workerPool.pool(
+         path.join(__dirname, './workers/build-worker.js'),
+         {
+            maxWorkers: os.cpus().length
+         });
+
       const buildTasks = [],
-         changesStore = new ChangesStore(config.cachePath);
+         compileLessTasks = {};
+
+      const changesStore = new ChangesStore(config.cachePath);
+      const loadChangedStoreTask = function loadChangedStoreTask() {
+         return changesStore.load();
+      };
+      const saveChangedStoreTask = function saveChangedStore() {
+         return changesStore.save();
+      };
+
 
       let countCompletedModules = 0;
 
@@ -89,8 +107,9 @@ module.exports = {
          buildTasks.push(
             gulp.series(
                gulp.parallel(
-                  copyTaskGenerator(moduleInfo, modulesMap, changesStore),
-                  htmlTmplTaskGenerator(moduleInfo, changesStore)),
+                  copyTaskGenerator(moduleInfo, modulesMap, changesStore, compileLessTasks, pool),
+                  htmlTmplTaskGenerator(moduleInfo, changesStore)
+               ),
                printPercentComplete));
       }
       const clearTask = function remove(done) {
@@ -117,18 +136,18 @@ module.exports = {
          if (pattern.length) {
             return gulp.src(pattern, {read: false, cwd: config.outputPath, allowEmpty: true})
                .pipe(clean());
-         } else {
-            done();
          }
-      };
-      const saveChangedStoreTask = function saveChangedStore(done) {
-         changesStore.save();
-         done();
+         return done();
       };
 
       return gulp.series(
+         loadChangedStoreTask,
          gulp.parallel(buildTasks),
-         buildLessTask(config),
-         gulp.parallel(clearTask, saveChangedStoreTask));
+         buildLessTask(compileLessTasks, config.outputPath, pool),
+         gulp.parallel(clearTask, saveChangedStoreTask),
+         () => {
+            return pool.terminate();
+         }
+      );
    }
 };

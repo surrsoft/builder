@@ -1,13 +1,14 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
    path = require('path'),
-   parseJsComponent = require('../../lib/parse-js-component'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
-module.exports = function(moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+module.exports = function(moduleInfo, pool) {
+   return through.obj(async function(file, encoding, callback) {
       //нас не интересуют:
       //  не js-файлы
       //  *.test.js - тесты
@@ -20,11 +21,12 @@ module.exports = function(moduleInfo) {
          file.path.endsWith('.test.js') ||
          file.path.includes('/node_modules/') ||
          file.path.includes('/design/')) {
-         return callback(null, file);
+         callback(null, file);
+         return;
       }
 
       try {
-         file.componentInfo = parseJsComponent(file.contents.toString());
+         file.componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]);
          if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName') &&
             file.componentInfo.componentName.startsWith('js!')) {
             const relativePath = path.join(moduleInfo.folderName, file.relative);

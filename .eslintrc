@@ -10,6 +10,10 @@
    "globals": {
       "require": true
    },
+   "plugins": [
+      "filenames",
+      "node"
+   ],
    "rules": {
       "keyword-spacing": 1,
       "no-cond-assign": 2,
@@ -233,6 +237,11 @@
       "accessor-pairs": 1,
       "no-shadow": 1,
       "no-undef-init": 1,
-      "no-undefined": 1
+      "no-undefined": 1,
+      "filenames/match-regex": [1, "^[0-9a-z\\-.]+$", true],
+      "node/no-extraneous-require": 2,
+      "node/no-missing-require": 2,
+      "node/no-unsupported-features": 2,
+      "node/no-deprecated-api": 1
    }
 }

@@ -17,13 +17,13 @@ const testDirname = path.join(__dirname, 'fixture/run-json-generator');
 const outputPath = path.join(testDirname, 'output');
 
 function clear() {
-   fs.removeSync(outputPath);
+   return fs.remove(outputPath);
 }
 
-function writeModulesListToFile(modules) {
+async function writeModulesListToFile(modules) {
    mkdirp.sync(outputPath);
    const modulesJsonPath = path.join(outputPath, 'modules.json');
-   fs.writeFileSync(modulesJsonPath, JSON.stringify(modules));
+   await fs.writeFile(modulesJsonPath, JSON.stringify(modules));
    return modulesJsonPath;
 }
 
@@ -34,14 +34,14 @@ describe('run json-generator', function() {
          result;
 
       //пустой список модулей
-      clear();
-      modulesJsonPath = writeModulesListToFile([]);
+      await clear();
+      modulesJsonPath = await writeModulesListToFile([]);
       result = await runJsonGenerator(modulesJsonPath, outputPath);
       Object.keys(result).length.should.equal(0);
 
       //простой тест
-      clear();
-      modulesJsonPath = writeModulesListToFile([
+      await clear();
+      modulesJsonPath = await writeModulesListToFile([
          path.join(testDirname, 'TestModuleWithModuleJs'),
          path.join(testDirname, 'TestModuleWithoutModuleJs')
       ]);
@@ -58,7 +58,7 @@ describe('run json-generator', function() {
       options.caption.translatable.should.equal(true);
       options.icon.hasOwnProperty('translatable').should.equal(false);
 
-      clear();
+      await clear();
    });
 });
 

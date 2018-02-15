@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -15,18 +17,21 @@ module.exports = function(moduleInfo, modulesMap) {
       try {
          if (!file.hasOwnProperty('componentInfo')) {
             //не компонент js
-            return callback();
+            callback();
+            return;
          }
 
          const config = {};
+
          const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
+
          if (result) {
             const folderName = transliterate(moduleInfo.folderName);
             moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
             this.push(new Vinyl({
                base: moduleInfo.output,
                path: path.join(moduleInfo.output, result.outFileName),
-               contents: new Buffer(result.text)
+               contents: Buffer.from(result.text)
             }));
          }
       } catch (error) {
@@ -39,10 +44,15 @@ module.exports = function(moduleInfo, modulesMap) {
       }
       callback();
    }, function(callback) {
-      callback(null, new Vinyl({
-         path: 'static_templates.json',
-         contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
-         moduleInfo: moduleInfo
-      }));
+      if (Object.keys(moduleInfo.staticTemplates).length > 0) {
+         const file = new Vinyl({
+            path: 'static_templates.json',
+            contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
+            moduleInfo: moduleInfo
+         });
+         callback(null, file);
+         return;
+      }
+      callback(null);
    });
 };

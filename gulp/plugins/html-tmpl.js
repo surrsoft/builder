@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -9,9 +11,8 @@ module.exports = function(moduleInfo) {
       convertHtmlTmpl(file.contents.toString(), '')
          .then(
             result => {
-               file.contents = new Buffer(result);
-               this.push(file);
-               cb();
+               file.contents = Buffer.from(result);
+               cb(null, file);
             },
             error => {
                logger.error(

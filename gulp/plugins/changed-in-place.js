@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const path = require('path'),

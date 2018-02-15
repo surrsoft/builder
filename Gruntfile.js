@@ -1,3 +1,4 @@
+/* eslint-disable filenames/match-regex*/
 'use strict';
 
 const path = require('path');
