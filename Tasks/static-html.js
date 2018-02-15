@@ -9,6 +9,60 @@ const path = require('path'),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(resourcesRoot, filePattern, componentsProperties, cb) {
+   function generateMarkup(html, fullPath, setImmediate, callback) {
+      convertHtmlTmpl.generateMarkup(html, fullPath, componentsProperties)
+         .then(
+            result => {
+               const newFullPath = fullPath.replace(/\.tmpl$/, '');
+
+               // создадим файл с новым содержимым
+               helpers.rewriteFile(newFullPath, result.toString(), callback);
+            },
+            error => {
+               logger.error({
+                  message: 'Ошибка при обработке шаблона',
+                  error: error,
+                  filePath: fullPath
+               });
+               setImmediate(callback);
+            }
+         );
+   }
+   function generateMarkupNew(tmplFunction, html, fullPath, setImmediate, callback) {
+      const tmplFunc = tmplFunction.tmplFunc.toString();
+      const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.new.html');
+      global.requirejs(['tmpl!Controls/Application/Route', 'Controls/Application'], function(route) {
+         const routeResult = route({
+            application: 'Controls/Application',
+            wsRoot: '/ws/',
+            resourceRoot: '/resources/',
+            _options: {
+               builder: tmplFunc,
+               dependencies: tmplFunction.dependencies.map(v => '\'' + v + '\'').toString()
+            }
+         });
+         if (typeof routeResult === 'string') {
+            helpers.rewriteFile(newFullPath, routeResult, function() {
+               generateMarkup(html, fullPath, setImmediate, callback);
+            });
+         } else {
+            routeResult.addCallback(function(res) {
+               helpers.rewriteFile(newFullPath, res, function() {
+                  generateMarkup(html, fullPath, setImmediate, callback);
+               });
+            })
+               .addErrback(function(error) {
+                  logger.error({
+                     message: 'Ошибка при обработке шаблона',
+                     error: error,
+                     filePath: fullPath
+                  });
+                  setImmediate(callback);
+               });
+         }
+      });
+   }
+
    helpers.recurse(resourcesRoot, function(fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
@@ -23,27 +77,18 @@ function convertTmpl(resourcesRoot, filePattern, componentsProperties, cb) {
             return;
          }
 
-         convertHtmlTmpl(html, fullPath, componentsProperties)
-            .then(
-               result => {
-                  const newFullPath = fullPath.replace(/\.tmpl$/, '');
-
-                  // если файл уже есть, удалим
-                  if (helpers.existsSync(newFullPath)) {
-                     helpers.unlinkSync(newFullPath);
-                  }
-
-                  // создадим файл с новым содержимым
-                  helpers.writeFile(newFullPath, result.toString(), callback);
-               },
-               error => {
-                  logger.error({
-                     message: 'Ошибка при обработке шаблона',
-                     error: error,
-                     filePath: fullPath
-                  });
-                  setImmediate(callback);
-               }
+         convertHtmlTmpl.generateFunction(html, fullPath, componentsProperties)
+            .then(result => {
+               generateMarkupNew(result, html, fullPath, setImmediate, callback);
+            },
+            error => {
+               logger.error({
+                  message: 'Ошибка при обработке шаблона',
+                  error: error,
+                  filePath: fullPath
+               });
+               setImmediate(callback);
+            }
             );
       });
    }, cb);
@@ -89,7 +134,7 @@ module.exports = function(grunt) {
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
-         Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
+          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
