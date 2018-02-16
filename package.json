@@ -6,10 +6,10 @@
    "files": [
       "Gruntfile.js",
       "gulpfile.js",
-      "gulpTasks/*",
-      "lib/*",
-      "resources/*",
-      "Tasks/*"
+      "gulp/",
+      "lib/",
+      "resources/",
+      "Tasks/"
    ],
    "scripts": {
       "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml",
@@ -52,7 +52,9 @@
       "mocha": "^5.0.0",
       "eslint": "^4.16.0",
       "eslint-plugin-filenames": "^1.2.0",
-      "eslint-plugin-node": "^6.0.0"
+      "eslint-plugin-node": "^6.0.0",
+      "eslint-plugin-promise": "^3.6.0",
+      "eslint-plugin-eslint-comments": "^2.0.2"
    },
    "engines": {
       "node": ">=8.9.3"
