@@ -9,7 +9,6 @@ const
    os = require('os'),
    workerPool = require('workerpool');
 
-
 //наши плагины
 const
    gulpHtmlTmpl = require('./plugins/html-tmpl'),
@@ -19,6 +18,7 @@ const
    createRoutesInfoJson = require('./plugins/create-routes-info-json'),
    createContentsJson = require('./plugins/create-contents-json');
 
+//готовые задачи
 const
    buildLessTask = require('./tasks/build-less');
 
@@ -28,23 +28,18 @@ const
    logger = require('../lib/logger').logger(),
    ChangesStore = require('./classes/changes-store');
 
-const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compileLessTasks, pool) {
+const generateTaskForBuildSingleModule = function(moduleInfo, modulesMap, changesStore, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
 
-   return function copy() {
+   return function buildModule() {
       return gulp.src(moduleInput)
          .pipe(changedInPlace(changesStore, moduleInfo.path))
          .pipe(addComponentInfo(moduleInfo, pool))
          .pipe(buildStaticHtml(moduleInfo, modulesMap))
+         .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
-
-            //TODO: нужно собарать список less в отдельном плагине
-            if (file.extname === '.less') {
-               const lessPath = path.join(moduleInfo.output, file.dirname, file.basename + file.extname);
-               compileLessTasks[lessPath] = moduleInfo;
-            }
          }))
          .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
@@ -52,65 +47,26 @@ const copyTaskGenerator = function(moduleInfo, modulesMap, changesStore, compile
    };
 };
 
-const htmlTmplTaskGenerator = function(moduleInfo) {
-   const moduleInput = path.join(moduleInfo.path, '/**/*.html.tmpl');
-
-   return function htmlTmpl() {
-      return gulp.src(moduleInput)
-
-      //.pipe(changedInPlace(changesStore, module.path))
-         .pipe(gulpHtmlTmpl(moduleInfo))
-         .pipe(gulpRename(file => {
-            file.dirname = transliterate(file.dirname);
-            file.basename = transliterate(file.basename);
-            file.extname = ''; // *.html.tmpl => *.html
-         }))
-         .pipe(gulp.dest(moduleInfo.output));
+function generateTaskForTerminatePool(pool) {
+   return function terminatePool() {
+      return pool.terminate();
    };
-};
+}
 
-function generateWorkflow(config) {
-   const pool = workerPool.pool(
-      path.join(__dirname, './workers/build-worker.js'),
-      {
-         maxWorkers: os.cpus().length
-      });
-
-   const buildTasks = [],
-      compileLessTasks = {};
-
-   const changesStore = new ChangesStore(config.cachePath);
-   const loadChangedStoreTask = function loadChangedStoreTask() {
+function generateTaskForLoadChangesStore(changesStore) {
+   return function loadChangesStore() {
       return changesStore.load();
    };
-   const saveChangedStoreTask = function saveChangedStore() {
-      return changesStore.save();
+}
+
+function generateTaskForSaveChangesStore(changesStore) {
+   return function saveChangesStore() {
+      return changesStore.load();
    };
+}
 
-
-   let countCompletedModules = 0;
-
-   const printPercentComplete = function(done) {
-      countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / config.modules.length);
-      done();
-   };
-
-   const modulesMap = new Map();
-   for (const moduleInfo of config.modules) {
-      modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
-   }
-
-   for (const moduleInfo of config.modules) {
-      buildTasks.push(
-         gulp.series(
-            gulp.parallel(
-               copyTaskGenerator(moduleInfo, modulesMap, changesStore, compileLessTasks, pool),
-               htmlTmplTaskGenerator(moduleInfo, changesStore)
-            ),
-            printPercentComplete));
-   }
-   const clearTask = function remove(done) {
+function generateTaskForRemoveFiles(changesStore, config) {
+   return function removeOutdatedFiles(done) {
       const pattern = [];
 
       for (const modulePath in changesStore.store) {
@@ -138,14 +94,49 @@ function generateWorkflow(config) {
       return done();
    };
 
+}
+
+function generateTasksForBuildModules(changesStore, config, pool) {
+   const tasks = [];
+   let countCompletedModules = 0;
+
+   const printPercentComplete = function(done) {
+      countCompletedModules += 1;
+      logger.progress(100 * countCompletedModules / config.modules.length);
+      done();
+   };
+
+   const modulesMap = new Map();
+   for (const moduleInfo of config.modules) {
+      modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
+   }
+
+   for (const moduleInfo of config.modules) {
+      tasks.push(
+         gulp.series(
+            generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool),
+            printPercentComplete));
+   }
+   return tasks;
+}
+
+function generateWorkflow(config) {
+   const pool = workerPool.pool(
+      path.join(__dirname, './workers/build-worker.js'),
+      {
+         maxWorkers: os.cpus().length
+      });
+
+   const changesStore = new ChangesStore(config);
+
    return gulp.series(
-      loadChangedStoreTask,
-      gulp.parallel(buildTasks),
-      buildLessTask(compileLessTasks, config.outputPath, pool),
-      gulp.parallel(clearTask, saveChangedStoreTask),
-      () => {
-         return pool.terminate();
-      }
+      generateTaskForLoadChangesStore(changesStore),
+      gulp.parallel(generateTasksForBuildModules(changesStore, config, pool)),
+      buildLessTask(changesStore, config, pool),
+      gulp.parallel(
+         generateTaskForRemoveFiles(changesStore, config),
+         generateTaskForSaveChangesStore(changesStore),
+         generateTaskForTerminatePool(pool))
    );
 }
 

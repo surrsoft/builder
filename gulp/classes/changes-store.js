@@ -49,8 +49,8 @@ const demo = {
 };
 
 class ChangesStore {
-   constructor(dir) {
-      this.filePath = path.join(dir, 'changes.json');
+   constructor(config) {
+      this.filePath = path.join(config.cachePath, 'changes.json');
       this.store = {};
 
    }
