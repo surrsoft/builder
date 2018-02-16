@@ -10,7 +10,7 @@ function chunkArray(inputArray, sizeChunk) {
    return outputArray;
 }
 
-function buildLessTask(compileLessTasks, resourcePath, pool) {
+function generateTaskForCompileLess(compileLessTasks, resourcePath, pool) {
    const sizeChunk = 20; //эмпирически подобранная величина для высокой производительности
 
    const processChunk = async function(chunk) {
@@ -36,4 +36,4 @@ function buildLessTask(compileLessTasks, resourcePath, pool) {
    };
 }
 
-module.exports = buildLessTask;
+module.exports = generateTaskForCompileLess;
