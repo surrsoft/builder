@@ -16,7 +16,7 @@ class BuildConfiguration {
       this.rawConfig = {};
    }
 
-   load(argv) {
+   loadSync(argv) {
       //для получения 1 параметра --config не нужна сторонняя библиотека
       let configFile = '';
       argv.forEach(value => {
@@ -26,23 +26,23 @@ class BuildConfiguration {
       });
 
       if (!fs.pathExistsSync(configFile)) {
-         return 'Файл конфигурации не задан или файл не существует.';
+         throw new Error('Файл конфигурации не задан или файл не существует.');
       }
 
       try {
          this.rawConfig = fs.readJSONSync(configFile);
       } catch (e) {
-         return 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message;
+         throw new Error('Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message);
       }
 
       if (this.rawConfig.hasOwnProperty('mode')) {
          const mode = this.rawConfig.mode;
          if (mode !== 'release' && mode !== 'debug') {
-            return 'Параметр mode может принимать значения "release" и "debug"';
+            throw new Error('Параметр mode может принимать значения "release" и "debug"');
          }
          this.isReleaseMode = mode === 'release';
       } else {
-         return 'Не задан обязательный параметр mode';
+         throw new Error('Не задан обязательный параметр mode');
       }
 
       this.outputPath = this.rawConfig.output;
@@ -57,9 +57,6 @@ class BuildConfiguration {
             this.outputPath
          ));
       }
-
-
-      return '';
    }
 
 }

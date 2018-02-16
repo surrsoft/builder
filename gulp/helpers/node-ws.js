@@ -75,8 +75,8 @@ module.exports = {
       try {
          _init();
       } catch (e) {
-         return `Ошибка инициализации ядра платформы: ${e.message}. Stack ${e.stack}`;
+         e.message = `Ошибка инициализации ядра платформы WS: ${e.message}`;
+         throw e;
       }
-      return '';
    }
 };

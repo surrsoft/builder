@@ -20,13 +20,15 @@ const
 
 //готовые задачи
 const
-   buildLessTask = require('./tasks/build-less');
+   buildLessTask = require('./tasks/build-less'),
+   guardSingleProcessTask = require('./helpers/guard-single-process.js');
 
 //разлчные хелперы
 const
    transliterate = require('../lib/transliterate'),
    logger = require('../lib/logger').logger(),
-   ChangesStore = require('./classes/changes-store');
+   ChangesStore = require('./classes/changes-store'),
+   BuildConfiguration = require('./classes/build-configuration.js');
 
 const generateTaskForBuildSingleModule = function(moduleInfo, modulesMap, changesStore, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
@@ -96,7 +98,7 @@ function generateTaskForRemoveFiles(changesStore, config) {
 
 }
 
-function generateTasksForBuildModules(changesStore, config, pool) {
+function generateTaskForBuildModules(changesStore, config, pool) {
    const tasks = [];
    let countCompletedModules = 0;
 
@@ -117,26 +119,44 @@ function generateTasksForBuildModules(changesStore, config, pool) {
             generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool),
             printPercentComplete));
    }
-   return tasks;
+   return gulp.parallel(tasks);
 }
 
-function generateWorkflow(config) {
+function generateTaskForLockGuard(config) {
+   return function lockGuard() {
+      return guardSingleProcessTask.lock(config);
+   };
+}
+
+function generateTaskForUnlockGuard() {
+   return function unlockGuard() {
+      return guardSingleProcessTask.unlock();
+   };
+}
+
+function generateWorkflow(processArgv) {
+   //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
+   const config = new BuildConfiguration();
+   config.loadSync(processArgv); // eslint-disable-line no-sync
+
+   const changesStore = new ChangesStore(config);
+
    const pool = workerPool.pool(
       path.join(__dirname, './workers/build-worker.js'),
       {
          maxWorkers: os.cpus().length
       });
 
-   const changesStore = new ChangesStore(config);
-
    return gulp.series(
+      generateTaskForLockGuard(config),
       generateTaskForLoadChangesStore(changesStore),
-      gulp.parallel(generateTasksForBuildModules(changesStore, config, pool)),
+      generateTaskForBuildModules(changesStore, config, pool),
       buildLessTask(changesStore, config, pool),
       gulp.parallel(
          generateTaskForRemoveFiles(changesStore, config),
          generateTaskForSaveChangesStore(changesStore),
-         generateTaskForTerminatePool(pool))
+         generateTaskForTerminatePool(pool)),
+      generateTaskForUnlockGuard()
    );
 }
 
