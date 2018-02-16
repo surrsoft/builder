@@ -11,7 +11,7 @@ let lockFle;
 
 module.exports = {
    'lock': function lock(config) {
-      return function() {
+      return function lockGuard() {
          return new Promise(
             async(resolve, reject) => {
                const dir = config.cachePath;
@@ -38,7 +38,7 @@ module.exports = {
       };
    },
    'unlock': function unlock() {
-      return function() {
+      return function unlockGuard() {
          return new Promise(
             async(resolve, reject) => {
                const isFileExist = await fs.pathExists(lockFle);
