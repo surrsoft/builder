@@ -13,6 +13,7 @@ class BuildConfiguration {
       this.localizations = [];
       this.defaultLocalization = '';
       this.modules = [];
+      this.rawConfig = {};
    }
 
    load(argv) {
@@ -28,15 +29,14 @@ class BuildConfiguration {
          return 'Файл конфигурации не задан или файл не существует.';
       }
 
-      let rawConfig;
       try {
-         rawConfig = fs.readJSONSync(configFile);
+         this.rawConfig = fs.readJSONSync(configFile);
       } catch (e) {
          return 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message;
       }
 
-      if (rawConfig.hasOwnProperty('mode')) {
-         const mode = rawConfig.mode;
+      if (this.rawConfig.hasOwnProperty('mode')) {
+         const mode = this.rawConfig.mode;
          if (mode !== 'release' && mode !== 'debug') {
             return 'Параметр mode может принимать значения "release" и "debug"';
          }
@@ -45,11 +45,11 @@ class BuildConfiguration {
          return 'Не задан обязательный параметр mode';
       }
 
-      this.outputPath = rawConfig.output;
-      this.cachePath = rawConfig.cache;
-      this.localizations = rawConfig.localizations;
-      this.defaultLocalization = rawConfig['default-localization'];
-      for (const module of rawConfig.modules) {
+      this.outputPath = this.rawConfig.output;
+      this.cachePath = this.rawConfig.cache;
+      this.localizations = this.rawConfig.localizations;
+      this.defaultLocalization = this.rawConfig['default-localization'];
+      for (const module of this.rawConfig.modules) {
          this.modules.push(new ModuleInfo(
             module.name,
             module.responsible,

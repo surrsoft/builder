@@ -30,7 +30,7 @@ try {
 
    const
       gulp = require('gulp'),
-      buildTask = require('./gulp/build.js'),
+      generateWorkflow = require('./gulp/generate-workflow.js'),
       guardSingleProcessTask = require('./gulp/tasks/guard-single-process.js'),
       BuildConfiguration = require('./gulp/classes/build-configuration.js');
 
@@ -46,8 +46,8 @@ try {
 
    gulp.task('build',
       gulp.series(
-         guardSingleProcessTask.lock(config.cachePath),
-         buildTask.create(config),
+         guardSingleProcessTask.lock(config),
+         generateWorkflow(config),
          guardSingleProcessTask.unlock()));
 
 } catch (e) {

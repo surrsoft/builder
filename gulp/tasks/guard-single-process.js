@@ -10,10 +10,11 @@ const
 let lockFle;
 
 module.exports = {
-   'lock': function lock(dir) {
-      return function (){
+   'lock': function lock(config) {
+      return function() {
          return new Promise(
             async(resolve, reject) => {
+               const dir = config.cachePath;
                await fs.ensureDir(dir);
                lockFle = path.join(dir, 'builder.lockfile');
 
@@ -37,7 +38,7 @@ module.exports = {
       };
    },
    'unlock': function unlock() {
-      return function (){
+      return function() {
          return new Promise(
             async(resolve, reject) => {
                const isFileExist = await fs.pathExists(lockFle);

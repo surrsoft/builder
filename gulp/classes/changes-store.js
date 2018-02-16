@@ -20,6 +20,34 @@ const path = require('path'),
 exist не сохранаяется в файл
 */
 
+class buildCacheInfo{
+   constructor(){
+      this.runningParameters = {};
+   }
+}
+
+const demo = {
+
+   //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
+   'runningParameters': {},
+
+   //если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
+   'versionOfBuilder': '3.18.330-123',
+
+   //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
+   'timeLastBuild': 123123,
+
+   //чтобы не копировать лишнее
+   'inputPaths': {
+      'path': {
+         depends: []
+      }
+   },
+
+   //чтобы знать что удалить
+   'outputPaths': []
+};
+
 class ChangesStore {
    constructor(dir) {
       this.filePath = path.join(dir, 'changes.json');
