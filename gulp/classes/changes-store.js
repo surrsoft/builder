@@ -1,8 +1,12 @@
 'use strict';
 
 const path = require('path'),
-   fs = require('fs-extra');
-
+   fs = require('fs-extra'),
+   assert = require('assert'),
+   helpers = require('../../lib/helpers'),
+   transliterate = require('../../lib/transliterate'),
+   packageJson = require('../../package.json'),
+   logger = require('../../lib/logger').logger();
 
 /*
 структура стора:
@@ -20,75 +24,165 @@ const path = require('path'),
 exist не сохранаяется в файл
 */
 
-class buildCacheInfo{
-   constructor(){
+class StroreInfo {
+   constructor() {
+      //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
+
+      //если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
+      this.versionOfBuilder = 'unknown'; //unknown используется далее
+
+      //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
+      //для сравнения с mtime у файлов
+      this.timeLastBuild = 0;
+
+      //чтобы не копировать лишнее
+      this.inputPaths = [];
+
+      //
+      this.dependencies = {};
+
+      //чтобы знать что удалить
+      this.outputPaths = [];
+   }
+
+   async load(filePath) {
+      try {
+         if (await fs.pathExists(filePath)) {
+            const obj = await fs.readJSON(filePath);
+            this.runningParameters = obj.runningParameters;
+            this.versionOfBuilder = obj.versionOfBuilder;
+            this.timeLastBuild = obj.timeLastBuild;
+            this.inputPaths = obj.inputPaths;
+            this.dependencies = obj.dependencies;
+            this.outputPaths = obj.outputPaths;
+         }
+      } catch (error) {
+         logger.warning({
+            message: `Не удалось прочитать файл кеша ${filePath}`,
+            error: error
+         });
+      }
+   }
+
+   save(filePath) {
+      return fs.outputJson(filePath, {
+         runningParameters: this.runningParameters,
+         versionOfBuilder: this.versionOfBuilder,
+         timeLastBuild: this.timeLastBuild,
+         inputPaths: this.inputPaths,
+         dependencies: this.dependencies,
+         outputPaths: this.outputPaths
+      }, {
+         spaces: 3
+      });
+   }
+
+   addFile(filePath) {
+      this.inputPaths.push(filePath);
    }
 }
 
-const demo = {
-
-   //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
-   'runningParameters': {},
-
-   //если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-   'versionOfBuilder': '3.18.330-123',
-
-   //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
-   'timeLastBuild': 123123,
-
-   //чтобы не копировать лишнее
-   'inputPaths': {
-      'path': {
-         depends: []
-      }
-   },
-
-   //чтобы знать что удалить
-   'outputPaths': []
-};
-
 class ChangesStore {
-   constructor(config) {
-      this.filePath = path.join(config.cachePath, 'changes.json');
-      this.store = {};
-
+   constructor() {
+      this.lastStore = new StroreInfo();
+      this.currentStore = new StroreInfo();
+      this.lessInfo = {};
+      this.changedLessFiles = [];
    }
 
-   async load() {
-      if (await fs.pathExists(this.filePath)) {
-         this.store = await fs.readJSON(this.filePath);
+   load(config) {
+      this.currentStore.runningParameters = config.rawConfig;
+      this.currentStore.versionOfBuilder = packageJson.version;
+      this.currentStore.timeLastBuild = new Date().getTime();
+
+      this.filePath = path.join(config.cachePath, 'store.json');
+      return this.lastStore.load(this.filePath);
+   }
+
+   save() {
+      return this.currentStore.save(this.filePath);
+   }
+
+   cacheHasIncompatibleChanges() {
+      const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
+      if (this.lastStore.versionOfBuilder === 'unknown') {
+         logger.info('Не удалось обнаружить валидный кеш от предыдущей сборки. ' + finishText);
+         return true;
       }
+      try {
+         assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
+      } catch (error) {
+         logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
+         return true;
+      }
+      const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
+      if (isNewBuilder) {
+         logger.info('Версия builder\'а не соответствует сохранённому значению в кеше. ' + finishText);
+      }
+      return isNewBuilder;
    }
 
-   async save() {
-      const dir = path.dirname(this.filePath);
-      await fs.ensureDir(dir);
+   isFileChanged(filePath, fileMTime, moduleInfo) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      this.currentStore.addFile(prettyPath);
 
-      //this.store ещё может быть в работе. и нам не нужна информация о несуществующих сущностях
-      const tmpStore = {};
-      for (const modulePath in this.store) {
-         if (!this.store.hasOwnProperty(modulePath)) {
-            continue;
+      const isChanged =
+         !this.lastStore.timeLastBuild || //кеша не было
+         fileMTime.getTime() > this.lastStore.timeLastBuild || //изменённый файл
+         !this.lastStore.inputPaths.includes(prettyPath); //новый файл
+
+      if (path.extname(filePath) === '.less') {
+         const lessRelativePath = path.relative(moduleInfo.path, filePath);
+         const lessFullPath = path.join(moduleInfo.output, transliterate(lessRelativePath));
+         this.lessInfo[lessFullPath] = moduleInfo;
+         if (isChanged) {
+            this.changedLessFiles.push(lessFullPath);
          }
-         if (this.store[modulePath].exist) {
-            tmpStore[modulePath] = {files: {}};
-            const files = this.store[modulePath].files;
-            for (const filePath in files) {
-               if (!files.hasOwnProperty(filePath)) {
-                  continue;
-               }
-               if (files[filePath].exist) {
-                  tmpStore[modulePath].files[filePath] = {
-                     time: files[filePath].time
-                  };
-               }
+      }
+      if (!isChanged) {
+         if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
+            this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
+         }
+      }
+      return isChanged;
+   }
 
+   getChangedLessInfo() {
+
+      const dependents = {};
+      for (const filePath in this.lastStore.dependencies) {
+         if (this.lastStore.dependencies.hasOwnProperty(filePath)) {
+            for (const dependency of this.lastStore.dependencies[filePath]) {
+               if (!dependents.hasOwnProperty(dependency)) {
+                  dependents[dependency] = new Set();
+               }
+               dependents[dependency].add(filePath);
             }
          }
       }
-      await fs.writeJSON(this.filePath, tmpStore);
+      const changedLessInfo = {};
+      const filesToProcessing = this.changedLessFiles.slice();
+      while (filesToProcessing.length > 0) {
+         const filePath = filesToProcessing.shift();
+         if (!changedLessInfo.hasOwnProperty(filePath)) {
+            changedLessInfo[filePath] = this.lessInfo[filePath];
+            if (dependents.hasOwnProperty(filePath)) {
+               filesToProcessing.unshift(...Array.from(dependents[filePath]));
+            }
+         }
+      }
+      console.log('LESS: ' + JSON.stringify(Object.keys(changedLessInfo)));
+      return changedLessInfo;
    }
+
+   setDependencies(filePath, dependencies) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      if (dependencies) {
+         this.currentStore.dependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
+      }
+   }
+
 }
 
 module.exports = ChangesStore;

@@ -3,6 +3,7 @@
 //модули из npm
 const
    path = require('path'),
+   fs = require('fs-extra'),
    gulp = require('gulp'),
    clean = require('gulp-clean'),
    os = require('os'),
@@ -22,15 +23,30 @@ function generateTaskForTerminatePool(pool) {
    };
 }
 
-function generateTaskForLoadChangesStore(changesStore) {
+function generateTaskForLoadChangesStore(changesStore, config) {
    return function loadChangesStore() {
-      return changesStore.load();
+      return changesStore.load(config);
+   };
+}
+
+function generateTaskForClearCache(changesStore, config) {
+   return function clearCache() {
+      const removePromises = [];
+      if (changesStore.cacheHasIncompatibleChanges()) {
+         if (fs.pathExists(config.cachePath)) {
+            removePromises.push(fs.remove(config.cachePath));
+         }
+         if (fs.pathExists(config.outputPath)) {
+            removePromises.push(fs.remove(config.outputPath));
+         }
+      }
+      return Promise.all(removePromises);
    };
 }
 
 function generateTaskForSaveChangesStore(changesStore) {
    return function saveChangesStore() {
-      return changesStore.load();
+      return changesStore.save();
    };
 }
 
@@ -82,7 +98,7 @@ function generateWorkflow(processArgv) {
    const config = new BuildConfiguration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
-   const changesStore = new ChangesStore(config);
+   const changesStore = new ChangesStore();
 
    const pool = workerPool.pool(
       path.join(__dirname, './workers/build-worker.js'),
@@ -91,8 +107,9 @@ function generateWorkflow(processArgv) {
       });
 
    return gulp.series(
-      generateTaskForLockGuard(config),
-      generateTaskForLoadChangesStore(changesStore),
+      generateTaskForLoadChangesStore(changesStore, config),
+      generateTaskForClearCache(changesStore, config),
+      generateTaskForLockGuard(config), //после очистки кеша
       generateTaskForBuildModules(changesStore, config, pool),
       generateTaskForCompileLess(changesStore, config, pool),
       gulp.parallel(

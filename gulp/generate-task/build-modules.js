@@ -24,7 +24,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
 
    return function buildModule() {
       return gulp.src(moduleInput)
-         .pipe(changedInPlace(changesStore, moduleInfo.path))
+         .pipe(changedInPlace(changesStore, moduleInfo))
          .pipe(addComponentInfo(moduleInfo, pool))
          .pipe(buildStaticHtml(moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))

@@ -2,47 +2,18 @@
 
 'use strict';
 
-const path = require('path'),
+const logger = require('../../lib/logger').logger(),
    through = require('through2');
 
-function processFileByModifiedTime(stream, file, modulePath, changesStore) {
-   const mtime = file.stat && file.stat.mtime,
-      newTime = mtime.getTime(),
-      filePath = path.relative(modulePath, file.path);
-
-   let oldTime;
-
-   if (changesStore.store.hasOwnProperty(modulePath)) {
-      changesStore.store[modulePath].exist = true;
-      const files = changesStore.store[modulePath].files;
-      if (files.hasOwnProperty(filePath)) {
-         oldTime = files[filePath].time;
-      } else {
-         files[filePath] = {};
+module.exports = function(changesStore, moduleInfo) {
+   return through.obj(async function(file, encoding, callback) {
+      try {
+         if (await changesStore.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
+            this.push(file);
+         }
+      } catch (error) {
+         logger.error({error: error});
       }
-      files[filePath].time = newTime;
-      files[filePath].exist = true;
-   } else {
-      changesStore.store[modulePath] = {
-         'files': {
-            [filePath]: {
-               time: newTime,
-               exist: true
-            }
-         },
-         'exist': true
-      };
-   }
-
-   if (!oldTime || oldTime !== newTime) {
-      stream.push(file);
-   }
-}
-
-module.exports = function(changesStore, modulePath) {
-   return through.obj(function(file, encoding, callback) {
-      //TODO: не нужно ли перейти на sha1, например?
-      processFileByModifiedTime(this, file, modulePath, changesStore);
       callback();
    });
 };
