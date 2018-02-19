@@ -8,7 +8,7 @@ const path = require('path'),
    wsPathCalculator = require('../lib/ws-path-calculator'),
    logger = require('../lib/logger').logger(),
    routeTmpl = global.requirejs('tmpl!Controls/Application/Route'),
-   Application = global.requirejs('Controls/Application'), // eslint-disable-line
+   Application = global.requirejs('Controls/Application'), // eslint-disable-line no-unused-vars
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
