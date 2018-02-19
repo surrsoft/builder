@@ -172,7 +172,7 @@ module.exports = function(grunt) {
          oldHtml.forEach(function(file) {
             const filePath = path.join(applicationRoot, file);
             try {
-               async() => await fs.unlink(path.join(applicationRoot, file));
+               fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
                logger.warning({
                   message: 'Can\'t delete old html',
