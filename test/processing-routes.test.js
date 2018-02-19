@@ -41,9 +41,9 @@ describe('processing routes.js', function() {
             '};');
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1/']).length.should.equal(1);
-         expect(result['/test_1/'].controller).to.be.null;
+         expect(result['/test_1/'].controller).to.be.null; // eslint-disable-line no-unused-expressions
          Object.getOwnPropertyNames(result['/test_2/']).length.should.equal(1);
-         expect(result['/test_2/'].controller).to.be.null;
+         expect(result['/test_2/'].controller).to.be.null; // eslint-disable-line no-unused-expressions
       });
       it('no return routes', () => {
          //примеры не корретного роутинга:

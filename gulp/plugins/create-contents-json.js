@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -16,12 +18,12 @@ module.exports = function(moduleInfo) {
 
          const contentsJsFile = new Vinyl({
             path: 'contents.js',
-            contents: new Buffer('contents=' + JSON.stringify(helpers.sortObject(moduleInfo.contents))),
+            contents: Buffer.from('contents=' + JSON.stringify(helpers.sortObject(moduleInfo.contents))),
             moduleInfo: moduleInfo
          });
          const contentsJsonFile = new Vinyl({
             path: 'contents.json',
-            contents: new Buffer(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
+            contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
             moduleInfo: moduleInfo
          });
 

@@ -1,3 +1,5 @@
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 const through = require('through2'),
@@ -8,15 +10,17 @@ const through = require('through2'),
    transliterate = require('../../lib/transliterate'),
    processingRoutes = require('../../lib/processing-routes');
 
-module.exports = function(moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+module.exports = function(moduleInfo, pool) {
+   return through.obj(async function(file, encoding, callback) {
       if (!file.path.endsWith('.routes.js')) {
-         return callback(null, file);
+         callback(null, file);
+         return;
       }
 
       try {
          const relativePath = path.join('resources', moduleInfo.folderName, file.relative);
-         moduleInfo.routesInfo[transliterate(relativePath)] = processingRoutes.parseRoutes(file.contents.toString());
+
+         moduleInfo.routesInfo[transliterate(relativePath)] = await pool.exec('parseRoutes', [file.contents.toString()]);
       } catch (error) {
          logger.error({
             message: 'Ошибка при обработке файла роутинга',
@@ -30,7 +34,8 @@ module.exports = function(moduleInfo) {
       try {
          //если нет данных, то не нужно и сохранять
          if (!Object.getOwnPropertyNames(moduleInfo.routesInfo).length) {
-            return callback();
+            callback();
+            return;
          }
 
          //подготовим routes-info.json
@@ -39,7 +44,7 @@ module.exports = function(moduleInfo) {
          const routesInfoText = JSON.stringify(helpers.sortObject(moduleInfo.routesInfo), null, 2);
          const routesInfoFile = new Vinyl({
             path: 'routes-info.json',
-            contents: new Buffer(routesInfoText),
+            contents: Buffer.from(routesInfoText),
             moduleInfo: moduleInfo
          });
          this.push(routesInfoFile);
