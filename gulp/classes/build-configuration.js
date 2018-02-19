@@ -1,7 +1,8 @@
+/* eslint-disable no-sync */
 'use strict';
 
 const
-   fs = require('fs'),
+   fs = require('fs-extra'),
    ModuleInfo = require('./module-info');
 
 class BuildConfiguration {
@@ -23,13 +24,13 @@ class BuildConfiguration {
          }
       });
 
-      if (!fs.existsSync(configFile)) {
+      if (!fs.pathExistsSync(configFile)) {
          return 'Файл конфигурации не задан или файл не существует.';
       }
 
       let rawConfig;
       try {
-         rawConfig = JSON.parse(fs.readFileSync(configFile, {encoding: 'utf-8'}).toString());
+         rawConfig = fs.readJSONSync(configFile);
       } catch (e) {
          return 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message;
       }

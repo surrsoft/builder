@@ -10,25 +10,25 @@ chai.should();
 const expect = chai.expect;
 
 describe('parse js component', function() {
-   it('empty file', async() => {
+   it('empty file', () => {
       const result = parseJsComponent('');
       Object.getOwnPropertyNames(result).length.should.equal(0);
    });
-   it('file with error', async() => {
+   it('file with error', () => {
       expect(() => {
          parseJsComponent('define(');
       }).to.throw('Line 1: Unexpected end of input');
    });
-   it('empty module name', async() => {
+   it('empty module name', () => {
       const result = parseJsComponent('define(function(){});');
       Object.getOwnPropertyNames(result).length.should.equal(0);
    });
-   it('normal module name', async() => {
+   it('normal module name', () => {
       const result = parseJsComponent('define("My.Module/Name", function(){});');
       Object.getOwnPropertyNames(result).length.should.equal(1);
       result.componentName.should.equal('My.Module/Name');
    });
-   it('declare object webpage', async() => {
+   it('declare object webpage', () => {
       const result = parseJsComponent('define("My.Module/Name", function(){' +
          'let module;' +
          'module.webPage = {' +
@@ -46,7 +46,7 @@ describe('parse js component', function() {
       webPage.outFileName.should.equal('ca_stub');
    });
 
-   it('declare title and web page', async() => {
+   it('declare title and web page', () => {
       const result = parseJsComponent('define("My.Module/Name", function(){' +
          'let module;' +
          'module.webPage = {' +
@@ -65,7 +65,7 @@ describe('parse js component', function() {
       webPage.outFileName.should.equal('ca_stub');
    });
 
-   it('declare tricky webpage', async() => {
+   it('declare tricky webpage', () => {
       const result = parseJsComponent('define("My.Module/Name", function(){' +
          'let module;' +
          'module.webPage = {};' +

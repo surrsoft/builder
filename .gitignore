@@ -3,3 +3,4 @@ node_modules
 .vscode
 xunit-result.xml
 package-lock.json
+check-code-result.xml

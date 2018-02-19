@@ -1,8 +1,7 @@
 'use strict';
 
 const path = require('path'),
-   fs = require('fs'),
-   mkdirp = require('mkdirp');
+   fs = require('fs-extra');
 
 
 /*
@@ -25,16 +24,18 @@ class ChangesStore {
    constructor(dir) {
       this.filePath = path.join(dir, 'changes.json');
       this.store = {};
-      if (fs.existsSync(this.filePath)) {
-         this.store = JSON.parse(fs.readFileSync(this.filePath).toString('utf8'));
+
+   }
+
+   async load() {
+      if (await fs.pathExists(this.filePath)) {
+         this.store = await fs.readJSON(this.filePath);
       }
    }
 
-   save() {
+   async save() {
       const dir = path.dirname(this.filePath);
-      if (!fs.existsSync(dir)) {
-         mkdirp.sync(dir);
-      }
+      await fs.ensureDir(dir);
 
       //this.store ещё может быть в работе. и нам не нужна информация о несуществующих сущностях
       const tmpStore = {};
@@ -58,7 +59,7 @@ class ChangesStore {
             }
          }
       }
-      fs.writeFileSync(this.filePath, JSON.stringify(tmpStore));
+      await fs.writeJSON(this.filePath, tmpStore);
    }
 }
 

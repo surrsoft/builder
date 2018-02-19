@@ -31,7 +31,7 @@ try {
    const
       gulp = require('gulp'),
       buildTask = require('./gulp/build.js'),
-      guardSingleProcessTask = require('./gulp/guard-single-process.js'),
+      guardSingleProcessTask = require('./gulp/tasks/guard-single-process.js'),
       BuildConfiguration = require('./gulp/classes/build-configuration.js');
 
 

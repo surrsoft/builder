@@ -26,14 +26,15 @@ const wsLogger = {
    }
 };
 
-function removeLeadingSlash(path) {
-   if (path) {
-      const head = path.charAt(0);
+function removeLeadingSlash(filePath) {
+   let resultPath = filePath;
+   if (resultPath) {
+      const head = resultPath.charAt(0);
       if (head === '/' || head === '\\') {
-         path = path.substr(1);
+         resultPath = resultPath.substr(1);
       }
    }
-   return path;
+   return resultPath;
 }
 
 function _init() {
@@ -52,11 +53,12 @@ function _init() {
       }
    };
    global.rk = function(key) {
-      const index = key.indexOf('@@');
+      let resultKey = key;
+      const index = resultKey.indexOf('@@');
       if (index > -1) {
-         key = key.substr(index + '@@'.length);
+         resultKey = resultKey.substr(index + '@@'.length);
       }
-      return key;
+      return resultKey;
    };
    global.requirejs = requireJS;
    global.define = requireJS.define;
