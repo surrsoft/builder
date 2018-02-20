@@ -11,7 +11,7 @@ let lockFle;
 
 module.exports = {
    'lock': function lock(dir) {
-      return function (){
+      return function() {
          return new Promise(
             async(resolve, reject) => {
                await fs.ensureDir(dir);
@@ -37,7 +37,7 @@ module.exports = {
       };
    },
    'unlock': function unlock() {
-      return function (){
+      return function() {
          return new Promise(
             async(resolve, reject) => {
                const isFileExist = await fs.pathExists(lockFle);

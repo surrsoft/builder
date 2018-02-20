@@ -8,7 +8,7 @@ const through = require('through2'),
 
 module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, cb) {
-      convertHtmlTmpl(file.contents.toString(), '')
+      convertHtmlTmpl.generateMarkup(file.contents.toString(), '')
          .then(
             result => {
                file.contents = Buffer.from(result);

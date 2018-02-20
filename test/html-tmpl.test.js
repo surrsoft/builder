@@ -20,7 +20,7 @@ describe('convert html.tmpl', function() {
       convertHtmlTmpl = require('../lib/convert-html-tmpl');
    });
    it('basic', async() => {
-      const result = await convertHtmlTmpl('<div>{{1+1}}</div>');
+      const result = await convertHtmlTmpl.generateMarkup('<div>{{1+1}}</div>');
       result.should.equal('<div>2</div>');
    });
 
