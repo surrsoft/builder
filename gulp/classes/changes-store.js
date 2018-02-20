@@ -87,7 +87,7 @@ class ChangesStore {
    constructor() {
       this.lastStore = new StroreInfo();
       this.currentStore = new StroreInfo();
-      this.lessInfo = {};
+      this.moduleInfoForLess = {};
       this.changedLessFiles = [];
    }
 
@@ -135,7 +135,7 @@ class ChangesStore {
       if (path.extname(filePath) === '.less') {
          const lessRelativePath = path.relative(moduleInfo.path, filePath);
          const lessFullPath = path.join(moduleInfo.output, transliterate(lessRelativePath));
-         this.lessInfo[lessFullPath] = moduleInfo;
+         this.moduleInfoForLess[lessFullPath] = moduleInfo;
          if (isChanged) {
             this.changedLessFiles.push(lessFullPath);
          }
@@ -148,32 +148,41 @@ class ChangesStore {
       return isChanged;
    }
 
-   getChangedLessInfo() {
-
+   static getListFilesWithDependents(files, dependencies) {
       const dependents = {};
-      for (const filePath in this.lastStore.dependencies) {
-         if (this.lastStore.dependencies.hasOwnProperty(filePath)) {
-            for (const dependency of this.lastStore.dependencies[filePath]) {
-               if (!dependents.hasOwnProperty(dependency)) {
-                  dependents[dependency] = new Set();
-               }
-               dependents[dependency].add(filePath);
-            }
+      for (const filePath in dependencies) {
+         if (!dependencies.hasOwnProperty(filePath)) {
+            continue;
          }
+         for (const dependency of dependencies[filePath]) {
+            if (!dependents.hasOwnProperty(dependency)) {
+               dependents[dependency] = new Set();
+            }
+            dependents[dependency].add(filePath);
+         }
+
       }
-      const changedLessInfo = {};
-      const filesToProcessing = this.changedLessFiles.slice();
+
+      const filesToProcessing = files.slice();
+      const filesWithDependents = new Set();
       while (filesToProcessing.length > 0) {
          const filePath = filesToProcessing.shift();
-         if (!changedLessInfo.hasOwnProperty(filePath)) {
-            changedLessInfo[filePath] = this.lessInfo[filePath];
+         if (!filesWithDependents.has(filePath)) {
+            filesWithDependents.add(filePath);
             if (dependents.hasOwnProperty(filePath)) {
                filesToProcessing.unshift(...Array.from(dependents[filePath]));
             }
          }
       }
-      console.log('LESS: ' + JSON.stringify(Object.keys(changedLessInfo)));
-      return changedLessInfo;
+      return Array.from(filesWithDependents);
+   }
+
+   getChangedLessFiles() {
+      return ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.dependencies);
+   }
+
+   getModuleInfoForLess() {
+      return this.moduleInfoForLess;
    }
 
    setDependencies(filePath, dependencies) {

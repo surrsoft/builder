@@ -14,9 +14,11 @@ function chunkArray(inputArray, sizeChunk) {
 
 function generateTaskForCompileLess(changesStore, config, pool) {
    return function buildLess() {
-      const compileLessTasks = changesStore.getChangedLessInfo();
+      const changedLessFiles = changesStore.getChangedLessFiles();
+      const moduleInfoForLess = changesStore.getModuleInfoForLess();
 
       const processChunk = async function(chunk) {
+         console.log('Less: ' + JSON.stringify(chunk));
          const results = await pool.exec('buildLess', [chunk, config.outputPath]);
          const compiledLessList = [];
          for (const result of results) {
@@ -24,7 +26,7 @@ function generateTaskForCompileLess(changesStore, config, pool) {
                logger.warning({
                   error: result.error,
                   filePath: result.path,
-                  moduleInfo: compileLessTasks[result.path]
+                  moduleInfo: moduleInfoForLess[result.path]
                });
             } else {
                compiledLessList.push(result);
@@ -33,9 +35,7 @@ function generateTaskForCompileLess(changesStore, config, pool) {
          }
          return compiledLessList;
       };
-
-      const lessPaths = Object.keys(compileLessTasks).sort();
-      return Promise.all(chunkArray(lessPaths, sizeChunk).map(processChunk));
+      return Promise.all(chunkArray(changedLessFiles, sizeChunk).map(processChunk));
    };
 }
 
