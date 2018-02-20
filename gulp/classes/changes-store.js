@@ -38,6 +38,7 @@ class StroreInfo {
 
       //чтобы не копировать лишнее
       this.inputPaths = [];
+      this.inputLessPaths = [];
 
       //imports из less файлов для инкрементальной сборки
       //особенность less в том, что они компилируются относительно корня развёрнутого стенда
@@ -55,6 +56,7 @@ class StroreInfo {
             this.versionOfBuilder = obj.versionOfBuilder;
             this.timeLastBuild = obj.timeLastBuild;
             this.inputPaths = obj.inputPaths;
+            this.inputLessPaths = obj.inputLessPaths;
             this.lessDependencies = obj.lessDependencies;
             this.outputPaths = obj.outputPaths;
          }
@@ -72,15 +74,12 @@ class StroreInfo {
          versionOfBuilder: this.versionOfBuilder,
          timeLastBuild: this.timeLastBuild,
          inputPaths: this.inputPaths,
+         inputLessPaths: this.inputLessPaths,
          lessDependencies: this.lessDependencies,
          outputPaths: this.outputPaths
       }, {
          spaces: 3
       });
-   }
-
-   addFile(filePath) {
-      this.inputPaths.push(filePath);
    }
 }
 
@@ -141,27 +140,47 @@ class ChangesStore {
 
    isFileChanged(filePath, fileMTime, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
-      this.currentStore.addFile(prettyPath);
 
-      const isChanged =
-         !this.lastStore.timeLastBuild || //кеша не было
-         fileMTime.getTime() > this.lastStore.timeLastBuild || //изменённый файл
-         !this.lastStore.inputPaths.includes(prettyPath); //новый файл
+      //кеша не было, значит все файлы новые
+      const noCache = !this.lastStore.timeLastBuild;
 
-      if (path.extname(filePath) === '.less') {
-         const lessRelativePath = path.relative(moduleInfo.path, filePath);
-         const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(lessRelativePath)));
-         this.moduleInfoForLess[lessFullPath] = moduleInfo;
-         if (isChanged) {
-            this.changedLessFiles.push(lessFullPath);
-         } else {
-            if (this.lastStore.lessDependencies.hasOwnProperty(lessFullPath)) {
-               this.currentStore.lessDependencies[lessFullPath] = this.lastStore.lessDependencies[lessFullPath];
-            }
+      //проверка modification time. этой проверки может быть не достаточно в двух слуаях:
+      //1. файл вернули из корзины
+      //2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
+      const isModifiedFile = fileMTime.getTime() > this.lastStore.timeLastBuild;
+
+      if (path.extname(filePath) !== '.less') {
+         this.currentStore.inputPaths.push(prettyPath);
+
+         return noCache || isModifiedFile ||
+            !this.lastStore.inputPaths.includes(prettyPath); //новый файл
+      }
+
+      //less билдятся относительно корня стенда, поэтому нужна особая обработка
+      const lessRelativePath = path.relative(moduleInfo.path, filePath);
+      const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(lessRelativePath)));
+
+      const isChanged = noCache || isModifiedFile ||
+         !this.lastStore.inputLessPaths.includes(lessFullPath); //новый файл
+
+      this.currentStore.inputLessPaths.push(lessFullPath);
+
+      this.moduleInfoForLess[lessFullPath] = moduleInfo;
+      if (isChanged) {
+         this.changedLessFiles.push(lessFullPath);
+      } else {
+         if (this.lastStore.lessDependencies.hasOwnProperty(lessFullPath)) {
+            this.currentStore.lessDependencies[lessFullPath] = this.lastStore.lessDependencies[lessFullPath];
          }
-
       }
       return isChanged;
+   }
+
+   setErrorForLessFile(filePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      this.currentStore.inputLessPaths = this.currentStore.inputLessPaths.filter(function(item) {
+         return item !== prettyPath;
+      });
    }
 
    static getListFilesWithDependents(files, dependencies) {
@@ -206,6 +225,10 @@ class ChangesStore {
       if (dependencies && prettyPath.endsWith('.less')) {
          this.currentStore.lessDependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
       }
+   }
+
+   getListForRemoveFromOutputDir() {
+      return [];
    }
 }
 

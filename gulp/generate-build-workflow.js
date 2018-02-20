@@ -50,35 +50,11 @@ function generateTaskForSaveChangesStore(changesStore) {
    };
 }
 
-function generateTaskForRemoveFiles(changesStore, config) {
-   return function removeOutdatedFiles(done) {
-      const pattern = [];
-
-      for (const modulePath in changesStore.store) {
-         if (changesStore.store.hasOwnProperty(modulePath)) {
-            if (!changesStore.store[modulePath].exist) {
-               pattern.push(transliterate(path.join(path.basename(modulePath)), '/**/*.*'));
-            } else {
-               const files = changesStore.store[modulePath].files;
-               for (const filePath in files) {
-                  if (files.hasOwnProperty(filePath)) {
-                     const fileInfo = files[filePath];
-                     if (!fileInfo.hasOwnProperty('exist')) {
-                        const moduleName = path.basename(modulePath);
-                        pattern.push(transliterate(path.join(moduleName, filePath)));
-                     }
-                  }
-               }
-            }
-         }
-      }
-      if (pattern.length) {
-         return gulp.src(pattern, {read: false, cwd: config.outputPath, allowEmpty: true})
-            .pipe(clean());
-      }
-      return done();
+function generateTaskForRemoveFiles(changesStore) {
+   return function removeOutdatedFiles() {
+      const filesForRemove = changesStore.getListForRemoveFromOutputDir();
+      return Promise.all(filesForRemove.map(filePath => fs.remove(filePath)));
    };
-
 }
 
 function generateTaskForLockGuard(config) {
@@ -113,7 +89,7 @@ function generateWorkflow(processArgv) {
       generateTaskForBuildModules(changesStore, config, pool),
       generateTaskForCompileLess(changesStore, config, pool),
       gulp.parallel(
-         generateTaskForRemoveFiles(changesStore, config),
+         generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
          generateTaskForTerminatePool(pool)),
       generateTaskForUnlockGuard()

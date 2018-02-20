@@ -25,6 +25,7 @@ function generateTaskForCompileLess(changesStore, config, pool) {
          const compiledLessList = [];
          for (const result of results) {
             if (result.hasOwnProperty('error')) {
+               changesStore.setErrorForLessFile(result.path);
                const moduleInfo = moduleInfoForLess[result.path];
                const relativePath = path.relative(path.dirname(moduleInfo.output), result.path);
                logger.warning({
