@@ -4,7 +4,8 @@ const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),
    workerPool = require('workerpool'),
-   chaiAsPromised = require('chai-as-promised');
+   chaiAsPromised = require('chai-as-promised'),
+   helpers = require('../lib/helpers');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -104,19 +105,22 @@ describe('gulp/workers/build-worker.js', function() {
 
          const promiseParseJsComponent = pool.exec('parseJsComponent', ['define(']);
          await expect(promiseParseJsComponent).to.be.rejected.then(function(error) {
-            expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+            return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
          });
 
          const promiseParseRoutes = pool.exec('parseRoutes', ['define(']);
          await expect(promiseParseRoutes).to.be.rejected.then(function(error) {
-            expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+            return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
          });
 
-         const resourcePath = path.join(workspaceFolder, 'resources');
-         const lessPath = path.join(resourcePath, 'AnyModule/Error.less');
+         const resourcePath = helpers.prettifyPath(path.join(workspaceFolder, 'resources'));
+         const lessPath = helpers.prettifyPath(path.join(resourcePath, 'AnyModule/Error.less'));
          const resultsBuildLess = await pool.exec('buildLess', [[lessPath], resourcePath]);
          resultsBuildLess.length.should.equal(1);
-         resultsBuildLess[0].error.message.should.equal(
+
+         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+         const errorMessage = resultsBuildLess[0].error.message.replace(/\\/g, '/');
+         errorMessage.should.equal(
             `Ошибка компиляции ${lessPath} на строке 1: ` +
             '\'notExist.less\' wasn\'t found. ' +
             `Tried - ${resourcePath}/AnyModule/notExist.less,notExist.less`);

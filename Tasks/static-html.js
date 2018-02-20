@@ -153,13 +153,20 @@ module.exports = function(grunt) {
                   logger.error({
                      error: err
                   });
-                  return callback();
+                  callback();
+                  return;
                }
                let componentInfo = {};
                try {
                   componentInfo = parseJsComponent(text.toString());
                } catch (error) {
-                  return callback(error);
+                  logger.error({
+                     message: 'Возникла ошибка при парсинге файла',
+                     filePath: file,
+                     error: error
+                  });
+                  callback();
+                  return;
                }
 
                generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath)

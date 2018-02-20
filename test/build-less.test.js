@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then*/
+
 'use strict';
 
 //логгер - глобальный
@@ -11,6 +13,7 @@ const chai = require('chai'),
 
 chai.use(chaiAsPromised);
 chai.should();
+const expect = chai.expect;
 
 const testPath = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less'));
 const resourcesPath = helpers.prettifyPath(path.join(testPath, 'resources'));
@@ -78,26 +81,43 @@ describe('build less', function() {
    it('less with error', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
-      return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
-         `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-         `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
+      const promise = buildLess(filePath, text, resourcesPath);
+      return expect(promise).to.be.rejected.then(function(error) {
+         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+         const errorMessage = error.message.replace(/\\/g, '/');
+         return errorMessage.should.equal(
+            `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+            `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+      });
    });
+
    it('less with error from SBIS3.CONTROLS', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
-      return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
-         `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-         `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
 
+      const promise = buildLess(filePath, text, resourcesPath);
+      return expect(promise).to.be.rejected.then(function(error) {
+         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+         const errorMessage = error.message.replace(/\\/g, '/');
+         return errorMessage.should.equal(
+            `Ошибка компиляции ${resourcesPath}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+            `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+      });
    });
+
    it('less with internal error', () => {
       const filePath = helpers.prettifyPath(path.join(resourcesPath, 'AnyModule/test.less'));
       const text = '@import "Error";';
-      return buildLess(filePath, text, resourcesPath).should.be.rejectedWith(
-         `Ошибка компиляции ${resourcesPath}/AnyModule/Error.less на строке 1: ` +
-         `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/notExist.less,notExist.less`);
 
+      const promise = buildLess(filePath, text, resourcesPath);
+      return expect(promise).to.be.rejected.then(function(error) {
+         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+         const errorMessage = error.message.replace(/\\/g, '/');
+         return errorMessage.should.equal(
+            `Ошибка компиляции ${resourcesPath}/AnyModule/Error.less на строке 1: ` +
+            `'notExist.less' wasn't found. Tried - ${resourcesPath}/AnyModule/notExist.less,notExist.less`);
+      });
    });
 
    it('variables.less from themes', async() => {
@@ -121,6 +141,5 @@ describe('build less', function() {
          '  test-var: \'it is online\';\n' +
          '}\n');
    });
-
 });
 
