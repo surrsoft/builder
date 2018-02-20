@@ -133,7 +133,7 @@ module.exports = function(grunt) {
             logger.progress(helpers.percentage(++indexModule, paths.length), input);
             callbackForProcessingModule();
          });
-      }, async function(err) {
+      }, function(err) {
          try {
             if (err) {
                logger.error({
