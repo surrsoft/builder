@@ -20,25 +20,28 @@ function generateTaskForCompileLess(changesStore, config, pool) {
       const moduleInfoForLess = changesStore.getModuleInfoForLess();
 
       const processChunk = async function(chunk) {
-         console.log(`Less: ${chunk.length.toString()}: ${JSON.stringify(chunk)}`);
-         const results = await pool.exec('buildLess', [chunk, config.outputPath]);
-         const compiledLessList = [];
-         for (const result of results) {
-            if (result.hasOwnProperty('error')) {
-               changesStore.setErrorForLessFile(result.path);
-               const moduleInfo = moduleInfoForLess[result.path];
-               const relativePath = path.relative(path.dirname(moduleInfo.output), result.path);
-               logger.warning({
-                  error: result.error,
-                  filePath: relativePath,
-                  moduleInfo: moduleInfo
-               });
-            } else {
-               compiledLessList.push(result);
-               changesStore.setDependencies(result.path, result.imports);
+         try {
+            logger.debug(`Compile LESS. Chunk length: ${chunk.length.toString()}. Chunk: ${JSON.stringify(chunk)}`);
+            const results = await pool.exec('buildLess', [chunk, config.outputPath]);
+            for (const result of results) {
+               if (result.hasOwnProperty('error')) {
+                  changesStore.setErrorForLessFile(result.path);
+                  const moduleInfo = moduleInfoForLess[result.path];
+                  const relativePath = path.relative(path.dirname(moduleInfo.output), result.path);
+                  logger.warning({
+                     error: result.error,
+                     filePath: relativePath,
+                     moduleInfo: moduleInfo
+                  });
+               } else {
+                  changesStore.setDependencies(result.path, result.imports);
+               }
             }
+         } catch (error) {
+            logger.error({
+               error: error
+            });
          }
-         return compiledLessList;
       };
 
       //попытка оптимально использовать ядра процессора при небольшом количестве файлов.
@@ -46,7 +49,6 @@ function generateTaskForCompileLess(changesStore, config, pool) {
       //при этом количество файлов в одной чанке должно быть от 1 до maxSizeChunk
       let sizeChunk = Math.round(changedLessFiles.length / (os.cpus().length * 3));
       sizeChunk = Math.max(1, Math.min(maxSizeChunk, sizeChunk));
-      console.log(`Less info: ${changedLessFiles.length.toString()}: ${sizeChunk} `);
       return Promise.all(splitArrayToChunk(changedLessFiles, sizeChunk).map(processChunk));
    };
 }
