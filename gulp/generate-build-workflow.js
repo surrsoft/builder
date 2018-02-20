@@ -29,18 +29,9 @@ function generateTaskForLoadChangesStore(changesStore) {
    };
 }
 
-function generateTaskForClearCache(changesStore, config) {
+function generateTaskForClearCache(changesStore) {
    return function clearCache() {
-      const removePromises = [];
-      if (changesStore.cacheHasIncompatibleChanges()) {
-         if (fs.pathExists(config.cachePath)) {
-            removePromises.push(fs.remove(config.cachePath));
-         }
-         if (fs.pathExists(config.outputPath)) {
-            removePromises.push(fs.remove(config.outputPath));
-         }
-      }
-      return Promise.all(removePromises);
+      return changesStore.clearCacheIfNeeded();
    };
 }
 
@@ -83,16 +74,16 @@ function generateWorkflow(processArgv) {
       });
 
    return gulp.series(
+      generateTaskForLockGuard(config), //прежде всего
       generateTaskForLoadChangesStore(changesStore),
-      generateTaskForClearCache(changesStore, config),
-      generateTaskForLockGuard(config), //после очистки кеша
+      generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
       generateTaskForBuildModules(changesStore, config, pool),
-      generateTaskForCompileLess(changesStore, config, pool),
-      gulp.parallel(
+      generateTaskForCompileLess(changesStore, config, pool), //после сборки модулей
+      gulp.parallel( //завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
          generateTaskForTerminatePool(pool)),
-      generateTaskForUnlockGuard()
+      generateTaskForUnlockGuard() //после всего
    );
 }
 

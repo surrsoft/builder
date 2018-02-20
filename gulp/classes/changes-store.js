@@ -138,6 +138,28 @@ class ChangesStore {
       return false;
    }
 
+   async clearCacheIfNeeded() {
+      const removePromises = [];
+      if (await this.cacheHasIncompatibleChanges()) {
+         this.lastStore = new StroreInfo();
+
+         //из кеша можно удалить всё кроме .lockfile
+         if (await fs.pathExists(this.config.cachePath)) {
+            for (const fullPath of await fs.readdir(this.config.cachePath)) {
+               if (!fullPath.endsWith('.lockfile')) {
+                  removePromises.push(fs.remove(fullPath));
+               }
+            }
+
+         }
+         if (await fs.pathExists(this.config.outputPath)) {
+            removePromises.push(fs.remove(this.config.outputPath));
+         }
+      }
+
+      return Promise.all(removePromises);
+   }
+
    isFileChanged(filePath, fileMTime, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
 
