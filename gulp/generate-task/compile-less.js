@@ -1,6 +1,7 @@
 'use strict';
 const
    os = require('os'),
+   path = require('path'),
    logger = require('../../lib/logger').logger();
 
 const maxSizeChunk = 20; //эмпирически подобранная величина для высокой производительности
@@ -24,10 +25,12 @@ function generateTaskForCompileLess(changesStore, config, pool) {
          const compiledLessList = [];
          for (const result of results) {
             if (result.hasOwnProperty('error')) {
+               const moduleInfo = moduleInfoForLess[result.path];
+               const relativePath = path.relative(path.dirname(moduleInfo.output), result.path);
                logger.warning({
                   error: result.error,
-                  filePath: result.path,
-                  moduleInfo: moduleInfoForLess[result.path]
+                  filePath: relativePath,
+                  moduleInfo: moduleInfo
                });
             } else {
                compiledLessList.push(result);
