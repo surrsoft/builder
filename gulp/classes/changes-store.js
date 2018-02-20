@@ -39,8 +39,9 @@ class StroreInfo {
       //чтобы не копировать лишнее
       this.inputPaths = [];
 
-      //
-      this.dependencies = {};
+      //imports из less файлов для инкрементальной сборки
+      //особенность less в том, что они компилируются относительно корня развёрнутого стенда
+      this.lessDependencies = {};
 
       //чтобы знать что удалить
       this.outputPaths = [];
@@ -54,7 +55,7 @@ class StroreInfo {
             this.versionOfBuilder = obj.versionOfBuilder;
             this.timeLastBuild = obj.timeLastBuild;
             this.inputPaths = obj.inputPaths;
-            this.dependencies = obj.dependencies;
+            this.lessDependencies = obj.lessDependencies;
             this.outputPaths = obj.outputPaths;
          }
       } catch (error) {
@@ -71,7 +72,7 @@ class StroreInfo {
          versionOfBuilder: this.versionOfBuilder,
          timeLastBuild: this.timeLastBuild,
          inputPaths: this.inputPaths,
-         dependencies: this.dependencies,
+         lessDependencies: this.lessDependencies,
          outputPaths: this.outputPaths
       }, {
          spaces: 3
@@ -134,16 +135,16 @@ class ChangesStore {
 
       if (path.extname(filePath) === '.less') {
          const lessRelativePath = path.relative(moduleInfo.path, filePath);
-         const lessFullPath = path.join(moduleInfo.output, transliterate(lessRelativePath));
+         const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(lessRelativePath)));
          this.moduleInfoForLess[lessFullPath] = moduleInfo;
          if (isChanged) {
             this.changedLessFiles.push(lessFullPath);
+         } else {
+            if (this.lastStore.lessDependencies.hasOwnProperty(lessFullPath)) {
+               this.currentStore.lessDependencies[lessFullPath] = this.lastStore.lessDependencies[lessFullPath];
+            }
          }
-      }
-      if (!isChanged) {
-         if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
-            this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
-         }
+
       }
       return isChanged;
    }
@@ -163,7 +164,7 @@ class ChangesStore {
 
       }
 
-      const filesToProcessing = files.slice();
+      const filesToProcessing = [...files];
       const filesWithDependents = new Set();
       while (filesToProcessing.length > 0) {
          const filePath = filesToProcessing.shift();
@@ -178,7 +179,7 @@ class ChangesStore {
    }
 
    getChangedLessFiles() {
-      return ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.dependencies);
+      return ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.lessDependencies);
    }
 
    getModuleInfoForLess() {
@@ -188,7 +189,7 @@ class ChangesStore {
    setDependencies(filePath, dependencies) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (dependencies) {
-         this.currentStore.dependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
+         this.currentStore.lessDependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
       }
    }
 
