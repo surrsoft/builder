@@ -177,7 +177,7 @@
       "no-useless-rename": 1,
       "prefer-const": 1,
       "require-yield": 1,
-      "no-mixed-operators": 1,
+      "no-mixed-operators": 0,
       "no-useless-escape": 1,
       "no-unused-labels": 1,
       "no-self-assign": 1,
