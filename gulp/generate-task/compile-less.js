@@ -1,10 +1,11 @@
 'use strict';
 const
+   os = require('os'),
    logger = require('../../lib/logger').logger();
 
-const sizeChunk = 2; //эмпирически подобранная величина для высокой производительности
+const maxSizeChunk = 20; //эмпирически подобранная величина для высокой производительности
 
-function chunkArray(inputArray, sizeChunk) {
+function splitArrayToChunk(inputArray, sizeChunk) {
    const outputArray = [];
    for (let i = 0; i < inputArray.length; i += sizeChunk) {
       outputArray.push(inputArray.slice(i, i + sizeChunk));
@@ -35,7 +36,10 @@ function generateTaskForCompileLess(changesStore, config, pool) {
          }
          return compiledLessList;
       };
-      return Promise.all(chunkArray(changedLessFiles, sizeChunk).map(processChunk));
+      const countChunk = os.cpus().length * 3;
+      const sizeChunk = Math.max(1, Math.min(maxSizeChunk, changedLessFiles.length / countChunk));
+
+      return Promise.all(splitArrayToChunk(changedLessFiles, sizeChunk).map(processChunk));
    };
 }
 
