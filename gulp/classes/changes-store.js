@@ -85,19 +85,20 @@ class StroreInfo {
 }
 
 class ChangesStore {
-   constructor() {
+   constructor(config) {
+      this.config = config;
       this.lastStore = new StroreInfo();
       this.currentStore = new StroreInfo();
       this.moduleInfoForLess = {};
       this.changedLessFiles = [];
    }
 
-   load(config) {
-      this.currentStore.runningParameters = config.rawConfig;
+   load() {
+      this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.timeLastBuild = new Date().getTime();
 
-      this.filePath = path.join(config.cachePath, 'store.json');
+      this.filePath = path.join(this.config.cachePath, 'store.json');
       return this.lastStore.load(this.filePath);
    }
 
@@ -105,7 +106,7 @@ class ChangesStore {
       return this.currentStore.save(this.filePath);
    }
 
-   cacheHasIncompatibleChanges() {
+   async cacheHasIncompatibleChanges() {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.lastStore.versionOfBuilder === 'unknown') {
          logger.info('Не удалось обнаружить валидный кеш от предыдущей сборки. ' + finishText);
@@ -117,11 +118,25 @@ class ChangesStore {
          logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
          return true;
       }
+
+      //новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
          logger.info('Версия builder\'а не соответствует сохранённому значению в кеше. ' + finishText);
+         return true;
       }
-      return isNewBuilder;
+
+      //если нет хотя бы одной папки не оказалось на месте, нужно сбросить кеш
+      const promisesExists = [];
+      for (const moduleInfo of this.config.modules) {
+         promisesExists.push(fs.pathExists(moduleInfo.output));
+      }
+      const resultsExists = await Promise.all(promisesExists);
+      if (resultsExists.includes(false)) {
+         logger.info('Как минимум один из результирующих каталогов был удалён. ' + finishText);
+         return true;
+      }
+      return false;
    }
 
    isFileChanged(filePath, fileMTime, moduleInfo) {
@@ -157,9 +172,9 @@ class ChangesStore {
          }
          for (const dependency of dependencies[filePath]) {
             if (!dependents.hasOwnProperty(dependency)) {
-               dependents[dependency] = new Set();
+               dependents[dependency] = [];
             }
-            dependents[dependency].add(filePath);
+            dependents[dependency].push(filePath);
          }
 
       }
@@ -171,7 +186,7 @@ class ChangesStore {
          if (!filesWithDependents.has(filePath)) {
             filesWithDependents.add(filePath);
             if (dependents.hasOwnProperty(filePath)) {
-               filesToProcessing.unshift(...Array.from(dependents[filePath]));
+               filesToProcessing.unshift(...dependents[filePath]);
             }
          }
       }
@@ -188,11 +203,10 @@ class ChangesStore {
 
    setDependencies(filePath, dependencies) {
       const prettyPath = helpers.prettifyPath(filePath);
-      if (dependencies) {
+      if (dependencies && prettyPath.endsWith('.less')) {
          this.currentStore.lessDependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
       }
    }
-
 }
 
 module.exports = ChangesStore;

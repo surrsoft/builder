@@ -23,9 +23,9 @@ function generateTaskForTerminatePool(pool) {
    };
 }
 
-function generateTaskForLoadChangesStore(changesStore, config) {
+function generateTaskForLoadChangesStore(changesStore) {
    return function loadChangesStore() {
-      return changesStore.load(config);
+      return changesStore.load();
    };
 }
 
@@ -98,7 +98,7 @@ function generateWorkflow(processArgv) {
    const config = new BuildConfiguration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
-   const changesStore = new ChangesStore();
+   const changesStore = new ChangesStore(config);
 
    const pool = workerPool.pool(
       path.join(__dirname, './workers/build-worker.js'),
@@ -107,7 +107,7 @@ function generateWorkflow(processArgv) {
       });
 
    return gulp.series(
-      generateTaskForLoadChangesStore(changesStore, config),
+      generateTaskForLoadChangesStore(changesStore),
       generateTaskForClearCache(changesStore, config),
       generateTaskForLockGuard(config), //после очистки кеша
       generateTaskForBuildModules(changesStore, config, pool),
