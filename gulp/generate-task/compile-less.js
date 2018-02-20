@@ -19,7 +19,7 @@ function generateTaskForCompileLess(changesStore, config, pool) {
       const moduleInfoForLess = changesStore.getModuleInfoForLess();
 
       const processChunk = async function(chunk) {
-         console.log('Less: ' + JSON.stringify(chunk));
+         console.log(`Less: ${chunk.length.toString()}: ${JSON.stringify(chunk)}`);
          const results = await pool.exec('buildLess', [chunk, config.outputPath]);
          const compiledLessList = [];
          for (const result of results) {
@@ -36,9 +36,13 @@ function generateTaskForCompileLess(changesStore, config, pool) {
          }
          return compiledLessList;
       };
-      const countChunk = os.cpus().length * 3;
-      const sizeChunk = Math.max(1, Math.min(maxSizeChunk, changedLessFiles.length / countChunk));
 
+      //попытка оптимально использовать ядра процессора при небольшом количестве файлов.
+      //less-темы гораздо тяжелее, чем less одного контрола и может возникнуть дизбаланс.
+      //при этом количество файлов в одной чанке должно быть от 1 до maxSizeChunk
+      let sizeChunk = Math.round(changedLessFiles.length / (os.cpus().length * 3));
+      sizeChunk = Math.max(1, Math.min(maxSizeChunk, sizeChunk));
+      console.log(`Less info: ${changedLessFiles.length.toString()}: ${sizeChunk} `);
       return Promise.all(splitArrayToChunk(changedLessFiles, sizeChunk).map(processChunk));
    };
 }
