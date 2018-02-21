@@ -1,60 +1,117 @@
 'use strict';
 
 const path = require('path'),
-   fs = require('fs'),
+   fs = require('fs-extra'),
    helpers = require('../lib/helpers'),
    convertHtmlTmpl = require('../lib/convert-html-tmpl'),
    parseJsComponent = require('../lib/parse-js-component'),
+   wsPathCalculator = require('../lib/ws-path-calculator'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
-function convertTmpl(resourcesRoot, filePattern, componentsProperties, cb) {
-   helpers.recurse(resourcesRoot, function(fullPath, callback) {
+function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+   async function generateMarkup(html, fullPath, setImmediate, callback) {
+      let result;
+      try {
+         result = await convertHtmlTmpl.generateMarkup(html, fullPath, componentsProperties, splittedCore);
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка при обработке шаблона',
+            error: error,
+            filePath: fullPath
+         });
+         setImmediate(callback);
+      }
+
+      const newFullPath = fullPath.replace(/\.tmpl$/, '');
+
+      // создадим файл с новым содержимым
+      await fs.writeFile(newFullPath, result.toString(), callback);
+   }
+
+   helpers.recurse(resourcesRoot, async function (fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
          setImmediate(callback);
          return;
       }
 
-      helpers.readFile(fullPath, function(err, html) {
-         if (err) {
-            logger.error(`Ошибка чтения файла ${fullPath}: ${err}`);
-            setImmediate(callback);
-            return;
+      let html, result, routeTmpl;
+
+      try {
+         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
+         global.requirejs('Controls/Application');
+      } catch (e) {
+         logger.error({
+            message: 'Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Возможно вы забыли добавить модуль Controls в проект!'
+         });
+         setImmediate(callback.bind(null, e));
+         return;
+      }
+
+      try {
+         html = await fs.readFile(fullPath);
+      } catch (error) {
+         logger.error(`Ошибка чтения файла ${fullPath}: ${error}`);
+         setImmediate(callback);
+         return;
+      }
+
+      try {
+         result = await convertHtmlTmpl.generateFunction(html, fullPath, componentsProperties);
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка при обработке шаблона',
+            error: error,
+            filePath: fullPath
+         });
+         setImmediate(callback);
+         return;
+      }
+
+      const tmplFunc = result.tmplFunc.toString();
+      const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.new.html');
+
+      const routeResult = routeTmpl({
+         application: 'Controls/Application',
+         wsRoot: wsPathCalculator.getWsRoot(splittedCore),
+         resourceRoot: wsPathCalculator.getResources(splittedCore),
+         _options: {
+            builder: tmplFunc,
+            dependencies: result.dependencies.map(v => `'${v}'`).toString()
          }
-
-         convertHtmlTmpl(html, fullPath, componentsProperties)
-            .then(
-               result => {
-                  const newFullPath = fullPath.replace(/\.tmpl$/, '');
-
-                  // если файл уже есть, удалим
-                  if (helpers.existsSync(newFullPath)) {
-                     helpers.unlinkSync(newFullPath);
-                  }
-
-                  // создадим файл с новым содержимым
-                  helpers.writeFile(newFullPath, result.toString(), callback);
-               },
-               error => {
-                  logger.error({
-                     message: 'Ошибка при обработке шаблона',
-                     error: error,
-                     filePath: fullPath
-                  });
-                  setImmediate(callback);
-               }
-            );
       });
+
+      if (typeof routeResult === 'string') {
+         await fs.writeFile(newFullPath, routeResult);
+         await generateMarkup(html, fullPath, setImmediate);
+         callback();
+      } else {
+         routeResult
+            .addCallback(async function (res) {
+               await fs.writeFile(newFullPath, res);
+               await generateMarkup(html, fullPath, setImmediate);
+               callback();
+            })
+            .addErrback(function (error) {
+               logger.error({
+                  message: 'Ошибка при обработке шаблона',
+                  error: error,
+                  filePath: fullPath
+               });
+               setImmediate(callback);
+            });
+      }
    }, cb);
 }
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
    const servicesPath = (grunt.option('services_path') || '').replace(/["']/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
+   const splittedCore = grunt.option('splitted-core');
 
-   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
+   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function () {
       logger.debug('Запускается задача html-tmpl.');
       const start = Date.now(),
          done = this.async(),
@@ -65,7 +122,7 @@ module.exports = function(grunt) {
          filePattern = this.data.filePattern,
          componentsProperties = {}; //TODO
 
-      convertTmpl(resourcesRoot, filePattern, componentsProperties, function(err) {
+      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function (err) {
          if (err) {
             logger.error({error: err});
          }
@@ -75,7 +132,7 @@ module.exports = function(grunt) {
       });
    });
 
-   grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
+   grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
       logger.debug('Запускается задача static-html.');
       const
          start = Date.now(),
@@ -89,7 +146,7 @@ module.exports = function(grunt) {
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
-         Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
+          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
@@ -121,7 +178,7 @@ module.exports = function(grunt) {
 
       if (oldHtml && oldHtml.length) {
          const start = Date.now();
-         oldHtml.forEach(function(file) {
+         oldHtml.forEach(function (file) {
             const filePath = path.join(applicationRoot, file);
             try {
                fs.unlinkSync(path.join(applicationRoot, file));
@@ -146,7 +203,7 @@ module.exports = function(grunt) {
          wsPath: grunt.option('splitted-core') ? 'resources/WS.Core/' : 'ws/'
       };
 
-      helpers.recurse(applicationRoot, function(file, callback) {
+      helpers.recurse(applicationRoot, function (file, callback) {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
                if (err) {
@@ -192,7 +249,7 @@ module.exports = function(grunt) {
          } else {
             callback();
          }
-      }, function(err) {
+      }, function (err) {
          if (err) {
             logger.error({
                error: err

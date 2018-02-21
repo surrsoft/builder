@@ -16,7 +16,7 @@ module.exports = function(moduleInfo) {
          return;
       }
       try {
-         const result = await convertHtmlTmpl(file.contents.toString(), file.path, {});
+         const result = await convertHtmlTmpl.generateMarkup(file.contents.toString(), file.path, {});
          const outFileName = file.basename.replace('.tmpl', '');
 
          this.push(new Vinyl({
