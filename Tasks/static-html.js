@@ -40,7 +40,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       try {
          routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
-         global.requirejs('Controls/Application'); // eslint-disable-line no-unused-vars
+         global.requirejs('Controls/Application');
       } catch (e) {
          logger.error('Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Добавьте модуль Controls в проект.');
          setImmediate(callback);
