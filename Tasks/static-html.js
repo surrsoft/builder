@@ -7,11 +7,9 @@ const path = require('path'),
    parseJsComponent = require('../lib/parse-js-component'),
    wsPathCalculator = require('../lib/ws-path-calculator'),
    logger = require('../lib/logger').logger(),
-   routeTmpl = global.requirejs('tmpl!Controls/Application/Route'),
-   Application = global.requirejs('Controls/Application'), // eslint-disable-line no-unused-vars
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
-function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+function convertTmpl(routeTmpl, splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
    async function generateMarkup(html, fullPath, setImmediate, callback) {
       let result;
       try {
@@ -113,7 +111,16 @@ module.exports = function(grunt) {
          filePattern = this.data.filePattern,
          componentsProperties = {}; //TODO
 
-      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
+      let routeTmpl, Application;
+      try {
+         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
+         Application = global.requirejs('Controls/Application'); // eslint-disable-line no-unused-vars
+      } catch (e) {
+         logger.error('Добавьте модуль Controls в проект');
+         return;
+      }
+
+      convertTmpl(routeTmpl, splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
             logger.error({error: err});
          }
