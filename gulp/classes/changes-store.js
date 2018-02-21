@@ -171,6 +171,9 @@ class ChangesStore {
       if (isChanged) {
          this.changedLessFiles.push(lessFullPath);
       } else {
+         if (this.lastStore.inputLessPaths.hasOwnProperty(lessFullPath)) {
+            this.currentStore.inputLessPaths[lessFullPath] = this.lastStore.inputLessPaths[lessFullPath];
+         }
          if (this.lastStore.lessDependencies.hasOwnProperty(lessFullPath)) {
             this.currentStore.lessDependencies[lessFullPath] = this.lastStore.lessDependencies[lessFullPath];
          }
