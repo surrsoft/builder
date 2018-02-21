@@ -9,7 +9,7 @@ const path = require('path'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
-function convertTmpl(routeTmpl, splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
    async function generateMarkup(html, fullPath, setImmediate, callback) {
       let result;
       try {
@@ -36,7 +36,16 @@ function convertTmpl(routeTmpl, splittedCore, resourcesRoot, filePattern, compon
          return;
       }
 
-      let html, result;
+      let html, result, routeTmpl;
+
+      try {
+         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
+         global.requirejs('Controls/Application'); // eslint-disable-line no-unused-vars
+      } catch (e) {
+         logger.error('Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Добавьте модуль Controls в проект.');
+         setImmediate(callback);
+         return;
+      }
 
       try {
          html = await fs.readFile(fullPath);
@@ -111,16 +120,7 @@ module.exports = function(grunt) {
          filePattern = this.data.filePattern,
          componentsProperties = {}; //TODO
 
-      let routeTmpl, Application;
-      try {
-         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
-         Application = global.requirejs('Controls/Application'); // eslint-disable-line no-unused-vars
-      } catch (e) {
-         logger.debug('task html-tmpl запущен не будет, так как в проекте не подключен модуль Controls');
-         return;
-      }
-
-      convertTmpl(routeTmpl, splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
+      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
             logger.error({error: err});
          }
