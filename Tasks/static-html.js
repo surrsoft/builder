@@ -116,7 +116,7 @@ module.exports = function(grunt) {
          routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
          Application = global.requirejs('Controls/Application'); // eslint-disable-line no-unused-vars
       } catch (e) {
-         logger.error('Добавьте модуль Controls в проект');
+         logger.debug('task html-tmpl запущен не будет, так как в проекте не подключен модуль Controls');
          return;
       }
 
