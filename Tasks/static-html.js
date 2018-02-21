@@ -7,8 +7,6 @@ const path = require('path'),
    parseJsComponent = require('../lib/parse-js-component'),
    wsPathCalculator = require('../lib/ws-path-calculator'),
    logger = require('../lib/logger').logger(),
-   routeTmpl = global.requirejs('tmpl!Controls/Application/Route'),
-   Application = global.requirejs('Controls/Application'), // eslint-disable-line no-unused-vars
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
@@ -31,14 +29,25 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
       await fs.writeFile(newFullPath, result.toString(), callback);
    }
 
-   helpers.recurse(resourcesRoot, async function(fullPath, callback) {
+   helpers.recurse(resourcesRoot, async function (fullPath, callback) {
       // фильтр по файлам .html.tmpl
       if (!helpers.validateFile(fullPath, filePattern)) {
          setImmediate(callback);
          return;
       }
 
-      let html, result;
+      let html, result, routeTmpl;
+
+      try {
+         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
+         global.requirejs('Controls/Application');
+      } catch (e) {
+         logger.error({
+            message: 'Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Возможно вы забыли добавить модуль Controls в проект!'
+         });
+         setImmediate(callback.bind(null, e));
+         return;
+      }
 
       try {
          html = await fs.readFile(fullPath);
@@ -79,12 +88,12 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          callback();
       } else {
          routeResult
-            .addCallback(async function(res) {
+            .addCallback(async function (res) {
                await fs.writeFile(newFullPath, res);
                await generateMarkup(html, fullPath, setImmediate);
                callback();
             })
-            .addErrback(function(error) {
+            .addErrback(function (error) {
                logger.error({
                   message: 'Ошибка при обработке шаблона',
                   error: error,
@@ -96,13 +105,13 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
    }, cb);
 }
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
    const servicesPath = (grunt.option('services_path') || '').replace(/["']/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
    const splittedCore = grunt.option('splitted-core');
 
-   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
+   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function () {
       logger.debug('Запускается задача html-tmpl.');
       const start = Date.now(),
          done = this.async(),
@@ -113,7 +122,7 @@ module.exports = function(grunt) {
          filePattern = this.data.filePattern,
          componentsProperties = {}; //TODO
 
-      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
+      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function (err) {
          if (err) {
             logger.error({error: err});
          }
@@ -123,7 +132,7 @@ module.exports = function(grunt) {
       });
    });
 
-   grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
+   grunt.registerMultiTask('static-html', 'Generate static html from modules', function () {
       logger.debug('Запускается задача static-html.');
       const
          start = Date.now(),
@@ -169,7 +178,7 @@ module.exports = function(grunt) {
 
       if (oldHtml && oldHtml.length) {
          const start = Date.now();
-         oldHtml.forEach(function(file) {
+         oldHtml.forEach(function (file) {
             const filePath = path.join(applicationRoot, file);
             try {
                fs.unlinkSync(path.join(applicationRoot, file));
@@ -194,7 +203,7 @@ module.exports = function(grunt) {
          wsPath: grunt.option('splitted-core') ? 'resources/WS.Core/' : 'ws/'
       };
 
-      helpers.recurse(applicationRoot, function(file, callback) {
+      helpers.recurse(applicationRoot, function (file, callback) {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
                if (err) {
@@ -240,7 +249,7 @@ module.exports = function(grunt) {
          } else {
             callback();
          }
-      }, function(err) {
+      }, function (err) {
          if (err) {
             logger.error({
                error: err
