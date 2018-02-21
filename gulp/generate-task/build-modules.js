@@ -32,6 +32,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
+
          .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulp.dest(moduleInfo.output));

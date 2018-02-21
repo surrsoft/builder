@@ -8,23 +8,7 @@ const path = require('path'),
    packageJson = require('../../package.json'),
    logger = require('../../lib/logger').logger();
 
-/*
-структура стора:
-{
-   modulePath: {
-      exist = true; <- может не быть
-      files: {
-         filePath:{
-            lastModified: '12:12:12';
-            exist = true; <- может не быть
-         }
-      }
-   }
-}
-exist не сохранаяется в файл
-*/
-
-class StroreInfo {
+class StoreInfo {
    constructor() {
       //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
@@ -34,18 +18,17 @@ class StroreInfo {
 
       //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
       //для сравнения с mtime у файлов
-      this.timeLastBuild = 0;
+      this.startBuildTime = 0;
 
-      //чтобы не копировать лишнее
-      this.inputPaths = [];
-      this.inputLessPaths = [];
+      //запоминаем что было на входе и что породило на выход, чтобы потом можно было
+      //1. отследить восстановленный из корзны файл
+      //2. удалить лишние файлы
+      this.inputPaths = {};
+      this.inputLessPaths = {};
 
       //imports из less файлов для инкрементальной сборки
       //особенность less в том, что они компилируются относительно корня развёрнутого стенда
       this.lessDependencies = {};
-
-      //чтобы знать что удалить
-      this.outputPaths = [];
    }
 
    async load(filePath) {
@@ -54,11 +37,10 @@ class StroreInfo {
             const obj = await fs.readJSON(filePath);
             this.runningParameters = obj.runningParameters;
             this.versionOfBuilder = obj.versionOfBuilder;
-            this.timeLastBuild = obj.timeLastBuild;
+            this.startBuildTime = obj.startBuildTime;
             this.inputPaths = obj.inputPaths;
             this.inputLessPaths = obj.inputLessPaths;
             this.lessDependencies = obj.lessDependencies;
-            this.outputPaths = obj.outputPaths;
          }
       } catch (error) {
          logger.warning({
@@ -72,11 +54,10 @@ class StroreInfo {
       return fs.outputJson(filePath, {
          runningParameters: this.runningParameters,
          versionOfBuilder: this.versionOfBuilder,
-         timeLastBuild: this.timeLastBuild,
+         startBuildTime: this.startBuildTime,
          inputPaths: this.inputPaths,
          inputLessPaths: this.inputLessPaths,
-         lessDependencies: this.lessDependencies,
-         outputPaths: this.outputPaths
+         lessDependencies: this.lessDependencies
       }, {
          spaces: 3
       });
@@ -86,8 +67,8 @@ class StroreInfo {
 class ChangesStore {
    constructor(config) {
       this.config = config;
-      this.lastStore = new StroreInfo();
-      this.currentStore = new StroreInfo();
+      this.lastStore = new StoreInfo();
+      this.currentStore = new StoreInfo();
       this.moduleInfoForLess = {};
       this.changedLessFiles = [];
    }
@@ -95,7 +76,7 @@ class ChangesStore {
    load() {
       this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
-      this.currentStore.timeLastBuild = new Date().getTime();
+      this.currentStore.startBuildTime = new Date().getTime();
 
       this.filePath = path.join(this.config.cachePath, 'store.json');
       return this.lastStore.load(this.filePath);
@@ -141,7 +122,7 @@ class ChangesStore {
    async clearCacheIfNeeded() {
       const removePromises = [];
       if (await this.cacheHasIncompatibleChanges()) {
-         this.lastStore = new StroreInfo();
+         this.lastStore = new StoreInfo();
 
          //из кеша можно удалить всё кроме .lockfile
          if (await fs.pathExists(this.config.cachePath)) {
@@ -164,28 +145,27 @@ class ChangesStore {
       const prettyPath = helpers.prettifyPath(filePath);
 
       //кеша не было, значит все файлы новые
-      const noCache = !this.lastStore.timeLastBuild;
+      const noCache = !this.lastStore.startBuildTime;
 
       //проверка modification time. этой проверки может быть не достаточно в двух слуаях:
       //1. файл вернули из корзины
       //2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
-      const isModifiedFile = fileMTime.getTime() > this.lastStore.timeLastBuild;
+      const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
+
+      const relativePath = path.relative(moduleInfo.path, filePath);
+      const outputFullPath = path.join(moduleInfo.output, transliterate(relativePath));
+      this.currentStore.inputPaths[prettyPath] = [helpers.prettifyPath(outputFullPath)];
 
       if (path.extname(filePath) !== '.less') {
-         this.currentStore.inputPaths.push(prettyPath);
-
          return noCache || isModifiedFile ||
-            !this.lastStore.inputPaths.includes(prettyPath); //новый файл
+            !this.lastStore.inputPaths.hasOwnProperty(prettyPath); //новый файл
       }
 
       //less билдятся относительно корня стенда, поэтому нужна особая обработка
-      const lessRelativePath = path.relative(moduleInfo.path, filePath);
-      const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(lessRelativePath)));
+      const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(relativePath)));
 
       const isChanged = noCache || isModifiedFile ||
-         !this.lastStore.inputLessPaths.includes(lessFullPath); //новый файл
-
-      this.currentStore.inputLessPaths.push(lessFullPath);
+         !this.lastStore.inputLessPaths.hasOwnProperty(lessFullPath); //новый файл
 
       this.moduleInfoForLess[lessFullPath] = moduleInfo;
       if (isChanged) {
@@ -198,11 +178,11 @@ class ChangesStore {
       return isChanged;
    }
 
-   setErrorForLessFile(filePath) {
+   storeLessFileInfo(filePath, imports, outputFilePath) {
       const prettyPath = helpers.prettifyPath(filePath);
-      this.currentStore.inputLessPaths = this.currentStore.inputLessPaths.filter(function(item) {
-         return item !== prettyPath;
-      });
+      const prettyOutputPath = helpers.prettifyPath(outputFilePath);
+      this.currentStore.inputLessPaths[prettyPath] = [prettyOutputPath];
+      this.currentStore.lessDependencies[prettyPath] = imports.map(helpers.prettifyPath);
    }
 
    static getListFilesWithDependents(files, dependencies) {
@@ -242,15 +222,56 @@ class ChangesStore {
       return this.moduleInfoForLess;
    }
 
-   setDependencies(filePath, dependencies) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      if (dependencies && prettyPath.endsWith('.less')) {
-         this.currentStore.lessDependencies[prettyPath] = dependencies.map(helpers.prettifyPath);
+   static getOutputFilesSet(inputPaths) {
+      const resultSet = new Set();
+      for (const filePath in inputPaths) {
+         if (!inputPaths.hasOwnProperty(filePath)) {
+            continue;
+         }
+         for (const outputFilePath of inputPaths[filePath]) {
+            resultSet.add(outputFilePath);
+         }
+
       }
+      return resultSet;
    }
 
-   getListForRemoveFromOutputDir() {
-      return [];
+   async getListForRemoveFromOutputDir() {
+      const currentOutputSet = ChangesStore.getOutputFilesSet(this.currentStore.inputPaths);
+      const lastOutputSet = ChangesStore.getOutputFilesSet(this.lastStore.inputPaths);
+      const removeFiles = Array.from(lastOutputSet).filter(filePath => {
+         return !currentOutputSet.has(filePath);
+      });
+
+      const currentLessOutputSet = ChangesStore.getOutputFilesSet(this.currentStore.inputLessPaths);
+      const lastLessOutputSet = ChangesStore.getOutputFilesSet(this.lastStore.inputLessPaths);
+      const removeLessFiles = Array.from(lastLessOutputSet).filter(filePath => {
+         return !currentLessOutputSet.has(filePath);
+      });
+
+      const promises = [...removeFiles, ...removeLessFiles].map(filePath => {
+         return (async() => {
+            let needRemove = false;
+            if (await fs.pathExists(filePath)) {
+               const stat = await fs.lstat(filePath);
+
+               //если файл не менялся в текущей сборке, то его нужно удалить
+               //файл может менятся в случае если это, например, пакет из нескольких файлов
+               needRemove = stat.mtime.getTime() < this.currentStore.startBuildTime;
+            }
+            return {
+               filePath: filePath,
+               needRemove: needRemove
+            };
+         })();
+      });
+      const results = await Promise.all(promises);
+      return results.map(obj => {
+         if (obj.needRemove) {
+            return obj.filePath;
+         }
+         return null;
+      }).filter(filePath => !!filePath);
    }
 }
 

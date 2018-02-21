@@ -6,9 +6,9 @@ const logger = require('../../lib/logger').logger(),
    through = require('through2');
 
 module.exports = function(changesStore, moduleInfo) {
-   return through.obj(async function(file, encoding, callback) {
+   return through.obj(function(file, encoding, callback) {
       try {
-         if (await changesStore.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
+         if (changesStore.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
             this.push(file);
          }
       } catch (error) {

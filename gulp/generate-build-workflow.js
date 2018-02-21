@@ -5,7 +5,6 @@ const
    path = require('path'),
    fs = require('fs-extra'),
    gulp = require('gulp'),
-   clean = require('gulp-clean'),
    os = require('os'),
    workerPool = require('workerpool');
 
@@ -13,7 +12,6 @@ const
    generateTaskForCompileLess = require('./generate-task/compile-less'),
    generateTaskForBuildModules = require('./generate-task/build-modules'),
    guardSingleProcess = require('./helpers/guard-single-process.js'),
-   transliterate = require('../lib/transliterate'),
    ChangesStore = require('./classes/changes-store'),
    BuildConfiguration = require('./classes/build-configuration.js');
 
@@ -42,8 +40,8 @@ function generateTaskForSaveChangesStore(changesStore) {
 }
 
 function generateTaskForRemoveFiles(changesStore) {
-   return function removeOutdatedFiles() {
-      const filesForRemove = changesStore.getListForRemoveFromOutputDir();
+   return async function removeOutdatedFiles() {
+      const filesForRemove = await changesStore.getListForRemoveFromOutputDir();
       return Promise.all(filesForRemove.map(filePath => fs.remove(filePath)));
    };
 }

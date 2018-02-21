@@ -25,7 +25,6 @@ function generateTaskForCompileLess(changesStore, config, pool) {
             const results = await pool.exec('buildLess', [chunk, config.outputPath]);
             for (const result of results) {
                if (result.hasOwnProperty('error')) {
-                  changesStore.setErrorForLessFile(result.path);
                   const moduleInfo = moduleInfoForLess[result.path];
                   const relativePath = path.relative(path.dirname(moduleInfo.output), result.path);
                   logger.warning({
@@ -34,7 +33,7 @@ function generateTaskForCompileLess(changesStore, config, pool) {
                      moduleInfo: moduleInfo
                   });
                } else {
-                  changesStore.setDependencies(result.path, result.imports);
+                  changesStore.storeLessFileInfo(result.path, result.imports, result.path.replace('.less', '.css'));
                }
             }
          } catch (error) {
