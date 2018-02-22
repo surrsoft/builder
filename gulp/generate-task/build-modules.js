@@ -3,7 +3,9 @@
 const
    path = require('path'),
    gulp = require('gulp'),
-   gulpRename = require('gulp-rename');
+   gulpRename = require('gulp-rename'),
+   gulpStripBom = require('gulp-stripbom'),
+   gulpChmod = require('gulp-chmod');
 
 //наши плагины
 const
@@ -24,6 +26,9 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
 
    return function buildModule() {
       return gulp.src(moduleInput)
+         .pipe(gulpStripBom({
+            showLog: false
+         }))
          .pipe(changedInPlace(changesStore, moduleInfo))
          .pipe(addComponentInfo(moduleInfo, pool))
          .pipe(buildStaticHtml(moduleInfo, modulesMap))
@@ -35,6 +40,10 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
 
          .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
+         .pipe(gulpChmod({
+            read: true,
+            write: true
+         }))
          .pipe(gulp.dest(moduleInfo.output));
    };
 }
