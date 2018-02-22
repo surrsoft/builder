@@ -30,13 +30,16 @@ module.exports = function less1by1Task(grunt) {
             const result = await buildLess(filePath, data.toString(), resourcePath);
             const newFullPath = filePath.replace('.less', '.css');
             if (await fs.pathExists(newFullPath)) {
+               const message = `Существующий CSS-файл мешает записи результата компиляции '${filePath}'. ` +
+                  'Необходимо удалить лишний CSS-файл';
                logger.warning({
-                  message: `Файл будет перезатёрт после компиляции ${filePath}`,
+                  message: message,
                   filePath: newFullPath
                });
+            } else {
+               await fs.writeFile(newFullPath, result.text, {flag: 'w'});
+               logger.debug(`file ${newFullPath} successfully compiled`);
             }
-            await fs.writeFile(newFullPath, result.text, {flag: 'w'});
-            logger.debug(`file ${newFullPath} successfully compiled`);
          } catch (error) {
             logger.warning({
                message: 'Ошибка при компиляции less файла',
