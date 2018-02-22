@@ -10,24 +10,6 @@ const path = require('path'),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
-   async function generateMarkup(html, fullPath, setImmediate, callback) {
-      let result;
-      try {
-         result = await convertHtmlTmpl.generateMarkup(html, fullPath, componentsProperties, splittedCore);
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка при обработке шаблона',
-            error: error,
-            filePath: fullPath
-         });
-         setImmediate(callback);
-      }
-
-      const newFullPath = fullPath.replace(/\.tmpl$/, '');
-
-      // создадим файл с новым содержимым
-      await fs.writeFile(newFullPath, result.toString(), callback);
-   }
 
    helpers.recurse(resourcesRoot, async function(fullPath, callback) {
       // фильтр по файлам .html.tmpl
@@ -70,7 +52,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
       }
 
       const tmplFunc = result.tmplFunc.toString();
-      const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.new.html');
+      const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
 
       const routeResult = routeTmpl({
          application: 'Controls/Application',
@@ -84,13 +66,11 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       if (typeof routeResult === 'string') {
          await fs.writeFile(newFullPath, routeResult);
-         await generateMarkup(html, fullPath, setImmediate);
          callback();
       } else {
          routeResult
             .addCallback(async function(res) {
                await fs.writeFile(newFullPath, res);
-               await generateMarkup(html, fullPath, setImmediate);
                callback();
             })
             .addErrback(function(error) {
