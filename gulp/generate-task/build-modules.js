@@ -5,7 +5,8 @@ const
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
    gulpStripBom = require('gulp-stripbom'),
-   gulpChmod = require('gulp-chmod');
+   gulpChmod = require('gulp-chmod'),
+   plumber = require('gulp-plumber');
 
 //наши плагины
 const
@@ -26,6 +27,16 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
 
    return function buildModule() {
       return gulp.src(moduleInput)
+         .pipe(plumber({
+            errorHandler: function(err) {
+               logger.error({
+                  message: 'Задача buildModule завершилась с ошибкой',
+                  error: err,
+                  moduleInfo: moduleInfo
+               });
+               this.emit('end');
+            }
+         }))
          .pipe(gulpStripBom({
             showLog: false
          }))

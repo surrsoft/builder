@@ -30,6 +30,7 @@
       "gulp": "^4.0.0",
       "gulp-clean": "^0.4.0",
       "gulp-chmod": "^2.0.0",
+      "gulp-plumber": "^1.2.0",
       "gulp-rename": "^1.2.1",
       "gulp-stripbom": "^1.0.4",
       "gulplog": "^1.0.0",
