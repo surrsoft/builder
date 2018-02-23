@@ -1,6 +1,6 @@
 'use strict';
 
-const process = require('process'); //только одна зависимость вне try/catch, т.к. она используется в catch
+//const process = require('process'); //только одна зависимость вне try/catch, т.к. она используется в catch
 
 try {
    //В самом начале проверим версию node. используем минимум возможностей node.js и ES6
@@ -22,37 +22,21 @@ try {
 
    //ws должен быть вызван раньше чем первый global.requirejs
    const nodeWS = require('./gulp/helpers/node-ws');
-   let err = nodeWS.init();
-   if (err) {
-      logger.error(err);
-      process.exit(1);
-   }
+   nodeWS.init();
 
    const
       gulp = require('gulp'),
-      buildTask = require('./gulp/build.js'),
-      guardSingleProcessTask = require('./gulp/tasks/guard-single-process.js'),
-      BuildConfiguration = require('./gulp/classes/build-configuration.js');
-
+      generateBuildWorkflow = require('./gulp/generate-build-workflow.js');
 
    logger.debug('Параметры запуска: ' + JSON.stringify(process.argv));
 
-   const config = new BuildConfiguration();
-   err = config.load(process.argv);
-   if (err) {
-      logger.error(err);
-      process.exit(1);
-   }
-
-   gulp.task('build',
-      gulp.series(
-         guardSingleProcessTask.lock(config.cachePath),
-         buildTask.create(config),
-         guardSingleProcessTask.unlock()));
+   gulp.task('build', generateBuildWorkflow(process.argv));
 
 } catch (e) {
    // eslint-disable-next-line no-console
-   console.log('[00:00:00] [ERROR] Необработанное исключение: ' + e.message + '. Stack: ' + e.stack);
+   console.log('[00:00:00] [ERROR] Исключение при работе builder\'а: ' + e.message);
+   // eslint-disable-next-line no-console
+   console.log('Stack: ' + e.stack);
    process.exit(1);
 }
 

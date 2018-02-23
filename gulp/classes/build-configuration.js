@@ -13,9 +13,10 @@ class BuildConfiguration {
       this.localizations = [];
       this.defaultLocalization = '';
       this.modules = [];
+      this.rawConfig = {};
    }
 
-   load(argv) {
+   loadSync(argv) {
       //для получения 1 параметра --config не нужна сторонняя библиотека
       let configFile = '';
       argv.forEach(value => {
@@ -24,32 +25,61 @@ class BuildConfiguration {
          }
       });
 
+      if (!configFile) {
+         throw new Error('Файл конфигурации не задан.');
+      }
+
       if (!fs.pathExistsSync(configFile)) {
-         return 'Файл конфигурации не задан или файл не существует.';
+         throw new Error(`Файл конфигурации '${configFile}' не существует.`);
       }
 
-      let rawConfig;
+      const startErrorMessage = `Файл конфигурации ${configFile} не корректен.`;
       try {
-         rawConfig = fs.readJSONSync(configFile);
+         this.rawConfig = fs.readJSONSync(configFile);
       } catch (e) {
-         return 'Файл конфигурации не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ' + e.message;
+         e.message = `${startErrorMessage} Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${e.message}`;
+         throw e;
       }
 
-      if (rawConfig.hasOwnProperty('mode')) {
-         const mode = rawConfig.mode;
-         if (mode !== 'release' && mode !== 'debug') {
-            return 'Параметр mode может принимать значения "release" и "debug"';
+      if (!this.rawConfig.hasOwnProperty('mode')) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
+      }
+      const mode = this.rawConfig.mode;
+      if (mode !== 'release' && mode !== 'debug') {
+         throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
+      }
+      this.isReleaseMode = mode === 'release';
+
+
+      this.outputPath = this.rawConfig.output;
+      if (!this.outputPath) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+      }
+
+      this.cachePath = this.rawConfig.cache;
+      if (!this.cachePath) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
+      }
+
+      this.localizations = this.rawConfig.localizations;
+      this.defaultLocalization = this.rawConfig['default-localization'];
+
+      if (!this.rawConfig.hasOwnProperty('modules')) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр modules`);
+      }
+      if (!Array.isArray(this.rawConfig.modules)) {
+         throw new Error(`${startErrorMessage} Параметр modules должен быть массивом`);
+      }
+      if (this.rawConfig.modules.length === 0) {
+         throw new Error(`${startErrorMessage} Массив modules должен быть не пустым`);
+      }
+      for (const module of this.rawConfig.modules) {
+         if (!module.hasOwnProperty('path') || !module.path) {
+            throw new Error(`${startErrorMessage} Для модуля не задан обязательный параметр path`);
          }
-         this.isReleaseMode = mode === 'release';
-      } else {
-         return 'Не задан обязательный параметр mode';
-      }
-
-      this.outputPath = rawConfig.output;
-      this.cachePath = rawConfig.cache;
-      this.localizations = rawConfig.localizations;
-      this.defaultLocalization = rawConfig['default-localization'];
-      for (const module of rawConfig.modules) {
+         if (!fs.pathExistsSync(module.path)) {
+            throw new Error(`${startErrorMessage} Директория ${module.path} не существует`);
+         }
          this.modules.push(new ModuleInfo(
             module.name,
             module.responsible,
@@ -57,9 +87,6 @@ class BuildConfiguration {
             this.outputPath
          ));
       }
-
-
-      return '';
    }
 
 }
