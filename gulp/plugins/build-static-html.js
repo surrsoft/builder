@@ -23,7 +23,7 @@ module.exports = function(moduleInfo, modulesMap) {
 
          const config = {}; //TODO:
 
-         const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
+         const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, false);
 
          if (result) {
             const folderName = transliterate(moduleInfo.folderName);
