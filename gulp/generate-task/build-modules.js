@@ -37,9 +37,6 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
                this.emit('end');
             }
          }))
-         .pipe(gulpStripBom({
-            showLog: false
-         }))
          .pipe(changedInPlace(changesStore, moduleInfo))
          .pipe(addComponentInfo(moduleInfo, pool))
          .pipe(buildStaticHtml(moduleInfo, modulesMap))
@@ -51,6 +48,9 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
 
          .pipe(createRoutesInfoJson(moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
+         .pipe(gulpStripBom({
+            showLog: false
+         }))
          .pipe(gulpChmod({
             read: true,
             write: true
