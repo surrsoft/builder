@@ -19,7 +19,11 @@ module.exports = function(changesStore, moduleInfo, modulesMap) {
          const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
          const promises = Object.keys(componentsInfo).map(async(filePath) => {
             try {
-               return await generateStaticHtmlForJs(filePath, componentsInfo[filePath], moduleInfo.contents, config, modulesMap, false);
+               const result = await generateStaticHtmlForJs(filePath, componentsInfo[filePath], moduleInfo.contents, config, modulesMap, false);
+               if (result) {
+                  result.source = filePath;
+               }
+               return result;
             } catch (error) {
                logger.error({
                   message: 'Ошибка при генерации статической html для JS',
@@ -35,9 +39,11 @@ module.exports = function(changesStore, moduleInfo, modulesMap) {
             if (result) {
                const folderName = transliterate(moduleInfo.folderName);
                moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
+               const outputPath = path.join(moduleInfo.output, result.outFileName);
+               changesStore.addOutputFile(result.source, outputPath);
                this.push(new Vinyl({
                   base: moduleInfo.output,
-                  path: path.join(moduleInfo.output, result.outFileName),
+                  path: outputPath,
                   contents: Buffer.from(result.text)
                }));
             }

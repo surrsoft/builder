@@ -209,10 +209,16 @@ class ChangesStore {
       return isChanged;
    }
 
+   addOutputFile(filePath, outputFilePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const outputPrettyPath = helpers.prettifyPath(outputFilePath);
+      this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
+   }
+
    storeLessFileInfo(filePath, imports, outputFilePath) {
       const prettyPath = helpers.prettifyPath(filePath);
-      const prettyOutputPath = helpers.prettifyPath(outputFilePath);
-      this.currentStore.inputLessPaths[prettyPath] = [prettyOutputPath];
+      const outputPrettyPath = helpers.prettifyPath(outputFilePath);
+      this.currentStore.inputLessPaths[prettyPath] = [outputPrettyPath];
       this.currentStore.lessDependencies[prettyPath] = imports.map(helpers.prettifyPath);
    }
 
