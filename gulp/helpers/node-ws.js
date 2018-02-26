@@ -70,10 +70,14 @@ function _init() {
    global.requirejs(path.join(appRoot, wsRoot, 'lib/core.js'));
 }
 
+let initialized = false;
 module.exports = {
    init: function() {
       try {
-         _init();
+         if(!initialized){
+            _init();
+            initialized = true;
+         }
       } catch (e) {
          e.message = `Ошибка инициализации ядра платформы WS: ${e.message}`;
          throw e;

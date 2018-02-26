@@ -10,10 +10,7 @@ let prepareXhtml;
 
 describe('i18n', function() {
    describe('init', () => {
-      const err = nodeWS.init();
-      if (err) {
-         throw new Error(err);
-      }
+      nodeWS.init();
       prepareXhtml = require('../lib/i18n/prepare-xhtml');
    });
    describe('prepare XHTML', function() {

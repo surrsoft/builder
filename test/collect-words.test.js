@@ -14,10 +14,7 @@ let collectWords;
 
 describe('collect words', () => {
    it('init', () => {
-      const err = nodeWS.init();
-      if (err) {
-         throw new Error(err);
-      }
+      nodeWS.init();
       collectWords = require('../lib/i18n/collect-words');
    });
 

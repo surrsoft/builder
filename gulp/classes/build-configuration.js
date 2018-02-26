@@ -22,6 +22,7 @@ class BuildConfiguration {
       argv.forEach(value => {
          if (value.startsWith('--config=')) {
             configFile = value.replace('--config=', '');
+            configFile = configFile.replace(/"/g, '');
          }
       });
 
