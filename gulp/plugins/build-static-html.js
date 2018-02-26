@@ -10,41 +10,40 @@ const through = require('through2'),
    generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
    logger = require('../../lib/logger').logger();
 
-module.exports = function(moduleInfo, modulesMap) {
-   return through.obj(async function(file, encoding, callback) {
-      this.push(file);
-
+module.exports = function(changesStore, moduleInfo, modulesMap) {
+   return through.obj(function(file, encoding, callback) {
+      callback(null, file);
+   }, async function(callback) {
       try {
-         if (!file.hasOwnProperty('componentInfo')) {
-            //не компонент js
-            callback();
-            return;
-         }
-
-         const config = {}; //TODO:
-
-         const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, false);
-
-         if (result) {
-            const folderName = transliterate(moduleInfo.folderName);
-            moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
-            this.push(new Vinyl({
-               base: moduleInfo.output,
-               path: path.join(moduleInfo.output, result.outFileName),
-               contents: Buffer.from(result.text)
-            }));
-         }
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка при генерации статической html для JS',
-            filePath: file.history[0],
-            error: error,
-            moduleInfo: moduleInfo
+         const config = {}; //TODO:нужно доработать для desktop приложений
+         const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
+         const promises = Object.keys(componentsInfo).map(async(filePath) => {
+            try {
+               return await generateStaticHtmlForJs(filePath, componentsInfo[filePath], moduleInfo.contents, config, modulesMap, false);
+            } catch (error) {
+               logger.error({
+                  message: 'Ошибка при генерации статической html для JS',
+                  filePath: filePath,
+                  error: error,
+                  moduleInfo: moduleInfo
+               });
+            }
+            return null;
          });
-      }
-      callback();
-   }, function(callback) {
-      if (Object.keys(moduleInfo.staticTemplates).length > 0) {
+         const results = await Promise.all(promises);
+         for (const result of results) {
+            if (result) {
+               const folderName = transliterate(moduleInfo.folderName);
+               moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
+               this.push(new Vinyl({
+                  base: moduleInfo.output,
+                  path: path.join(moduleInfo.output, result.outFileName),
+                  contents: Buffer.from(result.text)
+               }));
+            }
+         }
+
+         //Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.
          const file = new Vinyl({
             path: 'static_templates.json',
             contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
@@ -52,7 +51,13 @@ module.exports = function(moduleInfo, modulesMap) {
          });
          callback(null, file);
          return;
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка Builder\'а',
+            error: error,
+            moduleInfo: moduleInfo
+         });
       }
-      callback(null);
+      callback();
    });
 };

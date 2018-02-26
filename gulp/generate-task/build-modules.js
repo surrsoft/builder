@@ -38,15 +38,14 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
             }
          }))
          .pipe(changedInPlace(changesStore, moduleInfo))
-         .pipe(addComponentInfo(moduleInfo, pool))
-         .pipe(buildStaticHtml(moduleInfo, modulesMap))
+         .pipe(addComponentInfo(changesStore, moduleInfo, pool))
+         .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
-
-         .pipe(createRoutesInfoJson(moduleInfo, pool))
+         .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulpStripBom({
             showLog: false

@@ -5,7 +5,7 @@ const through = require('through2'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
-module.exports = function(moduleInfo, pool) {
+module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       //нас не интересуют:
       //  не js-файлы
@@ -22,15 +22,9 @@ module.exports = function(moduleInfo, pool) {
          callback(null, file);
          return;
       }
-
+      let componentInfo;
       try {
-         file.componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]);
-         if (file.path.endsWith('.module.js') && file.componentInfo.hasOwnProperty('componentName') &&
-            file.componentInfo.componentName.startsWith('js!')) {
-            const relativePath = path.join(moduleInfo.folderName, file.relative);
-            const componentName = file.componentInfo.componentName.replace('js!', '');
-            moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
-         }
+         componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]);
       } catch (error) {
          logger.error({
             message: 'Ошибка при обработке JS компонента',
@@ -39,6 +33,27 @@ module.exports = function(moduleInfo, pool) {
             moduleInfo: moduleInfo
          });
       }
+      changesStore.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
       callback(null, file);
+   }, function(callback) {
+      try {
+         const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
+         Object.keys(componentsInfo).forEach(filePath => {
+            const info = componentsInfo[filePath];
+            if (filePath.endsWith('.module.js') && info.hasOwnProperty('componentName') &&
+               info.componentName.startsWith('js!')) {
+               const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
+               const componentName = info.componentName.replace('js!', '');
+               moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
+            }
+         });
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка Builder\'а',
+            error: error,
+            moduleInfo: moduleInfo
+         });
+      }
+      callback();
    });
 };
