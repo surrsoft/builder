@@ -18,7 +18,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          return;
       }
 
-      let html, result, routeTmpl;
+      let html, cfg, result, routeTmpl;
 
       try {
          routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
@@ -37,6 +37,22 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          logger.error(`Ошибка чтения файла ${fullPath}: ${error}`);
          setImmediate(callback);
          return;
+      }
+
+      try {
+         cfg = await fs.readFile(fullPath.replace(/\.html\.tmpl$/, '.html.cfg'));
+      } catch (error) {
+         cfg = '{}';
+      }
+      try {
+         cfg = JSON.parse(cfg);
+      } catch (error) {
+         logger.error({
+            message: 'Ошибка при обработке конфигурации шаблона',
+            error: error,
+            filePath: fullPath
+         });
+         cfg = {};
       }
 
       try {
@@ -60,6 +76,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          resourceRoot: wsPathCalculator.getResources(splittedCore),
          _options: {
             builder: tmplFunc,
+            builderCompatible: cfg.compatible,
             dependencies: result.dependencies.map(v => `'${v}'`).toString()
          }
       });
