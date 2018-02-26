@@ -21,7 +21,7 @@ module.exports = function(moduleInfo, modulesMap) {
             return;
          }
 
-         const config = {};
+         const config = {}; //TODO:
 
          const result = await generateStaticHtmlForJs(file.history[0], file.componentInfo, moduleInfo.contents, config, modulesMap, true);
 
