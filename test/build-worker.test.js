@@ -1,5 +1,8 @@
 'use strict';
 
+//логгер - глобальный, должен быть определён до инициализации WS
+require('../lib/logger').setGulpLogger(require('gulplog'));
+
 const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),

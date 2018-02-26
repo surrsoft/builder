@@ -1,5 +1,5 @@
 module.exports = function() {
    return {
-      '/ForChange.html': 'js!SBIS3.Test1'
+      '/ForRename.html': 'js!SBIS3.Test1'
    };
 };
