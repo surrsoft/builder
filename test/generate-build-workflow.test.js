@@ -242,4 +242,101 @@ describe('gulp/generate-build-workflow.js', function() {
 
       await clearWorkspace();
    });
+
+   it('проверка jsModules в contents.json', async function() {
+      const fixtureFolder = path.join(__dirname, 'fixture/generate-build-workflow/jsModules');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         'cache': cacheFolder,
+         'output': outputFolder,
+         'mode': 'debug',
+         'modules': [
+            {
+               'name': 'Модуль',
+               'path': path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      //запустим таску
+      await runBuildWorkflow();
+
+      //проверим, что все нужные файлы появились в "стенде"
+      let resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'ForChange.module.js',
+         'ForRename_old.module.js',
+         'Stable.module.js',
+         'contents.js',
+         'contents.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+      const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
+      let contentsObj = await fs.readJSON(contentsJsonOutputPath);
+      await contentsObj.should.deep.equal({
+         'htmlNames': {},
+         'jsModules': {
+            'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
+            'SBIS3.ForRename': 'Modul/ForRename_old.module.js',
+            'SBIS3.Stable': 'Modul/Stable.module.js'
+         },
+         'modules': {
+            'Модуль': 'Modul'
+         },
+         'requirejsPaths': {},
+         'xmlContents': {}
+      });
+
+      //запомним время модификации незменяемого файла и изменяемого в "стенде"
+      const stableFileOutputPath = path.join(moduleOutputFolder, 'Stable.module.js');
+      const forChangeFileOutputPath = path.join(moduleOutputFolder, 'ForChange.module.js');
+      const mTimeStableFile = await getMTime(stableFileOutputPath);
+      const mTimeForChangeFile = await getMTime(forChangeFileOutputPath);
+
+      //изменим "исходники"
+      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
+      const filePathForChange = path.join(moduleSourceFolder, 'ForChange.module.js');
+      const data = await fs.readFile(filePathForChange);
+      await fs.writeFile(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
+
+      //запустим повторно таску
+      await runBuildWorkflow();
+
+      //проверим, что все нужные файлы появились в "стенде", лишние удалились
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'ForChange.module.js',
+         'ForRename_new.module.js',
+         'Stable.module.js',
+         'contents.js',
+         'contents.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      //проверим время модификации незменяемого файла и изменяемого в "стенде"
+      (await getMTime(stableFileOutputPath)).should.equal(mTimeStableFile);
+      (await getMTime(forChangeFileOutputPath)).should.not.equal(mTimeForChangeFile);
+
+      contentsObj = await fs.readJSON(contentsJsonOutputPath);
+      await contentsObj.should.deep.equal({
+         'htmlNames': {},
+         'jsModules': {
+            'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
+            'SBIS3.ForRename': 'Modul/ForRename_new.module.js',
+            'SBIS3.Stable': 'Modul/Stable.module.js'
+         },
+         'modules': {
+            'Модуль': 'Modul'
+         },
+         'requirejsPaths': {},
+         'xmlContents': {}
+      });
+
+      await clearWorkspace();
+   });
+
 });
