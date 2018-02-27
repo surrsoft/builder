@@ -1,17 +1,11 @@
 'use strict';
 
-//логгер - глобальный
-require('../lib/logger').setGulpLogger(require('gulplog'));
+require('./init-test');
 
-const chai = require('chai'),
-   chaiAsPromised = require('chai-as-promised'),
-   path = require('path'),
+const path = require('path'),
    fs = require('fs-extra'),
    mkdirp = require('mkdirp'),
    runJsonGenerator = require('../lib/i18n/run-json-generator');
-
-chai.use(chaiAsPromised);
-chai.should();
 
 const testDirname = path.join(__dirname, 'fixture/run-json-generator');
 const outputPath = path.join(testDirname, 'output');

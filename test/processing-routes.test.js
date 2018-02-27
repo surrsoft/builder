@@ -1,9 +1,10 @@
 'use strict';
 
+require('./init-test');
+
 const chai = require('chai'),
    processingRoutes = require('../lib/processing-routes');
 
-chai.should();
 const expect = chai.expect;
 
 describe('processing routes.js', function() {
