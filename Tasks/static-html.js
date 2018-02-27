@@ -41,6 +41,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
       const isCfgExists = await fs.pathExists(cfgPath);
+      cfg = {};
       if (isCfgExists) {
          try {
             cfg = await fs.readJson(cfgPath);
@@ -52,8 +53,6 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
             });
             cfg = {};
          }
-      } else {
-         cfg = '{}';
       }
 
       try {
