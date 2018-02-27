@@ -39,11 +39,24 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          return;
       }
 
-      try {
-         cfg = await fs.readFile(fullPath.replace(/\.html\.tmpl$/, '.html.cfg'));
-      } catch (error) {
+      const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
+      const isCfgExists = await fs.pathExists(cfgPath);
+      if (isCfgExists) {
+         try {
+            cfg = await fs.readFile(cfgPath);
+         } catch (error) {
+            logger.error({
+               message: 'Ошибка при чтении файла конфигурации шаблона',
+               error: error,
+               filePath: fullPath
+            });
+            setImmediate(callback);
+            return;
+         }
+      } else {
          cfg = '{}';
       }
+
       try {
          cfg = JSON.parse(cfg);
       } catch (error) {
