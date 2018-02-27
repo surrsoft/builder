@@ -8,6 +8,13 @@ const path = require('path'),
    packageJson = require('../../package.json'),
    logger = require('../../lib/logger').logger();
 
+class ModuleCacheInfo {
+   constructor() {
+      this.componentsInfo = {};
+      this.routesInfo = {};
+   }
+}
+
 class StoreInfo {
    constructor() {
       //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
@@ -21,7 +28,7 @@ class StoreInfo {
       this.startBuildTime = 0;
 
       //запоминаем что было на входе и что породило на выход, чтобы потом можно было
-      //1. отследить восстановленный из корзны файл
+      //1. отследить восстановленный из корзины файл
       //2. удалить лишние файлы
       this.inputPaths = {};
       this.inputLessPaths = {};
@@ -29,6 +36,9 @@ class StoreInfo {
       //imports из less файлов для инкрементальной сборки
       //особенность less в том, что они компилируются относительно корня развёрнутого стенда
       this.lessDependencies = {};
+
+      //нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
+      this.modulesCache = {};
    }
 
    async load(filePath) {
@@ -41,6 +51,7 @@ class StoreInfo {
             this.inputPaths = obj.inputPaths;
             this.inputLessPaths = obj.inputLessPaths;
             this.lessDependencies = obj.lessDependencies;
+            this.modulesCache = obj.modulesCache;
          }
       } catch (error) {
          logger.warning({
@@ -57,7 +68,8 @@ class StoreInfo {
          startBuildTime: this.startBuildTime,
          inputPaths: this.inputPaths,
          inputLessPaths: this.inputLessPaths,
-         lessDependencies: this.lessDependencies
+         lessDependencies: this.lessDependencies,
+         modulesCache: this.modulesCache
       }, {
          spaces: 3
       });
@@ -77,6 +89,9 @@ class ChangesStore {
       this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
+      for (const moduleInfo of this.config.modules) {
+         this.currentStore.modulesCache[moduleInfo.name] = new ModuleCacheInfo();
+      }
 
       this.filePath = path.join(this.config.cachePath, 'store.json');
       return this.lastStore.load(this.filePath);
@@ -157,8 +172,21 @@ class ChangesStore {
       this.currentStore.inputPaths[prettyPath] = [helpers.prettifyPath(outputFullPath)];
 
       if (path.extname(filePath) !== '.less') {
-         return noCache || isModifiedFile ||
+         const isChanged = noCache || isModifiedFile ||
             !this.lastStore.inputPaths.hasOwnProperty(prettyPath); //новый файл
+
+         if (!isChanged) {
+            const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
+            const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
+            if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
+               currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
+            }
+            if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
+               currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
+            }
+         }
+
+         return isChanged;
       }
 
       //less билдятся относительно корня стенда, поэтому нужна особая обработка
@@ -181,11 +209,53 @@ class ChangesStore {
       return isChanged;
    }
 
+   addOutputFile(filePath, outputFilePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const outputPrettyPath = helpers.prettifyPath(outputFilePath);
+      this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
+   }
+
    storeLessFileInfo(filePath, imports, outputFilePath) {
       const prettyPath = helpers.prettifyPath(filePath);
-      const prettyOutputPath = helpers.prettifyPath(outputFilePath);
-      this.currentStore.inputLessPaths[prettyPath] = [prettyOutputPath];
+      const outputPrettyPath = helpers.prettifyPath(outputFilePath);
+      this.currentStore.inputLessPaths[prettyPath] = [outputPrettyPath];
       this.currentStore.lessDependencies[prettyPath] = imports.map(helpers.prettifyPath);
+   }
+
+   storeComponentInfo(filePath, moduleName, componentInfo) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      if (!componentInfo) {
+         //если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
+            delete this.currentStore.inputPaths[prettyPath];
+         }
+      } else {
+         const currentModuleCache = this.currentStore.modulesCache[moduleName];
+         currentModuleCache.componentsInfo[prettyPath] = componentInfo;
+      }
+   }
+
+   getComponentsInfo(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.componentsInfo;
+   }
+
+   storeRouteInfo(filePath, moduleName, routeInfo) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      if (!routeInfo) {
+         //если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
+            delete this.currentStore.inputPaths[prettyPath];
+         }
+      } else {
+         const currentModuleCache = this.currentStore.modulesCache[moduleName];
+         currentModuleCache.routesInfo[prettyPath] = routeInfo;
+      }
+   }
+
+   getRoutesInfo(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.routesInfo;
    }
 
    static getListFilesWithDependents(files, dependencies) {

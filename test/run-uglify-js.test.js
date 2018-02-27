@@ -1,9 +1,8 @@
 'use strict';
 
-const chai = require('chai'),
-   runUglifyJs = require('../lib/run-uglify-js');
+require('./init-test');
 
-chai.should();
+const runUglifyJs = require('../lib/run-uglify-js');
 
 describe('run uglify-js', function() {
    it('empty', () => {

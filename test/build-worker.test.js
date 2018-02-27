@@ -1,14 +1,13 @@
 'use strict';
 
+require('./init-test');
+
 const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),
    workerPool = require('workerpool'),
-   chaiAsPromised = require('chai-as-promised'),
    helpers = require('../lib/helpers');
 
-chai.use(chaiAsPromised);
-chai.should();
 const expect = chai.expect;
 
 const workspaceFolder = path.join(__dirname, 'workspace'),

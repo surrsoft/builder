@@ -63,17 +63,34 @@ function _init() {
    global.requirejs = requireJS;
    global.define = requireJS.define;
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
-   global.requirejs = requireJS.config(requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+   const config = requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
       waitSeconds: 20,
       nodeRequire: require
-   }));
+   });
+   global.requirejs = requireJS.config(config);
    global.requirejs(path.join(appRoot, wsRoot, 'lib/core.js'));
+   global.requirejs('Core/core');
+   const loadContents = global.requirejs('Core/load-contents');
+   const appContents = {
+      'jsModules': {},
+      'modules': {
+         'View': 'View'
+      },
+      'requirejsPaths': {
+         'View': 'View'
+      }
+   };
+   loadContents(appContents, true, {service: appRoot});
 }
 
+let initialized = false;
 module.exports = {
    init: function() {
       try {
-         _init();
+         if (!initialized) {
+            _init();
+            initialized = true;
+         }
       } catch (e) {
          e.message = `Ошибка инициализации ядра платформы WS: ${e.message}`;
          throw e;

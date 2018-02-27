@@ -1,9 +1,8 @@
 'use strict';
 
-const chai = require('chai'),
-   transliterate = require('../lib/transliterate');
+require('./init-test');
 
-chai.should();
+const transliterate = require('../lib/transliterate');
 
 describe('transliterate', function() {
    it('lower case', function() {

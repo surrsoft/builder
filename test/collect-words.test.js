@@ -1,26 +1,11 @@
 'use strict';
 
-const chai = require('chai'),
-   path = require('path');
+require('./init-test');
 
-//логгер - глобальный, должен быть определён до инициализации WS
-require('../lib/logger').setGulpLogger(require('gulplog'));
-
-const nodeWS = require('../gulp/helpers/node-ws');
-
-chai.should();
-
-let collectWords;
+const path = require('path'),
+   collectWords = require('../lib/i18n/collect-words');
 
 describe('collect words', () => {
-   it('init', () => {
-      const err = nodeWS.init();
-      if (err) {
-         throw new Error(err);
-      }
-      collectWords = require('../lib/i18n/collect-words');
-   });
-
    it('empty js', async() => {
       const text = '';
       const words = await collectWords('module', 'file.js', text, {});
@@ -36,7 +21,7 @@ describe('collect words', () => {
          '}\n' +
          'var testVar = rk(\'Test2\', \'TestContext2\');\n' +
          '//var testVar3 = rk(\'Test3\', \'TestContext3\');\n' +
-         '/* var testVar3 = rk(\'Test3\', \'TestContext3\'); */\n';
+         '/ var testVar3 = rk(\'Test3\', \'TestContext3\'); /\n';
       const words = await collectWords(moduleDir, filePath, text, []);
       words.length.should.equal(4); //TODO: очевидно, тут ошибка. должно быть 2
 
@@ -290,5 +275,4 @@ describe('collect words', () => {
       words[1].key.should.equal('Текст2');
       words[1].context.should.equal('Контекст');
    });
-
 });

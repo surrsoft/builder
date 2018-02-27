@@ -1,12 +1,10 @@
 'use strict';
 
+require('./init-test');
+
 const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
 
-//логгер - глобальный, должен быть определён до инициализации WS
-require('../lib/logger').setGulpLogger(require('gulplog'));
-
-chai.should();
 const expect = chai.expect;
 
 describe('parse js component', function() {
