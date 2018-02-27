@@ -4,7 +4,6 @@ const
    path = require('path'),
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
-   gulpStripBom = require('gulp-stripbom'),
    gulpChmod = require('gulp-chmod'),
    plumber = require('gulp-plumber');
 
@@ -47,9 +46,6 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          }))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
-         .pipe(gulpStripBom({
-            showLog: false
-         }))
          .pipe(gulpChmod({
             read: true,
             write: true
