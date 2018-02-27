@@ -40,7 +40,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
          Object.keys(routesInfoBySourceFiles).forEach(filePath => {
             const routeInfo = routesInfoBySourceFiles[filePath];
             const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-            const relativeResultPath = path.join('resources', transliterate(relativePath));
+            const relativeResultPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
             resultRoutesInfo[relativeResultPath] = routeInfo;
          });
 

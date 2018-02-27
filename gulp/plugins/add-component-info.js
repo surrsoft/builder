@@ -2,6 +2,7 @@
 
 const through = require('through2'),
    path = require('path'),
+   helpers = require('../../lib/helpers'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
@@ -44,7 +45,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
                info.componentName.startsWith('js!')) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const componentName = info.componentName.replace('js!', '');
-               moduleInfo.contents.jsModules[componentName] = transliterate(relativePath);
+               moduleInfo.contents.jsModules[componentName] = helpers.prettifyPath(transliterate(relativePath));
             }
          });
       } catch (error) {
