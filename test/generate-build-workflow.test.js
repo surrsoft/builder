@@ -1,15 +1,11 @@
 'use strict';
 
-const chai = require('chai'),
-   path = require('path'),
+require('./init-test');
+
+const path = require('path'),
    fs = require('fs-extra');
 
-require('gulp'); //TODO: разобраться почему объявление gulp после WS не работает
-require('../lib/logger').setGulpLogger(require('gulplog')); //логгер - глобальный, должен быть определён до инициализации WS
-require('../gulp/helpers/node-ws').init();
 const generateBuildWorkflow = require('../gulp/generate-build-workflow.js');
-
-chai.should();
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),

@@ -1,9 +1,8 @@
 'use strict';
 
-const chai = require('chai'),
-   helpers = require('../lib/helpers');
+require('./init-test');
 
-chai.should();
+const helpers = require('../lib/helpers');
 
 describe('helpers', function() {
    it('getFirstDirInRelativePath', () => {

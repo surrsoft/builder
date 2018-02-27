@@ -2,17 +2,13 @@
 
 'use strict';
 
-//логгер - глобальный
-require('../lib/logger').setGulpLogger(require('gulplog'));
+require('./init-test');
 
 const chai = require('chai'),
-   chaiAsPromised = require('chai-as-promised'),
    path = require('path'),
    helpers = require('../lib/helpers'),
    buildLess = require('../lib/build-less');
 
-chai.use(chaiAsPromised);
-chai.should();
 const expect = chai.expect;
 
 const testPath = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less'));
@@ -20,6 +16,7 @@ const resourcesPath = helpers.prettifyPath(path.join(testPath, 'resources'));
 const wsPath = helpers.prettifyPath(path.join(resourcesPath, 'ws'));
 
 describe('build less', function() {
+
    it('empty less', async() => {
       const filePath = path.join(resourcesPath, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';

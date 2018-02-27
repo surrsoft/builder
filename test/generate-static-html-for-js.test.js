@@ -1,17 +1,14 @@
 'use strict';
 
+require('./init-test');
+
 const chai = require('chai'),
-   chaiAsPromised = require('chai-as-promised'),
    path = require('path'),
    helpers = require('../lib/helpers');
 
-//логгер - глобальный, должен быть определён до инициализации WS
-require('../lib/logger').setGulpLogger(require('gulplog'));
+const expect = chai.expect;
 
 const generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
-
-chai.use(chaiAsPromised);
-const should = chai.should();
 
 const config = {
    root: helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js')),
@@ -127,7 +124,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         should.not.exist(result);
+         expect(result).not.exist;
       });
       it('component without name', () => {
          const componentInfo = {

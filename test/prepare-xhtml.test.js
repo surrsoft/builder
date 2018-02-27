@@ -1,18 +1,10 @@
 'use strict';
 
-const chai = require('chai');
-chai.should();
+require('./init-test');
 
-//логгер - глобальный, должен быть определён до инициализации WS
-require('../lib/logger').setGulpLogger(require('gulplog'));
-const nodeWS = require('../gulp/helpers/node-ws');
-let prepareXhtml;
+const prepareXhtml = require('../lib/i18n/prepare-xhtml');
 
 describe('i18n', function() {
-   describe('init', () => {
-      nodeWS.init();
-      prepareXhtml = require('../lib/i18n/prepare-xhtml');
-   });
    describe('prepare XHTML', function() {
       it('empty file', () => {
          const result = prepareXhtml('', {});
