@@ -43,29 +43,17 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
       const isCfgExists = await fs.pathExists(cfgPath);
       if (isCfgExists) {
          try {
-            cfg = await fs.readFile(cfgPath);
+            cfg = await fs.readJson(cfgPath);
          } catch (error) {
             logger.error({
-               message: 'Ошибка при чтении файла конфигурации шаблона',
+               message: 'Ошибка при обработке конфигурации шаблона',
                error: error,
-               filePath: fullPath
+               filePath: cfgPath
             });
-            setImmediate(callback);
-            return;
+            cfg = {};
          }
       } else {
          cfg = '{}';
-      }
-
-      try {
-         cfg = JSON.parse(cfg);
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка при обработке конфигурации шаблона',
-            error: error,
-            filePath: fullPath
-         });
-         cfg = {};
       }
 
       try {
