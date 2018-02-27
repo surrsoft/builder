@@ -39,20 +39,20 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          return;
       }
 
-      try {
-         cfg = await fs.readFile(fullPath.replace(/\.html\.tmpl$/, '.html.cfg'));
-      } catch (error) {
-         cfg = '{}';
-      }
-      try {
-         cfg = JSON.parse(cfg);
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка при обработке конфигурации шаблона',
-            error: error,
-            filePath: fullPath
-         });
-         cfg = {};
+      const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
+      const isCfgExists = await fs.pathExists(cfgPath);
+      cfg = {};
+      if (isCfgExists) {
+         try {
+            cfg = await fs.readJson(cfgPath);
+         } catch (error) {
+            logger.error({
+               message: 'Ошибка при обработке конфигурации шаблона',
+               error: error,
+               filePath: cfgPath
+            });
+            cfg = {};
+         }
       }
 
       try {
