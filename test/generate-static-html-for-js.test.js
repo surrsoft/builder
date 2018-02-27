@@ -124,7 +124,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         expect(result).not.exist;
+         expect(result).not.exist; //eslint-disable-line no-unused-expressions
       });
       it('component without name', () => {
          const componentInfo = {

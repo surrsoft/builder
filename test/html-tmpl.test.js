@@ -9,7 +9,7 @@ describe('convert html.tmpl', function() {
 
    it('basic', async() => {
       const func = await convertHtmlTmpl.generateFunction('<div>{{1+1}}</div>');
-      const result = func.tmplFunc({}, {}, undefined, false, undefined, tclosure);
+      const result = func.tmplFunc({}, {}, undefined, false, undefined, tclosure); //eslint-disable-line no-undefined
       result.should.equal('<div>2</div>');
    });
 
