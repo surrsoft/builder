@@ -9,13 +9,8 @@ const
    jsEXT = /(\.modulepack)?(\.js)$/,
    tmplEXT = /\.tmpl$/,
    xhtmlEXT = /\.xhtml$/,
+   helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger();
-
-function removeAppRoot(path) {
-   let result = path[0] === '\\' ? path.replace('\\', '') : path;
-
-   return result.replace('.modulepack', '');
-}
 
 /**
  * Функция возвращает путь до минифицированного файла в зависимости от расширения
@@ -51,6 +46,7 @@ module.exports = function uglifyJsTask(grunt) {
       const
          taskDone = this.async(),
          applicationRoot = path.join(this.data.root, this.data.application),
+
          /**
           * Опция splittedCore описывает, распиленное ядро или обычное мы используем.
           * Она нам пригодится, чтобы на Препроцессоре не генерить SourceMaps, поскольку в целях отладки
@@ -87,7 +83,7 @@ module.exports = function uglifyJsTask(grunt) {
 
             let
                currentEXTString = currentEXT.toString(),
-               currentNodePath = removeAppRoot(currentPath.replace(applicationRoot, '')),
+               currentNodePath = helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', ''),
                currentNode = nodes.filter(function(node) {
                   return mDeps.nodes[node].path === currentNodePath;
                }),
