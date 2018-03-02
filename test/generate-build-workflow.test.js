@@ -40,6 +40,9 @@ const timeout = function(ms) {
    return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+// Тесты под macos на некоторых машинах падали, из-за того, что mtime не менялся.
+// Это странно, но у пользователей проявлятся не должно.
+// Поэтому просто убеждаемся, что mtime поменялся и идём дальше.
 const writeFileWithChangeMTime = async function(filePath, data) {
    const oldMTime = await getMTime(filePath);
    await fs.writeFile(filePath, data);
