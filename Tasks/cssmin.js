@@ -1,153 +1,158 @@
-/* eslint-disable no-invalid-this */
+/* eslint-disable no-invalid-self */
 'use strict';
 
 const
    path = require('path'),
+   fs = require('fs-extra'),
    util = require('util'),
    CleanCSS = require('clean-css'),
    helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger();
 
 module.exports = function(grunt) {
-   const getAvailableFiles = function(filesArray) {
-      return filesArray.filter(function(filepath) {
-         if (!grunt.file.exists(filepath)) {
+
+   const getAvailableFiles = async(filesArray) => {
+      const promises = filesArray.map(async(filePath) => {
+         const exists = await fs.pathExists(filePath);
+         if (!exists) {
             logger.warning({
                message: 'Source file not found',
-               filepath: helpers.prettifyPath(filepath)
+               filePath: helpers.prettifyPath(filePath)
             });
-            return false;
+            return null;
          }
-         return true;
+         return filePath;
       });
+      const results = await Promise.all(promises);
+      return results.filter(currentPath => !!currentPath);
    };
 
-   grunt.registerMultiTask('cssmin', 'Minify CSS', function() {
+   const minifyCSS = async(self, file, applicationRoot) => {
       const
-         splittedCore = this.data.splittedCore,
-         applicationRoot = path.join(this.data.root, this.data.application).replace(/\\/g, '/'),
-         mDepsPath = helpers.prettifyPath(path.join(applicationRoot, 'resources/module-dependencies.json')),
-         created = {
-            maps: 0,
-            files: 0
-         },
-         size = {
-            before: 0,
-            after: 0
-         };
+         options = self.options({
+            rebase: false,
+            report: 'min',
+            sourceMap: false
+         }),
+         availableFiles = await getAvailableFiles(file.src),
+         fileSourcePath = helpers.prettifyPath(availableFiles.join(','));
 
-      //Нам необходимо поменять пути до узлов css на минифицированные
       let
-         mDeps,
-         nodes;
+         compiled = '',
+         errors = '';
+
+      options.rebaseTo = path.dirname(file.dest);
 
       try {
-         mDeps = JSON.parse(grunt.file.read(mDepsPath));
-         nodes = Object.keys(mDeps.nodes);
+         compiled = new CleanCSS(options).minify(availableFiles);
+
+         if (compiled.errors.length) {
+            errors = compiled.errors.toString();
+            logger.warning({
+               message: `Error while minifying css: ${errors}`,
+               filePath: fileSourcePath
+            });
+         }
+
+         if (compiled.warnings.length) {
+            errors = compiled.warnings.toString();
+            logger.error({
+               message: `Error while minifying css: ${errors}`,
+               filePath: fileSourcePath
+            });
+         }
+
+         if (options.debug) {
+            logger.debug(util.format(compiled.stats));
+         }
+      } catch (err) {
+         logger.error({
+            message: 'CSS minification failed',
+            error: err,
+            filePath: availableFiles.toString()
+         });
+      }
+
+      let
+         compiledCssString = errors ? `/*${errors}*/` : compiled.styles;
+
+      const
+         cssStyles = await Promise.all(availableFiles.map(filePath => fs.readFile(filePath))),
+         unCompiledCssString = cssStyles.join('');
+
+      self.size.before += unCompiledCssString.length;
+
+      if (options.sourceMap) {
+         compiledCssString += '\n/*# sourceMappingURL=' + path.basename(file.dest) + '.map */';
+         await fs.writeFile(file.dest + '.map', compiled.sourceMap.toString());
+         self.created.maps++;
+         logger.debug('File "' + file.dest + '.map" created');
+      }
+
+      if (self.data.splittedCore) {
+         const
+            currentNodePath = helpers.removeLeadingSlash(file.dest.replace(applicationRoot, '').replace('.min.css', '.css')),
+            currentNode = self.nodes.filter(function(node) {
+               return self.mDeps.nodes[node].path === currentNodePath;
+            });
+         if (currentNode.length > 0) {
+            currentNode.forEach(function(node) {
+               self.mDeps.nodes[node].path = file.dest;
+            });
+         }
+      }
+
+      await fs.writeFile(file.dest, compiledCssString);
+      self.created.files++;
+      self.size.after += compiledCssString.length;
+      logger.debug('File "' + file.dest + '" created ');
+
+   };
+
+   grunt.registerMultiTask('cssmin', 'Minify CSS', async function() {
+      const
+         self = this,
+         applicationRoot = path.join(self.data.root, self.data.application).replace(/\\/g, '/'),
+         mDepsPath = helpers.prettifyPath(path.join(applicationRoot, 'resources/module-dependencies.json')),
+         done = self.async();
+
+      self.created = {
+         maps: 0,
+         files: 0
+      };
+      self.size = {
+         before: 0,
+         after: 0
+      };
+
+      try {
+         self.mDeps = await fs.readJson(mDepsPath);
+         self.nodes = Object.keys(self.mDeps.nodes);
       } catch (err) {
          logger.error({
             message: 'Can\'t read module-dependencies',
             error: err,
-            filepath: mDepsPath
+            filePath: mDepsPath
          });
       }
 
-      this.files.forEach(function(file) {
-         const
-            options = this.options({
-               rebase: false,
-               report: 'min',
-               sourceMap: false
-            }),
-            availableFiles = getAvailableFiles(file.src),
-            fileSourcePath = helpers.prettifyPath(availableFiles.join(''));
+      //выполняем минификацию css
+      await Promise.all(self.files.map(file => minifyCSS(self, file, applicationRoot)));
 
-         let
-            compiled = '',
-            errors = '';
-
-         options.rebaseTo = path.dirname(file.dest);
-
-         try {
-            compiled = new CleanCSS(options).minify(availableFiles);
-
-            if (compiled.errors.length) {
-               errors = compiled.errors.toString();
-               logger.warning({
-                  message: `Error while minifying css: ${errors}`,
-                  filePath: fileSourcePath
-               });
-            }
-
-            if (compiled.warnings.length) {
-               errors = compiled.warnings.toString();
-               logger.error({
-                  message: `Error while minifying css: ${errors}`,
-                  filePath: fileSourcePath
-               });
-            }
-
-            if (options.debug) {
-               logger.debug(util.format(compiled.stats));
-            }
-         } catch (err) {
-            logger.error({
-               message: 'CSS minification failed',
-               error: err,
-               filePath: availableFiles.toString()
-            });
-         }
-
-         let
-            compiledCssString = errors ? `/*${errors}*/` : compiled.styles;
-
-         const
-            unCompiledCssString = availableFiles.map(function(currentFile) {
-               return grunt.file.read(currentFile);
-            }).join('');
-
-         size.before += unCompiledCssString.length;
-
-         if (options.sourceMap) {
-            compiledCssString += '\n/*# sourceMappingURL=' + path.basename(file.dest) + '.map */';
-            grunt.file.write(file.dest + '.map', compiled.sourceMap.toString());
-            created.maps++;
-            logger.debug('File "' + file.dest + '.map" created');
-         }
-
-         if (splittedCore) {
-            const
-               currentNodePath = helpers.removeLeadingSlash(file.dest.replace(applicationRoot, '').replace('.min.css', '.css')),
-               currentNode = nodes.filter(function(node) {
-                  return mDeps.nodes[node].path === currentNodePath;
-               });
-            if (currentNode.length > 0) {
-               currentNode.forEach(function(node) {
-                  mDeps.nodes[node].path = file.dest;
-               });
-            }
-         }
-
-         grunt.file.write(file.dest, compiledCssString);
-         created.files++;
-         size.after += compiledCssString.length;
-         logger.debug('File "' + file.dest + '" created ');
-
-      }, this);
-
-      if (splittedCore) {
-         //пишем module-dependencies
-         grunt.file.write(mDepsPath, JSON.stringify(mDeps, null, 3));
+      if (self.data.splittedCore) {
+         //пишем module-dependencies, если производили в нём изменения
+         await fs.writeJson(mDepsPath, self.mDeps);
       }
 
-      if (created.maps > 0) {
-         logger.info(created.maps + ' source' + grunt.util.pluralize(this.files.length, 'map/maps') + ' created.');
+      if (self.created.maps > 0) {
+         logger.info(self.created.maps + ' source' + grunt.util.pluralize(self.files.length, 'map/maps') + ' created.');
       }
 
-      if (created.files > 0) {
-         logger.info(created.files + ' ' + grunt.util.pluralize(this.files.length, 'file/files') + ' created. ');
+      if (self.created.files > 0) {
+         logger.info(self.created.files + ' ' + grunt.util.pluralize(self.files.length, 'file/files') + ' created. ');
       } else {
          logger.warning('No files created.');
       }
+      done();
    });
 };
