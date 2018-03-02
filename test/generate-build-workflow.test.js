@@ -36,6 +36,10 @@ const getMTime = async function(filePath) {
    return (await fs.lstat(filePath)).mtime.getTime();
 };
 
+const timeout = function(ms) {
+   return new Promise(resolve => setTimeout(resolve, ms));
+};
+
 //нужно проверить что происходит:
 //1. при переименовывании файла == добавление/удаление файла
 //2. при изменении файла
@@ -94,6 +98,7 @@ describe('gulp/generate-build-workflow.js', function() {
       const mTimeChangeLess = await getMTime(forChangeLessOutputPath);
 
       //изменим "исходники"
+      await timeout(1); //подождём 1 мс, чтобы точно mtime был другим
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), path.join(moduleSourceFolder, 'ForRename_new.less'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
       const data = await fs.readFile(filePathForChange);
@@ -190,6 +195,7 @@ describe('gulp/generate-build-workflow.js', function() {
       const mTimeForChangeFile = await getMTime(forChangeFileOutputPath);
 
       //изменим "исходники"
+      await timeout(1); //подождём 1 мс, чтобы точно mtime был другим
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.routes.js'), path.join(moduleSourceFolder, 'ForRename_new.routes.js'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.routes.js');
       const data = await fs.readFile(filePathForChange);
@@ -294,6 +300,7 @@ describe('gulp/generate-build-workflow.js', function() {
       const mTimeForChangeFile = await getMTime(forChangeFileOutputPath);
 
       //изменим "исходники"
+      await timeout(1); //подождём 1 мс, чтобы точно mtime был другим
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.module.js');
       const data = await fs.readFile(filePathForChange);
@@ -456,6 +463,7 @@ describe('gulp/generate-build-workflow.js', function() {
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
       //изменим "исходники"
+      await timeout(1); //подождём 1 мс, чтобы точно mtime был другим
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
       await fs.rename(path.join(themesSourceFolder, 'ForRename_old.html'), path.join(themesSourceFolder, 'ForRename_new.html'));
 
