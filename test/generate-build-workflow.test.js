@@ -36,6 +36,23 @@ const getMTime = async function(filePath) {
    return (await fs.lstat(filePath)).mtime.getTime();
 };
 
+const timeout = function(ms) {
+   return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+// Тесты под macos на некоторых машинах падали, из-за того, что mtime не менялся.
+// Это странно, но у пользователей проявлятся не должно.
+// Поэтому просто убеждаемся, что mtime поменялся и идём дальше.
+const writeFileWithChangeMTime = async function(filePath, data) {
+   const oldMTime = await getMTime(filePath);
+   await fs.writeFile(filePath, data);
+   const newMTime = await getMTime(filePath);
+   if (oldMTime === newMTime) {
+      await timeout(1);
+      await writeFileWithChangeMTime(filePath, data);
+   }
+};
+
 //нужно проверить что происходит:
 //1. при переименовывании файла == добавление/удаление файла
 //2. при изменении файла
@@ -97,7 +114,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), path.join(moduleSourceFolder, 'ForRename_new.less'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
       const data = await fs.readFile(filePathForChange);
-      await fs.writeFile(filePathForChange, data.toString() + '\n.test-selector2 {}');
+      await writeFileWithChangeMTime(filePathForChange, data.toString() + '\n.test-selector2 {}');
 
       //запустим повторно таску
       await runBuildWorkflow();
@@ -193,7 +210,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.routes.js'), path.join(moduleSourceFolder, 'ForRename_new.routes.js'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.routes.js');
       const data = await fs.readFile(filePathForChange);
-      await fs.writeFile(filePathForChange, data.toString().replace('/ForChange_old.html', '/ForChange_new.html'));
+      await writeFileWithChangeMTime(filePathForChange, data.toString().replace(/\/ForChange_old.html/g, '/ForChange_new.html'));
 
       //запустим повторно таску
       await runBuildWorkflow();
@@ -297,7 +314,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.module.js');
       const data = await fs.readFile(filePathForChange);
-      await fs.writeFile(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
+      await writeFileWithChangeMTime(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
 
       //запустим повторно таску
       await runBuildWorkflow();
@@ -461,11 +478,11 @@ describe('gulp/generate-build-workflow.js', function() {
 
       const filePathForChangeJs = path.join(moduleSourceFolder, 'ForChange.module.js');
       const dataJs = await fs.readFile(filePathForChangeJs);
-      await fs.writeFile(filePathForChangeJs, dataJs.toString().replace(/ForChange_old/g, 'ForChange_new'));
+      await writeFileWithChangeMTime(filePathForChangeJs, dataJs.toString().replace(/ForChange_old/g, 'ForChange_new'));
 
       const filePathForChangeHtml = path.join(themesSourceFolder, 'ForChange.html');
       const dataHtml = await fs.readFile(filePathForChangeHtml);
-      await fs.writeFile(filePathForChangeHtml, dataHtml.toString().replace(/FOR_CHANGE_OLD/g, 'FOR_CHANGE_NEW'));
+      await writeFileWithChangeMTime(filePathForChangeHtml, dataHtml.toString().replace(/FOR_CHANGE_OLD/g, 'FOR_CHANGE_NEW'));
 
       //запустим повторно таску
       await runBuildWorkflow();
