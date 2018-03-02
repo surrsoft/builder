@@ -83,10 +83,10 @@ module.exports = function(grunt) {
       self.size.before += unCompiledCssString.length;
 
       if (options.sourceMap) {
-         compiledCssString += '\n/*# sourceMappingURL=' + path.basename(file.dest) + '.map */';
-         await fs.writeFile(file.dest + '.map', compiled.sourceMap.toString());
+         compiledCssString += `\n/*# sourceMappingURL=${path.basename(file.dest)}.map */`;
+         await fs.writeFile(`${file.dest}.map`, compiled.sourceMap.toString());
          self.created.maps++;
-         logger.debug('File "' + file.dest + '.map" created');
+         logger.debug(`File "${file.dest}.map" created`);
       }
 
       if (self.data.splittedCore) {
@@ -105,7 +105,7 @@ module.exports = function(grunt) {
       await fs.writeFile(file.dest, compiledCssString);
       self.created.files++;
       self.size.after += compiledCssString.length;
-      logger.debug('File "' + file.dest + '" created ');
+      logger.debug(`File "${file.dest}" created.`);
 
    };
 
@@ -130,7 +130,7 @@ module.exports = function(grunt) {
          self.nodes = Object.keys(self.mDeps.nodes);
       } catch (err) {
          logger.error({
-            message: 'Can\'t read module-dependencies',
+            message: `Can't read module-dependencies`,
             error: err,
             filePath: mDepsPath
          });
@@ -145,11 +145,11 @@ module.exports = function(grunt) {
       }
 
       if (self.created.maps > 0) {
-         logger.info(self.created.maps + ' source' + grunt.util.pluralize(self.files.length, 'map/maps') + ' created.');
+         logger.info(`${self.created.maps} source${grunt.util.pluralize(self.files.length, 'map/maps')} created.`);
       }
 
       if (self.created.files > 0) {
-         logger.info(self.created.files + ' ' + grunt.util.pluralize(self.files.length, 'file/files') + ' created. ');
+         logger.info(`${self.created.files} ${grunt.util.pluralize(self.files.length, 'file/files')} created. `);
       } else {
          logger.warning('No files created.');
       }
