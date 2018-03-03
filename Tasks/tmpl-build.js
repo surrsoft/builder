@@ -38,7 +38,7 @@ function stripBOM(x) {
  * @param {Function} callback - функция коллбэк
  * @param {Object} deps - список зависмостей для вставки в зависимости define
  */
-function creatTemplate(nameModule, contents, original, nodes, applicationRoot, callback, deps) {
+function creatTemplate(nameModule, contents, original, nodes, applicationRoot, splittedCore, callback, deps) {
    let
       fullPath = path.join(applicationRoot, nodes[nameModule].path).replace(dblSlashes, '/'),
       nameNotPlugin = nameModule.substr(nameModule.lastIndexOf('!') + 1),
@@ -100,17 +100,38 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, c
       data += jsModule;
    }
 
-   fs.writeFile(fullPath.replace(extFile, '.original$1'), original, function() {
-      fs.writeFile(fullPath, data, function(err) {
+   /**
+    * Позорный костыль для обратной поддержки препроцессора
+    */
+   if (splittedCore) {
+      fs.writeFile(fullPath.replace(extFile, '.min$1'), data, function(err) {
          if (!err) {
             nodes[nameModule].amd = true;
+            nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
             if (nodes[secondName]) {
-               nodes[secondName].amd = true;
+               try {
+                  nodes[secondName].amd = true;
+                  nodes[secondName].path = nodes[secondName].path.replace(extFile, '.min$1');
+               } catch(e) {
+                  console.dir(e.stack);
+               }
             }
          }
          setImmediate(callback.bind(null, err, nameModule, fullPath));
       });
-   });
+   } else {
+      fs.writeFile(fullPath.replace(extFile, '.original$1'), original, function() {
+         fs.writeFile(fullPath, data, function(err) {
+            if (!err) {
+               nodes[nameModule].amd = true;
+               if (nodes[secondName]) {
+                  nodes[secondName].amd = true;
+               }
+            }
+            setImmediate(callback.bind(null, err, nameModule, fullPath));
+         });
+      });
+   }
 }
 
 module.exports = function(grunt) {
@@ -123,7 +144,8 @@ module.exports = function(grunt) {
          application = this.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         splittedCore = this.data.splittedCore;
 
       let componentsProperties = {};
 
@@ -164,7 +186,14 @@ module.exports = function(grunt) {
                      });
                      return setImmediate(callback);
                   }
-
+                  if (splittedCore) {
+                     /**
+                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
+                      * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
+                      * когда шаблон будет генерироваться находу, как в дебаге.
+                      */
+                     fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
+                  }
                   const templateRender = Object.create(tmpl);
 
                   const original = html;
@@ -213,7 +242,7 @@ module.exports = function(grunt) {
 
                               const contents = tclosureStr + depsStr + result.join('');
 
-                              creatTemplate(fullName, contents, original, nodes, applicationRoot, callback, _deps);
+                              creatTemplate(fullName, contents, original, nodes, applicationRoot, splittedCore, callback, _deps);
 
                            } catch (error) {
                               logger.warning({
@@ -266,7 +295,8 @@ module.exports = function(grunt) {
          application = this.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         splittedCore = this.data.splittedCore;
 
       async.eachOfLimit(nodes, 2, function(value, fullName, callback) {
          if (fullName.indexOf('html!') === 0) {
@@ -286,7 +316,14 @@ module.exports = function(grunt) {
                   });
                   return setImmediate(callback);
                }
-
+               if (splittedCore) {
+                  /**
+                   * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
+                   * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
+                   * когда шаблон будет генерироваться находу, как в дебаге.
+                   */
+                  fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
+               }
                const original = html;
                html = stripBOM(html);
 
@@ -307,7 +344,7 @@ module.exports = function(grunt) {
 
                   const contents = template.toString().replace(/[\n\r]/g, '');
 
-                  creatTemplate(fullName, contents, original, nodes, applicationRoot, callback);
+                  creatTemplate(fullName, contents, original, nodes, applicationRoot, splittedCore, callback);
 
                } catch (error) {
                   logger.warning({

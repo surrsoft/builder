@@ -21,16 +21,6 @@ const
    jsModules = {},
    requirejsPaths = {};
 
-function removeLeadingSlash(filePath) {
-   let newFilePath = filePath;
-   if (newFilePath) {
-      const head = newFilePath.charAt(0);
-      if (head === '/' || head === '\\') {
-         newFilePath = newFilePath.substr(1);
-      }
-   }
-   return newFilePath;
-}
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', async function() {
@@ -89,7 +79,7 @@ module.exports = function(grunt) {
          }
 
          contentsModules[moduleName] = tsdModuleName;
-         requirejsPaths[tsdModuleName] = removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
+         requirejsPaths[tsdModuleName] = helpers.removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
 
          helpers.recurse(input, async function(file, callbackForProcessingFile) {
             try {
@@ -148,7 +138,7 @@ module.exports = function(grunt) {
             contents.jsModules = jsModules;
             contents.htmlNames = htmlNames;
 
-            requirejsPaths.WS = removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
+            requirejsPaths.WS = helpers.removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
 
             contents.requirejsPaths = requirejsPaths;
 
