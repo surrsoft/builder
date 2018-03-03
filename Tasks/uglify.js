@@ -6,11 +6,21 @@ const
    path = require('path'),
    async = require('async'),
    runUglifyJs = require('../lib/run-uglify-js'),
-   jsEXT = /(\.modulepack)?(\.js)$/,
-   tmplEXT = /\.tmpl$/,
-   xhtmlEXT = /\.xhtml$/,
+   extensions = [/(\.modulepack)?(\.js)$/, /\.tmpl$/, /\.xhtml$/, /\.jstpl$/, /\.json$/],
    helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger();
+
+function getCurrentEXT(currentPath) {
+   for (let i = 0; i < extensions.length; i++) {
+      if (currentPath.match(extensions[i])) {
+         //если расширение .js или .modulepack.js, надо вернуть полный результат
+         if (i === 0) {
+            return currentPath.match(extensions[i])[0];
+         }
+         return extensions[i];
+      }
+   }
+}
 
 /**
  * Функция возвращает путь до минифицированного файла в зависимости от расширения
@@ -79,7 +89,7 @@ module.exports = function uglifyJsTask(grunt) {
                currentPath = path.normalize(file),
                originalText = fs.readFileSync(currentPath, 'utf8'),
                isMarkup = originalText.match(/define\("(tmpl!|html!)/),
-               currentEXT = currentPath.match(jsEXT) ? currentPath.match(jsEXT)[0] : currentPath.match(tmplEXT) ? tmplEXT : xhtmlEXT;
+               currentEXT = getCurrentEXT(currentPath);
 
             let
                currentEXTString = currentEXT.toString(),
@@ -89,19 +99,38 @@ module.exports = function uglifyJsTask(grunt) {
                }),
                sourceMapUrl, minModulePath, minMapPath;
 
-            currentEXTString = currentEXTString.includes('.js') ? currentEXTString : currentEXTString.slice(2, currentEXTString.length - 2);
+            currentEXTString = currentEXTString.match(/\.js$/) ? currentEXTString : currentEXTString.slice(2, currentEXTString.length - 2);
 
             /**
              * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
              */
-            if (!currentEXTString.match(jsEXT) && !isMarkup) {
+            if ((currentEXTString.match(extensions[1]) || currentEXTString.match(extensions[2])) && !isMarkup) {
                grunt.log.ok(`Template ${currentPath} doesnt generated. Check tmpl/xhtml-build task logs for errors. `);
                return;
             }
             if (splittedCore) {
                minModulePath = getMinModulePath(currentPath, currentEXT, currentEXTString);
+
+               /**
+                * jstpl копируем напрямую, их минифицировать никак нельзя,
+                * но .min файл присутствовать должен во избежание 404х
+                */
+               if (currentEXTString === '.jstpl') {
+                  fs.writeFileSync(minModulePath, originalText);
+                  return;
+               }
+
+               /**
+                * Для json воспользуемся нативной функцией JSON.stringify, чтобы избавиться
+                * от табуляции и получить минифицированный вариант
+                */
+               if (currentEXTString === '.json') {
+                  fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
+                  return;
+               }
+
                minMapPath = `${minModulePath}.map`;
-               if (currentEXTString.match(jsEXT) && !minModulePath.includes('.original.js')) {
+               if (currentEXTString.match(extensions[0]) && !minModulePath.includes('.original.js')) {
                   sourceMapUrl = path.basename(minMapPath);
                }
             }
