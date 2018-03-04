@@ -97,7 +97,7 @@ module.exports = function(grunt) {
             });
          if (currentNode.length > 0) {
             currentNode.forEach(function(node) {
-               self.mDeps.nodes[node].path = file.dest;
+               self.mDeps.nodes[node].path = currentNodePath;
             });
          }
       }
