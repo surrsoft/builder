@@ -11,10 +11,35 @@ const oldToNew = require('../resources/old_to_new.json');
 const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
 const runJsonGenerator = require('../lib/i18n/run-json-generator');
+const helpers = require('../lib/helpers');
+const WSCoreReg = /(^ws\/)(deprecated)?/;
+const requirejsPaths = global.requirejs.s.contexts._.config.paths;
 
-function errorTmplBuild(err, fullName, fullPath) {
+function removeLastSymbolIfSlash(path) {
+   const lastSymbol = path[path.length - 1];
+
+   if (lastSymbol === '/' || lastSymbol === '\\') {
+      return path.slice(0, path.length - 1);
+   }
+   return path;
+}
+
+function checkPathForInterfaceModule(path) {
+   let resultPath = '', resultNode = '';
+   Object.keys(requirejsPaths).forEach(function(node) {
+      let nodePath = helpers.prettifyPath(requirejsPaths[node]);
+      if (path.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
+         resultPath = nodePath;
+         resultNode = node;
+      }
+   });
+
+   return resultPath ? path.replace(resultPath, resultNode) : path;
+}
+
+function errorTmplBuild(err, currentNode, fullPath) {
    logger.error({
-      message: `Resources error. An ERROR occurred while building template ${fullName}!`,
+      message: `Resources error. An ERROR occurred while building template ${currentNode}!`,
       filePath: fullPath,
       error: err
    });
@@ -38,9 +63,8 @@ function stripBOM(x) {
  * @param {Function} callback - функция коллбэк
  * @param {Object} deps - список зависмостей для вставки в зависимости define
  */
-function creatTemplate(nameModule, contents, original, nodes, applicationRoot, splittedCore, callback, deps) {
+function creatTemplate(fullPath, nameModule, contents, original, nodes, applicationRoot, splittedCore, callback, deps) {
    let
-      fullPath = path.join(applicationRoot, nodes[nameModule].path).replace(dblSlashes, '/'),
       nameNotPlugin = nameModule.substr(nameModule.lastIndexOf('!') + 1),
       plugin = nameModule.substr(0, nameModule.lastIndexOf('!') + 1),
       needPushJs = false,
@@ -105,7 +129,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, s
     */
    if (splittedCore) {
       fs.writeFile(fullPath.replace(extFile, '.min$1'), data, function(err) {
-         if (!err) {
+         if (!err && nodes.hasOwnProperty(nameModule)) {
             nodes[nameModule].amd = true;
             nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
             if (nodes[secondName]) {
@@ -122,7 +146,7 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, s
    } else {
       fs.writeFile(fullPath.replace(extFile, '.original$1'), original, function() {
          fs.writeFile(fullPath, data, function(err) {
-            if (!err) {
+            if (!err && nodes.hasOwnProperty(nameModule)) {
                nodes[nameModule].amd = true;
                if (nodes[secondName]) {
                   nodes[secondName].amd = true;
@@ -135,17 +159,29 @@ function creatTemplate(nameModule, contents, original, nodes, applicationRoot, s
 }
 
 module.exports = function(grunt) {
+   const splittedCore = grunt.option('splitted-core');
+
+   if (splittedCore) {
+      Object.keys(requirejsPaths).forEach(function(path) {
+         let result = requirejsPaths[path].match(WSCoreReg);
+         if (result && result[2]) {
+            requirejsPaths[path] = removeLastSymbolIfSlash(requirejsPaths[path].replace(WSCoreReg, 'resources/WS.Deprecated/'));
+         }
+         requirejsPaths[path] = removeLastSymbolIfSlash(requirejsPaths[path].replace(WSCoreReg, 'resources/WS.Core/'));
+      });
+   }
+
    grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача tmpl-build.`);
       const start = Date.now();
       const
-         done = this.async(),
-         root = this.data.root,
-         application = this.data.application,
+         self = this,
+         done = self.async(),
+         root = self.data.root,
+         application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes,
-         splittedCore = this.data.splittedCore;
+         nodes = mDeps.nodes;
 
       let componentsProperties = {};
 
@@ -165,111 +201,115 @@ module.exports = function(grunt) {
             tclosureStr = 'var tclosure=deps[0];';
          }
 
-         async.eachOfLimit(nodes, 20, function(value, fullName, callback) {
-            if (fullName.indexOf('tmpl!') === 0) {
-               let filename = value.path.replace(dblSlashes, '/'),
-                  fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/'),
-                  _deps = JSON.parse(JSON.stringify(deps)),
-                  result = ['var templateFunction = '];
-               if (value.amd) {
+         async.eachOfLimit(self.files, 20, function(value, index, callback) {
+            let
+               fullPath = helpers.prettifyPath(value.dest),
+               filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
+               _deps = JSON.parse(JSON.stringify(deps)),
+               result = ['var templateFunction = '],
+               currentNode = Object.keys(nodes).find(function(node) {
+                  return mDeps.nodes[node].path === filename;
+               });
+
+            /**
+             * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
+             * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
+             */
+            if (!currentNode) {
+               currentNode = `tmpl!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.tmpl$/g, '')}`;
+            }
+
+            const conf = {config: config, filename: filename, fromBuilderTmpl: true};
+            fs.readFile(fullPath, 'utf8', function(err, html) {
+               if (err) {
+                  logger.warning({
+                     message: 'Potential 404 error. An ERROR occurred while building template',
+                     filePath: fullPath,
+                     error: err
+                  });
+                  return setImmediate(callback);
+               }
+               if (splittedCore) {
+                  /**
+                   * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
+                   * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
+                   * когда шаблон будет генерироваться находу, как в дебаге.
+                   */
+                  fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
+               }
+               const templateRender = Object.create(tmpl);
+
+               const original = html;
+               html = stripBOM(html);
+
+               if (html.indexOf('define') === 0) {
                   return setImmediate(callback);
                }
 
+               try {
+                  templateRender.getComponents(html).forEach(function(dep) {
+                     _deps.push(dep);
+                  });
 
-               const conf = {config: config, filename: filename, fromBuilderTmpl: true};
-               fs.readFile(fullPath, 'utf8', function(err, html) {
-                  if (err) {
-                     logger.warning({
-                        message: 'Potential 404 error. An ERROR occurred while building template',
-                        filePath: fullPath,
-                        error: err
-                     });
-                     return setImmediate(callback);
-                  }
-                  if (splittedCore) {
-                     /**
-                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
-                      * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
-                      * когда шаблон будет генерироваться находу, как в дебаге.
-                      */
-                     fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
-                  }
-                  const templateRender = Object.create(tmpl);
+                  tmplLocalizator.parseTmpl(html, filename, componentsProperties)
+                     .then(function(traversedObj) {
+                        const traversed = traversedObj.astResult;
+                        try {
+                           if (traversed.__newVersion === true) {
+                              /**
+                               * Новая версия рендера, для шаблонизатора. В результате функция в строке.
+                               */
+                              const tmplFunc = templateRender.func(traversed, conf);
+                              result.push(tmplFunc.toString() + ';');
 
-                  const original = html;
-                  html = stripBOM(html);
-
-                  if (html.indexOf('define') === 0) {
-                     return setImmediate(callback);
-                  }
-
-                  try {
-                     templateRender.getComponents(html).forEach(function(dep) {
-                        _deps.push(dep);
-                     });
-
-                     tmplLocalizator.parseTmpl(html, filename, componentsProperties)
-                        .then(function(traversedObj) {
-                           const traversed = traversedObj.astResult;
-                           try {
-                              if (traversed.__newVersion === true) {
-                                 /**
-                                  * Новая версия рендера, для шаблонизатора. В результате функция в строке.
-                                  */
-                                 const tmplFunc = templateRender.func(traversed, conf);
-                                 result.push(tmplFunc.toString() + ';');
-
-                                 if (tmplFunc.includedFunctions) {
-                                    result.push('templateFunction.includedFunctions = {');
-                                    result.push('};');
-                                 }
-                              } else {
-                                 result.push('function loadTemplateData(data, attributes) {');
-                                 result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' + fullName + '"}, attributes);};');
+                              if (tmplFunc.includedFunctions) {
+                                 result.push('templateFunction.includedFunctions = {');
+                                 result.push('};');
                               }
-
-                              result.push('templateFunction.stable = true;');
-                              result.push('templateFunction.toJSON = function() {return {$serialized$: "func", module: "' + fullName + '"}};');
-                              result.push('return templateFunction;');
-
-                              _deps.splice(0, 2);
-                              let
-                                 depsStr = 'var _deps = {};',
-                                 i = tclosure ? 1 : 0;
-                              for (; i < _deps.length; i++) {
-                                 depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
-                              }
-
-                              const contents = tclosureStr + depsStr + result.join('');
-
-                              creatTemplate(fullName, contents, original, nodes, applicationRoot, splittedCore, callback, _deps);
-
-                           } catch (error) {
-                              logger.warning({
-                                 message: 'An ERROR occurred while building template',
-                                 filePath: fullPath,
-                                 error: error
-                              });
-                              setImmediate(callback);
+                           } else {
+                              result.push('function loadTemplateData(data, attributes) {');
+                              result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' + currentNode + '"}, attributes);};');
                            }
-                        }, function(error) {
+
+                           result.push('templateFunction.stable = true;');
+                           result.push('templateFunction.toJSON = function() {return {$serialized$: "func", module: "' + currentNode + '"}};');
+                           result.push('return templateFunction;');
+
+                           _deps.splice(0, 2);
+                           let
+                              depsStr = 'var _deps = {};',
+                              i = tclosure ? 1 : 0;
+                           for (; i < _deps.length; i++) {
+                              depsStr += '_deps["' + _deps[i] + '"] = deps[' + i + '];';
+                           }
+
+                           const contents = tclosureStr + depsStr + result.join('');
+
+                           creatTemplate(fullPath, currentNode, contents, original, nodes, applicationRoot, splittedCore, callback, _deps);
+
+                        } catch (error) {
                            logger.warning({
                               message: 'An ERROR occurred while building template',
                               filePath: fullPath,
                               error: error
                            });
                            setImmediate(callback);
+                        }
+                     }, function(error) {
+                        logger.warning({
+                           message: 'An ERROR occurred while building template',
+                           filePath: fullPath,
+                           error: error
                         });
-                  } catch (error) {
-                     errorTmplBuild(error, fullName, fullPath);
-                  }
-               });
-            } else {
-               setImmediate(callback);
-            }
-         }, function(err, fullName, fullPath) {
+                        setImmediate(callback);
+                     });
+               } catch (error) {
+                  errorTmplBuild(error, currentNode, fullPath);
+               }
+            });
+         }, function(err, currentNode, fullPath) {
             if (err) {
-               errorTmplBuild(err, fullName, fullPath);
+               errorTmplBuild(err, currentNode, fullPath);
             }
 
             try {
@@ -290,77 +330,81 @@ module.exports = function(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача xhtml-build.`);
       const start = Date.now();
       const
-         done = this.async(),
-         root = this.data.root,
-         application = this.data.application,
+         self = this,
+         done = self.async(),
+         root = self.data.root,
+         application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes,
-         splittedCore = this.data.splittedCore;
+         nodes = mDeps.nodes;
 
-      async.eachOfLimit(nodes, 2, function(value, fullName, callback) {
-         if (fullName.indexOf('html!') === 0) {
-            let filename = value.path.replace(dblSlashes, '/'),
-               fullPath = path.join(applicationRoot, filename).replace(dblSlashes, '/');
+      async.eachOfLimit(self.files, 2, function(value, index, callback) {
+         let
+            fullPath = helpers.prettifyPath(value.dest),
+            filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
+            currentNode = Object.keys(nodes).find(function(node) {
+               return mDeps.nodes[node].path === filename;
+            });
 
-            if (value.amd) {
+         /**
+          * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
+          * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
+          */
+         if (!currentNode) {
+            currentNode = `html!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.xhtml$/g, '')}`;
+         }
+
+         fs.readFile(fullPath, 'utf8', function(err, html) {
+            if (err) {
+               logger.warning({
+                  message: 'Potential 404 error. An ERROR occurred while building template',
+                  filePath: fullPath,
+                  error: err
+               });
+               return setImmediate(callback);
+            }
+            if (splittedCore) {
+               /**
+                * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
+                * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
+                * когда шаблон будет генерироваться находу, как в дебаге.
+                */
+               fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
+            }
+            const original = html;
+            html = stripBOM(html);
+
+            if (html.indexOf('define') === 0) {
                return setImmediate(callback);
             }
 
-            fs.readFile(fullPath, 'utf8', function(err, html) {
-               if (err) {
-                  logger.warning({
-                     message: 'Potential 404 error. An ERROR occurred while building template',
-                     filePath: fullPath,
-                     error: err
-                  });
-                  return setImmediate(callback);
-               }
-               if (splittedCore) {
-                  /**
-                   * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
-                   * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
-                   * когда шаблон будет генерироваться находу, как в дебаге.
-                   */
-                  fs.writeFileSync(fullPath.replace(extFile, '.min$1'), html);
-               }
-               const original = html;
-               html = stripBOM(html);
+            try {
+               let config, template;
 
-               if (html.indexOf('define') === 0) {
-                  return setImmediate(callback);
+               config = DoT.getSettings();
+
+               if (module.encode) {
+                  config.encode = config.interpolate;
                }
 
-               try {
-                  let config, template;
+               template = DoT.template(html, config);
 
-                  config = DoT.getSettings();
+               const contents = template.toString().replace(/[\n\r]/g, '');
 
-                  if (module.encode) {
-                     config.encode = config.interpolate;
-                  }
+               creatTemplate(fullPath, currentNode, contents, original, nodes, applicationRoot, splittedCore, callback);
 
-                  template = DoT.template(html, config);
-
-                  const contents = template.toString().replace(/[\n\r]/g, '');
-
-                  creatTemplate(fullName, contents, original, nodes, applicationRoot, splittedCore, callback);
-
-               } catch (error) {
-                  logger.warning({
-                     message: 'An ERROR occurred while building template',
-                     filePath: fullPath,
-                     error: error
-                  });
-                  setImmediate(callback);
-               }
-            });
-         } else {
-            setImmediate(callback);
-         }
-      }, function(err, fullName, fullPath) {
+            } catch (error) {
+               logger.warning({
+                  message: 'An ERROR occurred while building template',
+                  filePath: fullPath,
+                  error: error
+               });
+               setImmediate(callback);
+            }
+         });
+      }, function(err, currentNode, fullPath) {
          if (err) {
-            errorTmplBuild(err, fullName, fullPath);
+            errorTmplBuild(err, currentNode, fullPath);
          }
 
          try {
