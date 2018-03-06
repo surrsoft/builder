@@ -12,7 +12,7 @@
       "Tasks/"
    ],
    "scripts": {
-      "test": "node ./node_modules/mocha/bin/mocha -R xunit > xunit-result.xml",
+      "test": "node ./node_modules/mocha/bin/mocha -R xunit --reporter-options output=xunit-result.xml > xunit.log",
       "check-code": "node ./node_modules/eslint/bin/eslint -c=.eslintrc -f=junit . > check-code-result.xml",
       "fix": "node ./node_modules/eslint/bin/eslint -c=.eslintrc --fix ."
    },
