@@ -45,12 +45,14 @@ const timeout = function(ms) {
 // Поэтому просто убеждаемся, что mtime поменялся и идём дальше.
 const writeFileWithChangeMTime = async function(filePath, data) {
    const oldMTime = await getMTime(filePath);
-   await fs.writeFile(filePath, data);
-   const newMTime = await getMTime(filePath);
-   if (oldMTime === newMTime) {
+   console.log(`Записываем файл ${filePath}. Старый mtime = ${oldMTime}`);
+   let newMTime = oldMTime;
+   while (oldMTime === newMTime) {
       await timeout(1);
-      await writeFileWithChangeMTime(filePath, data);
+      await fs.writeFile(filePath, data);
+      newMTime = await getMTime(filePath);
    }
+   console.log(`Записали файл ${filePath}. Новый mtime = ${newMTime}`);
 };
 
 //нужно проверить что происходит:
