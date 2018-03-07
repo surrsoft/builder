@@ -1,4 +1,4 @@
-/* eslint-disable no-invalid-self */
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const
@@ -7,7 +7,8 @@ const
    util = require('util'),
    CleanCSS = require('clean-css'),
    helpers = require('../lib/helpers'),
-   logger = require('../lib/logger').logger();
+   logger = require('../lib/logger').logger(),
+   async = require('async');
 
 module.exports = function(grunt) {
 
@@ -106,7 +107,28 @@ module.exports = function(grunt) {
       self.created.files++;
       self.size.after += compiledCssString.length;
       logger.debug(`File "${file.dest}" created.`);
+   };
 
+   const minifyFiles = (self, applicationRoot) => {
+      return new Promise((resolve, reject) => {
+         async.eachLimit(self.files, 20, async(file) => {
+            try {
+               await minifyCSS(self, file, applicationRoot);
+            } catch (err) {
+               logger.error({
+                  message: `Проблема в работе minifyCSS для ${file.dest}`,
+                  error: err
+               });
+            }
+         }, (err, result) => {
+            if (!err) {
+               logger.info('все cssки успешно минифицированы');
+               resolve(result);
+            } else {
+               reject(err);
+            }
+         });
+      });
    };
 
    grunt.registerMultiTask('cssmin', 'Minify CSS', async function() {
@@ -130,14 +152,14 @@ module.exports = function(grunt) {
          self.nodes = Object.keys(self.mDeps.nodes);
       } catch (err) {
          logger.error({
-            message: `Can't read module-dependencies`,
+            message: 'Can\'t read module-dependencies',
             error: err,
             filePath: mDepsPath
          });
       }
 
       //выполняем минификацию css
-      await Promise.all(self.files.map(file => minifyCSS(self, file, applicationRoot)));
+      await minifyFiles(self, applicationRoot);
 
       if (self.data.splittedCore) {
          //пишем module-dependencies, если производили в нём изменения
