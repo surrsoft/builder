@@ -208,7 +208,7 @@ module.exports = function(grunt) {
                _deps = JSON.parse(JSON.stringify(deps)),
                result = ['var templateFunction = '],
                currentNode = Object.keys(nodes).find(function(node) {
-                  return mDeps.nodes[node].path === filename;
+                  return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
                });
 
             /**
@@ -343,7 +343,7 @@ module.exports = function(grunt) {
             fullPath = helpers.prettifyPath(value.dest),
             filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
             currentNode = Object.keys(nodes).find(function(node) {
-               return mDeps.nodes[node].path === filename;
+               return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
             });
 
          /**
