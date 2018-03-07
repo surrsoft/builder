@@ -7,7 +7,8 @@ const
    util = require('util'),
    CleanCSS = require('clean-css'),
    helpers = require('../lib/helpers'),
-   logger = require('../lib/logger').logger();
+   logger = require('../lib/logger').logger(),
+   async = require('async');
 
 module.exports = function(grunt) {
 
@@ -27,86 +28,115 @@ module.exports = function(grunt) {
       return results.filter(currentPath => !!currentPath);
    };
 
-   const minifyCSS = async(self, file, applicationRoot) => {
-      const
-         options = self.options({
-            rebase: false,
-            report: 'min',
-            sourceMap: false
-         }),
-         availableFiles = await getAvailableFiles(file.src),
-         fileSourcePath = helpers.prettifyPath(availableFiles.join(','));
+   const minifyCSS = (self, file, applicationRoot) => {
+      return new Promise(async(resolve, reject) => {
+         try {
+            const
+               options = self.options({
+                  rebase: false,
+                  report: 'min',
+                  sourceMap: false
+               }),
+               availableFiles = await getAvailableFiles(file.src),
+               fileSourcePath = helpers.prettifyPath(availableFiles.join(','));
 
-      let
-         compiled = '',
-         errors = '';
+            let
+               compiled = '',
+               errors = '';
 
-      options.rebaseTo = path.dirname(file.dest);
+            options.rebaseTo = path.dirname(file.dest);
 
-      try {
-         compiled = new CleanCSS(options).minify(availableFiles);
+            try {
+               compiled = new CleanCSS(options).minify(availableFiles);
 
-         if (compiled.errors.length) {
-            errors = compiled.errors.toString();
-            logger.warning({
-               message: `Error while minifying css: ${errors}`,
-               filePath: fileSourcePath
-            });
+               if (compiled.errors.length) {
+                  errors = compiled.errors.toString();
+                  logger.warning({
+                     message: `Error while minifying css: ${errors}`,
+                     filePath: fileSourcePath
+                  });
+               }
+
+               if (compiled.warnings.length) {
+                  errors = compiled.warnings.toString();
+                  logger.error({
+                     message: `Error while minifying css: ${errors}`,
+                     filePath: fileSourcePath
+                  });
+               }
+
+               if (options.debug) {
+                  logger.debug(util.format(compiled.stats));
+               }
+            } catch (err) {
+               logger.error({
+                  message: 'CSS minification failed',
+                  error: err,
+                  filePath: availableFiles.toString()
+               });
+            }
+
+            let
+               compiledCssString = errors ? `/*${errors}*/` : compiled.styles;
+
+            const
+               cssStyles = await Promise.all(availableFiles.map(filePath => fs.readFile(filePath))),
+               unCompiledCssString = cssStyles.join('');
+
+            self.size.before += unCompiledCssString.length;
+
+            if (options.sourceMap) {
+               compiledCssString += `\n/*# sourceMappingURL=${path.basename(file.dest)}.map */`;
+               await fs.writeFile(`${file.dest}.map`, compiled.sourceMap.toString());
+               self.created.maps++;
+               logger.debug(`File "${file.dest}.map" created`);
+            }
+
+            if (self.data.splittedCore) {
+               const
+                  currentNodePath = helpers.removeLeadingSlash(file.dest.replace(applicationRoot, '').replace('.min.css', '.css')),
+                  currentNode = self.nodes.filter(function(node) {
+                     return self.mDeps.nodes[node].path === currentNodePath;
+                  });
+               if (currentNode.length > 0) {
+                  currentNode.forEach(function(node) {
+                     self.mDeps.nodes[node].path = currentNodePath;
+                  });
+               }
+            }
+
+            await fs.writeFile(file.dest, compiledCssString);
+            self.created.files++;
+            self.size.after += compiledCssString.length;
+            logger.debug(`File "${file.dest}" created.`);
+            resolve(file.dest);
+         } catch(err) {
+            reject(err);
          }
+      });
+   };
 
-         if (compiled.warnings.length) {
-            errors = compiled.warnings.toString();
-            logger.error({
-               message: `Error while minifying css: ${errors}`,
-               filePath: fileSourcePath
-            });
-         }
-
-         if (options.debug) {
-            logger.debug(util.format(compiled.stats));
-         }
-      } catch (err) {
-         logger.error({
-            message: 'CSS minification failed',
-            error: err,
-            filePath: availableFiles.toString()
+   const minifyFiles = (self, applicationRoot) => {
+      return new Promise((resolve, reject) => {
+         async.eachLimit(self.files, 20, async(file) => {
+            let outputFile;
+            try {
+               outputFile = await minifyCSS(self, file, applicationRoot);
+            } catch (err) {
+               logger.error({
+                  message: `Проблема в работе minifyCSS для ${outputFile}`,
+                  error: err
+               });
+            }
+         }, (err, result) => {
+            if (!err) {
+               logger.info(`все cssки успешно минифицированы`);
+               resolve(result);
+            } else {
+               reject(err);
+            }
          });
-      }
-
-      let
-         compiledCssString = errors ? `/*${errors}*/` : compiled.styles;
-
-      const
-         cssStyles = await Promise.all(availableFiles.map(filePath => fs.readFile(filePath))),
-         unCompiledCssString = cssStyles.join('');
-
-      self.size.before += unCompiledCssString.length;
-
-      if (options.sourceMap) {
-         compiledCssString += `\n/*# sourceMappingURL=${path.basename(file.dest)}.map */`;
-         await fs.writeFile(`${file.dest}.map`, compiled.sourceMap.toString());
-         self.created.maps++;
-         logger.debug(`File "${file.dest}.map" created`);
-      }
-
-      if (self.data.splittedCore) {
-         const
-            currentNodePath = helpers.removeLeadingSlash(file.dest.replace(applicationRoot, '').replace('.min.css', '.css')),
-            currentNode = self.nodes.filter(function(node) {
-               return self.mDeps.nodes[node].path === currentNodePath;
-            });
-         if (currentNode.length > 0) {
-            currentNode.forEach(function(node) {
-               self.mDeps.nodes[node].path = currentNodePath;
-            });
-         }
-      }
-
-      await fs.writeFile(file.dest, compiledCssString);
-      self.created.files++;
-      self.size.after += compiledCssString.length;
-      logger.debug(`File "${file.dest}" created.`);
-
+      });
    };
 
    grunt.registerMultiTask('cssmin', 'Minify CSS', async function() {
@@ -137,7 +167,7 @@ module.exports = function(grunt) {
       }
 
       //выполняем минификацию css
-      await Promise.all(self.files.map(file => minifyCSS(self, file, applicationRoot)));
+      await minifyFiles(self, applicationRoot);
 
       if (self.data.splittedCore) {
          //пишем module-dependencies, если производили в нём изменения
