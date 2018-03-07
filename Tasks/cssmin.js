@@ -1,4 +1,4 @@
-/* eslint-disable no-invalid-self */
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
             }
          }, (err, result) => {
             if (!err) {
-               logger.info(`все cssки успешно минифицированы`);
+               logger.info('все cssки успешно минифицированы');
                resolve(result);
             } else {
                reject(err);
@@ -152,7 +152,7 @@ module.exports = function(grunt) {
          self.nodes = Object.keys(self.mDeps.nodes);
       } catch (err) {
          logger.error({
-            message: `Can't read module-dependencies`,
+            message: 'Can\'t read module-dependencies',
             error: err,
             filePath: mDepsPath
          });
