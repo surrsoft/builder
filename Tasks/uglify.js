@@ -117,7 +117,7 @@ module.exports = function uglifyJsTask(grunt) {
                 */
                if (currentEXTString === '.jstpl') {
                   fs.writeFileSync(minModulePath, originalText);
-                  return;
+                  setImmediate(done);
                }
 
                /**
@@ -134,7 +134,7 @@ module.exports = function uglifyJsTask(grunt) {
                         filePath: currentPath
                      });
                   }
-                  return;
+                  setImmediate(done);
                }
 
                minMapPath = `${minModulePath}.map`;
@@ -175,9 +175,7 @@ module.exports = function uglifyJsTask(grunt) {
           * можно почитать здесь:
           * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
           */
-         async.setImmediate(function() {
-            done();
-         });
+         setImmediate(done);
       }, function(err) {
          if (err) {
             grunt.fail.fatal(err);
