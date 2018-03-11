@@ -125,7 +125,15 @@ module.exports = function uglifyJsTask(grunt) {
                 * от табуляции и получить минифицированный вариант
                 */
                if (currentEXTString === '.json') {
-                  fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
+                  try {
+                     fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
+                  } catch(err) {
+                     logger.error({
+                        message: 'Проблема с парсингом и сохранением json-файла',
+                        error: err,
+                        filePath: currentPath
+                     });
+                  }
                   setImmediate(done);
                }
 
