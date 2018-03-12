@@ -110,33 +110,6 @@ module.exports = function uglifyJsTask(grunt) {
             }
             if (splittedCore) {
                minModulePath = getMinModulePath(currentPath, currentEXT, currentEXTString);
-
-               /**
-                * jstpl копируем напрямую, их минифицировать никак нельзя,
-                * но .min файл присутствовать должен во избежание 404х
-                */
-               if (currentEXTString === '.jstpl') {
-                  fs.writeFileSync(minModulePath, originalText);
-                  setImmediate(done);
-               }
-
-               /**
-                * Для json воспользуемся нативной функцией JSON.stringify, чтобы избавиться
-                * от табуляции и получить минифицированный вариант
-                */
-               if (currentEXTString === '.json') {
-                  try {
-                     fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
-                  } catch(err) {
-                     logger.error({
-                        message: 'Проблема с парсингом и сохранением json-файла',
-                        error: err,
-                        filePath: currentPath
-                     });
-                  }
-                  setImmediate(done);
-               }
-
                minMapPath = `${minModulePath}.map`;
                if (currentEXTString.match(extensions[0]) && !minModulePath.includes('.original.js')) {
                   sourceMapUrl = path.basename(minMapPath);
@@ -146,17 +119,42 @@ module.exports = function uglifyJsTask(grunt) {
             const targetPath = minModulePath ? minModulePath : currentPath;
 
             try {
-               const minified = runUglifyJs(currentPath, originalText, isMarkup, sourceMapUrl);
+               if (splittedCore && currentEXTString === '.jstpl') {
+                  /**
+                   * jstpl копируем напрямую, их минифицировать никак нельзя,
+                   * но .min файл присутствовать должен во избежание 404х
+                   */
+                  fs.writeFileSync(minModulePath, originalText);
+               } else if (splittedCore && currentEXTString === '.json') {
+                  /**
+                   * Для json воспользуемся нативной функцией JSON.stringify, чтобы избавиться
+                   * от табуляции и получить минифицированный вариант
+                   */
+                  try {
+                     fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
+                  } catch (err) {
+                     logger.error({
+                        message: 'Проблема с парсингом и сохранением json-файла',
+                        error: err,
+                        filePath: currentPath
+                     });
+                  }
+               } else {
+                  /**
+                   * для остальных модулей выполняем стандартную минификацию
+                   */
+                  const minified = runUglifyJs(currentPath, originalText, isMarkup, sourceMapUrl);
 
-               if (splittedCore && currentNode.length > 0 && currentEXTString === '.js') {
-                  currentNode.forEach(function(node) {
-                     mDeps.nodes[node].path = mDeps.nodes[node].path.replace(currentEXT, '.min.js');
-                  });
-               }
+                  if (splittedCore && currentNode.length > 0 && currentEXTString === '.js') {
+                     currentNode.forEach(function(node) {
+                        mDeps.nodes[node].path = mDeps.nodes[node].path.replace(currentEXT, '.min.js');
+                     });
+                  }
 
-               fs.writeFileSync(targetPath, minified.code);
-               if (minified.hasOwnProperty('map') && minified.map) {
-                  fs.writeFileSync(minMapPath, minified.map);
+                  fs.writeFileSync(targetPath, minified.code);
+                  if (minified.hasOwnProperty('map') && minified.map) {
+                     fs.writeFileSync(minMapPath, minified.map);
+                  }
                }
             } catch (error) {
                logger.error({
