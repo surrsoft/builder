@@ -1,6 +1,6 @@
 {
    "name": "sbis3-builder", 
-   "version": "3.18.120-BUILD", 
+   "version": "3.18.110-BUILD", 
    "private": true, 
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects", 
    "files": [
@@ -24,9 +24,9 @@
       "fs-extra": "^5.0.0", 
       "grunt": "^1.0.1", 
       "grunt-cli": "^1.2.0", 
-      "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.18.120", 
+      "grunt-contrib-cssmin": "git+ssh://git@git.sbis.ru:sbis/grunt-contrib-cssmin.git#rc-3.18.110", 
       "grunt-text-replace": "^0.4.0", 
-      "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.18.120", 
+      "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.18.110", 
       "gulp": "^4.0.0", 
       "gulp-clean": "^0.4.0", 
       "gulp-chmod": "^2.0.0", 
@@ -41,7 +41,7 @@
       "object-assign": "^4.1.1", 
       "plugin-error": "^1.0.0", 
       "requirejs": "^2.3.5", 
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.120", 
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.110", 
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.100", 
       "through2": "^2.0.3", 
       "uglify-js": "^3.3.9", 
