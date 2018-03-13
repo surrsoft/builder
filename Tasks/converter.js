@@ -69,6 +69,28 @@ module.exports = function(grunt) {
          }
       }
 
+      //пробуем удалить результат предудущей конвертации, если не получается, то ждём 1 секунду и снова пытаемся
+      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов`);
+      let errorRemove = await helpers.tryRemoveFolder(resourcesPath);
+      let attemptRemove = 5;
+      while (errorRemove && attemptRemove) { //eslint-disable-line no-await-in-loop
+         await helpers.delay(1000);
+         grunt.log.ok(`${humanize.date('H:i:s')}: Удаление завершилось с ошибкой, пробуем ещё раз`);
+         errorRemove = await helpers.tryRemoveFolder(resourcesPath);
+         attemptRemove--;
+      }
+      if (errorRemove) {
+         logger.error({
+            message: 'Не удалось очистить директорию',
+            error: errorRemove,
+            filePath: resourcesPath
+         });
+         done();
+         return;
+      }
+      grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено`);
+
+      //обработка модулей
       async.eachSeries(paths, function(input, callbackForProcessingModule) {
          const partsFilePath = input.replace(dblSlashes, '/').split('/');
          const moduleName = partsFilePath[partsFilePath.length - 1];
