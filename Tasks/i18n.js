@@ -173,7 +173,15 @@ module.exports = function(grunt) {
 
       let componentsProperties = {};
       if (optPrepareXhtml || optMakeDict || optJsonGenerate) {
-         componentsProperties = await runJsonGenerator(optModules, optJsonCache);
+         const resultJsonGenerator = await runJsonGenerator(optModules, optJsonCache);
+         for (const error of resultJsonGenerator.errors) {
+            logger.warning({
+               message: 'Ошибка при разборе JSDoc комментариев',
+               filePath: error.filePath,
+               error: error.error
+            });
+         }
+         componentsProperties = resultJsonGenerator.index;
          if (optMakeDict) {
             try {
                ++taskCount;

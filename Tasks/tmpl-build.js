@@ -189,7 +189,15 @@ module.exports = function(grunt) {
       if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
          const modules = grunt.option('modules').replace(/"/g, '');
          const jsonCache = grunt.option('json-cache').replace(/"/g, '');
-         componentsProperties = await runJsonGenerator(modules, jsonCache);
+         const resultJsonGenerator = await runJsonGenerator(modules, jsonCache);
+         for (const error of resultJsonGenerator.errors) {
+            logger.warning({
+               message: 'Ошибка при разборе JSDoc комментариев',
+               filePath: error.filePath,
+               error: error.error
+            });
+         }
+         componentsProperties = resultJsonGenerator.index;
       }
 
       const deps = ['View/Builder/Tmpl', 'View/config'];
