@@ -5,7 +5,7 @@ require('./init-test');
 const path = require('path'),
    fs = require('fs-extra'),
    mkdirp = require('mkdirp'),
-   runJsonGenerator = require('../lib/i18n/run-json-generator');
+   runJsonGenerator = require('sbis3-json-generator/run-json-generator');
 
 const testDirname = path.join(__dirname, 'fixture/run-json-generator');
 const outputPath = path.join(testDirname, 'output');
@@ -21,6 +21,7 @@ async function writeModulesListToFile(modules) {
    return modulesJsonPath;
 }
 
+//просто проверяем, что run-json-generator нормально вызывается.
 describe('run json-generator', function() {
    it('tests', async() => {
       let options,
@@ -40,7 +41,7 @@ describe('run json-generator', function() {
          path.join(testDirname, 'TestModuleWithoutModuleJs')
       ]);
       result = await runJsonGenerator(modulesJsonPath, outputPath);
-      Object.keys(result).length.should.equal(4); //это бага, что в result получается в два раза больше записей, чем нужно
+      Object.keys(result).length.should.equal(2);
 
       result.hasOwnProperty('TestModuleWithoutModuleJs/MyComponent').should.equal(true);
       options = result['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
