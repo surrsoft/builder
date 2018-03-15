@@ -15,6 +15,16 @@ const helpers = require('../lib/helpers');
 const WSCoreReg = /(^ws\/)(deprecated)?/;
 const requirejsPaths = global.requirejs.s.contexts._.config.paths;
 
+function getModulenamesForPaths(mDeps, templateMask) {
+   const namesForPaths = {};
+   Object.keys(mDeps.nodes).forEach(function(node) {
+      if (node.includes(templateMask)) {
+         namesForPaths[helpers.prettifyPath(mDeps.nodes[node].path)] = node;
+      }
+   });
+   return namesForPaths;
+}
+
 function removeLastSymbolIfSlash(path) {
    const lastSymbol = path[path.length - 1];
 
@@ -181,7 +191,8 @@ module.exports = function(grunt) {
          application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         namesForPaths = getModulenamesForPaths(mDeps, 'tmpl!');
 
       let componentsProperties = {};
 
@@ -207,9 +218,7 @@ module.exports = function(grunt) {
                filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
                _deps = JSON.parse(JSON.stringify(deps)),
                result = ['var templateFunction = '],
-               currentNode = Object.keys(nodes).find(function(node) {
-                  return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
-               });
+               currentNode = namesForPaths[filename];
 
             /**
              * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
@@ -336,15 +345,14 @@ module.exports = function(grunt) {
          application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         namesForPaths = getModulenamesForPaths(mDeps, 'html!');
 
       async.eachOfLimit(self.files, 2, function(value, index, callback) {
          let
             fullPath = helpers.prettifyPath(value.dest),
             filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
-            currentNode = Object.keys(nodes).find(function(node) {
-               return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
-            });
+            currentNode = namesForPaths[filename];
 
          /**
           * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
