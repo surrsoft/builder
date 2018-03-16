@@ -10,7 +10,7 @@ const tmplLocalizator = require('../lib/i18n/tmpl-localizator');
 const oldToNew = require('sbis3-ws/ws/core/resources/deprecatedModules.json');
 const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
-const runJsonGenerator = require('sbis3-json-generator/run-json-generator');
+const runJsonGenerator = require('../lib/i18n/run-json-generator');
 const helpers = require('../lib/helpers');
 const WSCoreReg = /(^ws\/)(deprecated)?/;
 const requirejsPaths = global.requirejs.s.contexts._.config.paths;
@@ -37,7 +37,7 @@ function removeLastSymbolIfSlash(path) {
 function checkPathForInterfaceModule(path) {
    let resultPath = '', resultNode = '';
    Object.keys(requirejsPaths).forEach(function(node) {
-      let nodePath = helpers.prettifyPath(requirejsPaths[node]);
+      const nodePath = helpers.prettifyPath(requirejsPaths[node]);
       if (path.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
          resultPath = nodePath;
          resultNode = node;
@@ -146,7 +146,7 @@ function creatTemplate(fullPath, nameModule, contents, original, nodes, applicat
                try {
                   nodes[secondName].amd = true;
                   nodes[secondName].path = nodes[secondName].path.replace(extFile, '.min$1');
-               } catch(e) {
+               } catch (e) {
                   console.dir(e.stack);
                }
             }
@@ -173,7 +173,7 @@ module.exports = function(grunt) {
 
    if (splittedCore) {
       Object.keys(requirejsPaths).forEach(function(path) {
-         let result = requirejsPaths[path].match(WSCoreReg);
+         const result = requirejsPaths[path].match(WSCoreReg);
          if (result && result[2]) {
             requirejsPaths[path] = removeLastSymbolIfSlash(requirejsPaths[path].replace(WSCoreReg, 'resources/WS.Deprecated/'));
          }

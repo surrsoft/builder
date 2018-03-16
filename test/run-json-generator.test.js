@@ -5,7 +5,7 @@ require('./init-test');
 const path = require('path'),
    fs = require('fs-extra'),
    mkdirp = require('mkdirp'),
-   runJsonGenerator = require('sbis3-json-generator/run-json-generator');
+   runJsonGenerator = require('../lib/i18n/run-json-generator');
 
 const testDirname = path.join(__dirname, 'fixture/run-json-generator');
 const outputPath = path.join(testDirname, 'output');

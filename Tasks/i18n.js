@@ -9,7 +9,7 @@ const
    indexDict = require('../lib/i18n/index-dictionary'),
    prepareXHTML = require('../lib/i18n/prepare-xhtml'),
    collectWords = require('../lib/i18n/collect-words'),
-   runJsonGenerator = require('sbis3-json-generator/run-json-generator'),
+   runJsonGenerator = require('../lib/i18n/run-json-generator'),
    normalizeKeyDict = require('../lib/i18n/normalize-key');
 
 /**
