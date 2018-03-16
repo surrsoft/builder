@@ -77,7 +77,7 @@ describe('collect words', () => {
       const test = async(ext) => {
          const moduleDir = 'long/path/moduleName';
          const filePath = path.join(moduleDir, 'file.' + ext);
-         const text = '<a href="/" title="Текст1"><a href="/" title="TestContext2@@Текст2">';
+         const text = '<a href="/" title="Текст1"/><a href="/" title="TestContext2@@Текст2"/>';
          const words = await collectWords(moduleDir, filePath, text, []);
 
          words.length.should.equal(2);
