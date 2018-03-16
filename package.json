@@ -42,7 +42,7 @@
       "plugin-error": "^1.0.0",
       "requirejs": "^2.3.5",
       "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.150",
-      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.100",
+      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.150",
       "through2": "^2.0.3",
       "uglify-js": "^3.3.9",
       "vinyl": "^2.1.0",
