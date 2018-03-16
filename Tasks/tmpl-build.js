@@ -10,10 +10,20 @@ const tmplLocalizator = require('../lib/i18n/tmpl-localizator');
 const oldToNew = require('../resources/old_to_new.json');
 const dblSlashes = /\\/g;
 const extFile = /(\.tmpl|\.x?html)$/;
-const runJsonGenerator = require('../lib/i18n/run-json-generator');
+const runJsonGenerator = require('sbis3-json-generator/run-json-generator');
 const helpers = require('../lib/helpers');
 const WSCoreReg = /(^ws\/)(deprecated)?/;
 const requirejsPaths = global.requirejs.s.contexts._.config.paths;
+
+function getModulenamesForPaths(mDeps, templateMask) {
+   const namesForPaths = {};
+   Object.keys(mDeps.nodes).forEach(function(node) {
+      if (node.includes(templateMask)) {
+         namesForPaths[helpers.prettifyPath(mDeps.nodes[node].path)] = node;
+      }
+   });
+   return namesForPaths;
+}
 
 function removeLastSymbolIfSlash(path) {
    const lastSymbol = path[path.length - 1];
@@ -181,7 +191,8 @@ module.exports = function(grunt) {
          application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         namesForPaths = getModulenamesForPaths(mDeps, 'tmpl!');
 
       let componentsProperties = {};
 
@@ -189,7 +200,15 @@ module.exports = function(grunt) {
       if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
          const modules = grunt.option('modules').replace(/"/g, '');
          const jsonCache = grunt.option('json-cache').replace(/"/g, '');
-         componentsProperties = await runJsonGenerator(modules, jsonCache);
+         const resultJsonGenerator = await runJsonGenerator(modules, jsonCache);
+         for (const error of resultJsonGenerator.errors) {
+            logger.warning({
+               message: 'Ошибка при разборе JSDoc комментариев',
+               filePath: error.filePath,
+               error: error.error
+            });
+         }
+         componentsProperties = resultJsonGenerator.index;
       }
 
       const deps = ['View/Builder/Tmpl', 'View/config'];
@@ -207,9 +226,7 @@ module.exports = function(grunt) {
                filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
                _deps = JSON.parse(JSON.stringify(deps)),
                result = ['var templateFunction = '],
-               currentNode = Object.keys(nodes).find(function(node) {
-                  return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
-               });
+               currentNode = namesForPaths[filename];
 
             /**
              * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
@@ -336,15 +353,14 @@ module.exports = function(grunt) {
          application = self.data.application,
          applicationRoot = path.join(root, application),
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         nodes = mDeps.nodes;
+         nodes = mDeps.nodes,
+         namesForPaths = getModulenamesForPaths(mDeps, 'html!');
 
       async.eachOfLimit(self.files, 2, function(value, index, callback) {
          let
             fullPath = helpers.prettifyPath(value.dest),
             filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
-            currentNode = Object.keys(nodes).find(function(node) {
-               return helpers.prettifyPath(mDeps.nodes[node].path) === filename;
-            });
+            currentNode = namesForPaths[filename];
 
          /**
           * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
