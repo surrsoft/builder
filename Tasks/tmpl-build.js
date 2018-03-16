@@ -314,6 +314,7 @@ module.exports = function(grunt) {
                      });
                } catch (error) {
                   errorTmplBuild(error, currentNode, fullPath);
+                  setImmediate(callback);
                }
             });
          }, function(err, currentNode, fullPath) {
