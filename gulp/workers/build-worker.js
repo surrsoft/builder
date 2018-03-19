@@ -22,11 +22,14 @@ function buildLessJob(paths, resourcePath) {
       try {
          const buffer = await fs.readFile(filePath);
          const obj = await buildLess(filePath, buffer.toString(), resourcePath);
-         const newPath = filePath.replace('.less', '.css');
-         await fs.writeFile(newPath, obj.text);
+         if (!obj.ignoreMessage) {
+            const newPath = filePath.replace('.less', '.css');
+            await fs.writeFile(newPath, obj.text);
+         }
          return {
             path: filePath,
-            imports: obj.imports
+            imports: obj.imports,
+            ignoreMessage: obj.ignoreMessage
          };
       } catch (error) {
          return {

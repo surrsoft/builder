@@ -121,8 +121,7 @@ describe('build less', function() {
       const filePath = path.join(resourcesPath, 'Retail/themes/presto/variables.less');
       const text = '';
       const result = await buildLess(filePath, text, resourcesPath);
-      result.imports.length.should.equal(0);
-      result.text.should.equal('');
+      result.hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
    it('less from ws', async() => {
