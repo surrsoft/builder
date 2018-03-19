@@ -15,8 +15,8 @@ function splitArrayToChunk(inputArray, sizeChunk) {
 }
 
 function generateTaskForCompileLess(changesStore, config, pool) {
-   return function buildLess() {
-      const changedLessFiles = changesStore.getChangedLessFiles();
+   return async function buildLess() {
+      const changedLessFiles = await changesStore.getChangedLessFiles();
       const moduleInfoForLess = changesStore.getModuleInfoForLess();
 
       const processChunk = async function(chunk) {
@@ -32,6 +32,8 @@ function generateTaskForCompileLess(changesStore, config, pool) {
                      filePath: relativePath,
                      moduleInfo: moduleInfo
                   });
+               } else if (result.ignoreMessage) {
+                  logger.debug(result.ignoreMessage);
                } else {
                   changesStore.storeLessFileInfo(result.path, result.imports, result.path.replace('.less', '.css'));
                }
