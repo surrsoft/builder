@@ -128,7 +128,8 @@ describe('gulp/generate-build-workflow.js', function() {
          'contents.js',
          'contents.json',
          'routes-info.json',
-         'static_templates.json'
+         'static_templates.json',
+         'ForRename_old.css' // <--- TODO: этого тут быть не должно. Нужно LESS компилировать из исходников, а не из стенда!
       ]);
 
       //проверим время модификации незменяемого файла и изменяемого в "стенде"

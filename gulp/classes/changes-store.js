@@ -287,8 +287,18 @@ class ChangesStore {
       return Array.from(filesWithDependents);
    }
 
-   getChangedLessFiles() {
-      return ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.lessDependencies);
+   async getChangedLessFiles() {
+      const files = ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.lessDependencies);
+
+      //нужно вернуть только существующие файлы. по зависимостям могли вытащить разное
+      const filesWithExist = await Promise.all(files.map(async(filePath) => {
+         const exists = await fs.pathExists(filePath);
+         return {
+            path: filePath,
+            exists: exists
+         };
+      }));
+      return filesWithExist.filter(obj => obj.exists).map(obj => obj.path);
    }
 
    getModuleInfoForLess() {
