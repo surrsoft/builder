@@ -198,9 +198,10 @@ module.exports = function(grunt) {
 
       //запускаем только при наличии задач локализации
       if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
-         const modules = grunt.option('modules').replace(/"/g, '');
-         const jsonCache = grunt.option('json-cache').replace(/"/g, '');
-         const resultJsonGenerator = await runJsonGenerator(modules, jsonCache);
+         const optModules = grunt.option('modules').replace(/"/g, '');
+         const optJsonCache = grunt.option('json-cache').replace(/"/g, '');
+         const folders = await fs.readJSON(optModules);
+         const resultJsonGenerator = await runJsonGenerator(folders, optJsonCache);
          for (const error of resultJsonGenerator.errors) {
             logger.warning({
                message: 'Ошибка при разборе JSDoc комментариев',

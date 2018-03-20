@@ -173,7 +173,8 @@ module.exports = function(grunt) {
 
       let componentsProperties = {};
       if (optPrepareXhtml || optMakeDict || optJsonGenerate) {
-         const resultJsonGenerator = await runJsonGenerator(optModules, optJsonCache);
+         const folders = await fs.readJSON(optModules);
+         const resultJsonGenerator = await runJsonGenerator(folders, optJsonCache);
          for (const error of resultJsonGenerator.errors) {
             logger.warning({
                message: 'Ошибка при разборе JSDoc комментариев',
