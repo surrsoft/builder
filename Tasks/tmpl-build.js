@@ -34,17 +34,18 @@ function removeLastSymbolIfSlash(path) {
    return path;
 }
 
-function checkPathForInterfaceModule(path) {
+function checkPathForInterfaceModule(currentPath, application) {
    let resultPath = '', resultNode = '';
+   //Учитываем возможность наличия application
+   currentPath = helpers.removeLeadingSlash(helpers.prettifyPath(path.join(application, currentPath)));
    Object.keys(requirejsPaths).forEach(function(node) {
       let nodePath = helpers.prettifyPath(requirejsPaths[node]);
-      if (path.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
+      if (currentPath.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
          resultPath = nodePath;
          resultNode = node;
       }
    });
-
-   return resultPath ? path.replace(resultPath, resultNode) : path;
+   return resultPath ? currentPath.replace(resultPath, resultNode) : currentPath;
 }
 
 function errorTmplBuild(err, currentNode, fullPath) {
@@ -225,7 +226,7 @@ module.exports = function(grunt) {
              * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
              */
             if (!currentNode) {
-               currentNode = `tmpl!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.tmpl$/g, '')}`;
+               currentNode = `tmpl!${checkPathForInterfaceModule(filename, application).replace(/(\.min)?\.tmpl$/g, '')}`;
             }
 
             const conf = {config: config, filename: filename, fromBuilderTmpl: true};
@@ -360,7 +361,7 @@ module.exports = function(grunt) {
           * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
           */
          if (!currentNode) {
-            currentNode = `html!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.xhtml$/g, '')}`;
+            currentNode = `html!${checkPathForInterfaceModule(filename, application).replace(/(\.min)?\.xhtml$/g, '')}`;
          }
 
          fs.readFile(fullPath, 'utf8', function(err, html) {
