@@ -35,7 +35,8 @@ module.exports = function(grunt) {
          application = grunt.option('application') || '',
          applicationName = application.replace('/', '').replace(dblSlashes, ''),
          applicationRoot = this.data.cwd, //eslint-disable-line no-invalid-this
-         resourcesPath = path.join(applicationRoot, 'resources');
+         resourcesPath = path.join(applicationRoot, 'resources'),
+         packaging = grunt.option('package');
 
       let indexModule = 0;
 
@@ -177,6 +178,7 @@ module.exports = function(grunt) {
                }
             }
 
+            contents.deployMode = packaging ? 'Release' : 'Debug';
             const sorted = helpers.sortObject(contents);
             grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
             grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
