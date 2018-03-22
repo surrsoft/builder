@@ -178,7 +178,7 @@ module.exports = function(grunt) {
                }
             }
 
-            contents.deployMode = packaging ? 'Release' : 'Debug';
+            contents.buildMode = packaging ? 'release' : 'debug';
             const sorted = helpers.sortObject(contents);
             grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
             grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
