@@ -78,7 +78,7 @@ function stripBOM(x) {
  * @param {Function} callback - функция коллбэк
  * @param {Object} deps - список зависмостей для вставки в зависимости define
  */
-function creatTemplate(templateOptions, namesForCurrentTemplate, nodes, applicationRoot, splittedCore, callback) {
+function createTemplate(templateOptions, namesForCurrentTemplate, nodes, applicationRoot, splittedCore, callback) {
    const
       fullPath = templateOptions.fullPath,
       contents = templateOptions.contents,
@@ -327,7 +327,7 @@ module.exports = function(grunt) {
                               original: original,
                               deps: _deps
                            };
-                           creatTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
+                           createTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
 
                         } catch (error) {
                            logger.warning({
@@ -439,7 +439,7 @@ module.exports = function(grunt) {
                   contents: contents,
                   original: original
                };
-               creatTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
+               createTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
 
             } catch (error) {
                logger.warning({
