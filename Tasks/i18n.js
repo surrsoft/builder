@@ -2,7 +2,7 @@
 
 const
    path = require('path'),
-   fs = require('fs'),
+   fs = require('fs-extra'),
    async = require('async'),
    helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger(),
@@ -173,7 +173,16 @@ module.exports = function(grunt) {
 
       let componentsProperties = {};
       if (optPrepareXhtml || optMakeDict || optJsonGenerate) {
-         componentsProperties = await runJsonGenerator(optModules, optJsonCache);
+         const folders = await fs.readJSON(optModules);
+         const resultJsonGenerator = await runJsonGenerator(folders, optJsonCache);
+         for (const error of resultJsonGenerator.errors) {
+            logger.warning({
+               message: 'Ошибка при разборе JSDoc комментариев',
+               filePath: error.filePath,
+               error: error.error
+            });
+         }
+         componentsProperties = resultJsonGenerator.index;
          if (optMakeDict) {
             try {
                ++taskCount;

@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const humanize = require('humanize');
 const async = require('async');
 const logger = require('../lib/logger').logger();
@@ -43,7 +43,7 @@ function checkPathForInterfaceModule(currentPath, application) {
    //Учитываем возможность наличия application
    currentPath = helpers.removeLeadingSlash(helpers.prettifyPath(path.join(application, currentPath)));
    Object.keys(requirejsPaths).forEach(function(node) {
-      let nodePath = helpers.prettifyPath(requirejsPaths[node]);
+      const nodePath = helpers.prettifyPath(requirejsPaths[node]);
       if (currentPath.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
          resultPath = nodePath;
          resultNode = node;
@@ -199,7 +199,7 @@ module.exports = function(grunt) {
 
    if (splittedCore) {
       Object.keys(requirejsPaths).forEach(function(path) {
-         let result = requirejsPaths[path].match(WSCoreReg);
+         const result = requirejsPaths[path].match(WSCoreReg);
          if (result && result[2]) {
             requirejsPaths[path] = removeLastSymbolIfSlash(requirejsPaths[path].replace(WSCoreReg, 'resources/WS.Deprecated/'));
          }
@@ -224,9 +224,18 @@ module.exports = function(grunt) {
 
       //запускаем только при наличии задач локализации
       if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
-         const modules = grunt.option('modules').replace(/"/g, '');
-         const jsonCache = grunt.option('json-cache').replace(/"/g, '');
-         componentsProperties = await runJsonGenerator(modules, jsonCache);
+         const optModules = grunt.option('modules').replace(/"/g, '');
+         const optJsonCache = grunt.option('json-cache').replace(/"/g, '');
+         const folders = await fs.readJSON(optModules);
+         const resultJsonGenerator = await runJsonGenerator(folders, optJsonCache);
+         for (const error of resultJsonGenerator.errors) {
+            logger.warning({
+               message: 'Ошибка при разборе JSDoc комментариев',
+               filePath: error.filePath,
+               error: error.error
+            });
+         }
+         componentsProperties = resultJsonGenerator.index;
       }
 
       const deps = ['View/Builder/Tmpl', 'View/config'];
