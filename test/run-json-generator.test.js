@@ -4,7 +4,6 @@ require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra'),
-   mkdirp = require('mkdirp'),
    runJsonGenerator = require('../lib/i18n/run-json-generator');
 
 const testDirname = path.join(__dirname, 'fixture/run-json-generator');
@@ -14,34 +13,27 @@ function clear() {
    return fs.remove(outputPath);
 }
 
-async function writeModulesListToFile(modules) {
-   mkdirp.sync(outputPath);
-   const modulesJsonPath = path.join(outputPath, 'modules.json');
-   await fs.writeFile(modulesJsonPath, JSON.stringify(modules));
-   return modulesJsonPath;
-}
-
 //просто проверяем, что run-json-generator нормально вызывается.
 describe('run json-generator', function() {
    it('tests', async() => {
       let options,
-         modulesJsonPath,
+         modules,
          result;
 
       //пустой список модулей
       await clear();
-      modulesJsonPath = await writeModulesListToFile([]);
-      result = await runJsonGenerator(modulesJsonPath, outputPath);
+      modules = [];
+      result = await runJsonGenerator(modules, outputPath);
       Object.keys(result.index).length.should.equal(0);
       result.errors.length.should.equal(0);
 
       //простой тест
       await clear();
-      modulesJsonPath = await writeModulesListToFile([
+      modules = [
          path.join(testDirname, 'TestModuleWithModuleJs'),
          path.join(testDirname, 'TestModuleWithoutModuleJs')
-      ]);
-      result = await runJsonGenerator(modulesJsonPath, outputPath);
+      ];
+      result = await runJsonGenerator(modules, outputPath);
       result.errors.length.should.equal(0);
       const resultIndex = result.index;
       Object.keys(resultIndex).length.should.equal(2);

@@ -36,7 +36,6 @@
       "humanize": "0.0.9",
       "less": "^2.7.3",
       "minimatch": "^3.0.4",
-      "mkdirp": "^0.5.1",
       "node-uuid": "^1.4.8",
       "object-assign": "^4.1.1",
       "plugin-error": "^1.0.1",
