@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const helpers = require('../lib/helpers');
 const humanize = require('humanize');
 

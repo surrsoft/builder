@@ -1,7 +1,7 @@
 'use strict';
 
 const
-   fs = require('fs'),
+   fs = require('fs-extra'),
    humanize = require('humanize'),
    path = require('path'),
    async = require('async'),

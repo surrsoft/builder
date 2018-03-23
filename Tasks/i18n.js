@@ -2,7 +2,7 @@
 
 const
    path = require('path'),
-   fs = require('fs'),
+   fs = require('fs-extra'),
    async = require('async'),
    helpers = require('../lib/helpers'),
    logger = require('../lib/logger').logger(),

@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const humanize = require('humanize');
 const async = require('async');
 const logger = require('../lib/logger').logger();
