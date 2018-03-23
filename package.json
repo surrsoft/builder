@@ -49,7 +49,7 @@
       "eslint-plugin-node": "^6.0.0",
       "eslint-plugin-promise": "^3.6.0",
       "mocha": "^5.0.0",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#3.18.200/feature/gulp-localization"
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.200"
    },
    "engines": {
       "node": ">=8.9.3"
