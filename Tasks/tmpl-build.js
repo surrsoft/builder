@@ -19,7 +19,11 @@ function getModulenamesForPaths(mDeps, templateMask) {
    const namesForPaths = {};
    Object.keys(mDeps.nodes).forEach(function(node) {
       if (node.includes(templateMask)) {
-         namesForPaths[helpers.prettifyPath(mDeps.nodes[node].path)] = node;
+         let path = helpers.prettifyPath(mDeps.nodes[node].path);
+         if (!namesForPaths[path]) {
+            namesForPaths[path] = [];
+         }
+         namesForPaths[path].push(node);
       }
    });
    return namesForPaths;
@@ -34,17 +38,18 @@ function removeLastSymbolIfSlash(path) {
    return path;
 }
 
-function checkPathForInterfaceModule(path) {
+function checkPathForInterfaceModule(currentPath, application) {
    let resultPath = '', resultNode = '';
+   //Учитываем возможность наличия application
+   currentPath = helpers.removeLeadingSlash(helpers.prettifyPath(path.join(application, currentPath)));
    Object.keys(requirejsPaths).forEach(function(node) {
       const nodePath = helpers.prettifyPath(requirejsPaths[node]);
-      if (path.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
+      if (currentPath.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
          resultPath = nodePath;
          resultNode = node;
       }
    });
-
-   return resultPath ? path.replace(resultPath, resultNode) : path;
+   return resultPath ? currentPath.replace(resultPath, resultNode) : currentPath;
 }
 
 function errorTmplBuild(err, currentNode, fullPath) {
@@ -73,8 +78,15 @@ function stripBOM(x) {
  * @param {Function} callback - функция коллбэк
  * @param {Object} deps - список зависмостей для вставки в зависимости define
  */
-function creatTemplate(fullPath, nameModule, contents, original, nodes, applicationRoot, splittedCore, callback, deps) {
+function createTemplate(templateOptions, namesForCurrentTemplate, nodes, applicationRoot, splittedCore, callback) {
+   const
+      fullPath = templateOptions.fullPath,
+      contents = templateOptions.contents,
+      original = templateOptions.original,
+      deps = templateOptions.deps;
+
    let
+      nameModule = templateOptions.currentNode,
       nameNotPlugin = nameModule.substr(nameModule.lastIndexOf('!') + 1),
       plugin = nameModule.substr(0, nameModule.lastIndexOf('!') + 1),
       needPushJs = false,
@@ -117,8 +129,15 @@ function creatTemplate(fullPath, nameModule, contents, original, nodes, applicat
       data = `define("${nameModule}",${JSON.stringify(deps)},function(){var deps=Array.prototype.slice.call(arguments);${contents}});`;
    }
 
+   if (namesForCurrentTemplate && namesForCurrentTemplate.length > 1) {
+      let firstName = namesForCurrentTemplate.shift();
+      namesForCurrentTemplate.forEach(function(moduleName) {
+         data += `\ndefine("${moduleName}",["${firstName}"],function(template){return template;});`;
+      });
+   }
+
    if (secondName) {
-      data += `define("${secondName}",["require"],function(require){require("${nameModule}");});`;
+      data += `\ndefine("${secondName}",["${nameModule}"],function(module){return module;});`;
    }
 
 
@@ -149,6 +168,13 @@ function creatTemplate(fullPath, nameModule, contents, original, nodes, applicat
                } catch (e) {
                   console.dir(e.stack);
                }
+            }
+            //Если имеются дополнительные дефайны для шаблонов, меняем пути и для них
+            if (namesForCurrentTemplate && namesForCurrentTemplate[0] !== nameModule) {
+               namesForCurrentTemplate.forEach(function(moduleName) {
+                  nodes[moduleName].amd = true;
+                  nodes[moduleName].path = nodes[moduleName].path.replace(extFile, '.min$1');
+               });
             }
          }
          setImmediate(callback.bind(null, err, nameModule, fullPath));
@@ -227,14 +253,14 @@ module.exports = function(grunt) {
                filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
                _deps = JSON.parse(JSON.stringify(deps)),
                result = ['var templateFunction = '],
-               currentNode = namesForPaths[filename];
+               currentNode = namesForPaths[filename] ? namesForPaths[filename][0] : null;
 
             /**
              * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
              * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
              */
             if (!currentNode) {
-               currentNode = `tmpl!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.tmpl$/g, '')}`;
+               currentNode = `tmpl!${checkPathForInterfaceModule(filename, application).replace(/(\.min)?\.tmpl$/g, '')}`;
             }
 
             const conf = {config: config, filename: filename, fromBuilderTmpl: true};
@@ -303,7 +329,14 @@ module.exports = function(grunt) {
 
                            const contents = tclosureStr + depsStr + result.join('');
 
-                           creatTemplate(fullPath, currentNode, contents, original, nodes, applicationRoot, splittedCore, callback, _deps);
+                           const templateOptions = {
+                              fullPath: fullPath,
+                              currentNode: currentNode,
+                              contents: contents,
+                              original: original,
+                              deps: _deps
+                           };
+                           createTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
 
                         } catch (error) {
                            logger.warning({
@@ -362,14 +395,14 @@ module.exports = function(grunt) {
          let
             fullPath = helpers.prettifyPath(value.dest),
             filename = helpers.removeLeadingSlash(fullPath.replace(helpers.prettifyPath(applicationRoot), '')),
-            currentNode = namesForPaths[filename];
+            currentNode = namesForPaths[filename] ? namesForPaths[filename][0] : null;
 
          /**
           * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
           * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
           */
          if (!currentNode) {
-            currentNode = `html!${checkPathForInterfaceModule(filename).replace(/(\.min)?\.xhtml$/g, '')}`;
+            currentNode = `html!${checkPathForInterfaceModule(filename, application).replace(/(\.min)?\.xhtml$/g, '')}`;
          }
 
          fs.readFile(fullPath, 'utf8', function(err, html) {
@@ -409,7 +442,13 @@ module.exports = function(grunt) {
 
                const contents = template.toString().replace(/[\n\r]/g, '');
 
-               creatTemplate(fullPath, currentNode, contents, original, nodes, applicationRoot, splittedCore, callback);
+               const templateOptions = {
+                  fullPath: fullPath,
+                  currentNode: currentNode,
+                  contents: contents,
+                  original: original
+               };
+               createTemplate(templateOptions, namesForPaths[filename], nodes, applicationRoot, splittedCore, callback);
 
             } catch (error) {
                logger.warning({
