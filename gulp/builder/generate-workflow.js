@@ -11,9 +11,9 @@ const
 const
    generateTaskForCompileLess = require('./generate-task/compile-less'),
    generateTaskForBuildModules = require('./generate-task/build-modules'),
-   guardSingleProcess = require('./helpers/guard-single-process.js'),
+   guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
-   BuildConfiguration = require('./classes/build-configuration.js');
+   Configuration = require('./classes/configuration.js');
 
 function generateTaskForTerminatePool(pool) {
    return function terminatePool() {
@@ -46,33 +46,21 @@ function generateTaskForRemoveFiles(changesStore) {
    };
 }
 
-function generateTaskForLockGuard(config) {
-   return function lockGuard() {
-      return guardSingleProcess.lock(config);
-   };
-}
-
-function generateTaskForUnlockGuard() {
-   return function unlockGuard() {
-      return guardSingleProcess.unlock();
-   };
-}
-
 function generateWorkflow(processArgv) {
    //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
-   const config = new BuildConfiguration();
+   const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
    const changesStore = new ChangesStore(config);
 
    const pool = workerPool.pool(
-      path.join(__dirname, './workers/build-worker.js'),
+      path.join(__dirname, './worker.js'),
       {
          maxWorkers: os.cpus().length
       });
 
    return gulp.series(
-      generateTaskForLockGuard(config), //прежде всего
+      guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
       generateTaskForLoadChangesStore(changesStore),
       generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
       generateTaskForBuildModules(changesStore, config, pool),
@@ -81,7 +69,7 @@ function generateWorkflow(processArgv) {
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
          generateTaskForTerminatePool(pool)),
-      generateTaskForUnlockGuard() //после всего
+      guardSingleProcess.generateTaskForUnlock() //после всего
    );
 }
 

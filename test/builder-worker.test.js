@@ -11,7 +11,8 @@ const chai = require('chai'),
 const expect = chai.expect;
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
-   fixtureFolder = path.join(__dirname, 'fixture/build-worker');
+   fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
+   workerPath = path.join(__dirname, '../gulp/builder/worker.js');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -24,9 +25,9 @@ const prepareTest = async function() {
 
 };
 
-describe('gulp/workers/build-worker.js', function() {
+describe('gulp/builder/worker.js', function() {
    it('тест с минимально допустимыми входными данными', async function() {
-      const pool = workerPool.pool(path.join(__dirname, '../gulp/workers/build-worker.js'));
+      const pool = workerPool.pool(workerPath);
 
       try {
          await prepareTest();
@@ -53,7 +54,7 @@ describe('gulp/workers/build-worker.js', function() {
       }
    });
    it('тест с обычными входными данными', async function() {
-      const pool = workerPool.pool(path.join(__dirname, '../gulp/workers/build-worker.js'));
+      const pool = workerPool.pool(workerPath);
 
       try {
          await prepareTest();
@@ -97,7 +98,7 @@ describe('gulp/workers/build-worker.js', function() {
       }
    });
    it('тест корректности возвращаемых ошибок', async function() {
-      const pool = workerPool.pool(path.join(__dirname, '../gulp/workers/build-worker.js'));
+      const pool = workerPool.pool(workerPath);
 
       try {
          await prepareTest();

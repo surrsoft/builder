@@ -5,7 +5,7 @@ require('./init-test');
 const path = require('path'),
    fs = require('fs-extra');
 
-const generateBuildWorkflow = require('../gulp/generate-build-workflow.js');
+const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
@@ -26,9 +26,9 @@ const prepareTest = async function(fixtureFolder) {
    await fs.copy(fixtureFolder, sourceFolder);
 };
 
-const runBuildWorkflow = function() {
+const runWorkflow = function() {
    return new Promise(resolve => {
-      generateBuildWorkflow([`--config="${configPath}"`])(resolve);
+      generateWorkflow([`--config="${configPath}"`])(resolve);
    });
 };
 
@@ -52,11 +52,11 @@ const timeoutForMacOS = async function() {
 //1. при переименовывании файла == добавление/удаление файла
 //2. при изменении файла
 //3. если файл не менять
-describe('gulp/generate-build-workflow.js', function() {
+describe('gulp/builder/generate-workflow.js', function() {
    this.timeout(4000); //eslint-disable-line no-invalid-this
 
    it('проверка компиляции less', async function() {
-      const fixtureFolder = path.join(__dirname, 'fixture/generate-build-workflow/less');
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
 
       const config = {
@@ -77,7 +77,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeJSON(configPath, config);
 
       //запустим таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -113,7 +113,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeFile(filePathForChange, data.toString() + '\n.test-selector2 {}');
 
       //запустим повторно таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -143,7 +143,7 @@ describe('gulp/generate-build-workflow.js', function() {
 
 
    it('проверка роутинга', async function() {
-      const fixtureFolder = path.join(__dirname, 'fixture/generate-build-workflow/routes');
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
       await prepareTest(fixtureFolder);
 
       const config = {
@@ -160,7 +160,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeJSON(configPath, config);
 
       //запустим таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -211,7 +211,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeFile(filePathForChange, data.toString().replace(/\/ForChange_old.html/g, '/ForChange_new.html'));
 
       //запустим повторно таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -256,7 +256,7 @@ describe('gulp/generate-build-workflow.js', function() {
    });
 
    it('проверка jsModules в contents.json', async function() {
-      const fixtureFolder = path.join(__dirname, 'fixture/generate-build-workflow/jsModules');
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/jsModules');
       await prepareTest(fixtureFolder);
 
       const config = {
@@ -273,7 +273,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeJSON(configPath, config);
 
       //запустим таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -316,7 +316,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeFile(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
 
       //запустим повторно таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -353,7 +353,7 @@ describe('gulp/generate-build-workflow.js', function() {
    });
 
    it('проверка генерации статических html', async function() {
-      const fixtureFolder = path.join(__dirname, 'fixture/generate-build-workflow/staticHtml');
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/staticHtml');
       await prepareTest(fixtureFolder);
 
       const config = {
@@ -374,7 +374,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeJSON(configPath, config);
 
       //запустим таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -485,7 +485,7 @@ describe('gulp/generate-build-workflow.js', function() {
       await fs.writeFile(filePathForChangeHtml, dataHtml.toString().replace(/FOR_CHANGE_OLD/g, 'FOR_CHANGE_NEW'));
 
       //запустим повторно таску
-      await runBuildWorkflow();
+      await runWorkflow();
 
       //проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);

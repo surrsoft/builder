@@ -2,13 +2,14 @@
 
 'use strict';
 
-const logger = require('../../lib/logger').logger(),
+const logger = require('../../../lib/logger').logger(),
    through = require('through2');
 
-module.exports = function(changesStore, moduleInfo) {
+//moduleInfo может отсутствовать
+module.exports = function(cache, moduleInfo) {
    return through.obj(function(file, encoding, callback) {
       try {
-         if (changesStore.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
+         if (cache.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
             this.push(file);
          }
       } catch (error) {

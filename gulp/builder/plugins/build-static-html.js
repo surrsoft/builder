@@ -5,10 +5,10 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
-   transliterate = require('../../lib/transliterate'),
-   helpers = require('../../lib/helpers'),
-   generateStaticHtmlForJs = require('../../lib/generate-static-html-for-js'),
-   logger = require('../../lib/logger').logger();
+   transliterate = require('../../../lib/transliterate'),
+   helpers = require('../../../lib/helpers'),
+   generateStaticHtmlForJs = require('../../../lib/generate-static-html-for-js'),
+   logger = require('../../../lib/logger').logger();
 
 module.exports = function(changesStore, moduleInfo, modulesMap) {
    return through.obj(function(file, encoding, callback) {

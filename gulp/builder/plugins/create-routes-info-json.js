@@ -5,10 +5,10 @@
 const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
-   logger = require('../../lib/logger').logger(),
-   helpers = require('../../lib/helpers'),
-   transliterate = require('../../lib/transliterate'),
-   processingRoutes = require('../../lib/processing-routes');
+   logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
+   transliterate = require('../../../lib/transliterate'),
+   processingRoutes = require('../../../lib/processing-routes');
 
 module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
