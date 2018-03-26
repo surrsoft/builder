@@ -43,6 +43,7 @@ module.exports = function(grunt) {
       const oldVerbose = grunt.option('verbose');
       grunt.option('verbose', true);
       grunt.loadNpmTasks('grunt-wsmod-packer');
+      grunt.loadNpmTasks('grunt-text-replace'); //используется как задача "replace:что-то"
       grunt.loadTasks('Tasks');
 
       grunt.option('verbose', oldVerbose);
