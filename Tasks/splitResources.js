@@ -201,6 +201,7 @@ module.exports = function splitResourcesTask(grunt) {
             }
 
             splitContents[nameModule] = {
+               buildMode: fullContents.buildMode,
                htmlNames: {},
                jsModules: {},
                modules: {},
