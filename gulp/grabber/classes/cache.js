@@ -59,6 +59,9 @@ class Cache {
       this.config = config;
       this.lastStore = new StoreInfo();
       this.currentStore = new StoreInfo();
+      this.currentStore.runningParameters = this.config.rawConfig;
+      this.currentStore.versionOfBuilder = packageJson.version;
+      this.currentStore.startBuildTime = new Date().getTime();
 
       this.filePath = path.join(this.config.cachePath, 'grabber-cache.json');
 
@@ -67,10 +70,6 @@ class Cache {
    }
 
    load() {
-      this.currentStore.runningParameters = this.config.rawConfig;
-      this.currentStore.versionOfBuilder = packageJson.version;
-      this.currentStore.startBuildTime = new Date().getTime();
-
       return this.lastStore.load(this.filePath);
    }
 
@@ -154,7 +153,7 @@ class Cache {
       this.currentStore.cachedFiles[prettyPath] = collectWords;
    }
 
-   getAllWords() {
+   getCachedFiles() {
       return this.currentStore.cachedFiles;
    }
 }

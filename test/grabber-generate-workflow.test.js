@@ -14,6 +14,17 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    outputJson = path.join(workspaceFolder, 'output.json'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
+const config = {
+   'cache': cacheFolder,
+   'output': outputJson,
+   'modules': [
+      {
+         'name': 'Модуль',
+         'path': path.join(sourceFolder, 'Модуль')
+      }
+   ]
+};
+
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
 };
@@ -46,48 +57,71 @@ const timeoutForMacOS = async function() {
    }
 };
 
-//нужно проверить что происходит:
-//1. при переименовывании файла == добавление/удаление файла
-//2. при изменении файла
-//3. если файл не менять
+
+//все тесты по сути завязаны на значение контекста(context) одной фразы в файле Component.<extension>
+const checkResult = async function(extension, context) {
+   const resultObj = await fs.readJSON(outputJson);
+   resultObj.length.should.equals(1);
+   resultObj[0].key.should.equals('AnyText');
+   resultObj[0].context.should.equals(context);
+   resultObj[0].ui.should.equals(moduleSourceFolder);
+   resultObj[0].module.should.equals(path.join(moduleSourceFolder, 'Component.' + extension));
+};
+
+//нужно проверить что происходить, что кеш работает
 describe('gulp/grabber/generate-workflow.js', function() {
    this.timeout(4000); //eslint-disable-line no-invalid-this
 
-   it('проверка сбора фраз локализации по js коду', async function() {
-      const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
-      await prepareTest(fixtureFolder);
+   describe('проверка сбора фраз локализации по js коду', function() {
+      it('перезапуск без изменений', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
 
-      const config = {
-         'cache': cacheFolder,
-         'output': outputJson,
-         'modules': [
-            {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
+         await runWorkflow();
+         await checkResult('js', 'AnyContext');
 
-      //запустим таску
-      await runWorkflow();
+         await runWorkflow();
+         await checkResult('js', 'AnyContext');
 
-      //проверим, что все нужные файлы правильно обработались
-      let resultObj = await fs.readJSON(outputJson);
+         await clearWorkspace();
+      });
 
-      //запомним время модификации незменяемого файла и изменяемого в "стенде"
+      it('перезапуск с изменениями в исходниках', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
 
-      //изменим "исходники"
-      await timeoutForMacOS();
+         await runWorkflow();
+         await checkResult('js', 'AnyContext');
 
-      //запустим повторно таску
-      await runWorkflow();
+         const testFilePath = path.join(sourceFolder, 'Модуль/Component.js');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
 
-      //проверим, что все нужные файлы правильно обработались
-      resultObj = await fs.readJSON(outputJson);
+         await runWorkflow();
+         await checkResult('js', 'AnyContext123');
 
-      //проверим время модификации незменяемого файла и изменяемого в "стенде"
+         await clearWorkspace();
+      });
 
-      await clearWorkspace();
+      it('перезапуск с изменениями в кеше', async function() {
+         //
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('js', 'AnyContext');
+
+         const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
+         const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
+         await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflow();
+         await checkResult('js', 'AnyContext123');
+
+         await clearWorkspace();
+      });
    });
 });

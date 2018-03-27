@@ -5,6 +5,7 @@ const
    path = require('path'),
    gulp = require('gulp'),
    os = require('os'),
+   fs = require('fs-extra'),
    workerPool = require('workerpool'),
    plumber = require('gulp-plumber');
 
@@ -23,12 +24,18 @@ function generateTaskForTerminatePool(pool) {
 }
 
 function generateTaskForSaveCache(cache) {
-   return function saveChangesStore() {
+   return function saveCache() {
       return cache.save();
    };
 }
 
-function generateTaskForJsonGenerator(cache, config){
+function generateTaskForLoadCache(cache) {
+   return function loadCache() {
+      return cache.load();
+   };
+}
+
+function generateTaskForJsonGenerator(cache, config) {
 
 }
 
@@ -72,8 +79,17 @@ function generateTaskForGrabModules(changesStore, config, pool) {
    return gulp.parallel(tasks);
 }
 
+function generateTaskForSaveOutputJson(cache, config) {
+   return async function() {
+      const result = Object.values(cache.getCachedFiles()).reduce((a, b) => {
+         return a.concat(b);
+      });
+      await fs.writeJSON(config.outputPath, result, {spaces: 1});
+   };
+}
+
 function generateWorkflow(processArgv) {
-   //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
+   //загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
@@ -87,10 +103,13 @@ function generateWorkflow(processArgv) {
 
    return gulp.series(
       guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
+      generateTaskForLoadCache(cache),
+
       //generateTaskForJsonGenerator(cache, config),
       generateTaskForGrabModules(cache, config, pool),
       gulp.parallel( //завершающие задачи
          generateTaskForSaveCache(cache),
+         generateTaskForSaveOutputJson(cache, config),
          generateTaskForTerminatePool(pool)),
       guardSingleProcess.generateTaskForUnlock() //после всего
    );

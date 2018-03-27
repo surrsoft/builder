@@ -23,17 +23,5 @@ module.exports = function(cache, moduleInfo, pool) {
          });
       }
       callback();
-   }, function(callback) {
-      /*
-      try {
-
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка Builder\'а',
-            error: error,
-            moduleInfo: moduleInfo
-         });
-      }*/
-      callback();
    });
 };
