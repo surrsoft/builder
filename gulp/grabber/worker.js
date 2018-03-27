@@ -12,7 +12,7 @@ const
    workerPool = require('workerpool'),
    collectWordsPrimitive = require('../../lib/i18n/collect-words');
 
-let componentsProperties = {}; //TODO
+let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
@@ -24,7 +24,7 @@ async function collectWords(modulePath, filePath, componentsPropertiesFilePath) 
       componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
    }
    const text = await fs.readFile(filePath);
-   return collectWordsPrimitive(modulePath, filePath, text, componentsProperties);
+   return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
 }
 
 workerPool.worker({

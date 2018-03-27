@@ -124,4 +124,57 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
    });
+
+   describe('проверка сбора фраз локализации по xhtml коду', function() {
+      it('перезапуск без изменений', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         await clearWorkspace();
+      });
+
+      it('перезапуск с изменениями в исходниках', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         const testFilePath = path.join(sourceFolder, 'Модуль/Component.xhtml');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+
+      it('перезапуск с изменениями в кеше', async function() {
+         //
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
+         const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
+         await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+   });
 });

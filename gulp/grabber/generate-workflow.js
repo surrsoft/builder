@@ -15,6 +15,7 @@ const
    grabFile = require('./plugins/grub-file'),
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
+   runJsonGenerator = require('../../lib/i18n/run-json-generator'),
    logger = require('../../lib/logger').logger();
 
 function generateTaskForTerminatePool(pool) {
@@ -36,10 +37,25 @@ function generateTaskForLoadCache(cache) {
 }
 
 function generateTaskForJsonGenerator(cache, config) {
-
+   return async function generateJson() {
+      const folders = [];
+      for (const module of config.modules) {
+         folders.push(module.path);
+      }
+      const resultJsonGenerator = await runJsonGenerator(folders, config.cachePath);
+      for (const error of resultJsonGenerator.errors) {
+         logger.warning({
+            message: 'Ошибка при разборе JSDoc комментариев',
+            filePath: error.filePath,
+            error: error.error
+         });
+      }
+      const filePath = path.join(config.cachePath, 'components-properties.json');
+      await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
+   };
 }
 
-function generateTaskForGrabSingleModule(moduleInfo, cache, pool) {
+function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl)');
 
    return function grabModule() {
@@ -55,7 +71,7 @@ function generateTaskForGrabSingleModule(moduleInfo, cache, pool) {
             }
          }))
          .pipe(changedInPlace(cache))
-         .pipe(grabFile(cache, moduleInfo, pool))
+         .pipe(grabFile(config, cache, moduleInfo, pool))
          .pipe(gulp.dest(moduleInfo.path));
    };
 }
@@ -73,7 +89,7 @@ function generateTaskForGrabModules(changesStore, config, pool) {
    for (const moduleInfo of config.modules) {
       tasks.push(
          gulp.series(
-            generateTaskForGrabSingleModule(moduleInfo, changesStore, pool),
+            generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool),
             printPercentComplete));
    }
    return gulp.parallel(tasks);
@@ -105,7 +121,7 @@ function generateWorkflow(processArgv) {
       guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
       generateTaskForLoadCache(cache),
 
-      //generateTaskForJsonGenerator(cache, config),
+      generateTaskForJsonGenerator(cache, config),
       generateTaskForGrabModules(cache, config, pool),
       gulp.parallel( //завершающие задачи
          generateTaskForSaveCache(cache),

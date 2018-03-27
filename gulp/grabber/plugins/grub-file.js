@@ -1,10 +1,11 @@
 'use strict';
 
 const through = require('through2'),
+   path = require('path'),
    logger = require('../../../lib/logger').logger();
 
-const supportExtensions = ['.js'];
-module.exports = function(cache, moduleInfo, pool) {
+const supportExtensions = ['.js', '.xhtml', '.tmpl'];
+module.exports = function(config, cache, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       if (!supportExtensions.includes(file.extname)) {
          callback();
@@ -12,7 +13,8 @@ module.exports = function(cache, moduleInfo, pool) {
       }
       let collectWords = [];
       try {
-         collectWords = await pool.exec('collectWords', [moduleInfo.path, file.path]);
+         const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+         collectWords = await pool.exec('collectWords', [moduleInfo.path, file.path, componentsPropertiesFilePath]);
          cache.storeCollectWords(file.history[0], collectWords);
       } catch (error) {
          logger.error({
