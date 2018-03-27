@@ -53,6 +53,7 @@ function generateTaskForJsonGenerator(cache, config) {
       }
 
       //если components-properties поменялись, то нужно сбросить кеш для верстки
+      let isComponentsPropertiesChanged = false;
       const filePath = path.join(config.cachePath, 'components-properties.json');
       if (await fs.pathExists(filePath)) {
          let oldIndex = {};
@@ -69,14 +70,16 @@ function generateTaskForJsonGenerator(cache, config) {
          try {
             assert.deepEqual(oldIndex, resultJsonGenerator.index);
          } catch (error) {
-            logger.info('Описание опций в json формате изменилось. Кеш для верстки будет сброшен');
-            cache.setDropCacheForMarkup();
+            isComponentsPropertiesChanged = true;
          }
       } else {
-         logger.info('Описание опций в json формате не найдено. Кеш для верстки будет сброшен');
-         cache.setDropCacheForMarkup();
+         isComponentsPropertiesChanged = true;
       }
-      await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
+      if (isComponentsPropertiesChanged) {
+         logger.info('Кеш для файлов верстки будет сброшен, если был.');
+         cache.setDropCacheForMarkup();
+         await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
+      }
    };
 }
 

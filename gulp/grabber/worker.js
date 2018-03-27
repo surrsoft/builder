@@ -1,8 +1,7 @@
 'use strict';
 
 //логгер - прежде всего
-const gulpLog = require('gulplog');
-require('../../lib/logger').setGulpLogger(gulpLog);
+require('../../lib/logger').setGulpLogger();
 
 //ws должен быть вызван раньше чем первый global.requirejs
 require('../helpers/node-ws').init();
@@ -16,7 +15,8 @@ let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
-   console.log('[00:00:00] [ERROR] Критическая ошибка в работе builder\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   console.log('[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   process.exit(1);
 });
 
 async function collectWords(modulePath, filePath, componentsPropertiesFilePath) {
