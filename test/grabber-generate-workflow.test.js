@@ -140,7 +140,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в исходниках', async function() {
+      it('перезапуск с изменениями в xhtml', async function() {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -176,6 +176,30 @@ describe('gulp/grabber/generate-workflow.js', function() {
 
          await clearWorkspace();
       });
+
+      it('перезапуск с изменениями в js', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         const testFilePath = path.join(sourceFolder, 'Модуль/ComponentWithOption.js');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
+
+         await runWorkflow();
+         const resultObj = await fs.readJSON(outputJson);
+         resultObj.length.should.equals(0);
+
+         await fs.writeFile(testFilePath, testFileText);
+
+         await runWorkflow();
+         await checkResult('xhtml', 'AnyContext');
+
+         await clearWorkspace();
+      });
    });
 
    describe('проверка сбора фраз локализации по tmpl коду', function() {
@@ -193,7 +217,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в исходниках', async function() {
+      it('перезапуск с изменениями в tmpl', async function() {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);

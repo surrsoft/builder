@@ -5,6 +5,7 @@ const
    path = require('path'),
    gulp = require('gulp'),
    os = require('os'),
+   assert = require('assert'),
    fs = require('fs-extra'),
    workerPool = require('workerpool'),
    plumber = require('gulp-plumber');
@@ -50,7 +51,30 @@ function generateTaskForJsonGenerator(cache, config) {
             error: error.error
          });
       }
+
+      //если components-properties поменялись, то нужно сбросить кеш для верстки
       const filePath = path.join(config.cachePath, 'components-properties.json');
+      if (await fs.pathExists(filePath)) {
+         let oldIndex = {};
+         try {
+            oldIndex = await fs.readJSON(filePath);
+         } catch (err) {
+            logger.warning({
+               message: 'Не удалось прочитать файл кеша',
+               filePath: filePath,
+               error: err
+            });
+         }
+
+         try {
+            assert.deepEqual(oldIndex, resultJsonGenerator.index);
+         } catch (error) {
+            logger.info('Описание опций в json формате изменилось. Кеш для верстки будет сброшен');
+            cache.setDropCacheForMarkup();
+         }
+      } else {
+         cache.setDropCacheForMarkup();
+      }
       await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
    };
 }
