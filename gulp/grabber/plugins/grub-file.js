@@ -17,9 +17,9 @@ module.exports = function(config, cache, moduleInfo, pool) {
          collectWords = await pool.exec('collectWords', [moduleInfo.path, file.path, componentsPropertiesFilePath]);
          cache.storeCollectWords(file.history[0], collectWords);
       } catch (error) {
-         logger.error({
+         logger.warning({
             message: 'Ошибка при обработке файла',
-            filePath: file.history[0],
+            filePath: file.path,
             error: error,
             moduleInfo: moduleInfo
          });
