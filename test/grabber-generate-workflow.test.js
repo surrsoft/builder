@@ -253,5 +253,29 @@ describe('gulp/grabber/generate-workflow.js', function() {
 
          await clearWorkspace();
       });
+
+      it('перезапуск с изменениями в js', async function() {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflow();
+         await checkResult('tmpl', 'AnyContext');
+
+         const testFilePath = path.join(sourceFolder, 'Модуль/ComponentWithOption.js');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
+
+         await runWorkflow();
+         const resultObj = await fs.readJSON(outputJson);
+         resultObj.length.should.equals(0);
+
+         await fs.writeFile(testFilePath, testFileText);
+
+         await runWorkflow();
+         await checkResult('tmpl', 'AnyContext');
+
+         await clearWorkspace();
+      });
    });
 });
