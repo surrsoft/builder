@@ -9,7 +9,7 @@ const
 let lockFle;
 
 function generateTaskForLock(cachePath) {
-   return function() {
+   return function lock() {
       return new Promise(async(resolve, reject) => {
          await fs.ensureDir(cachePath);
          lockFle = path.join(cachePath, 'builder.lockfile');
@@ -32,7 +32,7 @@ function generateTaskForLock(cachePath) {
 }
 
 function generateTaskForUnlock() {
-   return function() {
+   return function unlock() {
       return new Promise(async(resolve, reject) => {
          const isFileExist = await fs.pathExists(lockFle);
          if (!isFileExist) {

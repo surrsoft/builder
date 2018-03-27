@@ -73,6 +73,7 @@ function generateTaskForJsonGenerator(cache, config) {
             cache.setDropCacheForMarkup();
          }
       } else {
+         logger.info('Описание опций в json формате не найдено. Кеш для верстки будет сброшен');
          cache.setDropCacheForMarkup();
       }
       await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
@@ -120,7 +121,7 @@ function generateTaskForGrabModules(changesStore, config, pool) {
 }
 
 function generateTaskForSaveOutputJson(cache, config) {
-   return async function() {
+   return async function saveOutputJson() {
       const result = Object.values(cache.getCachedFiles()).reduce((a, b) => {
          return a.concat(b);
       });
