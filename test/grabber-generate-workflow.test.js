@@ -41,23 +41,6 @@ const runWorkflow = function() {
    });
 };
 
-const getMTime = async function(filePath) {
-   return (await fs.lstat(filePath)).mtime.getTime();
-};
-
-const timeout = function(ms) {
-   return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-//в файловой системе HFS Plus точность хранения даты равняется 1 секунде
-//из-за этого тесты могуть падать непредсказуемым образом, и при этом для пользователя проблем не будет
-const timeoutForMacOS = async function() {
-   if (process.platform === 'darwin') {
-      await timeout(1000);
-   }
-};
-
-
 //все тесты по сути завязаны на значение контекста(context) одной фразы в файле Component.<extension>
 const checkResult = async function(extension, context) {
    const resultObj = await fs.readJSON(outputJson);
