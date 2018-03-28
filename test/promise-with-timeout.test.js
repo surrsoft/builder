@@ -9,7 +9,7 @@ describe('promise with timeout', function() {
    it('should return timeout error if Timeout', async() => {
       try {
          result = await promiseTimeout.promiseWithTimeout(new Promise((resolve) => setTimeout(resolve, 100)), 10);
-      } catch(err) {
+      } catch (err) {
          result = err instanceof promiseTimeout.TimeoutError;
       }
       result.should.equal(true);
@@ -19,7 +19,7 @@ describe('promise with timeout', function() {
       const testResult = 'some value';
       try {
          result = await promiseTimeout.promiseWithTimeout(new Promise((resolve) => setTimeout(() => resolve(testResult), 10)), 100);
-      } catch(err) {
+      } catch (err) {
          result = err;
       }
       result.should.equal(testResult);
