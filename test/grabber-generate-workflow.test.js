@@ -185,7 +185,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
    });
 
-   describe('проверка сбора фраз локализации по tmpl коду', function() {
+   describe.skip('проверка сбора фраз локализации по tmpl коду', function() {
       it('перезапуск без изменений', async function() {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
