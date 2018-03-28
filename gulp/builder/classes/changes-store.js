@@ -71,7 +71,7 @@ class StoreInfo {
          lessDependencies: this.lessDependencies,
          modulesCache: this.modulesCache
       }, {
-         spaces: 3
+         spaces: 1
       });
    }
 }

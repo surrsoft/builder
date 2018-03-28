@@ -49,7 +49,7 @@ class StoreInfo {
          startBuildTime: this.startBuildTime,
          cachedFiles: this.cachedFiles,
       }, {
-         spaces: 3
+         spaces: 1
       });
    }
 }
