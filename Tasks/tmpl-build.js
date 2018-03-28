@@ -19,7 +19,7 @@ function getModulenamesForPaths(mDeps, templateMask) {
    const namesForPaths = {};
    Object.keys(mDeps.nodes).forEach(function(node) {
       if (node.includes(templateMask)) {
-         let path = helpers.prettifyPath(mDeps.nodes[node].path);
+         const path = helpers.prettifyPath(mDeps.nodes[node].path);
          if (!namesForPaths[path]) {
             namesForPaths[path] = [];
          }
@@ -40,6 +40,7 @@ function removeLastSymbolIfSlash(path) {
 
 function checkPathForInterfaceModule(currentPath, application) {
    let resultPath = '', resultNode = '';
+
    //Учитываем возможность наличия application
    currentPath = helpers.removeLeadingSlash(helpers.prettifyPath(path.join(application, currentPath)));
    Object.keys(requirejsPaths).forEach(function(node) {
@@ -130,7 +131,7 @@ function createTemplate(templateOptions, namesForCurrentTemplate, nodes, applica
    }
 
    if (namesForCurrentTemplate && namesForCurrentTemplate.length > 1) {
-      let firstName = namesForCurrentTemplate.shift();
+      const firstName = namesForCurrentTemplate.shift();
       namesForCurrentTemplate.forEach(function(moduleName) {
          data += `\ndefine("${moduleName}",["${firstName}"],function(template){return template;});`;
       });
@@ -169,6 +170,7 @@ function createTemplate(templateOptions, namesForCurrentTemplate, nodes, applica
                   console.dir(e.stack);
                }
             }
+
             //Если имеются дополнительные дефайны для шаблонов, меняем пути и для них
             if (namesForCurrentTemplate && namesForCurrentTemplate[0] !== nameModule) {
                namesForCurrentTemplate.forEach(function(moduleName) {

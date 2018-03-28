@@ -10,7 +10,7 @@ const
 //наши плагины
 const
    gulpHtmlTmpl = require('../plugins/html-tmpl'),
-   changedInPlace = require('../plugins/changed-in-place'),
+   changedInPlace = require('../../helpers/plugins/changed-in-place'),
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
@@ -18,8 +18,8 @@ const
 
 
 const
-   logger = require('../../lib/logger').logger(),
-   transliterate = require('../../lib/transliterate');
+   logger = require('../../../lib/logger').logger(),
+   transliterate = require('../../../lib/transliterate');
 
 function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');

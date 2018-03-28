@@ -2,7 +2,7 @@
 const
    os = require('os'),
    path = require('path'),
-   logger = require('../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger();
 
 const maxSizeChunk = 20; //эмпирически подобранная величина для высокой производительности
 

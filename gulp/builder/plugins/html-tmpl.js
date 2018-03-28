@@ -5,8 +5,8 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
-   convertHtmlTmpl = require('../../lib/convert-html-tmpl'),
-   logger = require('../../lib/logger').logger();
+   convertHtmlTmpl = require('../../../lib/convert-html-tmpl'),
+   logger = require('../../../lib/logger').logger();
 
 module.exports = function(moduleInfo) {
    return through.obj(async function(file, encoding, callback) {

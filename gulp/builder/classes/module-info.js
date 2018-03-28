@@ -1,13 +1,12 @@
 'use strict';
 
-const transliterate = require('../../lib/transliterate'),
-   path = require('path');
+const transliterate = require('../../../lib/transliterate'),
+   path = require('path'),
+   BaseModuleInfo = require('../../helpers/base-module-info');
 
-class ModuleInfo {
+class ModuleInfo extends BaseModuleInfo {
    constructor(moduleName, moduleResponsible, modulePath, commonOutputPath) {
-      this.name = moduleName;
-      this.responsible = moduleResponsible;
-      this.path = modulePath;
+      super(moduleName, moduleResponsible, modulePath);
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
 
       //объект для записи contents.json
@@ -27,18 +26,6 @@ class ModuleInfo {
       //соответствие запроса html физическиому расположению файла
       this.staticTemplates = {};
    }
-
-   get nameWithResponsible() {
-      if (this.responsible) {
-         return `${this.name} (${this.responsible})`;
-      }
-      return this.name;
-   }
-
-   get folderName() {
-      return path.basename(this.path);
-   }
-
 }
 
 module.exports = ModuleInfo;

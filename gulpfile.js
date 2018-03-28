@@ -17,19 +17,25 @@ try {
    });
 
    //логгер - прежде всего
-   const gulplog = require('gulplog');
-   const logger = require('./lib/logger').setGulpLogger(gulplog);
+   const logger = require('./lib/logger').setGulpLogger();
 
    //ws должен быть вызван раньше чем первый global.requirejs
    require('./gulp/helpers/node-ws').init();
 
-   const
-      gulp = require('gulp'),
-      generateBuildWorkflow = require('./gulp/generate-build-workflow.js');
-
+   const gulp = require('gulp');
    logger.debug('Параметры запуска: ' + JSON.stringify(process.argv));
 
-   gulp.task('build', generateBuildWorkflow(process.argv));
+   //т.к. мы строим Workflow на основе файла конфигурации, то нужно отделить build от grabber,
+   //чтобы не выполнялись лишние действия
+   if (process.argv.includes('build')) {
+      const generateBuildWorkflow = require('./gulp/builder/generate-workflow.js');
+      gulp.task('build', generateBuildWorkflow(process.argv));
+   } else if (process.argv.includes('collectWordsForLocalization')) {
+      const generateGrabberWorkflow = require('./gulp/grabber/generate-workflow.js');
+      gulp.task('collectWordsForLocalization', generateGrabberWorkflow(process.argv));
+   } else {
+      logger.error('Используется неизвестная задача. Известные задачи: "build" и "collectWordsForLocalization".');
+   }
 
 } catch (e) {
    // eslint-disable-next-line no-console

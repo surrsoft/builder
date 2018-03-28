@@ -1,8 +1,7 @@
 'use strict';
 
 //логгер - прежде всего
-const gulpLog = require('gulplog');
-require('../../lib/logger').setGulpLogger(gulpLog);
+require('../../lib/logger').setGulpLogger();
 
 const
    fs = require('fs-extra'),
@@ -14,7 +13,8 @@ const
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
-   console.log('[00:00:00] [ERROR] Критическая ошибка в работе builder\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   console.log('[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   process.exit(1);
 });
 
 function buildLessJob(paths, resourcePath) {

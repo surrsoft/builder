@@ -2,9 +2,9 @@
 
 const through = require('through2'),
    path = require('path'),
-   helpers = require('../../lib/helpers'),
-   logger = require('../../lib/logger').logger(),
-   transliterate = require('../../lib/transliterate');
+   helpers = require('../../../lib/helpers'),
+   logger = require('../../../lib/logger').logger(),
+   transliterate = require('../../../lib/transliterate');
 
 module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {

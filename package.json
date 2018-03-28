@@ -30,7 +30,6 @@
       "gulp-chmod": "^2.0.0",
       "gulp-plumber": "^1.2.0",
       "gulp-rename": "^1.2.2",
-      "gulplog": "^1.0.0",
       "humanize": "0.0.9",
       "less": "^2.7.3",
       "minimatch": "^3.0.4",

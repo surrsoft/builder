@@ -4,9 +4,9 @@
 
 const through = require('through2'),
    Vinyl = require('vinyl'),
-   logger = require('../../lib/logger').logger(),
-   helpers = require('../../lib/helpers'),
-   transliterate = require('../../lib/transliterate');
+   logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
+   transliterate = require('../../../lib/transliterate');
 
 module.exports = function(moduleInfo) {
    return through.obj(function(file, encoding, callback) {

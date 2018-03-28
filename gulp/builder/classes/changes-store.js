@@ -3,10 +3,10 @@
 const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert'),
-   helpers = require('../../lib/helpers'),
-   transliterate = require('../../lib/transliterate'),
-   packageJson = require('../../package.json'),
-   logger = require('../../lib/logger').logger();
+   helpers = require('../../../lib/helpers'),
+   transliterate = require('../../../lib/transliterate'),
+   packageJson = require('../../../package.json'),
+   logger = require('../../../lib/logger').logger();
 
 class ModuleCacheInfo {
    constructor() {
@@ -71,7 +71,7 @@ class StoreInfo {
          lessDependencies: this.lessDependencies,
          modulesCache: this.modulesCache
       }, {
-         spaces: 3
+         spaces: 1
       });
    }
 }

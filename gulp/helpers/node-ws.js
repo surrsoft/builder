@@ -14,9 +14,8 @@ const appRoot = path.join(__dirname, '../../node_modules/sbis3-ws').replace(dblS
    resourceRoot = '/';
 
 const wsLogger = {
-   error: function(tag, msg, e) {
-      logger.debug(`WS error: ${tag}::${msg}`);
-      throw e;
+   error: function(tag, msg) {
+      logger.info(`WS error: ${tag}::${msg}`);
    },
    info: function(tag, msg) {
       logger.debug(`WS info: ${tag}::${msg}`);
