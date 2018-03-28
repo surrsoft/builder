@@ -38,10 +38,16 @@ module.exports = function less1by1Task(grunt) {
                //просто ругаемся и ждём, что поправят.
                const message = `Существующий CSS-файл мешает записи результата компиляции '${filePath}'. ` +
                   'Необходимо удалить лишний CSS-файл';
-               logger.warning({
-                  message: message,
-                  filePath: newFullPath
-               });
+
+               //монолитный ws уже должен быть со скомпилированными less, поэтому выводим не предупреждение, а просто информацию
+               if (helpers.prettifyPath(newFullPath).includes('/ws/')) {
+                  logger.info(message);
+               } else {
+                  logger.warning({
+                     message: message,
+                     filePath: newFullPath
+                  });
+               }
             } else {
                await fs.writeFile(newFullPath, result.text, {flag: 'w'});
                logger.debug(`file ${newFullPath} successfully compiled`);
