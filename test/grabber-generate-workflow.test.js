@@ -161,6 +161,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
 
       it('перезапуск с изменениями в js', async function() {
+         //при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -185,7 +186,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
    });
 
-   describe.skip('проверка сбора фраз локализации по tmpl коду', function() {
+   describe('проверка сбора фраз локализации по tmpl коду', function() {
       it('перезапуск без изменений', async function() {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
@@ -238,6 +239,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
 
       it('перезапуск с изменениями в js', async function() {
+         //при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
