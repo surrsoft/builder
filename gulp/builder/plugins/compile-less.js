@@ -4,13 +4,11 @@
 
 const through = require('through2'),
    Vinyl = require('vinyl'),
-   path = require('path'),
    fs = require('fs-extra'),
+   path = require('path'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(changesStore, moduleInfo, pool) {
-   const resourcePath = path.dirname(moduleInfo.output);
-
+module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
    return through.obj(async function(file, encoding, callback) {
       this.push(file);
       if (!file.path.endsWith('.less')) {
@@ -33,7 +31,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
 
          let result;
          try {
-            result = await pool.exec('buildLess', [file.path, file.contents.toString(), resourcePath]);
+            result = await pool.exec('buildLess', [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath]);
          } catch (error) {
             logger.warning({
                error: error,
@@ -51,7 +49,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
             const outFileName = file.basename.replace(/\.less$/, '.css');
             this.push(new Vinyl({
                base: file.base,
-               path: outFileName,
+               path: path.join(file.base, outFileName),
                contents: Buffer.from(result.text)
             }));
          }

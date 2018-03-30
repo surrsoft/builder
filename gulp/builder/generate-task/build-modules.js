@@ -24,7 +24,10 @@ const
 
 function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-
+   let sbis3ControlsPath = '';
+   if (modulesMap.has('SBIS3.CONTROLS')) {
+      sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
+   }
    return function buildModule() {
       return gulp.src(moduleInput)
          .pipe(plumber({
@@ -38,7 +41,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
             }
          }))
          .pipe(changedInPlace(changesStore, moduleInfo))
-         .pipe(compileLess(changesStore, moduleInfo, pool))
+         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
