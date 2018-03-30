@@ -9,7 +9,6 @@ const
    workerPool = require('workerpool');
 
 const
-   generateTaskForCompileLess = require('./generate-task/compile-less'),
    generateTaskForBuildModules = require('./generate-task/build-modules'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
@@ -64,7 +63,6 @@ function generateWorkflow(processArgv) {
       generateTaskForLoadChangesStore(changesStore),
       generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
       generateTaskForBuildModules(changesStore, config, pool),
-      generateTaskForCompileLess(changesStore, config, pool), //после сборки модулей
       gulp.parallel( //завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),

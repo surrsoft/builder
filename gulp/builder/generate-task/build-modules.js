@@ -10,6 +10,7 @@ const
 //наши плагины
 const
    gulpHtmlTmpl = require('../plugins/html-tmpl'),
+   compileLess = require('../plugins/compile-less'),
    changedInPlace = require('../../helpers/plugins/changed-in-place'),
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
@@ -37,6 +38,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
             }
          }))
          .pipe(changedInPlace(changesStore, moduleInfo))
+         .pipe(compileLess(changesStore, moduleInfo, pool))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))

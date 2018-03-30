@@ -25,14 +25,8 @@ module.exports = function less1by1Task(grunt) {
                return;
             }
 
-            const data = await fs.readFile(filePath);
-            const resourcePath = path.join(applicationRoot, 'resources');
-            const result = await buildLess(filePath, data.toString(), resourcePath);
             const newFullPath = filePath.replace('.less', '.css');
-
-            if (result.ignoreMessage) {
-               logger.debug(result.ignoreMessage);
-            } else if (await fs.pathExists(newFullPath)) {
+            if (await fs.pathExists(newFullPath)) {
                //если файл уже есть, то не нужно его перезаписывать.
                //иначе при деплое локального стенда мы перезапишем css в исходниках.
                //просто ругаемся и ждём, что поправят.
@@ -48,6 +42,14 @@ module.exports = function less1by1Task(grunt) {
                      filePath: newFullPath
                   });
                }
+            }
+
+            const data = await fs.readFile(filePath);
+            const resourcePath = path.join(applicationRoot, 'resources');
+            const result = await buildLess(filePath, data.toString(), resourcePath);
+
+            if (result.ignoreMessage) {
+               logger.debug(result.ignoreMessage);
             } else {
                await fs.writeFile(newFullPath, result.text, {flag: 'w'});
                logger.debug(`file ${newFullPath} successfully compiled`);
