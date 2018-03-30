@@ -70,7 +70,7 @@ module.exports = function(grunt) {
          logger.error({
             message: 'CSS minification failed',
             error: err,
-            filePath: availableFiles.toString()
+            filePath: fileSourcePath
          });
       }
 
