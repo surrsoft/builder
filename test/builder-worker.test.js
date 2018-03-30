@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then*/
+
 'use strict';
 
 require('./init-test');
@@ -5,14 +7,15 @@ require('./init-test');
 const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),
-   workerPool = require('workerpool'),
-   helpers = require('../lib/helpers');
+   workerPool = require('workerpool');
 
 const expect = chai.expect;
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
-   workerPath = path.join(__dirname, '../gulp/builder/worker.js');
+   workerPath = path.join(__dirname, '../gulp/builder/worker.js'),
+   modulePath = path.join(workspaceFolder, 'AnyModule'),
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -38,15 +41,13 @@ describe('gulp/builder/worker.js', function() {
          const resultParseRoutes = await pool.exec('parseRoutes', ['']);
          Object.keys(resultParseRoutes).length.should.equal(0);
 
-         const resourcePath = path.join(workspaceFolder, '/resources');
-         const lessPath = path.join(resourcePath, 'AnyModule/Empty.less');
-         const resultsBuildLess = await pool.exec('buildLess', [[lessPath], resourcePath]);
-         resultsBuildLess.length.should.equal(1);
-         resultsBuildLess[0].hasOwnProperty('error').should.equal(false);
-         resultsBuildLess[0].hasOwnProperty('path').should.equal(true);
-         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].path.should.equal(lessPath);
-         resultsBuildLess[0].imports.length.should.equal(2);
+         const filePath = path.join(modulePath, 'Empty.less');
+         const text = (await fs.readFile(filePath)).toString();
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
+         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess.imports.length.should.equal(2);
+         resultsBuildLess.text.should.equal('');
 
       } finally {
          await clearWorkspace();
@@ -74,24 +75,16 @@ describe('gulp/builder/worker.js', function() {
          Object.getOwnPropertyNames(resultParseRoutes['/test_1.html']).length.should.equal(1);
          resultParseRoutes['/test_1.html'].controller.should.equal('js!SBIS3.Test1');
 
-         const resourcePath = path.join(workspaceFolder, 'resources');
-         const lessPath = path.join(resourcePath, 'AnyModule/Correct.less');
-         const outputCssPath = lessPath.replace('.less', '.css');
-         const resultsBuildLess = await pool.exec('buildLess', [[lessPath], resourcePath]);
-         resultsBuildLess.length.should.equal(1);
-         resultsBuildLess[0].hasOwnProperty('error').should.equal(false);
-         resultsBuildLess[0].hasOwnProperty('path').should.equal(true);
-         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].path.should.equal(lessPath);
-         resultsBuildLess[0].imports.length.should.equal(2);
-         const existCss = await fs.pathExists(outputCssPath);
-         existCss.should.equal(true);
-         const cssText = await fs.readFile(outputCssPath);
-         cssText.toString().should.equal('.test-selector {\n' +
+         const filePath = path.join(modulePath, 'Correct.less');
+         const text = (await fs.readFile(filePath)).toString();
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
+         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess.imports.length.should.equal(2);
+         resultsBuildLess.text.should.equal('.test-selector {\n' +
             '  test-mixin: \'mixin there\';\n' +
             '  test-var: \'it is online\';\n' +
             '}\n');
-
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -113,18 +106,18 @@ describe('gulp/builder/worker.js', function() {
             return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
          });
 
-         const resourcePath = helpers.prettifyPath(path.join(workspaceFolder, 'resources'));
-         const lessPath = helpers.prettifyPath(path.join(resourcePath, 'AnyModule/Error.less'));
-         const resultsBuildLess = await pool.exec('buildLess', [[lessPath], resourcePath]);
-         resultsBuildLess.length.should.equal(1);
+         const filePath = path.join(modulePath, 'Error.less');
+         const text = (await fs.readFile(filePath)).toString();
+         const promise = pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
 
-         //заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = resultsBuildLess[0].error.message.replace(/\\/g, '/');
-         errorMessage.should.equal(
-            `Ошибка компиляции ${lessPath} на строке 1: ` +
-            '\'notExist.less\' wasn\'t found. ' +
-            `Tried - ${resourcePath}/AnyModule/notExist.less,notExist.less`);
-
+         return expect(promise).to.be.rejected.then(function(error) {
+            //заменяем слеши, иначе не сравнить на linux и windows одинаково
+            const errorMessage = error.message.replace(/\\/g, '/');
+            return errorMessage.should.equal(
+               `Ошибка компиляции ${filePath} на строке 1: ` +
+               '\'notExist.less\' wasn\'t found. ' +
+               `Tried - ${modulePath}/notExist.less,notExist.less`);
+         });
       } finally {
          await clearWorkspace();
          await pool.terminate();

@@ -4,7 +4,6 @@
 require('../../lib/logger').setGulpLogger();
 
 const
-   fs = require('fs-extra'),
    workerPool = require('workerpool'),
    buildLess = require('../../lib/build-less'),
    parseJsComponent = require('../../lib/parse-js-component'),
