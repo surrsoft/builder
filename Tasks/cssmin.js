@@ -10,10 +10,10 @@ const
    logger = require('../lib/logger').logger(),
    async = require('async');
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
-   const getAvailableFiles = async (filesArray) => {
-      const promises = filesArray.map(async (filePath) => {
+   const getAvailableFiles = async(filesArray) => {
+      const promises = filesArray.map(async(filePath) => {
          const exists = await fs.pathExists(filePath);
          if (!exists) {
             logger.warning({
@@ -28,7 +28,7 @@ module.exports = function (grunt) {
       return results.filter(currentPath => !!currentPath);
    };
 
-   const minifyCSS = async (self, file, applicationRoot) => {
+   const minifyCSS = async(self, file, applicationRoot) => {
       const
          options = self.options({
             rebase: false,
@@ -89,11 +89,11 @@ module.exports = function (grunt) {
       if (self.data.splittedCore) {
          const
             currentNodePath = helpers.removeLeadingSlash(file.src.replace(applicationRoot, '')),
-            currentNode = self.nodes.filter(function (node) {
+            currentNode = self.nodes.filter(function(node) {
                return self.mDeps.nodes[node].path === currentNodePath;
             });
          if (currentNode.length > 0) {
-            currentNode.forEach(function (node) {
+            currentNode.forEach(function(node) {
                self.mDeps.nodes[node].path = currentNodePath.replace(/\.css$/, self.ext);
             });
          }
@@ -116,7 +116,7 @@ module.exports = function (grunt) {
             after: 0
          };
          self.ext = self.data.splittedCore ? '.min.css' : '.css';
-         async.eachLimit(self.files, 20, async (file) => {
+         async.eachLimit(self.files, 20, async(file) => {
             try {
                const availableFiles = await getAvailableFiles(file.src);
                await Promise.all(availableFiles.map((currentFile) => minifyCSS(self, {
@@ -140,7 +140,7 @@ module.exports = function (grunt) {
       });
    };
 
-   grunt.registerMultiTask('cssmin', 'Minify CSS', async function () {
+   grunt.registerMultiTask('cssmin', 'Minify CSS', async function() {
       const
          self = this,
          applicationRoot = path.join(self.data.root, self.data.application).replace(/\\/g, '/'),
