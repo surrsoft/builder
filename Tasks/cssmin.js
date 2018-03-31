@@ -35,8 +35,8 @@ module.exports = function(grunt) {
             report: 'min',
             sourceMap: false
          }),
-         availableFiles = await getAvailableFiles(file.src),
-         fileSourcePath = helpers.prettifyPath(availableFiles.join(','));
+         fileSourcePath = helpers.prettifyPath(file.src),
+         cssStyles = await fs.readFile(file.src);
 
       let
          compiled = '',
@@ -45,7 +45,7 @@ module.exports = function(grunt) {
       options.rebaseTo = path.dirname(file.dest);
 
       try {
-         compiled = new CleanCSS(options).minify(availableFiles);
+         compiled = new CleanCSS(options).minify(cssStyles);
 
          if (compiled.errors.length) {
             errors = compiled.errors.toString();
@@ -70,18 +70,14 @@ module.exports = function(grunt) {
          logger.error({
             message: 'CSS minification failed',
             error: err,
-            filePath: availableFiles.toString()
+            filePath: fileSourcePath
          });
       }
 
       let
          compiledCssString = errors ? `/*${errors}*/` : compiled.styles;
 
-      const
-         cssStyles = await Promise.all(availableFiles.map(filePath => fs.readFile(filePath))),
-         unCompiledCssString = cssStyles.join('');
-
-      self.size.before += unCompiledCssString.length;
+      self.size.before += cssStyles.length;
 
       if (options.sourceMap) {
          compiledCssString += `\n/*# sourceMappingURL=${path.basename(file.dest)}.map */`;
@@ -92,13 +88,13 @@ module.exports = function(grunt) {
 
       if (self.data.splittedCore) {
          const
-            currentNodePath = helpers.removeLeadingSlash(file.dest.replace(applicationRoot, '').replace('.min.css', '.css')),
+            currentNodePath = helpers.removeLeadingSlash(file.src.replace(applicationRoot, '')),
             currentNode = self.nodes.filter(function(node) {
                return self.mDeps.nodes[node].path === currentNodePath;
             });
          if (currentNode.length > 0) {
             currentNode.forEach(function(node) {
-               self.mDeps.nodes[node].path = currentNodePath;
+               self.mDeps.nodes[node].path = currentNodePath.replace(/\.css$/, self.ext);
             });
          }
       }
@@ -111,9 +107,22 @@ module.exports = function(grunt) {
 
    const minifyFiles = (self, applicationRoot) => {
       return new Promise((resolve, reject) => {
+         self.created = {
+            maps: 0,
+            files: 0
+         };
+         self.size = {
+            before: 0,
+            after: 0
+         };
+         self.ext = self.data.splittedCore ? '.min.css' : '.css';
          async.eachLimit(self.files, 20, async(file) => {
             try {
-               await minifyCSS(self, file, applicationRoot);
+               const availableFiles = await getAvailableFiles(file.src);
+               await Promise.all(availableFiles.map((currentFile) => minifyCSS(self, {
+                  src: currentFile,
+                  dest: currentFile.replace(/\.css$/, self.ext)
+               }, applicationRoot)));
             } catch (err) {
                logger.error({
                   message: `Проблема в работе minifyCSS для ${file.dest}`,
@@ -137,15 +146,6 @@ module.exports = function(grunt) {
          applicationRoot = path.join(self.data.root, self.data.application).replace(/\\/g, '/'),
          mDepsPath = helpers.prettifyPath(path.join(applicationRoot, 'resources/module-dependencies.json')),
          done = self.async();
-
-      self.created = {
-         maps: 0,
-         files: 0
-      };
-      self.size = {
-         before: 0,
-         after: 0
-      };
 
       try {
          self.mDeps = await fs.readJson(mDepsPath);
