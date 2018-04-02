@@ -63,7 +63,7 @@ module.exports = function(grunt) {
          defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
       }
 
-      defaultTasks.push('i18n', 'collect-dependencies', 'routsearch', 'less1by1');
+      defaultTasks.push('less1by1', 'i18n', 'collect-dependencies', 'routsearch');
 
       //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
       if (packaging) {
