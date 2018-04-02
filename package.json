@@ -33,6 +33,7 @@
       "humanize": "0.0.9",
       "less": "^2.7.3",
       "minimatch": "^3.0.4",
+      "p-map": "^1.2.0",
       "requirejs": "^2.3.5",
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.200",
       "through2": "^2.0.3",
