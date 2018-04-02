@@ -22,7 +22,7 @@ const
    jsModules = {},
    requirejsPaths = {};
 
-async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath){
+async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath) {
    try {
       const moduleName = path.basename(modulePath);
       const cssFilePath = lessFilePath.replace('.less', '.css');
