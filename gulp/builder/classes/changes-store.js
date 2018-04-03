@@ -83,6 +83,7 @@ class ChangesStore {
       this.currentStore = new StoreInfo();
       this.moduleInfoForLess = {};
       this.changedLessFiles = [];
+      this.dropCacheForMarkup = false;
    }
 
    load() {
@@ -355,6 +356,10 @@ class ChangesStore {
          }
          return null;
       }).filter(filePath => !!filePath);
+   }
+
+   setDropCacheForMarkup() {
+      this.dropCacheForMarkup = true;
    }
 }
 

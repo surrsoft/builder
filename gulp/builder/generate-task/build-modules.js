@@ -50,7 +50,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
-         .pipe(gulpIf(hasLocalization, markupLocalization(moduleInfo)))
+         .pipe(gulpIf(hasLocalization, markupLocalization(config, moduleInfo, pool)))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);

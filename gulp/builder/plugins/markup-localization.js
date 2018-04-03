@@ -2,22 +2,20 @@
 'use strict';
 
 const through = require('through2'),
-   logger = require('../../../lib/logger').logger(),
-   prepareXHTML = require('../../../lib/i18n/prepare-xhtml');
+   path = require('path'),
+   logger = require('../../../lib/logger').logger();
 
 
-//если есть ресурсы локализации, то нужно записать <локаль>.js файл в папку "lang/<локаль>" и занести данные в contents.json
-// + css локализации нужно объединить
-module.exports = function(moduleInfo) {
-   const componentsProperties = {};
-   return through.obj(function(file, encoding, callback) {
+module.exports = function(config, moduleInfo, pool) {
+   return through.obj(async function(file, encoding, callback) {
       try {
          if (file.extname !== '.xhtml') {
             callback(null, file);
             return;
          }
-         file.contents = Buffer.from(prepareXHTML(file.contents.toString(), componentsProperties));
-         this.push(file);
+         const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+         const newText = await pool.exec('prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
+         file.contents = Buffer.from(newText);
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',
@@ -26,6 +24,7 @@ module.exports = function(moduleInfo) {
             filePath: file.path
          });
       }
+      this.push(file);
       callback();
    });
 };
