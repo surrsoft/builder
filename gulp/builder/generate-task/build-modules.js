@@ -5,7 +5,8 @@ const
    gulp = require('gulp'),
    gulpRename = require('gulp-rename'),
    gulpChmod = require('gulp-chmod'),
-   plumber = require('gulp-plumber');
+   plumber = require('gulp-plumber'),
+   gulpIf = require('gulp-if');
 
 //наши плагины
 const
@@ -15,6 +16,7 @@ const
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
+   indexDictionary = require('../plugins/index-dictionary'),
    createContentsJson = require('../plugins/create-contents-json');
 
 
@@ -22,12 +24,13 @@ const
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool) {
+function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, config, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
    let sbis3ControlsPath = '';
    if (modulesMap.has('SBIS3.CONTROLS')) {
       sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
    }
+   const hasLocalization = config.localizations.length > 0;
    return function buildModule() {
       return gulp.src(moduleInput)
          .pipe(plumber({
@@ -45,6 +48,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
+         .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
@@ -77,7 +81,7 @@ function generateTaskForBuildModules(changesStore, config, pool) {
    for (const moduleInfo of config.modules) {
       tasks.push(
          gulp.series(
-            generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, pool),
+            generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, config, pool),
             printPercentComplete));
    }
    return gulp.parallel(tasks);

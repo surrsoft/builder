@@ -9,12 +9,10 @@ const logger = require('../../../lib/logger').logger(),
 module.exports = function(cache, moduleInfo) {
    return through.obj(function(file, encoding, callback) {
       try {
-         if (cache.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
-            this.push(file);
-         }
+         file.cached = !cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
       } catch (error) {
          logger.error({error: error});
       }
-      callback();
+      callback(null, file);
    });
 };

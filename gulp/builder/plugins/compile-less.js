@@ -10,6 +10,10 @@ const through = require('through2'),
 
 module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
    return through.obj(async function(file, encoding, callback) {
+      if (file.cached) {
+         callback(null, file);
+         return;
+      }
       this.push(file);
       if (!file.path.endsWith('.less')) {
          callback();

@@ -28,6 +28,7 @@
       "grunt-wsmod-packer": "git+ssh://git@git.sbis.ru:root/grunt-wsmod-packer.git#rc-3.18.200",
       "gulp": "^4.0.0",
       "gulp-chmod": "^2.0.0",
+      "gulp-if": "^2.0.2",
       "gulp-plumber": "^1.2.0",
       "gulp-rename": "^1.2.2",
       "humanize": "0.0.9",

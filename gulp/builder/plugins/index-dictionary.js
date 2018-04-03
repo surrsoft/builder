@@ -1,53 +1,69 @@
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
+   Vinyl = require('vinyl'),
    path = require('path'),
-   helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate');
+   DictionaryIndexer = require('../../../lib/i18n/dictionary-indexer');
 
-module.exports = function(changesStore, moduleInfo, pool) {
-   return through.obj(async function(file, encoding, callback) {
-      //нас не интересуют:
-      //  не js-файлы
-      //  *.test.js - тесты
-      //  *.worker.js - воркеры
-      //  *.routes.js - роутинг. обрабатывается в отдельном плагине
-      //  файлы в папках node_modules - модули node.js
-      //  файлы в папках design - файлы для макетирования в genie
-      if (file.extname !== '.js' ||
-         file.path.endsWith('.worker.js') ||
-         file.path.endsWith('.test.js') ||
-         file.path.includes('/node_modules/') ||
-         file.path.includes('/design/')) {
-         callback(null, file);
-         return;
-      }
-      let componentInfo;
+
+//если есть ресурсы локализации, то нужно записать <локаль>.js файл в папку "lang/<локаль>" и занести данные в contents.json
+// + css локализации нужно объединить
+module.exports = function(moduleInfo, config) {
+   const indexer = new DictionaryIndexer(config.localizations);
+   return through.obj(function(file, encoding, callback) {
       try {
-         componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]);
+         this.push(file);
+
+         //нам нужны только css и json локализации
+         const locale = file.stem;
+         logger.info('!!!' + file.path);
+         if (file.extname !== '.json' && file.extname !== '.css' || !config.localizations.includes(locale)) {
+            callback();
+            return;
+         }
+         if (file.extname === '.json') {
+            indexer.addLocalizationJson(moduleInfo.output, file.path, locale);
+         } else if (file.extname === '.css') {
+            indexer.addLocalizationCSS(moduleInfo.output, file.path, locale, file.contents.toString());
+         }
       } catch (error) {
          logger.error({
-            message: 'Ошибка при обработке JS компонента',
-            filePath: file.history[0],
+            message: 'Ошибка Builder\'а',
             error: error,
-            moduleInfo: moduleInfo
+            moduleInfo: moduleInfo,
+            filePath: file.path
          });
       }
-      changesStore.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
-      callback(null, file);
+      callback();
    }, function(callback) {
       try {
-         const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
-         Object.keys(componentsInfo).forEach(filePath => {
-            const info = componentsInfo[filePath];
-            if (filePath.endsWith('.module.js') && info.hasOwnProperty('componentName') &&
-               info.componentName.startsWith('js!')) {
-               const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const componentName = info.componentName.replace('js!', '');
-               moduleInfo.contents.jsModules[componentName] = helpers.prettifyPath(transliterate(relativePath));
+         for (const localization of config.localizations) {
+            const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, localization);
+            if (mergedCSSCode) {
+               const mergedCSSPath = path.join(moduleInfo.output, 'lang', localization, localization + '.css');
+               this.push(new Vinyl({
+                  base: moduleInfo.output,
+                  path: mergedCSSPath,
+                  contents: Buffer.from(mergedCSSCode)
+               }));
             }
-         });
+
+            const loaderCode = indexer.extractLoaderCode(moduleInfo.output, localization);
+            if (loaderCode) {
+               const loaderPath = path.join(moduleInfo.output, 'lang', localization, localization + '.js');
+               this.push(new Vinyl({
+                  base: moduleInfo.output,
+                  path: loaderPath,
+                  contents: Buffer.from(loaderCode)
+               }));
+            }
+         }
+         const dictionary = indexer.getDictionaryForContents();
+         if (Object.keys(dictionary).length > 0) {
+            moduleInfo.contents.dictionary = dictionary;
+         }
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',
