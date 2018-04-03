@@ -17,6 +17,7 @@ const
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    indexDictionary = require('../plugins/index-dictionary'),
+   markupLocalization = require('../plugins/markup-localization'),
    createContentsJson = require('../plugins/create-contents-json');
 
 
@@ -49,6 +50,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
+         .pipe(gulpIf(hasLocalization, markupLocalization(moduleInfo)))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);

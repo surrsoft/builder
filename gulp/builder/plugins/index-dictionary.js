@@ -18,7 +18,6 @@ module.exports = function(moduleInfo, config) {
 
          //нам нужны только css и json локализации
          const locale = file.stem;
-         logger.info('!!!' + file.path);
          if (file.extname !== '.json' && file.extname !== '.css' || !config.localizations.includes(locale)) {
             callback();
             return;
