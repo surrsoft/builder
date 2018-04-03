@@ -49,12 +49,12 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
          .pipe(gulpHtmlTmpl(moduleInfo))
-         .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
-         .pipe(gulpIf(hasLocalization, markupLocalization(config, moduleInfo, pool)))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
+         .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
+         .pipe(gulpIf(hasLocalization, markupLocalization(config, moduleInfo, pool)))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulpChmod({

@@ -38,10 +38,10 @@ module.exports = function(moduleInfo, config) {
       callback();
    }, function(callback) {
       try {
-         for (const localization of config.localizations) {
-            const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, localization);
+         for (const locale of config.localizations) {
+            const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, locale);
             if (mergedCSSCode) {
-               const mergedCSSPath = path.join(moduleInfo.output, 'lang', localization, localization + '.css');
+               const mergedCSSPath = path.join(moduleInfo.output, 'lang', locale, locale + '.css');
                this.push(new Vinyl({
                   base: moduleInfo.output,
                   path: mergedCSSPath,
@@ -49,9 +49,9 @@ module.exports = function(moduleInfo, config) {
                }));
             }
 
-            const loaderCode = indexer.extractLoaderCode(moduleInfo.output, localization);
+            const loaderCode = indexer.extractLoaderCode(moduleInfo.output, locale);
             if (loaderCode) {
-               const loaderPath = path.join(moduleInfo.output, 'lang', localization, localization + '.js');
+               const loaderPath = path.join(moduleInfo.output, 'lang', locale, locale + '.js');
                this.push(new Vinyl({
                   base: moduleInfo.output,
                   path: loaderPath,
