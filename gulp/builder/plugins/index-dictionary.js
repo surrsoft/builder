@@ -59,10 +59,7 @@ module.exports = function(moduleInfo, config) {
                }));
             }
          }
-         const dictionary = indexer.getDictionaryForContents();
-         if (Object.keys(dictionary).length > 0) {
-            moduleInfo.contents.dictionary = dictionary;
-         }
+         moduleInfo.contents.dictionary = indexer.getDictionaryForContents();
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',
