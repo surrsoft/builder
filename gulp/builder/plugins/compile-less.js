@@ -6,7 +6,8 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    path = require('path'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   transliterate = require('../../../lib/transliterate');
 
 module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
    return through.obj(async function(file, encoding, callback) {
@@ -50,10 +51,10 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
             logger.debug(result.ignoreMessage);
          } else {
             //changesStore.storeLessFileInfo(result.path, result.imports, result.path.replace('.less', '.css'));
-            const outFileName = file.basename.replace(/\.less$/, '.css');
+            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, '.css');
             this.push(new Vinyl({
-               base: file.base,
-               path: path.join(file.base, outFileName),
+               base: moduleInfo.output,
+               path: path.join(moduleInfo.output, transliterate(relativePath)),
                contents: Buffer.from(result.text)
             }));
          }
