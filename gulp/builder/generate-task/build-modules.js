@@ -33,7 +33,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
    }
    const hasLocalization = config.localizations.length > 0;
    return function buildModule() {
-      return gulp.src(moduleInput)
+      return gulp.src(moduleInput, {'dot': false, 'nodir': true})
          .pipe(plumber({
             errorHandler: function(err) {
                logger.error({

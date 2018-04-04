@@ -11,16 +11,22 @@ const through = require('through2'),
 
 module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
    return through.obj(async function(file, encoding, callback) {
-      if (file.cached) {
-         callback(null, file);
-         return;
-      }
-      this.push(file);
-      if (!file.path.endsWith('.less')) {
-         callback();
-         return;
-      }
       try {
+         this.push(file);
+         if (!file.path.endsWith('.less')) {
+            callback();
+            return;
+         }
+
+         const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, '.css');
+         const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+
+         if (file.cached) {
+            changesStore.addOutputFile(file.history[0], outputPath);
+            callback();
+            return;
+         }
+
          const cssInSources = file.history[0].replace(/\.less$/, '.css');
          if (await fs.pathExists(cssInSources)) {
             const message = `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
@@ -50,11 +56,11 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
          if (result.ignoreMessage) {
             logger.debug(result.ignoreMessage);
          } else {
-            //changesStore.storeLessFileInfo(result.path, result.imports, result.path.replace('.less', '.css'));
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, '.css');
+            changesStore.addOutputFile(file.history[0], outputPath);
+            changesStore.addDependencies(file.history[0], result.imports);
             this.push(new Vinyl({
                base: moduleInfo.output,
-               path: path.join(moduleInfo.output, transliterate(relativePath)),
+               path: outputPath,
                contents: Buffer.from(result.text)
             }));
          }

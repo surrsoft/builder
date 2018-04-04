@@ -40,7 +40,7 @@ function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl)');
 
    return function grabModule() {
-      return gulp.src(moduleInput, {'read': false})
+      return gulp.src(moduleInput, {'read': false, 'dot': false, 'nodir': true})
          .pipe(plumber({
             errorHandler: function(err) {
                logger.error({

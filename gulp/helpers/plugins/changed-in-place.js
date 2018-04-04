@@ -7,9 +7,14 @@ const logger = require('../../../lib/logger').logger(),
 
 //moduleInfo может отсутствовать
 module.exports = function(cache, moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+   return through.obj(async function(file, encoding, callback) {
       try {
-         file.cached = !cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
+         const isChanged = cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
+         if (isChanged instanceof Promise) {
+            file.cached = !await isChanged;
+         } else {
+            file.cached = !isChanged;
+         }
       } catch (error) {
          logger.error({error: error});
       }
