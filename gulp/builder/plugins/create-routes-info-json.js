@@ -12,6 +12,10 @@ const through = require('through2'),
 
 module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
+      if (file.cached) {
+         callback(null, file);
+         return;
+      }
       if (!file.path.endsWith('.routes.js')) {
          callback(null, file);
          return;

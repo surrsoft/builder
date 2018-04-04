@@ -5,18 +5,17 @@ const
    path = require('path'),
    gulp = require('gulp'),
    os = require('os'),
-   assert = require('assert'),
    fs = require('fs-extra'),
    workerPool = require('workerpool'),
    plumber = require('gulp-plumber');
 
 const
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
+   generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    changedInPlace = require('../helpers/plugins/changed-in-place'),
-   grabFile = require('./plugins/grub-file'),
+   grabFile = require('./plugins/grab-file'),
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
-   runJsonGenerator = require('../../lib/i18n/run-json-generator'),
    logger = require('../../lib/logger').logger();
 
 function generateTaskForTerminatePool(pool) {
@@ -37,57 +36,11 @@ function generateTaskForLoadCache(cache) {
    };
 }
 
-function generateTaskForJsonGenerator(cache, config) {
-   return async function generateJson() {
-      const folders = [];
-      for (const module of config.modules) {
-         folders.push(module.path);
-      }
-      const resultJsonGenerator = await runJsonGenerator(folders, config.cachePath);
-      for (const error of resultJsonGenerator.errors) {
-         logger.warning({
-            message: 'Ошибка при разборе JSDoc комментариев',
-            filePath: error.filePath,
-            error: error.error
-         });
-      }
-
-      //если components-properties поменялись, то нужно сбросить кеш для верстки
-      let isComponentsPropertiesChanged = false;
-      const filePath = path.join(config.cachePath, 'components-properties.json');
-      if (await fs.pathExists(filePath)) {
-         let oldIndex = {};
-         try {
-            oldIndex = await fs.readJSON(filePath);
-         } catch (err) {
-            logger.warning({
-               message: 'Не удалось прочитать файл кеша',
-               filePath: filePath,
-               error: err
-            });
-         }
-
-         try {
-            assert.deepEqual(oldIndex, resultJsonGenerator.index);
-         } catch (error) {
-            isComponentsPropertiesChanged = true;
-         }
-      } else {
-         isComponentsPropertiesChanged = true;
-      }
-      if (isComponentsPropertiesChanged) {
-         logger.info('Кеш для файлов верстки будет сброшен, если был.');
-         cache.setDropCacheForMarkup();
-         await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
-      }
-   };
-}
-
 function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl)');
 
    return function grabModule() {
-      return gulp.src(moduleInput, {'read': false})
+      return gulp.src(moduleInput, {'read': false, 'dot': false, 'nodir': true})
          .pipe(plumber({
             errorHandler: function(err) {
                logger.error({
@@ -148,8 +101,7 @@ function generateWorkflow(processArgv) {
    return gulp.series(
       guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
       generateTaskForLoadCache(cache),
-
-      generateTaskForJsonGenerator(cache, config),
+      generateTaskForGenerateJson(cache, config),
       generateTaskForGrabModules(cache, config, pool),
       gulp.parallel( //завершающие задачи
          generateTaskForSaveCache(cache),

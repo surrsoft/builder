@@ -3,7 +3,9 @@
 
 const
    ConfigurationReader = require('../../helpers/configuration-reader'),
-   ModuleInfo = require('./module-info');
+   ModuleInfo = require('./module-info'),
+   getLanguageByLocale = require('../../../lib/get-language-by-locale'),
+   availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
 
 class BuildConfiguration {
    constructor() {
@@ -43,15 +45,6 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
       }
 
-      for (const module of this.rawConfig.modules) {
-         this.modules.push(new ModuleInfo(
-            module.name,
-            module.responsible,
-            module.path,
-            this.outputPath
-         ));
-      }
-
       if (!this.rawConfig.hasOwnProperty('mode')) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
       }
@@ -66,10 +59,50 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
 
-      this.localizations = this.rawConfig.localizations;
-      this.defaultLocalization = this.rawConfig['default-localization'];
-   }
+      const hasLocalizations = this.rawConfig.hasOwnProperty('localization');
+      const hasDefaultLocalization = this.rawConfig.hasOwnProperty('default-localization');
 
+      if (hasDefaultLocalization !== hasLocalizations) {
+         throw new Error(`${startErrorMessage} Список локализаций и дефолтная локализация не согласованы`);
+      }
+
+      if (hasLocalizations) {
+         this.localizations = this.rawConfig.localization;
+         for (const currentLocal of this.localizations) {
+            if (!availableLanguage.hasOwnProperty(currentLocal)) {
+               throw new Error(`${startErrorMessage} Задан не корректный идентификатор локализаци: ${currentLocal}`);
+            }
+         }
+
+         this.defaultLocalization = this.rawConfig['default-localization'];
+         if (!availableLanguage.hasOwnProperty(this.defaultLocalization)) {
+            throw new Error(`${startErrorMessage} Задан не корректный идентификатор локализаци по умолчанию: ${this.defaultLocalization}`);
+         }
+
+         if (!this.localizations.includes(this.defaultLocalization)) {
+            throw new Error(`${startErrorMessage} Локализация по умолчанию не указана в списке доступных локализаций`);
+         }
+      }
+
+
+      for (const module of this.rawConfig.modules) {
+         const moduleInfo = new ModuleInfo(
+            module.name,
+            module.responsible,
+            module.path,
+            this.outputPath,
+         );
+         moduleInfo.contents.buildMode = mode;
+         if (this.defaultLocalization && this.localizations.length > 0) {
+            moduleInfo.contents.defaultLanguage = this.defaultLocalization;
+            moduleInfo.contents.availableLanguage = {};
+            for (const local of this.localizations) {
+               moduleInfo.contents.availableLanguage[local] = getLanguageByLocale(local);
+            }
+         }
+         this.modules.push(moduleInfo);
+      }
+   }
 }
 
 module.exports = BuildConfiguration;

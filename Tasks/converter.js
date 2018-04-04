@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const async = require('async');
 const helpers = require('../lib/helpers');
 const transliterate = require('../lib/transliterate');
+const buildLess = require('../lib/build-less');
 const parseJsComponent = require('../lib/parse-js-component');
 const humanize = require('humanize');
 const logger = require('../lib/logger').logger();
@@ -21,6 +22,45 @@ const
    jsModules = {},
    requirejsPaths = {};
 
+async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath) {
+   try {
+      const moduleName = path.basename(modulePath);
+      const cssFilePath = lessFilePath.replace('.less', '.css');
+      if (await fs.pathExists(cssFilePath)) {
+         //если файл уже есть, то не нужно его перезаписывать.
+         //иначе при деплое локального стенда мы перезапишем css в исходниках.
+         //просто ругаемся и ждём, что поправят.
+         const message = `Существующий CSS-файл мешает записи результата компиляции '${lessFilePath}'. ` +
+            'Необходимо удалить лишний CSS-файл';
+
+         logger.warning({
+            message: message,
+            filePath: cssFilePath
+         });
+         return;
+      }
+
+      const data = await fs.readFile(lessFilePath);
+      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath);
+      if (result.ignoreMessage) {
+         logger.debug(result.ignoreMessage);
+      } else {
+         const relativeLessFilePath = path.relative(modulePath, lessFilePath);
+         const relativeResultCssFilePath = transliterate(path.join(moduleName, relativeLessFilePath.replace('.less', '.css')));
+         const resultCssPath = path.join(resourcePath, relativeResultCssFilePath);
+         await fs.ensureDir(path.dirname(resultCssPath));
+         await fs.writeFile(resultCssPath, result.text, {flag: 'w'});
+         logger.debug(`file ${resultCssPath} successfully compiled`);
+      }
+
+   } catch (error) {
+      logger.warning({
+         message: 'Ошибка при компиляции less файла',
+         error: error,
+         filePath: lessFilePath
+      });
+   }
+}
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', async function() {
@@ -91,6 +131,13 @@ module.exports = function(grunt) {
       }
       grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено`);
 
+      let sbis3ControlsPath = '';
+      for (const modulePath of paths) {
+         if (path.basename(modulePath) === 'SBIS3.CONTROLS') {
+            sbis3ControlsPath = modulePath;
+         }
+      }
+
       //обработка модулей
       async.eachSeries(paths, function(input, callbackForProcessingModule) {
          const partsFilePath = input.replace(dblSlashes, '/').split('/');
@@ -109,6 +156,9 @@ module.exports = function(grunt) {
                const destination = path.join(resourcesPath, tsdModuleName,
                   transliterate(path.relative(input, file)));
 
+               if (file.endsWith('.less')) {
+                  await compileLess(file, input, sbis3ControlsPath, resourcesPath);
+               }
                if (isModuleJs.test(file)) {
                   grunt.log.ok('Читаем js-модуль по пути: ' + file);
                   const text = await fs.readFile(file);

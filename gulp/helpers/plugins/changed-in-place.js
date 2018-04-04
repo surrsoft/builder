@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const logger = require('../../../lib/logger').logger(),
@@ -7,14 +5,17 @@ const logger = require('../../../lib/logger').logger(),
 
 //moduleInfo может отсутствовать
 module.exports = function(cache, moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+   return through.obj(async function(file, encoding, callback) {
       try {
-         if (cache.isFileChanged(file.path, file.stat.mtime, moduleInfo)) {
-            this.push(file);
+         const isChanged = cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
+         if (isChanged instanceof Promise) {
+            file.cached = !await isChanged;
+         } else {
+            file.cached = !isChanged;
          }
       } catch (error) {
          logger.error({error: error});
       }
-      callback();
+      callback(null, file);
    });
 };

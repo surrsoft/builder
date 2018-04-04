@@ -128,8 +128,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'contents.js',
          'contents.json',
          'routes-info.json',
-         'static_templates.json',
-         'ForRename_old.css' // <--- TODO: этого тут быть не должно. Нужно LESS компилировать из исходников, а не из стенда!
+         'static_templates.json'
       ]);
 
       //проверим время модификации незменяемого файла и изменяемого в "стенде"
@@ -289,6 +288,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
+         'buildMode': 'debug',
          'htmlNames': {},
          'jsModules': {
             'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
@@ -336,6 +336,7 @@ describe('gulp/builder/generate-workflow.js', function() {
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
+         'buildMode': 'debug',
          'htmlNames': {},
          'jsModules': {
             'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
@@ -393,6 +394,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
+         'buildMode': 'debug',
          'htmlNames': {
             'js!SBIS3.ForChange_old': 'ForChange_old.html',
             'js!SBIS3.ForRename': 'ForRename.html',
@@ -513,6 +515,7 @@ describe('gulp/builder/generate-workflow.js', function() {
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
+         'buildMode': 'debug',
          'htmlNames': {
             'js!SBIS3.ForChange_new': 'ForChange_new.html',
             'js!SBIS3.ForRename': 'ForRename.html',

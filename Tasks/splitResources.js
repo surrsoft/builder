@@ -72,10 +72,11 @@ module.exports = function splitResourcesTask(grunt) {
          pathModule = getPath(name, nameModule);
 
          try {
+            const sortedContents = helpers.sortObject(data[nameModule]);
             if (name !== 'contents.js') {
-               fs.writeFileSync(pathModule, JSON.stringify(data[nameModule], undefined, 2));
+               fs.writeFileSync(pathModule, JSON.stringify(sortedContents, null, 2));
             } else {
-               fs.writeFileSync(pathModule, 'contents=' + JSON.stringify(data[nameModule]));
+               fs.writeFileSync(pathModule, 'contents=' + JSON.stringify(sortedContents));
             }
          } catch (err) {
             grunt.fail.fatal(`Не смог записать файл: ${pathModule} \n ${err.stack}`);
@@ -84,9 +85,8 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function getOptionModule(data, splitData, option) {
-      let
-         result = splitData,
-         nameModule;
+      const result = splitData;
+      let nameModule;
 
 
       Object.keys(data[option]).forEach(function(key) {

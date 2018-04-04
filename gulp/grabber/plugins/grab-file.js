@@ -12,6 +12,12 @@ module.exports = function(config, cache, moduleInfo, pool) {
          callback();
          return;
       }
+
+      if (file.cached) {
+         callback();
+         return;
+      }
+
       let collectWords = [];
       try {
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');

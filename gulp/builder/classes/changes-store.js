@@ -31,11 +31,9 @@ class StoreInfo {
       //1. отследить восстановленный из корзины файл
       //2. удалить лишние файлы
       this.inputPaths = {};
-      this.inputLessPaths = {};
 
       //imports из less файлов для инкрементальной сборки
-      //особенность less в том, что они компилируются относительно корня развёрнутого стенда
-      this.lessDependencies = {};
+      this.dependencies = {};
 
       //нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
       this.modulesCache = {};
@@ -49,8 +47,7 @@ class StoreInfo {
             this.versionOfBuilder = obj.versionOfBuilder;
             this.startBuildTime = obj.startBuildTime;
             this.inputPaths = obj.inputPaths;
-            this.inputLessPaths = obj.inputLessPaths;
-            this.lessDependencies = obj.lessDependencies;
+            this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
          }
       } catch (error) {
@@ -67,8 +64,7 @@ class StoreInfo {
          versionOfBuilder: this.versionOfBuilder,
          startBuildTime: this.startBuildTime,
          inputPaths: this.inputPaths,
-         inputLessPaths: this.inputLessPaths,
-         lessDependencies: this.lessDependencies,
+         dependencies: this.dependencies,
          modulesCache: this.modulesCache
       }, {
          spaces: 1
@@ -81,8 +77,11 @@ class ChangesStore {
       this.config = config;
       this.lastStore = new StoreInfo();
       this.currentStore = new StoreInfo();
-      this.moduleInfoForLess = {};
-      this.changedLessFiles = [];
+      this.dropCacheForMarkup = false;
+
+      //less файлы инвалидируются с зависимостями
+      //bp
+      this.cacheLessChanges = {};
    }
 
    load() {
@@ -156,57 +155,55 @@ class ChangesStore {
       return Promise.all(removePromises);
    }
 
-   isFileChanged(filePath, fileMTime, moduleInfo) {
+   async isFileChanged(filePath, fileMTime, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
-
-      //кеша не было, значит все файлы новые
-      const noCache = !this.lastStore.startBuildTime;
-
-      //проверка modification time. этой проверки может быть не достаточно в двух слуаях:
-      //1. файл вернули из корзины
-      //2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
-      const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
-
       const relativePath = path.relative(moduleInfo.path, filePath);
       const outputFullPath = path.join(moduleInfo.output, transliterate(relativePath));
       this.currentStore.inputPaths[prettyPath] = [helpers.prettifyPath(outputFullPath)];
 
-      if (path.extname(filePath) !== '.less') {
-         const isChanged = noCache || isModifiedFile ||
-            !this.lastStore.inputPaths.hasOwnProperty(prettyPath); //новый файл
+      //кеша не было, значит все файлы новые
+      if (!this.lastStore.startBuildTime) {
+         return true;
+      }
 
-         if (!isChanged) {
-            const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
-            const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
-            if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
-               currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
-            }
-            if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
-               currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
-            }
+      //если сборка с локализацией и свойства компонентов поменялись
+      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
+         return true;
+      }
+
+      //новый файл
+      if (!this.lastStore.inputPaths.hasOwnProperty(prettyPath)) {
+         return true;
+      }
+
+      //проверка modification time
+      if (fileMTime.getTime() > this.lastStore.startBuildTime) {
+         if (prettyPath.endsWith('.less')) {
+            this.cacheLessChanges[prettyPath] = true;
          }
+         return true;
+      }
 
+      //вытащим данные из старого кеша в новый кеш
+      const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
+      const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
+      if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
+         currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
+      }
+      if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
+         currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
+      }
+      if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
+         this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
+      }
+
+      if (prettyPath.endsWith('.less')) {
+         const dependenciesChanged = await this.isDependenciesChanged(prettyPath);
+         const isChanged = dependenciesChanged.length > 0 && dependenciesChanged.some(changed => changed);
+         this.cacheLessChanges[prettyPath] = isChanged;
          return isChanged;
       }
-
-      //less билдятся относительно корня стенда, поэтому нужна особая обработка
-      const lessFullPath = helpers.prettifyPath(path.join(moduleInfo.output, transliterate(relativePath)));
-
-      const isChanged = noCache || isModifiedFile ||
-         !this.lastStore.inputLessPaths.hasOwnProperty(lessFullPath); //новый файл
-
-      this.moduleInfoForLess[lessFullPath] = moduleInfo;
-      if (isChanged) {
-         this.changedLessFiles.push(lessFullPath);
-      } else {
-         if (this.lastStore.inputLessPaths.hasOwnProperty(lessFullPath)) {
-            this.currentStore.inputLessPaths[lessFullPath] = this.lastStore.inputLessPaths[lessFullPath];
-         }
-         if (this.lastStore.lessDependencies.hasOwnProperty(lessFullPath)) {
-            this.currentStore.lessDependencies[lessFullPath] = this.lastStore.lessDependencies[lessFullPath];
-         }
-      }
-      return isChanged;
+      return false;
    }
 
    addOutputFile(filePath, outputFilePath) {
@@ -215,11 +212,46 @@ class ChangesStore {
       this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
    }
 
-   storeLessFileInfo(filePath, imports, outputFilePath) {
+   addDependencies(filePath, imports) {
       const prettyPath = helpers.prettifyPath(filePath);
-      const outputPrettyPath = helpers.prettifyPath(outputFilePath);
-      this.currentStore.inputLessPaths[prettyPath] = [outputPrettyPath];
-      this.currentStore.lessDependencies[prettyPath] = imports.map(helpers.prettifyPath);
+      this.currentStore.dependencies[prettyPath] = imports.map(helpers.prettifyPath);
+   }
+
+   isDependenciesChanged(filePath) {
+      return Promise.all(this.getAllDependencies(filePath).map(async(currentPath) => {
+         if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
+            return this.cacheLessChanges[currentPath];
+         } else {
+            let isChanged = false;
+            if (!await fs.pathExists(currentPath)) {
+               isChanged = true;
+            } else {
+               const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
+               isChanged = currentMTime > this.lastStore.startBuildTime;
+            }
+            this.cacheLessChanges[currentPath] = isChanged;
+            return isChanged;
+         }
+      }));
+   }
+
+   getAllDependencies(filePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const results = new Set();
+      const queue = [prettyPath];
+
+      while (queue.length > 0) {
+         const currentPath = queue.pop();
+         if (this.lastStore.dependencies.hasOwnProperty(currentPath)) {
+            for (const dependency of this.lastStore.dependencies[currentPath]) {
+               if (!results.has(dependency)) {
+                  results.add(dependency);
+                  queue.push(dependency);
+               }
+            }
+         }
+      }
+      return Array.from(results);
    }
 
    storeComponentInfo(filePath, moduleName, componentInfo) {
@@ -258,53 +290,6 @@ class ChangesStore {
       return currentModuleCache.routesInfo;
    }
 
-   static getListFilesWithDependents(files, dependencies) {
-      const dependents = {};
-      for (const filePath in dependencies) {
-         if (!dependencies.hasOwnProperty(filePath)) {
-            continue;
-         }
-         for (const dependency of dependencies[filePath]) {
-            if (!dependents.hasOwnProperty(dependency)) {
-               dependents[dependency] = [];
-            }
-            dependents[dependency].push(filePath);
-         }
-
-      }
-
-      const filesToProcessing = [...files];
-      const filesWithDependents = new Set();
-      while (filesToProcessing.length > 0) {
-         const filePath = filesToProcessing.shift();
-         if (!filesWithDependents.has(filePath)) {
-            filesWithDependents.add(filePath);
-            if (dependents.hasOwnProperty(filePath)) {
-               filesToProcessing.unshift(...dependents[filePath]);
-            }
-         }
-      }
-      return Array.from(filesWithDependents);
-   }
-
-   async getChangedLessFiles() {
-      const files = ChangesStore.getListFilesWithDependents(this.changedLessFiles, this.lastStore.lessDependencies);
-
-      //нужно вернуть только существующие файлы. по зависимостям могли вытащить разное
-      const filesWithExist = await Promise.all(files.map(async(filePath) => {
-         const exists = await fs.pathExists(filePath);
-         return {
-            path: filePath,
-            exists: exists
-         };
-      }));
-      return filesWithExist.filter(obj => obj.exists).map(obj => obj.path);
-   }
-
-   getModuleInfoForLess() {
-      return this.moduleInfoForLess;
-   }
-
    static getOutputFilesSet(inputPaths) {
       const resultSet = new Set();
       for (const filePath in inputPaths) {
@@ -326,13 +311,7 @@ class ChangesStore {
          return !currentOutputSet.has(filePath);
       });
 
-      const currentLessOutputSet = ChangesStore.getOutputFilesSet(this.currentStore.inputLessPaths);
-      const lastLessOutputSet = ChangesStore.getOutputFilesSet(this.lastStore.inputLessPaths);
-      const removeLessFiles = Array.from(lastLessOutputSet).filter(filePath => {
-         return !currentLessOutputSet.has(filePath);
-      });
-
-      const promises = [...removeFiles, ...removeLessFiles].map(filePath => {
+      const promises = removeFiles.map(filePath => {
          return (async() => {
             let needRemove = false;
             if (await fs.pathExists(filePath)) {
@@ -355,6 +334,10 @@ class ChangesStore {
          }
          return null;
       }).filter(filePath => !!filePath);
+   }
+
+   setDropCacheForMarkup() {
+      this.dropCacheForMarkup = true;
    }
 }
 

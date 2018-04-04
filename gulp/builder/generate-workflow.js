@@ -9,8 +9,8 @@ const
    workerPool = require('workerpool');
 
 const
-   generateTaskForCompileLess = require('./generate-task/compile-less'),
    generateTaskForBuildModules = require('./generate-task/build-modules'),
+   generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js');
@@ -59,12 +59,14 @@ function generateWorkflow(processArgv) {
          maxWorkers: os.cpus().length
       });
 
+   const localizationEnable = config.localizations.length > 0;
+
    return gulp.series(
       guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
       generateTaskForLoadChangesStore(changesStore),
       generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
+      generateTaskForGenerateJson(changesStore, config, localizationEnable),
       generateTaskForBuildModules(changesStore, config, pool),
-      generateTaskForCompileLess(changesStore, config, pool), //после сборки модулей
       gulp.parallel( //завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
