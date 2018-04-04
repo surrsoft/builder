@@ -12,6 +12,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
          callback(null, file);
          return;
       }
+
       //нас не интересуют:
       //  не js-файлы
       //  *.test.js - тесты

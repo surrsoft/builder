@@ -1,4 +1,3 @@
-/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
