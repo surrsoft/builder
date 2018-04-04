@@ -13,7 +13,7 @@ const
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    changedInPlace = require('../helpers/plugins/changed-in-place'),
-   grabFile = require('./plugins/grub-file'),
+   grabFile = require('./plugins/grab-file'),
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
    logger = require('../../lib/logger').logger();
