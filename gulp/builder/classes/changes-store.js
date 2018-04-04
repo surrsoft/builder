@@ -160,6 +160,10 @@ class ChangesStore {
    isFileChanged(filePath, fileMTime, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
 
+      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
+         return true;
+      }
+
       //кеша не было, значит все файлы новые
       const noCache = !this.lastStore.startBuildTime;
 

@@ -9,6 +9,10 @@ const through = require('through2'),
 module.exports = function(config, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       try {
+         if (file.cached) {
+            callback(null, file);
+            return;
+         }
          if (file.extname !== '.xhtml') {
             callback(null, file);
             return;
@@ -24,7 +28,6 @@ module.exports = function(config, moduleInfo, pool) {
             filePath: file.path
          });
       }
-      this.push(file);
-      callback();
+      callback(null, file);
    });
 };
