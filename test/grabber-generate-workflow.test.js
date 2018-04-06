@@ -41,6 +41,18 @@ const runWorkflow = function() {
    });
 };
 
+const timeout = function(ms) {
+   return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+//в файловой системе HFS Plus точность хранения даты равняется 1 секунде
+//из-за этого тесты могуть падать непредсказуемым образом, и при этом для пользователя проблем не будет
+const timeoutForMacOS = async function() {
+   if (process.platform === 'darwin') {
+      await timeout(1000);
+   }
+};
+
 //все тесты по сути завязаны на значение контекста(context) одной фразы в файле Component.<extension>
 const checkResult = async function(extension, context) {
    const resultObj = await fs.readJSON(outputJson);
@@ -53,7 +65,7 @@ const checkResult = async function(extension, context) {
 
 //нужно проверить что происходить, что кеш работает
 describe('gulp/grabber/generate-workflow.js', function() {
-   this.timeout(4000); //eslint-disable-line no-invalid-this
+   this.timeout(10000); //eslint-disable-line no-invalid-this
 
    describe('проверка сбора фраз локализации по js коду', function() {
       it('перезапуск без изменений', async function() {
@@ -78,6 +90,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('js', 'AnyContext');
 
+         await timeoutForMacOS();
          const testFilePath = path.join(sourceFolder, 'Модуль/Component.js');
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
@@ -97,6 +110,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('js', 'AnyContext');
 
+         await timeoutForMacOS();
          const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
@@ -131,6 +145,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('xhtml', 'AnyContext');
 
+         await timeoutForMacOS();
          const testFilePath = path.join(sourceFolder, 'Модуль/Component.xhtml');
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
@@ -150,6 +165,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('xhtml', 'AnyContext');
 
+         await timeoutForMacOS();
          const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
@@ -169,6 +185,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('xhtml', 'AnyContext');
 
+         await timeoutForMacOS();
          const testFilePath = path.join(sourceFolder, 'Модуль/ComponentWithOption.js');
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
@@ -177,6 +194,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          const resultObj = await fs.readJSON(outputJson);
          resultObj.length.should.equals(0);
 
+         await timeoutForMacOS();
          await fs.writeFile(testFilePath, testFileText);
 
          await runWorkflow();
@@ -209,6 +227,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('tmpl', 'AnyContext');
 
+         await timeoutForMacOS();
          const testFilePath = path.join(sourceFolder, 'Модуль/Component.tmpl');
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
@@ -228,6 +247,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('tmpl', 'AnyContext');
 
+         await timeoutForMacOS();
          const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
@@ -247,6 +267,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await runWorkflow();
          await checkResult('tmpl', 'AnyContext');
 
+         await timeoutForMacOS();
          const testFilePath = path.join(sourceFolder, 'Модуль/ComponentWithOption.js');
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
@@ -255,6 +276,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          const resultObj = await fs.readJSON(outputJson);
          resultObj.length.should.equals(0);
 
+         await timeoutForMacOS();
          await fs.writeFile(testFilePath, testFileText);
 
          await runWorkflow();
