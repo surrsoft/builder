@@ -78,5 +78,17 @@ describe('parse js component', function() {
       //теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);
    });
+
+   it('declare dependences module', () => {
+      const result = parseJsComponent('define("My.Module/Name", ["My.Dep/Name1", "My.Dep/Name2"], function(){});');
+      Object.getOwnPropertyNames(result).length.should.equal(2);
+      result.componentDep.should.have.members(["My.Dep/Name1", "My.Dep/Name2"]);
+   });
+   it('declare dependences module, empty name', () => {
+      const result = parseJsComponent('define(["My.Dep/Name1", "My.Dep/Name2"], function(){});');
+      //
+      Object.getOwnPropertyNames(result).length.should.equal(1);
+      result.componentDep.should.have.members(["My.Dep/Name1", "My.Dep/Name2"]);
+   });
 });
 
