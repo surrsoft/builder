@@ -181,6 +181,11 @@ module.exports = function(grunt) {
                            transliterate(path.relative(input, file))).replace(dblSlashes, '/');
                      }
                   }
+                  if (componentInfo.hasOwnProperty('componentDep')) {
+                     componentInfo.componentDep.forEach(function (dep){
+                        if ( )
+                     });
+                  }
                   copyFile(file, destination, text, callbackForProcessingFile);
                } else {
                   copyFile(file, destination, null, callbackForProcessingFile);
@@ -193,6 +198,7 @@ module.exports = function(grunt) {
             }
 
          }, function() {
+            let output = path.join(destination, 'navigation-modules.json');
             logger.progress(helpers.percentage(++indexModule, paths.length), input);
             callbackForProcessingModule();
          });
