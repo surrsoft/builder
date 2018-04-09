@@ -187,7 +187,7 @@ module.exports = function(grunt) {
                      }
                   }
                   if (componentInfo.hasOwnProperty('componentDep')) {
-                     if(componentInfo.componentDep.includes(NAME_NAVIGATION) || componentInfo.componentDep.includes(OLD_NAME_NAVIGATION)) {
+                     if (componentInfo.componentDep.includes(NAME_NAVIGATION) || componentInfo.componentDep.includes(OLD_NAME_NAVIGATION)) {
                         listNavMod.push(componentInfo.componentName);
                      }
                   }
