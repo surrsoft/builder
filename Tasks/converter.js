@@ -186,7 +186,7 @@ module.exports = function(grunt) {
                            transliterate(path.relative(input, file))).replace(dblSlashes, '/');
                      }
                   }
-                  if (componentInfo.hasOwnProperty('componentDep')) {
+                  if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
                      if (componentInfo.componentDep.includes(NAME_NAVIGATION) || componentInfo.componentDep.includes(OLD_NAME_NAVIGATION)) {
                         listNavMod.push(componentInfo.componentName);
                      }
