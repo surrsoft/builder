@@ -30,7 +30,6 @@ describe('helpers', function() {
       helpers.prettifyPath('\\\\simple/file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
 
       helpers.prettifyPath('C:\\/dir\\/').should.equal('C:/dir/');
-      helpers.prettifyPath('C:\\/dir\\/test\\/..').should.equal('C:/dir');
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });
 });
