@@ -211,7 +211,7 @@ module.exports = function(grunt) {
             if (listNavMod.length !== 0) {
                if (splittedCore) {
                   const output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
-                  grunt.file.write(output, JSON.stringify(listNavMod, null, 2));
+                  grunt.file.write(output, JSON.stringify(listNavMod.sort(), null, 2));
                } else {
                   fullListNavMod = fullListNavMod.concat(listNavMod);
                }
@@ -252,7 +252,7 @@ module.exports = function(grunt) {
             }
 
             if (fullListNavMod.length !== 0 && !splittedCore) {
-               grunt.file.write(path.join(resourcesPath, 'navigation-modules.json'), JSON.stringify(fullListNavMod, null, 2));
+               grunt.file.write(path.join(resourcesPath, 'navigation-modules.json'), JSON.stringify(fullListNavMod.sort(), null, 2));
             }
 
             contents.buildMode = packaging ? 'release' : 'debug';
