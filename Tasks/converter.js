@@ -147,7 +147,7 @@ module.exports = function(grunt) {
          const partsFilePath = input.replace(dblSlashes, '/').split('/');
          const moduleName = partsFilePath[partsFilePath.length - 1];
          const tsdModuleName = transliterate(moduleName);
-         let listNavMod = [];
+         const listNavMod = [];
 
          if (applicationName === tsdModuleName) {
             grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName);
@@ -187,7 +187,7 @@ module.exports = function(grunt) {
                      }
                   }
                   if (componentInfo.hasOwnProperty('componentDep')) {
-                     componentInfo.componentDep.some(function (dep){
+                     componentInfo.componentDep.some(function(dep) {
                         if (dep.indexOf(NAME_NAVIGATION) !== -1 || dep.indexOf(OLD_NAME_NAVIGATION) !== -1) {
                            listNavMod.push(componentInfo.componentName);
                            return true;
@@ -209,8 +209,8 @@ module.exports = function(grunt) {
 
          }, function() {
             if (listNavMod.length !== 0) {
-               if(splittedCore) {
-                  let output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
+               if (splittedCore) {
+                  const output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
                   grunt.file.write(output, JSON.stringify(listNavMod, null, 2));
                } else {
                   fullListNavMod = fullListNavMod.concat(listNavMod);
