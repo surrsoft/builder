@@ -187,14 +187,9 @@ module.exports = function(grunt) {
                      }
                   }
                   if (componentInfo.hasOwnProperty('componentDep')) {
-                     componentInfo.componentDep.some(function(dep) {
-                        if (dep.indexOf(NAME_NAVIGATION) !== -1 || dep.indexOf(OLD_NAME_NAVIGATION) !== -1) {
-                           listNavMod.push(componentInfo.componentName);
-                           return true;
-                        } else {
-                           return false;
-                        }
-                     });
+                     if(componentInfo.componentDep.includes(NAME_NAVIGATION) || componentInfo.componentDep.includes(OLD_NAME_NAVIGATION)) {
+                        listNavMod.push(componentInfo.componentName);
+                     }
                   }
                   copyFile(file, destination, text, callbackForProcessingFile);
                } else {
