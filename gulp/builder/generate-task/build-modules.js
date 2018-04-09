@@ -18,7 +18,8 @@ const
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    indexDictionary = require('../plugins/index-dictionary'),
    markupLocalization = require('../plugins/markup-localization'),
-   createContentsJson = require('../plugins/create-contents-json');
+   createContentsJson = require('../plugins/create-contents-json'),
+   filterCached = require('../plugins/filter-cached');
 
 
 const
@@ -61,6 +62,7 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
             read: true,
             write: true
          }))
+         .pipe(filterCached())
          .pipe(gulp.dest(moduleInfo.output));
    };
 }
