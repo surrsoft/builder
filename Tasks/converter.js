@@ -13,6 +13,8 @@ const logger = require('../lib/logger').logger();
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
 const QUOTES = /"|'/g;
+const OLD_NAME_NAVIGATION = 'js!SBIS3.NavigationController';
+const NAME_NAVIGATION = 'Navigation/NavigationController';
 
 const
    contents = {},
@@ -68,6 +70,7 @@ module.exports = function(grunt) {
       const startTask = Date.now();
       const done = this.async(); //eslint-disable-line no-invalid-this
       const
+         splittedCore = grunt.option('splitted-core'),
          symlink = !!grunt.option('symlink'),
          modulesFilePath = (grunt.option('modules') || '').replace(QUOTES, ''),
          serviceMapping = (grunt.option('service_mapping') || '').replace(QUOTES, ''),
@@ -79,6 +82,7 @@ module.exports = function(grunt) {
          packaging = grunt.option('package');
 
       let indexModule = 0;
+      let fullListNavMod = [];
 
       let paths = [];
       try {
@@ -143,6 +147,7 @@ module.exports = function(grunt) {
          const partsFilePath = input.replace(dblSlashes, '/').split('/');
          const moduleName = partsFilePath[partsFilePath.length - 1];
          const tsdModuleName = transliterate(moduleName);
+         let listNavMod = [];
 
          if (applicationName === tsdModuleName) {
             grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName);
@@ -183,7 +188,9 @@ module.exports = function(grunt) {
                   }
                   if (componentInfo.hasOwnProperty('componentDep')) {
                      componentInfo.componentDep.forEach(function (dep){
-                        if ( )
+                        if (dep.indexOf(NAME_NAVIGATION) !== -1 || dep.indexOf(OLD_NAME_NAVIGATION) !== -1) {
+                           listNavMod.push(dep);
+                        }
                      });
                   }
                   copyFile(file, destination, text, callbackForProcessingFile);
@@ -198,7 +205,14 @@ module.exports = function(grunt) {
             }
 
          }, function() {
-            let output = path.join(destination, 'navigation-modules.json');
+            if (listNavMod.length !== 0) {
+               if(splittedCore) {
+                  let output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
+                  grunt.file.write(output, JSON.stringify(listNavMod, null, 2));
+               } else {
+                  fullListNavMod = fullListNavMod.concat(listNavMod);
+               }
+            }
             logger.progress(helpers.percentage(++indexModule, paths.length), input);
             callbackForProcessingModule();
          });
@@ -232,6 +246,10 @@ module.exports = function(grunt) {
                } else {
                   grunt.fail.fatal('Services list must be even!');
                }
+            }
+
+            if (fullListNavMod.length !== 0 && !splittedCore) {
+               grunt.file.write(path.join(resourcesPath, 'navigation-modules.json'), JSON.stringify(fullListNavMod, null, 2));
             }
 
             contents.buildMode = packaging ? 'release' : 'debug';
