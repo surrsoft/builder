@@ -94,5 +94,9 @@ describe('parse js component', function() {
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentDep.should.have.members([]);
    });
+   it('declare empty dependences module №2', () => {
+      const result = parseJsComponent('define("My.Module/Name", function(){});');
+      Object.getOwnPropertyNames(result).length.should.equal(1);
+   });
 });
 
