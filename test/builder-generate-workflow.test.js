@@ -48,6 +48,10 @@ const timeoutForMacOS = async function() {
    }
 };
 
+const removeRSymbol = function(str) {
+   return str.replace(/\r/g, '');
+};
+
 //нужно проверить что происходит:
 //1. при переименовывании файла == добавление/удаление файла
 //2. при изменении файла
@@ -427,7 +431,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       let forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       const forRenameHtmlOutputPath = path.join(moduleOutputFolder, 'ForRename.html');
       let forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
-      stableHtml.toString().should.equal('<STABLE></STABLE>\n' +
+      removeRSymbol(stableHtml.toString()).should.equal('<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -442,7 +446,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
-      forChangeHtml.toString().should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
+      removeRSymbol(forChangeHtml.toString()).should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
          '<TITLE>ForChange_old</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -457,7 +461,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
-      forRenameHtml.toString().should.equal('<FOR_RENAME></FOR_RENAME>\n' +
+      removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
          '<TITLE>ForRename</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -537,7 +541,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       stableHtml = await fs.readFile(stableHtmlOutputPath);
       forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
-      stableHtml.toString().should.equal('<STABLE></STABLE>\n' +
+      removeRSymbol(stableHtml.toString()).should.equal('<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -555,7 +559,7 @@ describe('gulp/builder/generate-workflow.js', function() {
 
       //TODO: в следующей строке ошибка из-за кеширования результата в lib/generate-static-html-for-js.js. должно быть FOR_CHANGE_NEW
       //пока этим можно пренебречь
-      forChangeHtml.toString().should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
+      removeRSymbol(forChangeHtml.toString()).should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
          '<TITLE>ForChange_new</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -571,7 +575,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
-      forRenameHtml.toString().should.equal('<FOR_RENAME></FOR_RENAME>\n' +
+      removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
          '<TITLE>ForRename</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
