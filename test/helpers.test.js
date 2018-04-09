@@ -15,22 +15,22 @@ describe('helpers', function() {
    });
 
    it('prettifyPath', () => {
+      const isWin = process.platform === 'win32';
 
       helpers.prettifyPath('').should.equal('');
 
       helpers.prettifyPath('\\').should.equal('/');
       helpers.prettifyPath('/').should.equal('/');
 
-      helpers.prettifyPath('\\simple\\').should.equal('/simple/');
+      helpers.prettifyPath('\\simple\\').should.equal('/simple/'); 
       helpers.prettifyPath('/simple/').should.equal('/simple/');
 
-      //helpers.prettifyPath('\\\\simple\\\\dir').should.equal('/simple/dir'); TODO: валилось на windows
-      //helpers.prettifyPath('//simple//dir').should.equal('/simple/dir');
+      // на windows пути, которые начинаются с \\, являются сетевыми и требуют особой обработки
+      helpers.prettifyPath('\\\\simple\\\\file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
+      helpers.prettifyPath('\\\\simple/file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
 
       helpers.prettifyPath('C:\\/dir\\/').should.equal('C:/dir/');
-
       helpers.prettifyPath('C:\\/dir\\/test\\/..').should.equal('C:/dir');
-
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });
 });

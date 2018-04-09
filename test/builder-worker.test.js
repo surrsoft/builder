@@ -7,6 +7,7 @@ require('./init-test');
 const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),
+   helpers = require('../lib/helpers'),
    workerPool = require('workerpool');
 
 const expect = chai.expect;
@@ -14,7 +15,7 @@ const expect = chai.expect;
 const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
    workerPath = path.join(__dirname, '../gulp/builder/worker.js'),
-   modulePath = path.join(workspaceFolder, 'AnyModule'),
+   modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
    sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
 
 const clearWorkspace = function() {
@@ -106,7 +107,7 @@ describe('gulp/builder/worker.js', function() {
             return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
          });
 
-         const filePath = path.join(modulePath, 'Error.less');
+         const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
          const promise = pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
 

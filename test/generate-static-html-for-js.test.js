@@ -26,6 +26,10 @@ const modules = new Map([
    ['Ошибки', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Ошибки'))]
 ]);
 
+const removeRSymbol = function(str) {
+   return str.replace(/\r/g, '');
+};
+
 describe('generate static html for js', function() {
    describe('module with web page', function() {
       it('empty', async() => {
@@ -41,7 +45,7 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         result.text.should.equal('\n\n\n');
+         removeRSymbol(result.text).should.equal('\n\n\n');
       });
       it('replacePath', async() => {
          const test = async(replacePath, expected) => {
@@ -57,7 +61,7 @@ describe('generate static html for js', function() {
             const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, replacePath);
             contents.htmlNames.MyModule.should.equal('testOutFileName.html');
             result.outFileName.should.equal('testOutFileName.html');
-            result.text.should.equal(expected);
+            removeRSymbol(result.text).should.equal(expected);
          };
 
          await test(true, 'true\n' +
@@ -80,7 +84,7 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         result.text.should.equal('<INCLUDE1/>\n\n' +
+         removeRSymbol(result.text).should.equal('<INCLUDE1/>\n\n' +
             '<INCLUDE2/>\n' +
             '<INCLUDE1/>\n\n\n');
       });
@@ -97,7 +101,7 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         result.text.should.equal('RESOURCE_ROOT:/resources/\n' +
+         removeRSymbol(result.text).should.equal('RESOURCE_ROOT:/resources/\n' +
             'WI.SBIS_ROOT:/ws/\n' +
             'APPLICATION_ROOT:/\n' +
             'SERVICES_PATH:/service/\n');
@@ -115,7 +119,7 @@ describe('generate static html for js', function() {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         result.text.should.equal('TITLE:testTitle\n' +
+         removeRSymbol(result.text).should.equal('TITLE:testTitle\n' +
             'START_DIALOG:MyModule\n');
       });
       it('component without web page', async() => {
