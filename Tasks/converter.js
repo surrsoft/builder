@@ -187,9 +187,12 @@ module.exports = function(grunt) {
                      }
                   }
                   if (componentInfo.hasOwnProperty('componentDep')) {
-                     componentInfo.componentDep.forEach(function (dep){
+                     componentInfo.componentDep.some(function (dep){
                         if (dep.indexOf(NAME_NAVIGATION) !== -1 || dep.indexOf(OLD_NAME_NAVIGATION) !== -1) {
-                           listNavMod.push(dep);
+                           listNavMod.push(componentInfo.componentName);
+                           return true;
+                        } else {
+                           return false;
                         }
                      });
                   }
