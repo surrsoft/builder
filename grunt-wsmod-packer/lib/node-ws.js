@@ -28,7 +28,6 @@ const existWsCore = fs.existsSync(path.join(root, 'WS.Core'));
 const wsRoot = path.join(appRoot, existWsCore ? 'WS.Core' : 'ws', path.sep).replace(dblSlashes, '/');
 const resourceRoot = existWsCore ? '.' : path.join(appRoot, 'resources', path.sep).replace(dblSlashes, '/');
 const requireJS = require('requirejs');
-require('colors');
 
 function removeLeadingSlash(path) {
    if (path) {
@@ -44,7 +43,7 @@ let isInit = false;
 module.exports = function() {
    if (!isInit) {
       isInit = true;
-      const grunt = global.grunt;
+
       const logger = {
          error: function(tag, msg, e) {
             if (grunt && grunt.log) {

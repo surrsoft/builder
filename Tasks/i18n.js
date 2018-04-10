@@ -28,28 +28,33 @@ function runPrepareXHTML(root, componentsProperties, done) {
       logger.info('Подготавливаем xhtml файлы для локализации.');
 
       // Находим все xhtml файлы
-      global.grunt.file.recurse(root, function(absPath, rootDir, subDir, fileName) {
-         if (/\.xhtml$/.test(fileName)) {
+      helpers.recurse(root, async function(filePath, fileDone) {
+         if (/\.xhtml$/.test(filePath)) {
             try {
-               const text = global.grunt.file.read(absPath);
+               const text = await fs.readFile(filePath).toString();
                if (text) {
-                  global.grunt.file.write(absPath, prepareXHTML(text, componentsProperties));
+                  await fs.writeFile(filePath, prepareXHTML(text, componentsProperties));
                }
             } catch (err) {
                logger.error({
                   message: 'Error on localization XHTML',
-                  filePath: absPath,
+                  filePath: filePath,
                   error: err
                });
 
             }
          }
+         setImmediate(fileDone);
+      }, function(err) {
+         if (err) {
+            logger.error({error: err});
+         }
+         done();
       });
       logger.info('Подготовка xhtml файлов для локализации выполнена.');
    } catch (err) {
       logger.error({error: err});
    }
-   done();
 }
 
 function runCreateResultDictForDir(words, dir, componentsProperties) {

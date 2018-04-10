@@ -29,7 +29,6 @@ module.exports = function(grunt) {
       const target = path.resolve(root);
       const application = path.join('/', app, '/').replace(dblSlashes, '/');
       require('./lib/logger').setGruntLogger(grunt);
-      global.grunt = grunt; //это нужно для поддержки логов в grunt-wsmod-packer
 
       const configBuilder = require('./lib/config-builder.js');
 
