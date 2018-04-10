@@ -1,10 +1,11 @@
+'use strict';
+
 const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const codegen = require('escodegen');
 const stripBOM = require('strip-bom');
 const path = require('path');
 const fs = require('fs');
-const async = require('async');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 
 const dblSlashes = /\\/g;
@@ -15,6 +16,24 @@ const langRegExp = /lang\/([a-z]{2}-[A-Z]{2})/;
 let not404error = false;
 
 let currentFile;
+
+const loaders = {
+   js: jsLoader,
+   html: xhtmlLoader,
+   xhtml: xhtmlLoader,
+   css: cssLoader,
+   'native-css': cssLoader,
+   json: jsonLoader,
+   xml: xmlLoader,
+   is: isLoader,
+   text: textLoader,
+   browser: browserLoader,
+   optional: optionalLoader,
+   i18n: i18nLoader,
+   tmpl: tmplLoader,
+   default: baseTextLoader
+};
+
 
 /**
  * @callback loaders~callback
@@ -43,10 +62,6 @@ function parseModule(module) {
       res = e;
    }
    return res;
-}
-
-function resolverControls(path) {
-   return 'tmpl!' + path;
 }
 
 /**
@@ -543,8 +558,7 @@ function getTemplateI18nModule(module) {
 function i18nLoader(module, base, done) {
    let
       _const = global.requirejs('Core/constants'),
-      deps = ['Core/i18n'],
-      css = [];
+      deps = ['Core/i18n'];
 
    availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
@@ -572,27 +586,5 @@ function i18nLoader(module, base, done) {
 
    done(null, result);
 }
-
-//TODO выпилить после 200
-function _isOldStatic() {
-   return true;
-}
-
-var loaders = {
-   js: jsLoader,
-   html: xhtmlLoader,
-   xhtml: xhtmlLoader,
-   css: cssLoader,
-   'native-css': cssLoader,
-   json: jsonLoader,
-   xml: xmlLoader,
-   is: isLoader,
-   text: textLoader,
-   browser: browserLoader,
-   optional: optionalLoader,
-   i18n: i18nLoader,
-   tmpl: tmplLoader,
-   default: baseTextLoader
-};
 
 module.exports = loaders;

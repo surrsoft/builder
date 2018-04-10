@@ -1,3 +1,5 @@
+'use strict';
+
 const fs = require('fs');
 const dom = require('tensor-xmldom');
 const domParser = new dom.DOMParser();
@@ -322,7 +324,6 @@ function resolveOptions(ctor) {
 module.exports = {
    index: function(root, application, grunt, graph) {
       let configTemp = {},
-         prog = 0,
          _const = global.requirejs('Core/constants'),
          xmlContents = _const.xmlContents,
          contentsKeys = Object.keys(xmlContents),

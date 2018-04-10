@@ -1,9 +1,10 @@
+'use strict';
+
 const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const stripBOM = require('strip-bom');
 const path = require('path');
 const fs = require('fs');
-const async = require('async');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 
 const dblSlashes = /\\/g;
@@ -12,8 +13,24 @@ const langRegExp = /.*\/(..-..)\/(..-..)\.(?:json)?/;
 const jsExtReg = /\.js$/;
 const DEPENDENCY_REPLACER = '_DEPENDENCY_REPLACER';
 
-const packWithoutDefines = require('./packWithoutDefines');
 const pluginList = ['css', 'js', 'html', 'cdn', 'browser', 'datasource', 'i18n', 'is', 'is-api', 'json', 'native-css', 'normalize', 'optional', 'order', 'preload', 'remote', 'template', 'text', 'tmpl', 'xml'];
+
+const loaders = {
+   js: jsLoader,
+   html: xhtmlLoader,
+   xhtml: xhtmlLoader,
+   css: cssLoader,
+   'native-css': cssLoader,
+   json: jsonLoader,
+   xml: xmlLoader,
+   is: isLoader,
+   text: textLoader,
+   browser: browserLoader,
+   optional: optionalLoader,
+   i18n: i18nLoader,
+   tmpl: tmplLoader,
+   default: baseTextLoader
+};
 
 // FIXME: сделать бы по хорошему, чтобы не через костыль
 let not404error = false;
@@ -126,12 +143,6 @@ function jsLoader(module, base, packStorage, done) {
    const espPath = module.fullPath.replace(jsExtReg, '.esp.json');
    if (fs.existsSync(espPath) && pluginList.indexOf(module.fullName) < 0) {
       readFile(espPath, ignoreIfNoFile(function addNamesToAnonymousModules(err, res) {
-         let
-            anonymous = false,
-            amd = module.amd,
-            defineName = module.fullName,
-            result;
-
          if (err) {
             done(err);
          } else if (!res) {
@@ -206,15 +217,8 @@ function xhtmlLoader(module, base, packStorage, done) {
             template = doT.template(res, config);
             packStorage.addToResolvedNodes(defineName);
 
-            // packWithoutDefines.registerAsResolvedDefine(defineName, resolvedNodes);
-
-            if (_isOldStatic()) {
-               withoutDefine = 'defineStorage["' + defineName + '"] = (function() {var f=' + template.toString().replace(/[\n\r]/g, '') +
-                  ';f.toJSON=function(){return "wsFuncDecl::' + module.fullName + '";};return f;})();';
-            } else {
-               withoutDefine = 'defineStorage["' + defineName + '"] = (function() {var f=' + template.toString().replace(/[\n\r]/g, '') +
-                  ';f.toJSON=function(){return  {$serialized$: "func", module: "' + module.fullName + '"}};return f;})();';
-            }
+            withoutDefine = 'defineStorage["' + defineName + '"] = (function() {var f=' + template.toString().replace(/[\n\r]/g, '') +
+               ';f.toJSON=function(){return  {$serialized$: "func", module: "' + module.fullName + '"}};return f;})();';
             withDefine = 'define("' + defineName + '", function() {return defineStorage["' + defineName + '"]});';
 
             done(null, withoutDefine + '\n' + withDefine);
@@ -337,8 +341,6 @@ function isLoader(module, base, packStorage, done) {
             if (!res) {
                done(null, '');
             } else {
-               const defineName = module.fullName;
-
                if_condition = if_condition + '{' + removeSourceMap(res) + '}';
                if (module.moduleNo) {
                   loaders[module.moduleNo.plugin](module.moduleNo, base, packStorage, function(err, res) {
@@ -369,6 +371,7 @@ function isLoader(module, base, packStorage, done) {
  * @param {loaders~callback} done
  */
 const if_condition = 'if(typeof window !== "undefined")';
+
 function browserLoader(module, base, packStorage, done) {
    loaders[module.moduleIn.plugin](module.moduleIn, base, packStorage, function(err, res) {
       if (err) {
@@ -486,23 +489,23 @@ function tmplLoader(module, base, packStorage, done) {
          tmpl.template(html, resolverControls, conf).handle(function(traversed) {
             try {
                result.push('return tmpl.html(' + JSON.stringify(traversed) + ', data, {config: config, filename: "' +
-                   module.fullName + '"}, attributes);};');
+                  module.fullName + '"}, attributes);};');
                result.push('templateFunction.stable = true;');
                result.push('templateFunction.toJSON = function() {return {$serialized$: "func", module: "' + module.fullName + '"}};');
                result.push('return templateFunction;');
 
                if (depsNotResolved) {
                   done(null, 'define("' + module.fullName + '", ' + JSON.stringify(depsForWithoutDefines) +
-                      ', function(tmpl, config) {' + result.join('') + '});');
+                     ', function(tmpl, config) {' + result.join('') + '});');
                } else {
                   packStorage.addToResolvedNodes(defineName);
 
                   // packWithoutDefines.registerAsResolvedDefine(defineName, resolvedNodes);
                   withoutDefine = 'defineStorage["' + defineName + '"] = (function(tmpl, config) {' +
-                      result.join('') + '})(' +
-                      depsForWithoutDefines.map(function(i) {
-                         return 'defineStorage["' + i + '"]';
-                      }).join(', ') + ')';
+                     result.join('') + '})(' +
+                     depsForWithoutDefines.map(function(i) {
+                        return 'defineStorage["' + i + '"]';
+                     }).join(', ') + ')';
                   withDefine = 'define("' + defineName + '", function() { return defineStorage["' + defineName + '"]});';
                   done(null, withoutDefine + '\n' + withDefine);
                }
@@ -704,52 +707,5 @@ function i18nLoader(module, base, packStorage, done) {
       return done(null, withoutDefine);
    }
 }
-
-function _i18nCssLoader(absPath, relativePath, base, packStorage, done) {
-   if (absPath && fs.existsSync(absPath)) {
-      const fakeModule = {
-         fullPath: absPath,
-         fullName: 'native-css!/' + relativePath
-      };
-      cssLoader(fakeModule, base, packStorage, done);
-   } else {
-      done(null, '');
-   }
-}
-
-function _i18nJsonLoader(absPath, relativePath, base, packStorage, done) {
-   if (absPath && fs.existsSync(absPath)) {
-      const fakeModule = {
-         fullPath: absPath,
-         fullName: 'text!/' + relativePath
-      };
-      textLoader(fakeModule, base, packStorage, done);
-   } else {
-      done(null, '');
-   }
-}
-
-//TODO выпилить после 200
-function _isOldStatic() {
-   const configStorage = global.requirejs('Core/helpers/Hcontrol/configStorage');
-   return !configStorage.getData;
-}
-
-var loaders = {
-   js: jsLoader,
-   html: xhtmlLoader,
-   xhtml: xhtmlLoader,
-   css: cssLoader,
-   'native-css': cssLoader,
-   json: jsonLoader,
-   xml: xmlLoader,
-   is: isLoader,
-   text: textLoader,
-   browser: browserLoader,
-   optional: optionalLoader,
-   i18n: i18nLoader,
-   tmpl: tmplLoader,
-   default: baseTextLoader
-};
 
 module.exports = loaders;

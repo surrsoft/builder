@@ -1,4 +1,5 @@
 'use strict';
+
 const commonPackage = require('./../../lib/commonPackage');
 const path = require('path');
 

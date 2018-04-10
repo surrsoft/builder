@@ -1,7 +1,3 @@
-/**
- * Created by is.kudryavcev on 11.12.2017.
- */
-
 'use strict';
 
 const path = require('path');

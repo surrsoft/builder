@@ -24,7 +24,6 @@ const HTMLPAGESWITHNOONLINESTYLES = ['carry.html', 'presto.html', 'carry_minimal
 const offlineModuleName = 'Retail_Offline';
 let isOfflineClient;
 function checkItIsOfflineClient(applicationRoot) {
-   const self = this;
    if (isOfflineClient !== undefined) {
       return isOfflineClient;
    }

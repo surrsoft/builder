@@ -1,8 +1,6 @@
 'use strict';
 
-let
-   path = require('path'),
-   fs = require('fs'),
+const
    esprima = require('esprima'),
    replace = require('estraverse').replace,
    escodegen = require('escodegen'),
@@ -27,8 +25,6 @@ function enableLocalization(text) {
 function getValue(node, deps, forceCall) {
    let value;
    if (node.type == 'FunctionExpression') {
-      const paramsLength = node.params.length;
-
       value = {
          type: 'CallExpression',
          callee: node,

@@ -1,3 +1,5 @@
+'use strict';
+
 const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const async = require('async');

@@ -1,3 +1,5 @@
+'use strict';
+
 // Инициализация ws в текущем application
 require('./../lib/node-ws')();
 const async = require('async');
@@ -11,7 +13,6 @@ const packCSS = require('./lib/packCSS').gruntPackCSS;
 const packJS = require('./lib/packJS');
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
-const jsExtReg = /\.js$/;
 const badConfigs = [];
 const bundlesOptions = {
    bundles: {},

@@ -1,3 +1,5 @@
+'use strict';
+
 const esprima = require('esprima');
 const escodegen = require('escodegen');
 const traverse = require('estraverse').traverse;
@@ -297,7 +299,7 @@ function collectExternalDependencies(orderQueue) {
    const externalDependencies = [];
    orderQueue.forEach(function(currentModule) {
       //отбираем внешние зависимости, дубликаты откидываем
-      currentModule.deps && currentModule.deps.filter(function(dep, index) {
+      currentModule.deps && currentModule.deps.filter(function(dep) {
          const currentIndex = currentModule.deps.indexOf(dep);
          if (typeof dep === 'string') {
             dep = dep.replace(/^is!browser\?|^is!compatibleLayer\?|^is!msIe\?|^browser!/, '');

@@ -1,4 +1,5 @@
-const path = require('path');
+'use strict';
+
 const helpers = require('./../../lib/domHelpers');
 const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs');
@@ -76,7 +77,7 @@ module.exports = {
      * @param {String} root - корень сайта
      * @param {packCSS~callback} callback
      */
-   packCSS: function(files, root, callback, logger, isInline, themeName) {
+   packCSS: function(files, root, callback, logger, isInline) {
       if (!logger) {
          logger = nopLogger;
       }
