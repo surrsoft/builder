@@ -29,22 +29,22 @@ module.exports = function(grunt) {
       const target = path.resolve(root);
       const application = path.join('/', app, '/').replace(dblSlashes, '/');
       require('./lib/logger').setGruntLogger(grunt);
-      global.grunt = grunt; //это нужно для поддержки логов в grunt-wsmod-packer
 
       const configBuilder = require('./lib/config-builder.js');
 
       process.env.ROOT = target;
       process.env.APPROOT = app;
 
-      grunt.option('color', process.stdout.isTTY);
+      // Инициализация ws в текущем application
+      require('./packer/lib/node-ws')();
 
       // Load tasks
       //для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
       const oldVerbose = grunt.option('verbose');
       grunt.option('verbose', true);
-      grunt.loadNpmTasks('grunt-wsmod-packer');
       grunt.loadNpmTasks('grunt-text-replace'); //используется как задача "replace:что-то"
       grunt.loadTasks('Tasks');
+      grunt.loadTasks('packer/tasks');
 
       grunt.option('verbose', oldVerbose);
 
@@ -54,10 +54,6 @@ module.exports = function(grunt) {
       grunt.initConfig(configBuilder(grunt, target, application));
 
       const defaultTasks = [];
-
-      if (packaging) {
-         defaultTasks.push('deanonymize');
-      }
 
       if (versionize && typeof versionize === 'string') {
          defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
