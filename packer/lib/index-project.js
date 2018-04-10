@@ -12,92 +12,6 @@ const jsFilter = /^js!|^js$/;
 // Сделаем стэк жирнее, но так будет чуть проще искать ошибки
 Error.stackTraceLimit = 100;
 
-//Тут описываем контролы, которые могут содержать вложенные шаблоны
-const complexControls = {
-   TemplatedArea: {
-
-      //наймспейс, в котором располагается класс
-      'namespace': '$ws.proto.TemplatedAreaAbstract',
-
-      //функция получения списка возможных шаблонов из опций комопнента
-      'getTemplates': function(cfg) {
-         let templates = [];
-         if (cfg.template) {
-            templates.push(cfg.template);
-         }
-
-         if (cfg.expectedTemplates && cfg.expectedTemplates.length) {
-            templates = templates.concat(cfg.expectedTemplates);
-         }
-         return templates;
-      }
-   },
-   Tabs: {
-      'namespace': '$ws.proto.Tabs',
-      'getTemplates': function(cfg) {
-         const templates = [];
-         if (cfg.tabs) {
-            cfg.tabs.forEach(function(t) {
-               if (t && t.template) {
-                  templates.push(t.template);
-               }
-            });
-         }
-         return templates;
-      }
-   }
-};
-
-function _isSubclass(cls, sup) {
-   if (sup) {
-      return (function(c) {
-         if (c == sup) {
-            return true;
-         } else {
-            if (c && c.superclass && c.superclass.$constructor) {
-               return arguments.callee(c.superclass.$constructor);
-            } else {
-               return false;
-            }
-         }
-      })(cls);
-   } else {
-      return false;
-   }
-}
-
-/**
- * Возвращает true если проверяемый класс подразумевает наличие встроенных шаблонов
- * @param classCtor
- * @returns {boolean}
- */
-function isComplexControl(classCtor) {
-   let res = false;
-   for (const i in complexControls) {
-      if (complexControls.hasOwnProperty(i)) {
-         if (_isSubclass(classCtor, complexControls[i].class)) {
-            res = true;
-            break;
-         }
-      }
-   }
-   return res;
-}
-
-/**
- * Получение массива возможных шаблонов из опций
- * @param obj
- * @returns {*}
- */
-function getExpectedTemplates(obj) {
-   for (const i in complexControls) {
-      if (complexControls.hasOwnProperty(i) && _isSubclass(obj.ctor, complexControls[i].class)) {
-         return complexControls[i].getTemplates(obj.cfg);
-      }
-   }
-   return [];
-}
-
 function findPath(from, to, graph) {
    const storage = [];
    const path = [];
@@ -134,30 +48,6 @@ function _addDependency(store, dependency) {
    if (store.indexOf(dependency) == -1) {
       store.push(dependency);
    }
-}
-
-function _addTemplateDependencies(service, template, knownContainers) {
-
-   function _processTemplate(t) {
-      _addTemplateDependencies(service, t, knownContainers);
-      (cache[service][t] || []).forEach(function(d) {
-         _addDependency(cache[service][template], d);
-      });
-      if (cache[service][t] === undefined && t.indexOf('js!') === 0) {
-         // Все равно добавим, считаем что у нас это компонент
-         _addDependency(cache[service][template], t.substr(3));
-      }
-   }
-
-   const containers = knownContainers[template];
-   if (containers) {
-      containers.forEach(function(ctr) {
-         getExpectedTemplates(ctr).forEach(function(t) {
-            _processTemplate(t);
-         });
-      });
-   }
-
 }
 
 function findCDATA(node, needValue) {
@@ -281,9 +171,9 @@ function resolveType(type) {
    return moduleStubs.requireModule(moduleName).addCallbacks(function(modArray) {
       return modArray[0];
    }, function(e) {
-      e.message = "Don't know how to load " + type + '. Resolved class is ' + className + '. Resolved module is ' + moduleName + '. Original message: ' + e.message +
-                    (e.requireType ? '. RequireType: ' + e.requireType : '') + (e.requireMap ? '. RequireMap: ' + JSON.stringify(e.requireMap, null, 2) : '') +
-                    (e.requireModules && e.requireModules.length ? '. RequireModules: ' + JSON.stringify(e.requireModules) : '') + '.\nError stack: ' + e.stack;
+      e.message = 'Don\'t know how to load ' + type + '. Resolved class is ' + className + '. Resolved module is ' + moduleName + '. Original message: ' + e.message +
+         (e.requireType ? '. RequireType: ' + e.requireType : '') + (e.requireMap ? '. RequireMap: ' + JSON.stringify(e.requireMap, null, 2) : '') +
+         (e.requireModules && e.requireModules.length ? '. RequireModules: ' + JSON.stringify(e.requireModules) : '') + '.\nError stack: ' + e.stack;
       return e;
    });
 }
@@ -312,12 +202,17 @@ module.exports = {
       cache[application] = {};
       configTemp[application] = {};
 
-      // Первый проход. Собираем первый уровень зависимостей для всех шаблонов
-      (function stepper(res) {
-         let fileContent = null,
+      //Собираем первый уровень зависимостей для всех шаблонов
+      const stepper = function(res) {
+         const
             ParallelDeferred = global.requirejs('Core/ParallelDeferred'),
-            pdStep = new ParallelDeferred(),
-            resDom, divs, div, configAttr;
+            pdStep = new ParallelDeferred();
+
+         let fileContent = null,
+            resDom,
+            divs,
+            div,
+            configAttr;
 
          if (res) {
             cache[application][res] = [];
@@ -346,13 +241,6 @@ module.exports = {
                               const baseConfig = resolveOptions(classCtor);
                               const cMerge = global.requirejs('Core/core-merge');
                               const finalConfig = cMerge(baseConfig, config[0]);
-
-                              if (isComplexControl(classCtor)) {
-                                 configTemp[application][res].push({
-                                    'ctor': classCtor,
-                                    'cfg': finalConfig
-                                 });
-                              }
                               _addDependency(cache[application][res], typename, finalConfig);
                            }).addErrback(function(e) {
                               const failedModule = e.message && e.message.match(grabFailedModule);
@@ -381,25 +269,9 @@ module.exports = {
          }).addErrback(function(e) {
             dRes.errback(e);
          });
-      })(contentsKeys.shift());
-
-      return dRes.addCallback(function() {
-         /**
-             * Второй проход.
-             * - Пробегаемся по шаблонным областям
-             * - Cмотрим их возможные/текущие шаблоны
-             * - Добавляем их зависимости в зависимости к текущему шаблону
-             */
-         const temp = Object.keys(configTemp);
-         temp.forEach(function(service) {
-            const svcContainers = configTemp[service];
-            Object.keys(configTemp[service]).forEach(function(resource) {
-               _addTemplateDependencies(service, resource, svcContainers);
-            });
-
-         });
-      });
-
+      };
+      stepper(contentsKeys.shift());
+      return dRes;
    },
    getDeps: function(application, template) {
       return cache[application] && cache[application][template] || [];

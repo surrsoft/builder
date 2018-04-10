@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const xmldom = require('tensor-xmldom');
 const fs = require('fs-extra');
 const path = require('path');
-const mkdirp = require('mkdirp');
 const parser = new xmldom.DOMParser();
 const serializer = new xmldom.XMLSerializer();
 
@@ -122,7 +121,7 @@ const helpers = {
                   packedContent.forEach(function(aSinglePackedFileContent, idx) {
                      const packedFile = path.join(packageHome, uniqname(result.files, idx + '.' + ext));
                      packedFiles.push(packedFile);
-                     mkdirp.sync(path.dirname(packedFile));
+                     fs.ensureDirSync(path.dirname(packedFile));
                      fs.writeFileSync(packedFile, aSinglePackedFileContent);
                   });
 
