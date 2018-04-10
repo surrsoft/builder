@@ -1,5 +1,10 @@
 'use strict';
 
+// подключение ws для grunt.
+// данная версия загружает модули платформы из развернутого стенда
+// есть ещё версия для gulp
+
+
 ///////////////////////////
 // Это здесь нужно, потому что внутри они переопределяют require, и портят наш requirejs
 // Surprise MF
@@ -28,6 +33,7 @@ const existWsCore = fs.existsSync(path.join(root, 'WS.Core'));
 const wsRoot = path.join(appRoot, existWsCore ? 'WS.Core' : 'ws', path.sep).replace(dblSlashes, '/');
 const resourceRoot = existWsCore ? '.' : path.join(appRoot, 'resources', path.sep).replace(dblSlashes, '/');
 const requireJS = require('requirejs');
+const logger = require('./../../lib/logger').logger();
 
 function removeLeadingSlash(path) {
    if (path) {
@@ -39,37 +45,23 @@ function removeLeadingSlash(path) {
    return path;
 }
 
+const wsLogger = {
+   error: function(tag, msg) {
+      logger.info(`WS error: ${tag}::${msg}`);
+   },
+   info: function(tag, msg) {
+      logger.debug(`WS info: ${tag}::${msg}`);
+   },
+   log: function(tag, msg) {
+      logger.debug(`WS log: ${tag}::${msg}`);
+   }
+};
+
 let isInit = false;
 module.exports = function() {
    if (!isInit) {
       isInit = true;
 
-      const logger = {
-         error: function(tag, msg, e) {
-            if (grunt && grunt.log) {
-               grunt.log.warn(tag + ':: ' + msg + (e ? '. ' + e.message : ''));
-            } else {
-               // eslint-disable-next-line no-console
-               console.error((tag + ':: ').red.bold + msg + (e ? '. ' + e.message : ''));
-            }
-         },
-         info: function(tag, msg) {
-            if (grunt && grunt.log) {
-               grunt.log.warn(tag + ':: ' + msg);
-            } else {
-               // eslint-disable-next-line no-console
-               console.info((tag + ':: ').yellow.bold + msg);
-            }
-         },
-         log: function(tag, msg) {
-            if (grunt && grunt.log) {
-               grunt.log.ok(tag + ':: ' + msg);
-            } else {
-               // eslint-disable-next-line no-console
-               console.log((tag + ':: ').bold + msg);
-            }
-         }
-      };
       global.wsConfig = {
          appRoot: appRoot,
          wsRoot: wsRoot,
@@ -81,7 +73,7 @@ module.exports = function() {
             throw new Error('ITransport is not implemented in build environment.' + e.stack);
          },
          ILogger: function() {
-            return logger;
+            return wsLogger;
          }
       };
       global.rk = function(key) {

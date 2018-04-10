@@ -1,6 +1,8 @@
 'use strict';
 
-//данная версия загружает модули платформы из node_modules/sbis3_ws
+// подключение ws для gulp.
+// данная версия загружает модули платформы из node_modules/sbis3_ws
+// есть ещё версия для grunt
 
 const path = require('path'),
    requireJS = require('requirejs'),
