@@ -9,7 +9,6 @@ const customPackage = require('./lib/customPackage');
 const makeDependenciesGraph = require('./lib/collectDependencies');
 const packCSS = require('./lib/packCSS').gruntPackCSS;
 const packJS = require('./lib/packJS');
-const prepackJs = require('./lib/prepackjs');
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
 const jsExtReg = /\.js$/;
@@ -356,32 +355,6 @@ function gruntPackJS(grunt) {
    };
 }
 
-function gruntPrepackJs(grunt) {
-   return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача prepackjs.');
-      let root = grunt.option('root') || '',
-         app = grunt.option('application') || '',
-         rootPath = path.join(root, app),
-         sourceFiles = grunt.file.expand({cwd: rootPath}, this.data.src);
-
-      sourceFiles.forEach(function(fPath) {
-         let fContent = grunt.file.read(path.join(rootPath, fPath)),
-            packStorage = {
-               modules: {},
-               content: null
-            };
-
-         packStorage.content = prepackJs(fContent, packStorage);
-
-         if (packStorage.content) {
-            grunt.file.write(fPath.replace(jsExtReg, '.esp.json'), JSON.stringify(packStorage));
-         }
-      });
-
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача prepackjs выполнена.');
-   };
-}
-
 module.exports = function(grunt) {
    grunt.registerMultiTask('packwsmod', 'TODO', gruntPackModules(grunt));
    grunt.registerMultiTask('owndepspack', 'TODO', gruntPackOwnDependencies(grunt));
@@ -389,5 +362,4 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('custompack', 'TODO', gruntCustomPack(grunt));
    grunt.registerMultiTask('packcss', 'TODO', gruntPackCSS(grunt));
    grunt.registerMultiTask('packjs', 'TODO', gruntPackJS(grunt));
-   grunt.registerMultiTask('prepackjs', 'TODO', gruntPrepackJs(grunt));
 };
