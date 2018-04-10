@@ -1,7 +1,7 @@
 'use script';
 const crypto = require('crypto');
 const xmldom = require('tensor-xmldom');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const parser = new xmldom.DOMParser();

@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const async = require('async');
 const loaders = require('./loaders');
 const loadersWithoutDefine = require('./loadersWithoutDefines');

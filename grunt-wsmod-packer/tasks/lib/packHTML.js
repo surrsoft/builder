@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const async = require('async');
 const packInOrder = require('./packInOrder');
@@ -32,7 +32,7 @@ function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
          if (type == 'css') {
             options.rel = 'stylesheet';
          }
-         newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[/packedScripts]');
+         let newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[/packedScripts]');
          insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
          filesToPack.reverse().filter(function(file) {
             return file.name;

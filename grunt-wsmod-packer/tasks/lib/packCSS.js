@@ -2,7 +2,7 @@
 
 const helpers = require('./../../lib/domHelpers');
 const cssHelpers = require('./../../lib/cssHelpers');
-const fs = require('fs');
+const fs = require('fs-extra');
 const async = require('async');
 
 const dblSlashes = /\\/g;

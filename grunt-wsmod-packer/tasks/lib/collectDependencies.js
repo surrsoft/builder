@@ -4,7 +4,7 @@ const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const async = require('async');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const DepGraph = require('./../../lib/dependencyGraph');
 const getMeta = require('./../../lib/getDependencyMeta');
 
@@ -438,7 +438,7 @@ function parseModule(text) {
  */
 function parsePathForPresentationService(applicationRoot, fullPath) {
    let
-      presentationService = grunt.file.exists(path.join(applicationRoot, 'resources', 'WS.Core')),
+      presentationService = fs.pathExistsSync(path.join(applicationRoot, 'resources', 'WS.Core')),
       modulePath = path.relative(applicationRoot, fullPath),
       parts;
 

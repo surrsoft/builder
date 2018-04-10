@@ -4,7 +4,7 @@ const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
 const stripBOM = require('strip-bom');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 
 const dblSlashes = /\\/g;
@@ -656,7 +656,7 @@ function i18nLoader(module, base, packStorage, done) {
       withoutDefine,
       withDefine;
 
-   availableLangs = availableLangs || Object.keys(requirejs('Core/i18n').getAvailableLang());
+   availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
    packStorage.addToResolvedNodes(module.fullName);
 

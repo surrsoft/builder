@@ -3,7 +3,7 @@
 const
    async = require('async'),
    path = require('path'),
-   fs = require('fs'),
+   fs = require('fs-extra'),
    getMeta = require('./../../lib/getDependencyMeta'),
    commonPackage = require('./../../lib/commonPackage');
 

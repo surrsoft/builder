@@ -6,6 +6,7 @@ const traverse = require('estraverse').traverse;
 const esReplace = require('estraverse').replace;
 const path = require('path');
 const async = require('async');
+const fs = require('fs-extra');
 const dblSlashes = /\\/g;
 const packerDictionary = require('./packDictionary');
 const commonPackage = require('./../../lib/commonPackage');
@@ -188,8 +189,8 @@ function generateBundle(orderQueue) {
          isJSModuleWithoutJSPlugin = node.fullName.indexOf('!') === -1 && node.plugin === 'js',
          modulePath = node.fullPath ? node.fullPath
             : node.moduleYes.fullPath ? node.moduleYes.fullPath : node.moduleNo.fullPath,
-         moduleHaveTemplate = grunt.file.exists(modulePath.replace(/\.js$|\.module.js$/, '.xhtml')) ||
-            grunt.file.exists(modulePath.replace(/\.js$|\.module.js$/, '.tmpl'));
+         moduleHaveTemplate = fs.pathExistsSync(modulePath.replace(/\.js$|\.module.js$/, '.xhtml')) ||
+            fs.pathExistsSync(modulePath.replace(/\.js$|\.module.js$/, '.tmpl'));
 
       if (node.amd) {
          if (!(isJSModuleWithoutJSPlugin && moduleHaveTemplate)) {
@@ -383,16 +384,16 @@ function generatePackageToWrite(orderQueue, cfg) {
                                             configurable: true,\nget: function() {\n
                                             delete exports['${moduleToWrite.moduleName}'];\n
                                             return exports['${moduleToWrite.moduleName}'] = ${generatedCallBack}(${moduleToWrite.deps ? moduleToWrite.deps.map(function(dep) {
-                           let
-                              moduleInPackage = orderQueue.find(function(module) {
-                                 return module.moduleName === dep;
-                              }),
-                              extDep = externalDependencies.indexOf(dep);
-
-                           return moduleInPackage ? `exports['${moduleInPackage.moduleName}']` : `require${externalDependencies[extDep] === 'require' ? '' : `(deps[${extDep}])`}`;
-                        }).filter(function(dep) {
-                           return dep;
-                        }).join(', ') : ''});\n}\n});\n`;
+   let
+      moduleInPackage = orderQueue.find(function(module) {
+         return module.moduleName === dep;
+      }),
+      extDep = externalDependencies.indexOf(dep);
+                        
+   return moduleInPackage ? `exports['${moduleInPackage.moduleName}']` : `require${externalDependencies[extDep] === 'require' ? '' : `(deps[${extDep}])`}`;
+}).filter(function(dep) {
+   return dep;
+}).join(', ') : ''});\n}\n});\n`;
                      return esprima.parse(writeForm);
                   }
                }
@@ -416,7 +417,7 @@ function generatePackageToWrite(orderQueue, cfg) {
       resultPackageToWrite += '\n})()';
    }
    result[cfg.outputFile] = resultPackageToWrite;
-   grunt.file.write(cfg.outputFile, resultPackageToWrite);
+   fs.writeFileSync(cfg.outputFile, resultPackageToWrite);
    return result;
 
 }

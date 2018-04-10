@@ -45,7 +45,7 @@ global.requirejs = function(dep, callback) {
    }
 };
 
-for (const p in _requirejs) {
+for (const p in global._requirejs) {
    if (global._requirejs.hasOwnProperty(p)) {
       global.requirejs[p] = global._requirejs[p];
    }

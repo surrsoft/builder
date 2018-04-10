@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const dom = require('tensor-xmldom');
 const domParser = new dom.DOMParser();
 
@@ -412,7 +412,6 @@ module.exports = {
              * - Добавляем их зависимости в зависимости к текущему шаблону
              */
          const temp = Object.keys(configTemp);
-         prog = 0;
          temp.forEach(function(service) {
             const svcContainers = configTemp[service];
             Object.keys(configTemp[service]).forEach(function(resource) {

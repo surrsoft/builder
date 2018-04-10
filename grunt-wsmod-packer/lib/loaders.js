@@ -5,7 +5,7 @@ const traverse = require('estraverse').traverse;
 const codegen = require('escodegen');
 const stripBOM = require('strip-bom');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 
 const dblSlashes = /\\/g;

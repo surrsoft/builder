@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const helpers = require('./../../lib/domHelpers');
 
 module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
