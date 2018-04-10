@@ -1,9 +1,5 @@
 'use strict';
 
-const esprima = require('esprima');
-const escodegen = require('escodegen');
-const traverse = require('estraverse').traverse;
-const esReplace = require('estraverse').replace;
 const path = require('path');
 const async = require('async');
 const fs = require('fs-extra');
@@ -204,224 +200,6 @@ function generateBundle(orderQueue) {
    return bundle;
 }
 
-//генерируем параметры, необходимые для генерации пакета без использования множественного define
-function generateParametersForCurrentPackage(orderQueue) {
-   return orderQueue.map(function(currentNodeInString) {
-      let
-         ast = esprima.parse(currentNodeInString),
-         ifStatementIncluded,
-         deps, moduleName, callBack, currentDepsIndexes = {};
-
-      ifStatementIncluded = ast.body[0].type === 'IfStatement';
-      traverse(ast, {
-         enter: function(node) {
-            if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
-               node.arguments.forEach(function(argument) {
-                  switch (argument.type) {
-                     case 'Literal':
-                        moduleName = argument.value;
-                        break;
-                     case 'ArrayExpression':
-                        deps = argument.elements.map(function(element, index) {
-                           currentDepsIndexes[element.value] = index;
-                           return element.value;
-                        });
-                        break;
-                     case 'FunctionExpression':
-                        callBack = argument;
-                        break;
-                     case 'ObjectExpression':
-                        //иногда встречаются модули, где в качестве callBack выступает объект
-                        callBack = argument;
-                        break;
-                  }
-               });
-
-            }
-         }
-      });
-
-      return {
-         ast: ast,
-         deps: deps,
-         moduleName: moduleName,
-         callBack: callBack,
-         ifStatementIncluded: ifStatementIncluded
-      };
-   });
-}
-
-/*
- * Функция для сортировки модулей по зависимостям. Если модуль A из
- * пакета зависит от модуля B из пакета, то модуль B должен быть
- * определён до модуля A, Если встречается внешняя зависимость, то это никак не влияет на модуль.
- */
-function sortModulesForDependencies(orderQueue) {
-   orderQueue.forEach(function(currentModule) {
-      function watcher(dependency, currentDepth, maxDepth) {
-         const founded = orderQueue.find(function(module) {
-            return module.moduleName === dependency;
-         });
-         if (founded) {
-            maxDepth += 1;
-            if (founded.deps) {
-               founded.deps.forEach(function(dep) {
-                  const depth = watcher(dep, currentDepth + 1, maxDepth);
-                  maxDepth = depth > currentDepth ? depth : currentDepth;
-               });
-            }
-         }
-         return maxDepth;
-
-      }
-
-      currentModule.depth = 0;
-      if (currentModule.deps) {
-         currentModule.deps.forEach(function(dep) {
-            const maxDepth = watcher(dep, 0, 0);
-            currentModule.depth = maxDepth > currentModule.depth ? maxDepth : currentModule.depth;
-         });
-      }
-   });
-
-   //непосредственно сама сортировка
-   orderQueue = orderQueue.sort(function(a, b) {
-      if (a.depth > b.depth) {
-         return 1;
-      } else if (a.depth < b.depth) {
-         return -1;
-      }
-      return 0;
-
-   });
-   return orderQueue;
-}
-
-/*
- * собираем все внешние зависимости, также делаем копию самих зависимостей,
- * которые мы вернём в отсортированный по зависимостям набор модулей.
- */
-function collectExternalDependencies(orderQueue) {
-   const externalDependencies = [];
-   orderQueue.forEach(function(currentModule) {
-      //отбираем внешние зависимости, дубликаты откидываем
-      if (currentModule.deps) {
-         currentModule.deps.filter(function(dep) {
-            const currentIndex = currentModule.deps.indexOf(dep);
-            if (typeof dep === 'string') {
-               dep = dep.replace(/^is!browser\?|^is!compatibleLayer\?|^is!msIe\?|^browser!/, '');
-            }
-            currentModule.deps[currentIndex] = dep;
-            return orderQueue.filter(function(module) {
-               return module.moduleName === dep;
-            }).length === 0;
-         }).forEach(function(dep) {
-            if (!externalDependencies.includes(dep)) {
-               externalDependencies.push(dep);
-            }
-         });
-      }
-   });
-   return externalDependencies;
-}
-
-//собирает полный список зависимостей согласно дереву зависимостей от указанной зависимости - точки входа.
-function getAllDepsRecursively(dependency, allDeps, orderQueue) {
-   const founded = orderQueue.find(function(module) {
-      return module.moduleName === dependency;
-   });
-   if (founded && founded.deps) {
-      founded.deps.forEach(function(dep) {
-         const result = getAllDepsRecursively(dep, allDeps, orderQueue);
-         if (result && !allDeps.includes(dep)) {
-            allDeps.push(dep);
-         }
-      });
-   }
-   return dependency;
-
-}
-
-//генерируем пакет с использованием нативной формы обьявления модулей взамен define
-function generatePackageToWrite(orderQueue, cfg) {
-   let
-      result = {},
-      resultPackageToWrite = '';
-   if (orderQueue) {
-      var
-         orderQueue = generateParametersForCurrentPackage(orderQueue),
-         externalDependencies = collectExternalDependencies(orderQueue),
-         defineOfModules = '';
-
-      /* Правим структуру модулей. define нельзя делать внутри require. Нужно их вынести , замкнуть с exports и передать каждому define
-         * зависимости, чтобы exports назначился и модули правильно задефайнились.
-         */
-      resultPackageToWrite = `(function(){\nvar global = (function(){ return this || (0, eval)('this'); }());\nvar require = global.requirejs;\nvar exports = {};\nvar deps = [${externalDependencies.map(function(dep) {
-         return `'${dep}'`;
-      }).join(', ')}];\n`;
-
-      /*если для конкретного модуля помимо явного define существует define
-             *при определённом условии, то оставляем только 2й вариант
-             * define оборачивается в условие сборщиком, когда данный модуль
-             * запрашивают через плагины is!, browser!.
-             */
-      orderQueue = orderQueue.filter(function(currentModule) {
-         return !(!currentModule.ifStatementIncluded && orderQueue.find(function(module) {
-            return currentModule.moduleName === module.moduleName && module.ifStatementIncluded;
-         }));
-      });
-
-      orderQueue = sortModulesForDependencies(orderQueue);
-
-      orderQueue.forEach(function(moduleToWrite) {
-         esReplace(moduleToWrite.ast, {
-            enter: function(node) {
-               if (node.expression) {
-                  if (node.expression.type == 'CallExpression' && node.expression.callee.type == 'Identifier' && node.expression.callee.name == 'define') {
-                     let
-                        generatedCallBack = escodegen.generate(moduleToWrite.callBack),
-                        writeForm = `Object.defineProperty(exports, '${moduleToWrite.moduleName}', {\n
-                                            configurable: true,\nget: function() {\n
-                                            delete exports['${moduleToWrite.moduleName}'];\n
-                                            return exports['${moduleToWrite.moduleName}'] = ${generatedCallBack}(${moduleToWrite.deps ? moduleToWrite.deps.map(function(dep) {
-   let
-      moduleInPackage = orderQueue.find(function(module) {
-         return module.moduleName === dep;
-      }),
-      extDep = externalDependencies.indexOf(dep);
-                        
-   return moduleInPackage ? `exports['${moduleInPackage.moduleName}']` : `require${externalDependencies[extDep] === 'require' ? '' : `(deps[${extDep}])`}`;
-}).filter(function(dep) {
-   return dep;
-}).join(', ') : ''});\n}\n});\n`;
-                     return esprima.parse(writeForm);
-                  }
-               }
-            }
-         });
-         resultPackageToWrite += `\n${escodegen.generate(moduleToWrite.ast, {format: {compact: true}})}`;
-         const allDeps = [];
-         if (moduleToWrite.deps) {
-            moduleToWrite.deps.forEach(function(currentDep) {
-               const dep = getAllDepsRecursively(currentDep, allDeps, orderQueue);
-               if (!allDeps.includes(dep)) {
-                  allDeps.push(dep);
-               }
-            });
-         }
-         defineOfModules += `\ndefine('${moduleToWrite.moduleName}', [${allDeps.map(function(dep) {
-            return `'${dep}'`;
-         })}], function() {return exports['${moduleToWrite.moduleName}'];});`;
-      });
-      resultPackageToWrite += defineOfModules;
-      resultPackageToWrite += '\n})()';
-   }
-   result[cfg.outputFile] = resultPackageToWrite;
-   fs.writeFileSync(cfg.outputFile, resultPackageToWrite);
-   return result;
-
-}
-
 /**
  * Генерирует список: модуль и путь до пакета, в котором он лежит
  * @param currentBundle - текущий бандл
@@ -461,26 +239,21 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
                delete bundlesOptions.bundles[cfg.packagePath];
                done(err);
             } else {
-               if (cfg.optimized) {
-                  var result = generatePackageToWrite(result, cfg);
-                  done(null, result);
-               } else {
-                  grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
-                     return res + (res ? '\n' : '') + modContent;
-                  }, '') : '');
+               grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
+                  return res + (res ? '\n' : '') + modContent;
+               }, '') : '');
 
-                  /**
-                   * временно генерим css-ную пустышку для ситуации, когда динамически
-                   * просят css-ку, имя которой совпадает с компонентом и который присутствует
-                   * в каком либо бандле.
-                   * TODO Написать генерацию кастомного css-пакета наподобие rt-паковки
-                   */
-                  const pathToCustomCSS = cfg.outputFile.replace(/\.js$/, '.css');
-                  if (!grunt.file.exists(pathToCustomCSS)) {
-                     grunt.file.write(pathToCustomCSS, '');
-                  }
-                  done(null);
+               /**
+                * временно генерим css-ную пустышку для ситуации, когда динамически
+                * просят css-ку, имя которой совпадает с компонентом и который присутствует
+                * в каком либо бандле.
+                * TODO Написать генерацию кастомного css-пакета наподобие rt-паковки
+                */
+               const pathToCustomCSS = cfg.outputFile.replace(/\.js$/, '.css');
+               if (!grunt.file.exists(pathToCustomCSS)) {
+                  grunt.file.write(pathToCustomCSS, '');
                }
+               done(null);
             }
          });
       }

@@ -210,9 +210,9 @@ function packCustomDict(modules, applicationRoot) {
                module.addDeps = modulesI18n[moduleName].fullName;
             } else {
                /**
-                     * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
-                     * для него в пакете модуль локализации
-                     */
+                * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
+                * для него в пакете модуль локализации
+                */
                if (fs.existsSync(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
                   modulesI18n[moduleName] = createI18nModule(moduleName);
                   linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
@@ -230,6 +230,9 @@ function packCustomDict(modules, applicationRoot) {
         */
 
       for (const name in modulesI18n) {
+         if (!modulesI18n.hasOwnProperty(name)) {
+            continue;
+         }
          modulesI18n[name].availableDict = getAvailableLanguageModule(_const.availableLanguage, name, applicationRoot);
          packeg.push(modulesI18n[name]);
       }
