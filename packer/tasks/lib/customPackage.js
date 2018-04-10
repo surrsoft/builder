@@ -160,10 +160,10 @@ function getBundlePath(currentOutput, applicationRoot, wsRoot) {
 function generateBundle(orderQueue) {
    const
       bundle = [],
-      moduleExtReg = /(\.min)?(\.original)?\.js$|\.module(\.min)?(\.original)?.js$/;
+      moduleExtReg = /(\.module)(\.min)?(\.original)?\.js$/;
 
    orderQueue.forEach(function(node) {
-      let
+      const
          isJSModuleWithoutJSPlugin = node.fullName.indexOf('!') === -1 && node.plugin === 'js',
          modulePath = node.fullPath ? node.fullPath
             : node.moduleYes.fullPath ? node.moduleYes.fullPath : node.moduleNo.fullPath,
