@@ -73,7 +73,7 @@ function hasValue(arr, val) {
 function whitelistedPlugin(meta) {
    if (meta.plugin == 'is') {
       return (meta.moduleYes ? hasValue(supportedPlugins, meta.moduleYes.plugin) : true) &&
-               (meta.moduleNo ? hasValue(supportedPlugins, meta.moduleNo.plugin) : true);
+         (meta.moduleNo ? hasValue(supportedPlugins, meta.moduleNo.plugin) : true);
    }
    if (meta.plugin == 'browser' || meta.plugin == 'optional') {
       return meta.moduleIn ? hasValue(supportedPlugins, meta.moduleIn.plugin) : true;
@@ -89,7 +89,7 @@ function whitelistedPlugin(meta) {
 function notRemoteFile(meta) {
    if (meta.plugin == 'is') {
       return (meta.moduleYes ? !reIsRemote.test(meta.moduleYes.module) : true) &&
-               (meta.moduleNo ? !reIsRemote.test(meta.moduleNo.module) : true);
+         (meta.moduleNo ? !reIsRemote.test(meta.moduleNo.module) : true);
    }
    if (meta.plugin == 'browser' || meta.plugin == 'optional') {
       return meta.moduleIn ? !reIsRemote.test(meta.moduleIn.module) : true;
@@ -141,16 +141,24 @@ function getDependencies(grunt, fullPath, deps) {
       .map(replaceFirstDot);
 
    deps.forEach(function collectPlugins(i) {
-      i.plugin && !hasValue(plugins, i.plugin) && needPlugin(i) ? plugins.push(i.plugin) : false;
+      if (i.plugin && !hasValue(plugins, i.plugin) && needPlugin(i)) {
+         plugins.push(i.plugin);
+      }
 
       if (i.plugin == 'is') {
          const yesPlugin = i.moduleYes && i.moduleYes.plugin;
          const noPlugin = i.moduleNo && i.moduleNo.plugin;
-         yesPlugin && !hasValue(plugins, yesPlugin) && needPlugin(i.moduleYes) && plugins.push(yesPlugin);
-         noPlugin && !hasValue(plugins, noPlugin) && needPlugin(i.moduleNo) && plugins.push(noPlugin);
+         if (yesPlugin && !hasValue(plugins, yesPlugin) && needPlugin(i.moduleYes)) {
+            plugins.push(yesPlugin);
+         }
+         if (noPlugin && !hasValue(plugins, noPlugin) && needPlugin(i.moduleNo)) {
+            plugins.push(noPlugin);
+         }
       } else if (i.plugin == 'browser' || i.plugin == 'optional') {
          const inPlugin = i.moduleIn && i.moduleIn.plugin;
-         inPlugin && !hasValue(plugins, inPlugin) && needPlugin(i.moduleIn) && plugins.push(inPlugin);
+         if (inPlugin && !hasValue(plugins, inPlugin) && needPlugin(i.moduleIn)) {
+            plugins.push(inPlugin);
+         }
       }
    });
 
@@ -197,8 +205,8 @@ function getModulePath(grunt, dep, plugin, errMes) {
             let jsPath, cssPath, countryPath;
 
             /**
-                 * Перебираем все доступные языки и пытаемся получить путь до любой css или json
-                 */
+             * Перебираем все доступные языки и пытаемся получить путь до любой css или json
+             */
             availableLangs.forEach(function(lang) {
                jsPath = i18n.getDictPath(dep.module, lang, 'json');
                cssPath = i18n.getDictPath(dep.module, lang, 'css');
@@ -243,17 +251,17 @@ function getModulePath(grunt, dep, plugin, errMes) {
          pathToModule = global.requirejs.toUrl(pathToModule);
 
          /**
-            * Если какие-то файлы локализации присутствуют, оставляем путь до папки верхнего уровня,
-            * чтобы в i18nLoader найти в ней словари для всех доступных языков.
-            */
+          * Если какие-то файлы локализации присутствуют, оставляем путь до папки верхнего уровня,
+          * чтобы в i18nLoader найти в ней словари для всех доступных языков.
+          */
          if (dep.plugin == 'i18n') {
             pathToModule = pathToModule.split('lang/')[0];
          }
 
          /**
-             * Если плагин optional и сформированного пути не существует, тогда нету смысла помещать
-             * данный путь в module dependencies
-             */
+          * Если плагин optional и сформированного пути не существует, тогда нету смысла помещать
+          * данный путь в module dependencies
+          */
          if (plugin == 'optional') {
             if (!grunt.file.exists(pathToModule)) {
                return '';
@@ -430,7 +438,7 @@ function parseModule(text) {
  */
 function parsePathForPresentationService(applicationRoot, fullPath) {
    let
-      presentationService =  grunt.file.exists(path.join(applicationRoot, 'resources', 'WS.Core')),
+      presentationService = grunt.file.exists(path.join(applicationRoot, 'resources', 'WS.Core')),
       modulePath = path.relative(applicationRoot, fullPath),
       parts;
 
@@ -482,7 +490,7 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
             traverse(ast, {
                enter: function getModuleNameAndDependencies(node) {
                   if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-                            node.callee.name == 'define') {
+                     node.callee.name == 'define') {
 
                      if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string') {
                         myName = node.arguments[0].value;
@@ -510,16 +518,16 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
 
                      if (needToRegister) {
                         /**
-                                 * nodes['(supportedPlugins)!NAME.SPACE.MODULE'] = { path: '/path/to/module/file' }
-                                 */
+                         * nodes['(supportedPlugins)!NAME.SPACE.MODULE'] = { path: '/path/to/module/file' }
+                         */
                         graph.registerNode(myName, {
                            path: parsePathForPresentationService(applicationRoot, fullPath),
                            amd: true
                         });
 
                         /**
-                                 * links['(supportedPlugins)!NAME.SPACE.MODULE'] = [ '(supportedPlugins)!NAME.SPACE.MODULE', ... ]
-                                 */
+                         * links['(supportedPlugins)!NAME.SPACE.MODULE'] = [ '(supportedPlugins)!NAME.SPACE.MODULE', ... ]
+                         */
                         graph.addDependencyFor(myName, registeredDependencies);
                      }
                   }

@@ -189,7 +189,7 @@ function generateBundle(orderQueue) {
          modulePath = node.fullPath ? node.fullPath
             : node.moduleYes.fullPath ? node.moduleYes.fullPath : node.moduleNo.fullPath,
          moduleHaveTemplate = grunt.file.exists(modulePath.replace(/\.js$|\.module.js$/, '.xhtml')) ||
-                grunt.file.exists(modulePath.replace(/\.js$|\.module.js$/, '.tmpl'));
+            grunt.file.exists(modulePath.replace(/\.js$|\.module.js$/, '.tmpl'));
 
       if (node.amd) {
          if (!(isJSModuleWithoutJSPlugin && moduleHaveTemplate)) {
@@ -263,19 +263,24 @@ function sortModulesForDependencies(orderQueue) {
          });
          if (founded) {
             maxDepth += 1;
-            founded.deps && founded.deps.forEach(function(dep) {
-               const depth = watcher(dep, currentDepth + 1, maxDepth);
-               maxDepth = depth > currentDepth ? depth : currentDepth;
-            });
+            if (founded.deps) {
+               founded.deps.forEach(function(dep) {
+                  const depth = watcher(dep, currentDepth + 1, maxDepth);
+                  maxDepth = depth > currentDepth ? depth : currentDepth;
+               });
+            }
          }
          return maxDepth;
 
       }
+
       currentModule.depth = 0;
-      currentModule.deps && currentModule.deps.forEach(function(dep) {
-         const maxDepth = watcher(dep, 0, 0);
-         currentModule.depth = maxDepth > currentModule.depth ? maxDepth : currentModule.depth;
-      });
+      if (currentModule.deps) {
+         currentModule.deps.forEach(function(dep) {
+            const maxDepth = watcher(dep, 0, 0);
+            currentModule.depth = maxDepth > currentModule.depth ? maxDepth : currentModule.depth;
+         });
+      }
    });
 
    //непосредственно сама сортировка
@@ -299,20 +304,22 @@ function collectExternalDependencies(orderQueue) {
    const externalDependencies = [];
    orderQueue.forEach(function(currentModule) {
       //отбираем внешние зависимости, дубликаты откидываем
-      currentModule.deps && currentModule.deps.filter(function(dep) {
-         const currentIndex = currentModule.deps.indexOf(dep);
-         if (typeof dep === 'string') {
-            dep = dep.replace(/^is!browser\?|^is!compatibleLayer\?|^is!msIe\?|^browser!/, '');
-         }
-         currentModule.deps[currentIndex] = dep;
-         return orderQueue.filter(function(module) {
-            return module.moduleName === dep;
-         }).length === 0;
-      }).forEach(function(dep) {
-         if (!externalDependencies.includes(dep)) {
-            externalDependencies.push(dep);
-         }
-      });
+      if (currentModule.deps) {
+         currentModule.deps.filter(function(dep) {
+            const currentIndex = currentModule.deps.indexOf(dep);
+            if (typeof dep === 'string') {
+               dep = dep.replace(/^is!browser\?|^is!compatibleLayer\?|^is!msIe\?|^browser!/, '');
+            }
+            currentModule.deps[currentIndex] = dep;
+            return orderQueue.filter(function(module) {
+               return module.moduleName === dep;
+            }).length === 0;
+         }).forEach(function(dep) {
+            if (!externalDependencies.includes(dep)) {
+               externalDependencies.push(dep);
+            }
+         });
+      }
    });
    return externalDependencies;
 }
@@ -322,13 +329,12 @@ function getAllDepsRecursively(dependency, allDeps, orderQueue) {
    const founded = orderQueue.find(function(module) {
       return module.moduleName === dependency;
    });
-   if (founded) {
-      founded.deps && founded.deps.forEach(function(dep) {
+   if (founded && founded.deps) {
+      founded.deps.forEach(function(dep) {
          const result = getAllDepsRecursively(dep, allDeps, orderQueue);
          if (result && !allDeps.includes(dep)) {
             allDeps.push(dep);
          }
-
       });
    }
    return dependency;
@@ -377,16 +383,16 @@ function generatePackageToWrite(orderQueue, cfg) {
                                             configurable: true,\nget: function() {\n
                                             delete exports['${moduleToWrite.moduleName}'];\n
                                             return exports['${moduleToWrite.moduleName}'] = ${generatedCallBack}(${moduleToWrite.deps ? moduleToWrite.deps.map(function(dep) {
-   let
-      moduleInPackage = orderQueue.find(function(module) {
-         return module.moduleName === dep;
-      }),
-      extDep = externalDependencies.indexOf(dep);
+                           let
+                              moduleInPackage = orderQueue.find(function(module) {
+                                 return module.moduleName === dep;
+                              }),
+                              extDep = externalDependencies.indexOf(dep);
 
-   return moduleInPackage ? `exports['${moduleInPackage.moduleName}']` : `require${externalDependencies[extDep] === 'require' ? '' : `(deps[${extDep}])`}`;
-}).filter(function(dep) {
-   return dep;
-}).join(', ') : ''});\n}\n});\n`;
+                           return moduleInPackage ? `exports['${moduleInPackage.moduleName}']` : `require${externalDependencies[extDep] === 'require' ? '' : `(deps[${extDep}])`}`;
+                        }).filter(function(dep) {
+                           return dep;
+                        }).join(', ') : ''});\n}\n});\n`;
                      return esprima.parse(writeForm);
                   }
                }
@@ -394,12 +400,14 @@ function generatePackageToWrite(orderQueue, cfg) {
          });
          resultPackageToWrite += `\n${escodegen.generate(moduleToWrite.ast, {format: {compact: true}})}`;
          const allDeps = [];
-         moduleToWrite.deps && moduleToWrite.deps.forEach(function(currentDep) {
-            const dep = getAllDepsRecursively(currentDep, allDeps, orderQueue);
-            if (!allDeps.includes(dep)) {
-               allDeps.push(dep);
-            }
-         });
+         if (moduleToWrite.deps) {
+            moduleToWrite.deps.forEach(function(currentDep) {
+               const dep = getAllDepsRecursively(currentDep, allDeps, orderQueue);
+               if (!allDeps.includes(dep)) {
+                  allDeps.push(dep);
+               }
+            });
+         }
          defineOfModules += `\ndefine('${moduleToWrite.moduleName}', [${allDeps.map(function(dep) {
             return `'${dep}'`;
          })}], function() {return exports['${moduleToWrite.moduleName}'];});`;
@@ -461,11 +469,11 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
                   }, '') : '');
 
                   /**
-                         * временно генерим css-ную пустышку для ситуации, когда динамически
-                         * просят css-ку, имя которой совпадает с компонентом и который присутствует
-                         * в каком либо бандле.
-                         * TODO Написать генерацию кастомного css-пакета наподобие rt-паковки
-                         */
+                   * временно генерим css-ную пустышку для ситуации, когда динамически
+                   * просят css-ку, имя которой совпадает с компонентом и который присутствует
+                   * в каком либо бандле.
+                   * TODO Написать генерацию кастомного css-пакета наподобие rt-паковки
+                   */
                   const pathToCustomCSS = cfg.outputFile.replace(/\.js$/, '.css');
                   if (!grunt.file.exists(pathToCustomCSS)) {
                      grunt.file.write(pathToCustomCSS, '');
@@ -603,8 +611,8 @@ function createGruntPackage(grunt, configs, root, badConfigs, bundlesOptions, ta
             errors[config.packageName] = err;
 
             /**
-                 * Ошибка создания пакета. Удаляем все его упоминания из бандлов.
-                 */
+             * Ошибка создания пакета. Удаляем все его упоминания из бандлов.
+             */
             Object.keys(bundlesOptions.modulesInBundles).forEach(function(moduleName) {
                if (bundlesOptions.modulesInBundles[moduleName] === config.packagePath) {
                   delete bundlesOptions.modulesInBundles[moduleName];
@@ -616,11 +624,11 @@ function createGruntPackage(grunt, configs, root, badConfigs, bundlesOptions, ta
          }
 
          /**
-             * даже в случае ошибки передавать в итеративный callback ошибку мы не будем,
-             * поскольку согласно документации async это прерывает выполнение всех остальных
-             * работающих в данный момент потоков, в результате чего мы имеем половину нерабочих
-             * нерабочих пакетов при сломавшемся одном
-             */
+          * даже в случае ошибки передавать в итеративный callback ошибку мы не будем,
+          * поскольку согласно документации async это прерывает выполнение всех остальных
+          * работающих в данный момент потоков, в результате чего мы имеем половину нерабочих
+          * нерабочих пакетов при сломавшемся одном
+          */
          callback();
       });
    }, function(err, result) {

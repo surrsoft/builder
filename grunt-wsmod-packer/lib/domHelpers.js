@@ -143,7 +143,11 @@ helpers = {
                   // For each packed file create new DOM node and attach it to document
                   packedFiles.forEach(function(aSingleFile) {
                      const newNode = nodeProducer(dom, path.relative(root, aSingleFile));
-                     result.before ? result.before.parentNode.insertBefore(newNode, result.before) : dom.getElementsByTagName('head')[0].appendChild(newNode);
+                     if (result.before) {
+                        result.before.parentNode.insertBefore(newNode, result.before);
+                     } else {
+                        dom.getElementsByTagName('head')[0].appendChild(newNode);
+                     }
                   });
 
                   // update HTML

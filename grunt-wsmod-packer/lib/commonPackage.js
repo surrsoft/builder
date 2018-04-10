@@ -23,6 +23,7 @@ const HTMLPAGESWITHNOONLINESTYLES = ['carry.html', 'presto.html', 'carry_minimal
 
 const offlineModuleName = 'Retail_Offline';
 let isOfflineClient;
+
 function checkItIsOfflineClient(applicationRoot) {
    if (isOfflineClient !== undefined) {
       return isOfflineClient;
@@ -74,7 +75,7 @@ PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
          } else if (specialPlugins.test(depWithoutComplexPlugins)) {
             args.push('defineStorage["preloadFunc"]("' + depWithoutComplexPlugins + '")');
          } else {
-            return new Error("Can't resolve deps");
+            return new Error('Can\'t resolve deps');
          }
       }
    }
@@ -135,7 +136,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
          return true;
       }
    }).map(function(module) {
-      return "define('" + module.fullName + "', '');";
+      return 'define(\'' + module.fullName + '\', \'\');';
    }).join('\n') + '\n})();';
 }
 
@@ -150,10 +151,10 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
    const cssFromCDN = /css!\/cdn\//;
    return orderQueue.filter(function(dep) {
       /**
-        * Проверяем чтобы упоминания cdn не было не только в пути, но и в названии
-        * самого модуля, поскольку пути может и не быть по причине отсутствия в
-        * module-dependencies
-        */
+       * Проверяем чтобы упоминания cdn не было не только в пути, но и в названии
+       * самого модуля, поскольку пути может и не быть по причине отсутствия в
+       * module-dependencies
+       */
       return dep.path ? !CDN.test(dep.path.replace(dblSlashes, '/'))
          : dep.module ? !cssFromCDN.test(dep.module) : true;
    })
@@ -254,8 +255,12 @@ function prepareResultQueue(orderQueue, applicationRoot) {
             } else {
                memo.js.push(module);
             }
-            module.moduleYes && (memo.paths[module.moduleYes.fullPath] = true);
-            module.moduleNo && (memo.paths[module.moduleNo.fullPath] = true);
+            if (module.moduleYes) {
+               memo.paths[module.moduleYes.fullPath] = true;
+            }
+            if (module.moduleNo) {
+               memo.paths[module.moduleNo.fullPath] = true;
+            }
          }
       } else if (module.plugin == 'browser' || module.plugin == 'optional') {
          if (!memo.paths[module.moduleIn.fullPath]) {
@@ -264,7 +269,9 @@ function prepareResultQueue(orderQueue, applicationRoot) {
             } else {
                memo.js.push(module);
             }
-            module.moduleIn && (memo.paths[module.moduleIn.fullPath] = true);
+            if (module.moduleIn) {
+               memo.paths[module.moduleIn.fullPath] = true;
+            }
          }
       } else {
          if (!memo.paths[module.fullPath]) {
@@ -350,23 +357,23 @@ function limitingNativePackFiles(filesToPack, limit, base, done) {
    if (filesToPack && filesToPack.length) {
       async.mapLimit(filesToPack, limit, function(module, done) {
          /**
-             * Для необычных расширений, получающихся в результате использования
-             * точек в именах модулей без явного указания плагина
-             * @type {RegExp}
-             */
+          * Для необычных расширений, получающихся в результате использования
+          * точек в именах модулей без явного указания плагина
+          * @type {RegExp}
+          */
          const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`);
 
          /**
-            * Учитываем возможность присутствия плагина is! в модуле. В таком случае
-            * путь будет храниться в подмодуле moduleYes, а в самом модуле fullPath будет undefined
-            */
+          * Учитываем возможность присутствия плагина is! в модуле. В таком случае
+          * путь будет храниться в подмодуле moduleYes, а в самом модуле fullPath будет undefined
+          */
          const fullPath = module.fullPath ? module.fullPath
             : module.moduleYes ? module.moduleYes.fullPath : null;
 
-            /**
-             * Позорный костыль для модулей, в которых нету плагина js, но которые используют
-             * точки в конце имени модуля(например это .compatible)
-             */
+         /**
+          * Позорный костыль для модулей, в которых нету плагина js, но которые используют
+          * точки в конце имени модуля(например это .compatible)
+          */
          if (fullPath && fullPath.match(extReg)) {
             module.plugin = 'js';
          }
@@ -441,22 +448,22 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
    async.parallel({
       js: packer.bind(null, orderQueue.js.filter(function(node) {
          /** TODO
-             * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
-             * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
-             * не включаем по умолчанию. После доработки статической паковки будем учитывать
-             * модули в бандлах по аналогии с rtpackage
-             */
+          * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
+          * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
+          * не включаем по умолчанию. После доработки статической паковки будем учитывать
+          * модули в бандлах по аналогии с rtpackage
+          */
          const wsDatareg = /WS\.Data/;
          if (node.fullName && node.fullName.match(wsDatareg) || node.moduleYes && node.moduleYes.fullName.match(wsDatareg)) {
             return false;
          }
 
          /**
-             * если по пути оригинального модуля описан кастомный пакет, то грузим по тому же пути
-             * модуль с расширением .original.js. Сделано для того, чтобы мы не запаковали пакет в пакет,
-             * что может привести к дублированию дефайнов и увеличению размеров исходников для всех
-             * статических страничек.
-             */
+          * если по пути оригинального модуля описан кастомный пакет, то грузим по тому же пути
+          * модуль с расширением .original.js. Сделано для того, чтобы мы не запаковали пакет в пакет,
+          * что может привести к дублированию дефайнов и увеличению размеров исходников для всех
+          * статических страничек.
+          */
          const fullPath = node.fullPath || node.moduleYes && node.moduleYes.fullPath;
          if (bundlesOptions.customPackagesOutputs && bundlesOptions.customPackagesOutputs[fullPath]) {
             node.fullPath = node.fullPath.replace(/.js$/, '.original.js');
