@@ -11,19 +11,19 @@ const ERROR_INDEX_FAILED = 100;
 const ERROR_PACKING_FAILED = 101;
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
-   let type2attr = {
-      'js': 'src',
-      'css': 'href'
-   }, type2node = {
-      'js': 'script',
-      'css': 'link'
-   }, type2type = {
-      'js': 'text/javascript',
-      'css': 'text/css'
-   }, options = {
-      'data-pack-name': 'ws-mods-' + type,
-      'type': type2type[type]
-   };
+   const type2attr = {
+         'js': 'src',
+         'css': 'href'
+      }, type2node = {
+         'js': 'script',
+         'css': 'link'
+      }, type2type = {
+         'js': 'text/javascript',
+         'css': 'text/css'
+      }, options = {
+         'data-pack-name': 'ws-mods-' + type,
+         'type': type2type[type]
+      };
 
    if (insertAfter && filesToPack && filesToPack[type]) {
       filesToPack = filesToPack[type];
