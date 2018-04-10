@@ -41,9 +41,9 @@ module.exports = function(grunt) {
       //для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
       const oldVerbose = grunt.option('verbose');
       grunt.option('verbose', true);
-      grunt.loadNpmTasks('grunt-wsmod-packer');
       grunt.loadNpmTasks('grunt-text-replace'); //используется как задача "replace:что-то"
       grunt.loadTasks('Tasks');
+      grunt.loadTasks('packer/tasks');
 
       grunt.option('verbose', oldVerbose);
 

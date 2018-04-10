@@ -1,6 +1,5 @@
 'use strict';
 
-//заменяет node-ws.js из grunt-wsmod-packer
 //данная версия загружает модули платформы из node_modules/sbis3_ws
 
 const path = require('path'),
