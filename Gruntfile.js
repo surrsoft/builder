@@ -55,10 +55,6 @@ module.exports = function(grunt) {
 
       const defaultTasks = [];
 
-      if (packaging) {
-         defaultTasks.push('deanonymize');
-      }
-
       if (versionize && typeof versionize === 'string') {
          defaultTasks.push('replace:core', 'replace:css', 'replace:res', 'ver-contents');
       }

@@ -2,9 +2,7 @@
 require('./../lib/node-ws')();
 const async = require('async');
 const path = require('path');
-const fs = require('fs');
 const modDeps = require('./../lib/moduleDependencies');
-const deanonymizer = require('./lib/deanonymizer');
 const packHTML = require('./lib/packHTML');
 const packOwnDeps = require('./lib/packOwnDeps');
 const customPackage = require('./lib/customPackage');
@@ -22,36 +20,6 @@ const bundlesOptions = {
    intersects: {},
    outputs: {}
 };
-
-/**
- * Деанонимизация модулей
- * @param grunt
- * @return {Function}
- */
-function gruntDeanonymizeDefine(grunt) {
-   return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача деанонимизации модулей.');
-
-      let root = this.data.root,
-         application = this.data.application,
-         applicationRoot = path.join(root, application),
-         taskDone = this.async(),
-         jsFiles = [];
-
-      if (this.data.src) {
-         const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-
-         sourceFiles.forEach(function(pathToSource) {
-            jsFiles.push(path.join(applicationRoot, pathToSource));
-         });
-      }
-
-      deanonymizer(grunt, jsFiles, root, function() {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача деанонимизации модулей выполнена.');
-         taskDone();
-      });
-   };
-}
 
 /**
  * Сбор зависимостей модулей
@@ -418,7 +386,6 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('packwsmod', 'TODO', gruntPackModules(grunt));
    grunt.registerMultiTask('owndepspack', 'TODO', gruntPackOwnDependencies(grunt));
    grunt.registerMultiTask('collect-dependencies', 'TODO', gruntCollectDependencies(grunt));
-   grunt.registerMultiTask('deanonymize', 'TODO', gruntDeanonymizeDefine(grunt));
    grunt.registerMultiTask('custompack', 'TODO', gruntCustomPack(grunt));
    grunt.registerMultiTask('packcss', 'TODO', gruntPackCSS(grunt));
    grunt.registerMultiTask('packjs', 'TODO', gruntPackJS(grunt));
