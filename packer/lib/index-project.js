@@ -106,10 +106,8 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
                }
 
                retval.push(name, value);
-            }
-
-            //добрались до листа дерева
-            else {
+            } else {
+               //добрались до листа дерева
                switch (type) {
                   case 'cdata':
                      retval.push(name, findCDATA(child, true));
