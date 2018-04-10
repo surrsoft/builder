@@ -35,7 +35,15 @@ module.exports = function(grunt) {
             text = grunt.file.read(routePath);
 
          if (text) {
-            routesSource[path.relative(root, routePath)] = processingRoutes.parseRoutes(text);
+            try {
+               routesSource[path.relative(root, routePath)] = processingRoutes.parseRoutes(text);
+            } catch (error) {
+               logger.error({
+                  message: 'Ошибка парсинга файла роутинга',
+                  error: error,
+                  filePath: routePath
+               });
+            }
          }
       });
 
