@@ -26,16 +26,16 @@ function collectModules(dg, modArray, bundlesOptions, done, themeName) {
    }
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, '');
    orderQueue = orderQueue.filter(function(module) {
-      if (module.plugin == 'is') {
-         if (module.moduleYes && (module.moduleYes.plugin == 'js' && module.moduleYes.amd || module.moduleYes.plugin == 'css')) {
+      if (module.plugin === 'is') {
+         if (module.moduleYes && (module.moduleYes.plugin === 'js' && module.moduleYes.amd || module.moduleYes.plugin === 'css')) {
             return true;
          }
-      } else if (module.plugin == 'browser' || module.plugin == 'optional') {
-         if (module.moduleIn && (module.moduleIn.plugin == 'js' && module.moduleIn.amd || module.moduleIn.plugin == 'css')) {
+      } else if (module.plugin === 'browser' || module.plugin === 'optional') {
+         if (module.moduleIn && (module.moduleIn.plugin === 'js' && module.moduleIn.amd || module.moduleIn.plugin === 'css')) {
             return true;
          }
       } else {
-         return !!(module.plugin == 'js' && module.amd || module.plugin == 'css');
+         return !!(module.plugin === 'js' && module.amd || module.plugin === 'css');
       }
    });
    orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);

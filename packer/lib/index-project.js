@@ -67,27 +67,6 @@ function _isSubclass(cls, sup) {
 }
 
 /**
- * Получение конструктора по нэймспейсу
- * @param namespace
- * @private
- */
-function _getConstructor(namespace) {
-   let path,
-      paths = namespace.split('.'),
-      result = (function() {
-         return this || (0, eval)('this');
-      }());
-
-   while (path = paths.shift()) {
-      result = result[path];
-      if (!result) {
-         break;
-      }
-   }
-   return result;
-}
-
-/**
  * Возвращает true если проверяемый класс подразумевает наличие встроенных шаблонов
  * @param classCtor
  * @returns {boolean}
@@ -96,7 +75,6 @@ function isComplexControl(classCtor) {
    let res = false;
    for (const i in complexControls) {
       if (complexControls.hasOwnProperty(i)) {
-         complexControls[i].class = complexControls[i].class || _getConstructor(complexControls[i].namespace);
          if (_isSubclass(classCtor, complexControls[i].class)) {
             res = true;
             break;
@@ -195,11 +173,12 @@ function findCDATA(node, needValue) {
 }
 
 function parseConfiguration(configRoot, makeArray, parseStack) {
-   let name, value, type, hasValue,
+   let name, value, type, hasValue;
+   const
       functionsPaths = [],
 
       // Это место переписано так не случайно. От старого вариант почему-то ВНЕЗАПНО ломался каверидж
-      retvalFnc = function() {
+      RetvalFnc = function() {
          const self = this;
          self.mass = makeArray ? [] : {};
          self.push = function(name, value) {
@@ -210,7 +189,7 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
             }
          };
       },
-      retval = new retvalFnc();
+      retval = new RetvalFnc();
 
    parseStack = parseStack || [];
 
@@ -219,7 +198,7 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
       let pos = -1;
       for (let i = 0, l = children.length; i < l; i++) {
          const child = children[i];
-         if (child.nodeName && child.nodeName == 'option') {
+         if (child.nodeName && child.nodeName === 'option') {
             pos++;
             name = child.getAttribute('name');
             type = child.getAttribute('type');
@@ -228,8 +207,7 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
 
             parseStack.push(name || pos);
 
-            //if (type === 'array' || name === null || value === null){
-            if (type === 'array' || !hasValue && type != 'cdata') {
+            if (type === 'array' || !hasValue && type !== 'cdata') {
                //Если не в листе дерева, то разбираем дальше рекурсивно
                if (!hasValue) {
                   const r = parseConfiguration(child, type === 'array', parseStack);
@@ -278,10 +256,11 @@ function parseConfiguration(configRoot, makeArray, parseStack) {
 }
 
 function resolveType(type) {
-   let cP = type.indexOf(':'),
+   const cP = type.indexOf(':'),
       moduleStubs = global.requirejs('Core/moduleStubs'),
-      _const = global.requirejs('Core/constants'),
-      className, moduleName;
+      _const = global.requirejs('Core/constants');
+   let className,
+      moduleName;
 
    if (cP !== -1) {
       className = type.substring(cP + 1);
@@ -323,7 +302,7 @@ function resolveOptions(ctor) {
 
 module.exports = {
    index: function(root, application, grunt, graph) {
-      let configTemp = {},
+      const configTemp = {},
          _const = global.requirejs('Core/constants'),
          xmlContents = _const.xmlContents,
          contentsKeys = Object.keys(xmlContents),
@@ -355,11 +334,11 @@ module.exports = {
                divs = resDom.getElementsByTagName('div');
                for (let i = 0, l = divs.length; i < l; i++) {
                   div = divs[i];
-                  if (div.getAttribute('wsControl') == 'true') {
+                  if (div.getAttribute('wsControl') === 'true') {
                      configAttr = div.getElementsByTagName('configuration')[0];
                      if (configAttr) {
                         (function(div, configAttr) {
-                           let
+                           const
                               ClassMapper = global.requirejs('Deprecated/ClassMapper'),
                               typename = ClassMapper.getClassMapping(div.getAttribute('type'));
                            pdStep.push(resolveType(typename).addCallback(function(classCtor) {
@@ -424,8 +403,5 @@ module.exports = {
    },
    getDeps: function(application, template) {
       return cache[application] && cache[application][template] || [];
-   },
-   toJSON: function() {
-      return JSON.stringify(cache, null, 2);
    }
 };

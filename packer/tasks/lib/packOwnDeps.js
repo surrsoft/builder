@@ -17,7 +17,7 @@ function getAllModules(dg, applicationRoot) {
    return dg.getNodes()
       .map(getMeta)
       .filter(function onlyJS(node) {
-         return node.plugin == 'js' && !(node.fullName.includes('tmpl!') || node.fullName.includes('html!'));
+         return node.plugin === 'js' && !(node.fullName.includes('tmpl!') || node.fullName.includes('html!'));
       })
       .map(function setFullPath(node) {
          node.fullPath = path.join(applicationRoot, dg.getNodeMeta(node.fullName).path);
@@ -41,14 +41,14 @@ function getAllModules(dg, applicationRoot) {
             .map(getMeta)
             .filter(function excludeEmptyDependencies(dep) {
                let res = false;
-               if (dep.plugin == 'is') {
+               if (dep.plugin === 'is') {
                   if (dep.moduleYes) {
                      res = dg.getNodeMeta(dep.moduleYes.fullName);
                   }
                   if (res && dep.moduleNo) {
                      res = dg.getNodeMeta(dep.moduleNo.fullName);
                   }
-               } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+               } else if ((dep.plugin === 'browser' || dep.plugin === 'optional') && dep.moduleIn) {
                   res = dg.getNodeMeta(dep.moduleIn.fullName);
                } else {
                   res = dg.getNodeMeta(dep.fullName);
@@ -56,18 +56,18 @@ function getAllModules(dg, applicationRoot) {
                return res && res.path;
             })
             .filter(function excludeI18N(dep) {
-               return dep.plugin != 'i18n' && dep.plugin != 'css';
+               return dep.plugin !== 'i18n' && dep.plugin !== 'css';
             })
             .filter(function excludeNonOwnDependencies(dep) {
                let ownDeps = false;
-               if (dep.plugin == 'is') {
+               if (dep.plugin === 'is') {
                   if (dep.moduleYes) {
                      ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleYes.fullName);
                   }
                   if (dep.moduleNo) {
                      ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleNo.fullName);
                   }
-               } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+               } else if ((dep.plugin === 'browser' || dep.plugin === 'optional') && dep.moduleIn) {
                   ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.moduleIn.fullName);
                } else {
                   ownDeps = (new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)')).test(dep.fullName);
@@ -75,7 +75,7 @@ function getAllModules(dg, applicationRoot) {
                return ownDeps;
             })
             .map(function setFullPath(dep) {
-               if (dep.plugin == 'is') {
+               if (dep.plugin === 'is') {
                   if (dep.moduleYes) {
                      dep.moduleYes.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleYes.fullName).path);
                      dep.moduleYes.amd = dg.getNodeMeta(dep.moduleYes.fullName).amd;
@@ -84,7 +84,7 @@ function getAllModules(dg, applicationRoot) {
                      dep.moduleNo.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleNo.fullName).path);
                      dep.moduleNo.amd = dg.getNodeMeta(dep.moduleNo.fullName).amd;
                   }
-               } else if ((dep.plugin == 'browser' || dep.plugin == 'optional') && dep.moduleIn) {
+               } else if ((dep.plugin === 'browser' || dep.plugin === 'optional') && dep.moduleIn) {
                   dep.moduleIn.fullPath = path.join(applicationRoot, dg.getNodeMeta(dep.moduleIn.fullName).path);
                   dep.moduleIn.amd = dg.getNodeMeta(dep.moduleIn.fullName).amd;
                } else {
@@ -96,7 +96,7 @@ function getAllModules(dg, applicationRoot) {
 
          //пакуем вместе с модулями исключительно шаблоны.
             .filter(function includeOnlyTemplates(dep) {
-               return dep.plugin == 'tmpl' || dep.plugin == 'html';
+               return dep.plugin === 'tmpl' || dep.plugin === 'html';
             })
 
          // Add self

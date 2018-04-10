@@ -20,7 +20,7 @@ global.requirejs = function (dep, callback) {
    if (typeof dep == "string" && (dep in global.defineStorage)) {
       return global.defineStorage[dep];
    } else {
-      if (dep instanceof Array && typeof callback == 'function') {
+      if (dep instanceof Array && typeof callback === 'function') {
          var
             resolvedDepsArray = [],
             curDep;

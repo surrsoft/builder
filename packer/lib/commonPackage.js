@@ -160,7 +160,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
    })
       .map(function parseModule(dep) {
          const meta = getMeta(dep.module);
-         if (meta.plugin == 'is') {
+         if (meta.plugin === 'is') {
             if (meta.moduleYes) {
                meta.moduleYes.fullPath = dg.getNodeMeta(meta.moduleYes.fullName).path || '';
                meta.moduleYes.amd = dg.getNodeMeta(meta.moduleYes.fullName).amd;
@@ -169,10 +169,10 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
                meta.moduleNo.fullPath = dg.getNodeMeta(meta.moduleNo.fullName).path || '';
                meta.moduleNo.amd = dg.getNodeMeta(meta.moduleNo.fullName).amd;
             }
-         } else if ((meta.plugin == 'browser' || meta.plugin == 'optional') && meta.moduleIn) {
+         } else if ((meta.plugin === 'browser' || meta.plugin === 'optional') && meta.moduleIn) {
             meta.moduleIn.fullPath = dg.getNodeMeta(meta.moduleIn.fullName).path || '';
             meta.moduleIn.amd = dg.getNodeMeta(meta.moduleIn.fullName).amd;
-         } else if (meta.plugin == 'i18n') {
+         } else if (meta.plugin === 'i18n') {
             meta.fullPath = dg.getNodeMeta(meta.fullName).path || dep.path || '';
             meta.amd = dg.getNodeMeta(meta.fullName).amd;
             meta.deps = dg.getDependenciesFor(meta.fullName);
@@ -183,7 +183,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
          return meta;
       })
       .filter(function(module) {
-         if (module.plugin == 'is') {
+         if (module.plugin === 'is') {
             if (module.moduleYes && !module.moduleYes.fullPath) {
                console.log('Empty file name: ' + module.moduleYes.fullName);
                return false;
@@ -192,7 +192,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
                console.log('Empty file name: ' + module.moduleNo.fullName);
                return false;
             }
-         } else if (module.plugin == 'browser' || module.plugin == 'optional') {
+         } else if (module.plugin === 'browser' || module.plugin === 'optional') {
             if (module.moduleIn && !module.moduleIn.fullPath) {
                console.log('Empty file name: ' + module.moduleIn.fullName);
                return false;
@@ -204,14 +204,14 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
          return true;
       })
       .map(function addApplicationRoot(module) {
-         if (module.plugin == 'is') {
+         if (module.plugin === 'is') {
             if (module.moduleYes) {
                module.moduleYes.fullPath = path.join(applicationRoot, module.moduleYes.fullPath).replace(dblSlashes, '/');
             }
             if (module.moduleNo) {
                module.moduleNo.fullPath = path.join(applicationRoot, module.moduleNo.fullPath).replace(dblSlashes, '/');
             }
-         } else if ((module.plugin == 'browser' || module.plugin == 'optional') && module.moduleIn) {
+         } else if ((module.plugin === 'browser' || module.plugin === 'optional') && module.moduleIn) {
             module.moduleIn.fullPath = path.join(applicationRoot, module.moduleIn.fullPath).replace(dblSlashes, '/');
          } else {
             module.fullPath = path.join(applicationRoot, module.fullPath).replace(dblSlashes, '/');
@@ -223,18 +223,18 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
             return path.replace(/(\.js)$/, '.original$1');
          }
 
-         if (module.plugin == 'is') {
-            if (module.moduleYes && module.moduleYes.plugin == 'js' && fs.existsSync(originalPath(module.moduleYes.fullPath))) {
+         if (module.plugin === 'is') {
+            if (module.moduleYes && module.moduleYes.plugin === 'js' && fs.existsSync(originalPath(module.moduleYes.fullPath))) {
                module.moduleYes.fullPath = originalPath(module.moduleYes.fullPath);
             }
-            if (module.moduleNo && module.moduleNo.plugin == 'js' && fs.existsSync(originalPath(module.moduleNo.fullPath))) {
+            if (module.moduleNo && module.moduleNo.plugin === 'js' && fs.existsSync(originalPath(module.moduleNo.fullPath))) {
                module.moduleNo.fullPath = originalPath(module.moduleNo.fullPath);
             }
-         } else if (module.plugin == 'browser' || module.plugin == 'optional') {
-            if (module.moduleIn && module.moduleIn.plugin == 'js' && fs.existsSync(originalPath(module.moduleIn.fullPath))) {
+         } else if (module.plugin === 'browser' || module.plugin === 'optional') {
+            if (module.moduleIn && module.moduleIn.plugin === 'js' && fs.existsSync(originalPath(module.moduleIn.fullPath))) {
                module.moduleIn.fullPath = originalPath(module.moduleIn.fullPath);
             }
-         } else if (module.plugin == 'js' && fs.existsSync(originalPath(module.fullPath))) {
+         } else if (module.plugin === 'js' && fs.existsSync(originalPath(module.fullPath))) {
             module.fullPath = originalPath(module.fullPath);
          }
          return module;
@@ -248,9 +248,9 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
  */
 function prepareResultQueue(orderQueue, applicationRoot) {
    const pack = orderQueue.reduce(function(memo, module) {
-      if (module.plugin == 'is') {
+      if (module.plugin === 'is') {
          if (!memo.paths[module.moduleYes.fullPath]) {
-            if (module.moduleYes && module.moduleYes.plugin == 'css') {
+            if (module.moduleYes && module.moduleYes.plugin === 'css') {
                memo.css.push(module.moduleYes);
             } else {
                memo.js.push(module);
@@ -262,9 +262,9 @@ function prepareResultQueue(orderQueue, applicationRoot) {
                memo.paths[module.moduleNo.fullPath] = true;
             }
          }
-      } else if (module.plugin == 'browser' || module.plugin == 'optional') {
+      } else if (module.plugin === 'browser' || module.plugin === 'optional') {
          if (!memo.paths[module.moduleIn.fullPath]) {
-            if (module.moduleIn && module.moduleIn.plugin == 'css') {
+            if (module.moduleIn && module.moduleIn.plugin === 'css') {
                memo.css.push(module.moduleIn);
             } else {
                memo.js.push(module);
@@ -275,12 +275,12 @@ function prepareResultQueue(orderQueue, applicationRoot) {
          }
       } else {
          if (!memo.paths[module.fullPath]) {
-            if (module.plugin == 'css') {
+            if (module.plugin === 'css') {
                memo.css.push(module);
             } else {
                const matchLangArray = module.fullName.match(langRe);
 
-               /*if (matchLangArray !== null && (module.plugin == 'text' || module.plugin == 'js')) {
+               /*if (matchLangArray !== null && (module.plugin === 'text' || module.plugin === 'js')) {
                         var locale = matchLangArray[1];
                         (memo.dict[locale] ? memo.dict[locale]: memo.dict[locale] = []).push(module);
                         //в итоге получится memo.dict = {'en-US': [modules], 'ru-RU': [modules], ...}
@@ -439,7 +439,7 @@ function nativePackFilesWithoutDefine(filesToPack, base, done) {
  * @param {getJsAndCssPackage~callback} done - callback
  * @param {getJsAndCssPackage~callback} staticHtmlName - имя статической html странички
  */
-function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM) {
+function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName) {
    const packer = withoutDefine ? nativePackFilesWithoutDefine : nativePackFiles;
    isOfflineClient = checkItIsOfflineClient(applicationRoot);
 
@@ -471,7 +471,7 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
       }), applicationRoot),
       css: packCSS.bind(null, orderQueue.css.filter(function removeControls(module) {
          // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
-         if (themeName || !process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1 || isOfflineClient || themeNameFromDOM) {
+         if (themeName || !process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1 || isOfflineClient) {
             //TODO Косытыль чтобы в пакет не попадали css контролов. Необходимо только для PRESTO И CARRY.
             return !module.fullName.startsWith('css!SBIS3.CONTROLS/') && !module.fullName.startsWith('css!Controls/');
          } else {

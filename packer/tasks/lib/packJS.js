@@ -19,7 +19,7 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
          // inline script will split package
          // type other than text/javascript will split package
          // data-pack-name='skip' == skip this script from packing, ignore it at all, don't split package
-         if (!link || type !== 'text/javascript' || packName == 'skip') {
+         if (!link || type !== 'text/javascript' || packName === 'skip') {
             defId++;
             continue;
          }

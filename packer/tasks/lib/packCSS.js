@@ -24,7 +24,7 @@ module.exports = {
             packName = link.getAttribute('data-pack-name');
 
             // data-pack-name='skip' == skip this css from packing
-            if (packName == 'skip') {
+            if (packName === 'skip') {
                continue;
             }
 
@@ -33,7 +33,7 @@ module.exports = {
             media = links[i].getAttribute('media') || 'screen';
 
             // stylesheet, has href ends with .css and not starts with http or //, media is screen
-            if (href && rel == 'stylesheet' && media == 'screen' &&
+            if (href && rel === 'stylesheet' && media === 'screen' &&
                     href.indexOf('http') !== 0 &&
                     href.indexOf('//') !== 0 &&
                     href.indexOf('.css') !== href.length - 3) {

@@ -98,17 +98,17 @@ function standartJSPack(module, base, packStorage, done) {
 
          traverse(ast, {
             enter: function detectAnonymnousModules(node) {
-               if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
+               if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'define') {
                   if (node.arguments.length < 3) {
                      if (node.arguments.length == 2 &&
-                        node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string') {
+                        node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                         // define('somestring', /* whatever */);
                      } else {
                         anonymous = true;
                      }
                   }
                   if (node.arguments[0] &&
-                     node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string' &&
+                     node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string' &&
                      node.arguments[0].value == module.fullName) {
                      amd = true;
                   }
@@ -222,8 +222,8 @@ function xhtmlLoader(module, base, packStorage, done) {
             withDefine = 'define("' + defineName + '", function() {return defineStorage["' + defineName + '"]});';
 
             done(null, withoutDefine + '\n' + withDefine);
-         } catch (err) {
-            console.log(err, module.fullName, module.fullPath);
+         } catch (error) {
+            console.log(error, module.fullName, module.fullPath);
             done(null, '');
          }
       }
@@ -274,9 +274,9 @@ function jsonLoader(module, base, packStorage, done) {
 
          try {
             res = JSON.stringify(JSON.parse(res));
-         } catch (err) {
+         } catch (error) {
             //ignore
-            console.log(err);
+            console.log(error);
          }
          packStorage.addToResolvedNodes(defineName);
 
@@ -509,9 +509,9 @@ function tmplLoader(module, base, packStorage, done) {
                   withDefine = 'define("' + defineName + '", function() { return defineStorage["' + defineName + '"]});';
                   done(null, withoutDefine + '\n' + withDefine);
                }
-            } catch (err) {
-               console.log(err, module.fullName, module.fullPath);
-               done(err);
+            } catch (error) {
+               console.log(error, module.fullName, module.fullPath);
+               done(error);
             }
          }, function(err) {
             console.log(err, module.fullName, module.fullPath);
@@ -530,7 +530,7 @@ function tmplLoader(module, base, packStorage, done) {
  */
 function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
-      if (err && (err.code == 'ENOENT' || err.code == 'EISDIR') && !not404error) {
+      if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
          console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
          f(null, '');
          return;
@@ -607,14 +607,13 @@ function styleTagLoader(f) {
       if (err) {
          f(err);
       } else {
-         const code = '\
-function() {\
-var style = document.createElement("style"),\
-head = document.head || document.getElementsByTagName("head")[0];\
-style.type = "text/css";\
-style.appendChild(document.createTextNode(' + JSON.stringify(res) + '));\
-head.appendChild(style);\
-}';
+         const code = 'function() {' +
+            'var style = document.createElement("style"),' +
+            'head = document.head || document.getElementsByTagName("head")[0];' +
+            'style.type = "text/css";' +
+            'style.appendChild(document.createTextNode(' + JSON.stringify(res) + '));' +
+            'head.appendChild(style);' +
+            '}';
          f(null, code);
       }
    };
@@ -647,12 +646,13 @@ function rebaseUrls(root, sourceFile, f) {
  * @return {Function}
  */
 function i18nLoader(module, base, packStorage, done) {
-   let
+   const
       _const = global.requirejs('Core/constants'),
       json = [],
       jsonLang = [],
       css = [],
-      cssLang = [],
+      cssLang = [];
+   let
       withoutDefine,
       withDefine;
 

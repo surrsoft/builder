@@ -19,13 +19,13 @@ function isParser(dep) {
 
       yesModuleId = actions.substr(0, actions.indexOf(':'));
 
-      if (actions.substr(yesModuleId.length + 1, 2) == '//') {
+      if (actions.substr(yesModuleId.length + 1, 2) === '//') {
          yesModuleId = actions.substr(0, actions.indexOf(':', yesModuleId.length + 1));
       }
 
       noModuleId = actions.substr(yesModuleId.length + 1, actions.length - yesModuleId.length - 1);
 
-      if (yesModuleId == '') {
+      if (yesModuleId === '') {
          yesModuleId = actions;
          noModuleId = null;
       }
@@ -59,20 +59,20 @@ function getMeta(dep) {
          encode: encode
       };
 
-   if (pluginType == 'is') {
+   if (pluginType === 'is') {
       const is = isParser(dep);
       meta.moduleFeature = is.feature || '';
       meta.moduleYes = is.yes ? getMeta(is.yes) : null;
       meta.moduleNo = is.no ? getMeta(is.no) : null;
    }
 
-   if (pluginType == 'browser' || pluginType == 'optional') {
+   if (pluginType === 'browser' || pluginType === 'optional') {
       meta.moduleIn = getMeta(moduleName);
    }
 
    if (!pluginType) {
       const ext = path.extname(dep).substr(1);
-      if (ext == 'xhtml') {
+      if (ext === 'xhtml') {
          meta.plugin = 'html';
       } else if (ext) {
          meta.plugin = ext;

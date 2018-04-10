@@ -7,15 +7,7 @@ const mkdirp = require('mkdirp');
 const parser = new xmldom.DOMParser();
 const serializer = new xmldom.XMLSerializer();
 
-function resolveThemeByWsConfig(dom) {
-   try {
-      let configText = dom.getElementById('ws-config').textContent;
-      configText = configText.replace('window.', 'MyConfig.');
-      return eval('var MyConfig = {};' + configText).themeName || null;
-   } catch (e) {
-      return null;
-   }
-}
+const domCache = {};
 
 function wrap(obj, prop, replacer) {
    (function(orig) {
@@ -59,7 +51,7 @@ function mkDomNode(document, node, attributes) {
    Object.keys(attributes || {}).forEach(function(attrName) {
       newNode.setAttribute(attrName, attributes[attrName]);
    });
-   if (node == 'script') {
+   if (node === 'script') {
       newNode.textContent = ' ';
    }
    return newNode;
@@ -99,12 +91,9 @@ function checkFiles(root, sourceFile, result) {
    return isSane;
 }
 
-var helpers, domCache = {};
-
-helpers = {
+const helpers = {
    uniqname: uniqname,
    domify: domify,
-   resolveThemeByWsConfig: resolveThemeByWsConfig,
    stringify: stringify,
    mkDomNode: mkDomNode,
    mkCommentNode: mkCommentNode,

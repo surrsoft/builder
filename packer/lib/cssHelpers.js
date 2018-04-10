@@ -71,11 +71,11 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
    }
 
    function fastSerialize(memo, node) {
-      if (node.type == 'decl') {
+      if (node.type === 'decl') {
          return memo + node.prop + ':' + node.value + (node.important ? '!important' : '') + ';';
-      } else if (node.type == 'rule') {
+      } else if (node.type === 'rule') {
          return memo + node.selector + serializeChildren(node);
-      } else if (node.type == 'atrule') {
+      } else if (node.type === 'atrule') {
          return memo + '@' + node.name + ' ' + node.params + (node.nodes ? serializeChildren(node) : ';');
       }
       return memo;
@@ -87,7 +87,7 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
 
    postcss().process(content, {parser: safe}).root.nodes.reduce(function splitRulesToBatches(batch, node) {
       // Считать селекторы будем только для CSS-правил (AtRules и т.п. - игнорируем)
-      if (node.type == 'rule') {
+      if (node.type === 'rule') {
          const numSelectorsInThisRule = node.selectors.length;
 
          // Если в пачке уже что-то есть и текущий селектор в нее не влезает - переносим в другую пачку

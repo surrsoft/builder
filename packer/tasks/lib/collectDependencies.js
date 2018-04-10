@@ -44,7 +44,7 @@ supportedPlugins = supportedPlugins.concat(pluginsOnlyDeps);
  * @return {boolean}
  */
 function needPlugin(meta) {
-   if (meta.plugin == 'js') {
+   if (meta.plugin === 'js') {
       // Проверим на пути requirejs
       const firstFolder = meta.module && meta.module.split('/')[0];
       if (firstFolder && rjsPaths[firstFolder]) {
@@ -71,11 +71,11 @@ function hasValue(arr, val) {
  * @return {boolean}
  */
 function whitelistedPlugin(meta) {
-   if (meta.plugin == 'is') {
+   if (meta.plugin === 'is') {
       return (meta.moduleYes ? hasValue(supportedPlugins, meta.moduleYes.plugin) : true) &&
          (meta.moduleNo ? hasValue(supportedPlugins, meta.moduleNo.plugin) : true);
    }
-   if (meta.plugin == 'browser' || meta.plugin == 'optional') {
+   if (meta.plugin === 'browser' || meta.plugin === 'optional') {
       return meta.moduleIn ? hasValue(supportedPlugins, meta.moduleIn.plugin) : true;
    }
    return hasValue(supportedPlugins, meta.plugin);
@@ -87,11 +87,11 @@ function whitelistedPlugin(meta) {
  * @return {boolean}
  */
 function notRemoteFile(meta) {
-   if (meta.plugin == 'is') {
+   if (meta.plugin === 'is') {
       return (meta.moduleYes ? !reIsRemote.test(meta.moduleYes.module) : true) &&
          (meta.moduleNo ? !reIsRemote.test(meta.moduleNo.module) : true);
    }
-   if (meta.plugin == 'browser' || meta.plugin == 'optional') {
+   if (meta.plugin === 'browser' || meta.plugin === 'optional') {
       return meta.moduleIn ? !reIsRemote.test(meta.moduleIn.module) : true;
    }
    return meta.module && !reIsRemote.test(meta.module);
@@ -145,7 +145,7 @@ function getDependencies(grunt, fullPath, deps) {
          plugins.push(i.plugin);
       }
 
-      if (i.plugin == 'is') {
+      if (i.plugin === 'is') {
          const yesPlugin = i.moduleYes && i.moduleYes.plugin;
          const noPlugin = i.moduleNo && i.moduleNo.plugin;
          if (yesPlugin && !hasValue(plugins, yesPlugin) && needPlugin(i.moduleYes)) {
@@ -154,7 +154,7 @@ function getDependencies(grunt, fullPath, deps) {
          if (noPlugin && !hasValue(plugins, noPlugin) && needPlugin(i.moduleNo)) {
             plugins.push(noPlugin);
          }
-      } else if (i.plugin == 'browser' || i.plugin == 'optional') {
+      } else if (i.plugin === 'browser' || i.plugin === 'optional') {
          const inPlugin = i.moduleIn && i.moduleIn.plugin;
          if (inPlugin && !hasValue(plugins, inPlugin) && needPlugin(i.moduleIn)) {
             plugins.push(inPlugin);
@@ -163,11 +163,11 @@ function getDependencies(grunt, fullPath, deps) {
    });
 
    deps = deps.filter(function(i) {
-      if (i.plugin == 'is') {
+      if (i.plugin === 'is') {
          const yesPlugin = i.moduleYes && i.moduleYes.plugin;
          const noPlugin = i.moduleNo && i.moduleNo.plugin;
          return !hasValue(pluginsOnlyDeps, yesPlugin) && !hasValue(pluginsOnlyDeps, noPlugin);
-      } else if (i.plugin == 'browser' || i.plugin == 'optional') {
+      } else if (i.plugin === 'browser' || i.plugin === 'optional') {
          const inPlugin = i.moduleIn && i.moduleIn.plugin;
          return !hasValue(pluginsOnlyDeps, inPlugin);
       } else {
@@ -199,9 +199,9 @@ function getModulePath(grunt, dep, plugin, errMes) {
    let pathToModule = '';
    try {
       if (dep.module) {
-         if (dep.plugin == 'text' || dep.plugin == 'native-css') {
+         if (dep.plugin === 'text' || dep.plugin === 'native-css') {
             pathToModule = dep.module;
-         } else if (dep.plugin == 'i18n') {
+         } else if (dep.plugin === 'i18n') {
             let jsPath, cssPath, countryPath;
 
             /**
@@ -227,7 +227,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
       if (pathToModule) {
          //добавляем расширение модуля в путь до работы функции requirejs.toUrl, поскольку она требует обязательного наличия расширения.
          let ext = path.extname(pathToModule).substr(1);
-         if (!ext || (dep.plugin == 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
+         if (!ext || (dep.plugin === 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
             switch (dep.plugin) {
                case 'html':
                   ext = 'xhtml';
@@ -254,7 +254,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * Если какие-то файлы локализации присутствуют, оставляем путь до папки верхнего уровня,
           * чтобы в i18nLoader найти в ней словари для всех доступных языков.
           */
-         if (dep.plugin == 'i18n') {
+         if (dep.plugin === 'i18n') {
             pathToModule = pathToModule.split('lang/')[0];
          }
 
@@ -262,14 +262,14 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * Если плагин optional и сформированного пути не существует, тогда нету смысла помещать
           * данный путь в module dependencies
           */
-         if (plugin == 'optional') {
+         if (plugin === 'optional') {
             if (!grunt.file.exists(pathToModule)) {
                return '';
             }
          }
       }
    } catch (e) {
-      if (plugin != 'optional' && !rjsPaths[dep.fullName]) {
+      if (plugin !== 'optional' && !rjsPaths[dep.fullName]) {
          grunt.log.warn(e + errMes);
       }
    }
@@ -316,10 +316,10 @@ function registerNodeMaybe(grunt, graph, applicationRoot, dep, plugin, errMes) {
  * @return {String}
  */
 function registerDependencyMayBe(grunt, graph, applicationRoot, errMes, dep) {
-   if (dep.plugin == 'is') {
+   if (dep.plugin === 'is') {
       registerNodeMaybe(grunt, graph, applicationRoot, dep.moduleYes, dep.plugin, errMes);
       registerNodeMaybe(grunt, graph, applicationRoot, dep.moduleNo, dep.plugin, errMes);
-   } else if (dep.plugin == 'browser' || dep.plugin == 'optional') {
+   } else if (dep.plugin === 'browser' || dep.plugin === 'optional') {
       registerNodeMaybe(grunt, graph, applicationRoot, dep.moduleIn, dep.plugin, errMes);
       getComponentForTmpl(grunt, graph, applicationRoot, dep.moduleIn);
    } else {
@@ -489,15 +489,15 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
             let myName, meta, deps = [], errMes;
             traverse(ast, {
                enter: function getModuleNameAndDependencies(node) {
-                  if (node.type == 'CallExpression' && node.callee.type == 'Identifier' &&
-                     node.callee.name == 'define') {
+                  if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
+                     node.callee.name === 'define') {
 
-                     if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string') {
+                     if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                         myName = node.arguments[0].value;
-                        if (node.arguments[1].type == 'ArrayExpression') {
+                        if (node.arguments[1].type === 'ArrayExpression') {
                            deps = getDependencies(grunt, fullPath, node.arguments[1].elements);
                         }
-                     } else if (node.arguments[0].type == 'ArrayExpression' || node.arguments[0].type == 'FunctionExpression') {
+                     } else if (node.arguments[0].type === 'ArrayExpression' || node.arguments[0].type === 'FunctionExpression') {
                         grunt.log.ok('Ignore anonymous define %s', fullPath);
                         return;
                      } else {
@@ -507,7 +507,7 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
 
                      meta = getMeta(myName);
 
-                     let needToRegister = meta.plugin == 'js' && (!jsModules[meta.module] || jsModules[meta.module] == fullPath) || meta.plugin != 'js',
+                     let needToRegister = meta.plugin === 'js' && (!jsModules[meta.module] || jsModules[meta.module] == fullPath) || meta.plugin !== 'js',
                         registeredDependencies;
 
                      //deps = addI18NDep(meta, deps);
@@ -576,11 +576,11 @@ function map(obj, fn) {
 //TODO отказываемся от автоматического добавления зависомостей i18n. Удалить в 3.17.350.
 /*
 function addI18NDep(meta, deps) {
-    if (meta.plugin == 'js' && meta.module.indexOf('SBIS3') == 0) {
+    if (meta.plugin === 'js' && meta.module.indexOf('SBIS3') == 0) {
         var hasLocalization = false;
 
         deps.forEach(function (dep) {
-            if (dep.module == meta.module && dep.plugin == 'i18n') {
+            if (dep.module == meta.module && dep.plugin === 'i18n') {
                 hasLocalization = true;
     }
         });

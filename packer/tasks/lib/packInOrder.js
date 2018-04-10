@@ -43,7 +43,7 @@ function filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, applica
  * @param {String} themeName - имя темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-function packInOrder(dg, modArray, root, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM) {
+function packInOrder(dg, modArray, root, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName) {
    let orderQueue;
 
    orderQueue = dg.getLoadOrder(modArray);
@@ -56,7 +56,7 @@ function packInOrder(dg, modArray, root, applicationRoot, withoutDefine, bundles
    if (withoutDefine) {
       commonPackage.getJsAndCssPackage(orderQueue, root, true, bundlesOptions, done);
    } else {
-      commonPackage.getJsAndCssPackage(orderQueue, root, false, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM);
+      commonPackage.getJsAndCssPackage(orderQueue, root, false, bundlesOptions, done, themeName, staticHtmlName);
    }
 }
 

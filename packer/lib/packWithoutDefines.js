@@ -24,7 +24,7 @@ function enableLocalization(text) {
  * */
 function getValue(node, deps, forceCall) {
    let value;
-   if (node.type == 'FunctionExpression') {
+   if (node.type === 'FunctionExpression') {
       value = {
          type: 'CallExpression',
          callee: node,
@@ -53,7 +53,7 @@ function getValue(node, deps, forceCall) {
  * 4. Если и это не помогло, то зависимость неразрешима. Кидаем ошибку, оставляем define как есть.
  * */
 function getDeps(depArray, packStorage) {
-   if (depArray.type == 'ArrayExpression') {
+   if (depArray.type === 'ArrayExpression') {
       const deps = [];
       for (let i = 0; i < depArray.elements.length; i++) {
          let
@@ -195,9 +195,9 @@ function prepareToReplace(node, packStorage) {
 }
 
 function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
-   if (node.callee.type == 'Identifier' && node.callee.name == 'define') {
+   if (node.callee.type === 'Identifier' && node.callee.name === 'define') {
 
-      if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string' && pluginList.indexOf(node.arguments[0].value) == -1) {
+      if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string' && pluginList.indexOf(node.arguments[0].value) == -1) {
          //Будем игнорировать все вложенные ноды дефайна
          ctx.skip();
          const replaceMeta = prepareToReplace(node, packStorage);
@@ -246,7 +246,7 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
    * устанавливаем флаг badSequence и оставляем все как есть.
    * */
    varDeclarations = node.expression.expressions.map(function(exp) {
-      if (exp.type == 'CallExpression') {
+      if (exp.type === 'CallExpression') {
          let
             parsed = parseExpression(exp, replacedNames, packStorage, ctx, setModified),
             toReturn;
@@ -298,10 +298,10 @@ function main(text, packStorage) {
 
    replace(ast, {
       enter: function(node) {
-         if (node.type == 'ExpressionStatement' && node.expression) {
-            if (node.expression.type == 'CallExpression') {
+         if (node.type === 'ExpressionStatement' && node.expression) {
+            if (node.expression.type === 'CallExpression') {
                return replaceCallExpression(node, replacedNames, packStorage, this, setModified);
-            } else if (node.expression.type == 'SequenceExpression') {
+            } else if (node.expression.type === 'SequenceExpression') {
                return replaceSequenceExpression(node, replacedNames, packStorage, this, setModified);
             }
          }

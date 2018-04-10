@@ -92,18 +92,18 @@ function jsLoader(module, base, done) {
 
          traverse(ast, {
             enter: function detectAnonymnousModules(node) {
-               if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
+               if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'define') {
                   //Check anonnimous define
                   if (node.arguments.length < 3) {
                      if (node.arguments.length == 2 &&
-                                node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string') {
+                                node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                         // define('somestring', /* whatever */);
                      } else {
                         anonymous = true;
                      }
                   }
                   if (node.arguments[0] &&
-                            node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string' &&
+                            node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string' &&
                             node.arguments[0].value == module.fullName) {
                      amd = true;
                   }
@@ -218,9 +218,9 @@ function jsonLoader(module, base, done) {
       } else {
          try {
             res = JSON.stringify(JSON.parse(res));
-         } catch (err) {
+         } catch (error) {
             //ignore
-            console.log(err);
+            console.log(error);
          }
          done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
       }
@@ -414,7 +414,7 @@ function tmplLoader(module, base, done) {
  */
 function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
-      if (err && (err.code == 'ENOENT' || err.code == 'EISDIR') && !not404error) {
+      if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
          console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
          f(null, '');
          return;
