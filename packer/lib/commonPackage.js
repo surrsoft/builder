@@ -8,10 +8,10 @@ const loadersWithoutDefine = require('./loadersWithoutDefines');
 const getMeta = require('./getDependencyMeta');
 const packCSS = require('./../tasks/lib/packCSS').packCSS;
 const packerDictionary = require('./../tasks/lib/packDictionary');
-let dblSlashes = /\\/g,
+const dblSlashes = /\\/g,
    CDN = /\/?cdn\//,
-   replacedRequire = fs.readFileSync(path.join(__dirname, 'replaceRequirejs.js')),
-   checkModuleName = fs.readFileSync(path.join(__dirname, 'checkModuleName.js'));
+   replacedRequire = fs.readFileSync(path.join(__dirname, 'replaceRequirejs.res')),
+   checkModuleName = fs.readFileSync(path.join(__dirname, 'checkModuleName.res'));
 const complexPlugins = /is!|browser!|browser\?|optional!/g;
 const specialPlugins = /preload!/;
 const langRe = /lang\/([a-z]{2}-[A-Z]{2})/;
@@ -441,8 +441,6 @@ function nativePackFilesWithoutDefine(filesToPack, base, done) {
  */
 function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM) {
    const packer = withoutDefine ? nativePackFilesWithoutDefine : nativePackFiles;
-   var themeName = themeName;
-   var staticHtmlName = staticHtmlName;
    isOfflineClient = checkItIsOfflineClient(applicationRoot);
 
    async.parallel({
@@ -533,9 +531,7 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
 module.exports = {
    prepareOrderQueue: prepareOrderQueue,
    prepareResultQueue: prepareResultQueue,
-   nativePackFiles: nativePackFiles,
    limitingNativePackFiles: limitingNativePackFiles,
-   generateFakeModules: generateFakeModules,
    getJsAndCssPackage: getJsAndCssPackage,
    getLoader: getLoader,
    copyFile: copyFile

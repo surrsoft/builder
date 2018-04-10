@@ -137,26 +137,6 @@ function getOrderQueue(dg, cfg, applicationRoot) {
 }
 
 /**
- * Создает кастомный пакет по заданной конфигурации.
- * @param {DepGraph} dg - граф завивимостей
- * @param {Object} cfg - конфигурация
- * @param {Array} cfg.modules - массив вершин графа
- * @param {Array} [cfg.include] - массив модулей, который нужно оставить
- * @param {Array} [cfg.exclude] - массив модулей, которые надо исключить
- * @param {String} root - корень сайта
- * @param {String} applicationRoot - полный путь до корня сервиса
- * @param {Function} done - коллбек типа done
- */
-function createPackage(dg, cfg, root, applicationRoot, done) {
-   let
-      orderQueue;
-
-   orderQueue = getOrderQueue(dg, cfg, applicationRoot);
-   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
-   commonPackage.getJsAndCssPackage(orderQueue, root, false, {}, done);
-}
-
-/**
  * Получаем физический путь для названия пакета
  * @param {DepGraph} dg
  * @param {String} currentPackageName - текущее название для пакета
@@ -422,7 +402,6 @@ function collectDepsAndIntersects(dg, configs, applicationRoot, wsRoot, bundlesO
 
 module.exports = {
    getConfigs: getConfigs,
-   createPackage: createPackage,
    createGruntPackage: createGruntPackage,
    collectDepsAndIntersects: collectDepsAndIntersects
 };

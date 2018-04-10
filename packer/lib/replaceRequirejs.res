@@ -1,6 +1,6 @@
-let global = (function() {
-      return this || (0, eval)('this');
-   }()),
+var global = function () {
+      return this || (0, eval)("this");
+   }(),
    checkResourceLoadCallback = function() {
       if (global._requirejs.onResourceLoad !== global.requirejs.onResourceLoad) {
          global._requirejs.onResourceLoad = global.requirejs.onResourceLoad;
@@ -8,34 +8,34 @@ let global = (function() {
    };
 
 global.defineStorage = global.defineStorage || {};
-global.defineStorage.preloadFunc = function(module) {
+global.defineStorage['preloadFunc'] = function(module) {
    return function() {
       global.requirejs([module], function(preload) {
          preload();
-      });
-   };
+      })
+   }
 };
 global._requirejs = global._requirejs || global.requirejs;
-global.requirejs = function(dep, callback) {
-   if (typeof dep === 'string' && dep in global.defineStorage) {
+global.requirejs = function (dep, callback) {
+   if (typeof dep == "string" && (dep in global.defineStorage)) {
       return global.defineStorage[dep];
    } else {
-      if (dep instanceof Array && typeof callback === 'function') {
-         let
+      if (dep instanceof Array && typeof callback == 'function') {
+         var
             resolvedDepsArray = [],
             curDep;
 
-         for (let i = 0; i < dep.length; i++) {
+         for (var i = 0; i < dep.length; i++) {
             curDep = dep[i];
             if (curDep in global.defineStorage) {
-               resolvedDepsArray.push(global.defineStorage[curDep]);
+               resolvedDepsArray.push(global.defineStorage[curDep])
             } else {
                checkResourceLoadCallback();
                return global._requirejs.apply(null, arguments);
             }
          }
 
-         setTimeout(function() {
+         setTimeout(function () {
             callback.apply(null, resolvedDepsArray);
          }, 4);
       } else {
@@ -45,15 +45,15 @@ global.requirejs = function(dep, callback) {
    }
 };
 
-for (const p in global._requirejs) {
+for (var p in _requirejs) {
    if (global._requirejs.hasOwnProperty(p)) {
-      global.requirejs[p] = global._requirejs[p];
+      global.requirejs[p] = global._requirejs[p]
    }
 }
 
 global.requirejs._defined = global.requirejs._defined || global.requirejs.defined;
-global.requirejs.defined = function(dep) {
-   if (typeof dep === 'string' && dep in global.defineStorage) {
+global.requirejs.defined = function (dep) {
+   if (typeof dep == "string" && (dep in global.defineStorage)) {
       return true;
    } else {
       return global.requirejs._defined.apply(null, arguments);
