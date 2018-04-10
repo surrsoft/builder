@@ -1,7 +1,5 @@
 'use strict';
 
-// Инициализация ws в текущем application
-require('./../lib/node-ws')();
 const async = require('async');
 const path = require('path');
 const modDeps = require('./../lib/moduleDependencies');

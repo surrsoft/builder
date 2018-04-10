@@ -35,7 +35,8 @@ module.exports = function(grunt) {
       process.env.ROOT = target;
       process.env.APPROOT = app;
 
-      grunt.option('color', process.stdout.isTTY);
+      // Инициализация ws в текущем application
+      require('./packer/lib/node-ws')();
 
       // Load tasks
       //для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
