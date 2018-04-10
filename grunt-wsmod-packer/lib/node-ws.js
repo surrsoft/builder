@@ -48,10 +48,10 @@ module.exports = function() {
       const logger = {
          error: function(tag, msg, e) {
             if (grunt && grunt.log) {
-               grunt.log.warn(tag + ':: ' + msg + (e ? ('. ' + e.message) : ''));
+               grunt.log.warn(tag + ':: ' + msg + (e ? '. ' + e.message : ''));
             } else {
                // eslint-disable-next-line no-console
-               console.error((tag + ':: ').red.bold + msg + (e ? ('. ' + e.message) : ''));
+               console.error((tag + ':: ').red.bold + msg + (e ? '. ' + e.message : ''));
             }
          },
          info: function(tag, msg) {

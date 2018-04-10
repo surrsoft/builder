@@ -1,6 +1,6 @@
-"use strict";
-var commonPackage = require('./../../lib/commonPackage');
-var path = require('path');
+'use strict';
+const commonPackage = require('./../../lib/commonPackage');
+const path = require('path');
 
 /**
  * Функция собирает список бандлов, которые необходимо вставить в данную html-страницу в виде скриптов.
@@ -11,20 +11,21 @@ var path = require('path');
  * @returns {Array.<T>|*}
  */
 function filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, application) {
-    //добавляем лидирующий слэш если root и applicationRoot полностью совпали и replace вернул пустоту
-    application = application ? application : '/';
-    return orderQueue.js.filter(function(module){
-        var bundleForCurrentModule = bundlesOptions.jsBundles[module.fullName];
-        if (bundleForCurrentModule) {
-            bundlesOptions.bundlesScripts[`${path.join(application, bundleForCurrentModule).replace(/\\/g, '/')}.js`] = 1;
-            if (bundlesOptions.logs){
-                bundlesOptions.logs[module.fullName] = bundleForCurrentModule;
-            }
-            return false;
-        }
-        return true;
-    });
+   //добавляем лидирующий слэш если root и applicationRoot полностью совпали и replace вернул пустоту
+   application = application ? application : '/';
+   return orderQueue.js.filter(function(module) {
+      const bundleForCurrentModule = bundlesOptions.jsBundles[module.fullName];
+      if (bundleForCurrentModule) {
+         bundlesOptions.bundlesScripts[`${path.join(application, bundleForCurrentModule).replace(/\\/g, '/')}.js`] = 1;
+         if (bundlesOptions.logs) {
+            bundlesOptions.logs[module.fullName] = bundleForCurrentModule;
+         }
+         return false;
+      }
+      return true;
+   });
 }
+
 /**
  * @callback packInOrder~callback
  * @param {Error} error
@@ -42,20 +43,20 @@ function filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, applica
  * @param {String} staticHtmlName - имя статической html странички
  */
 function packInOrder(dg, modArray, root, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM) {
-    var orderQueue;
+   let orderQueue;
 
-    orderQueue = dg.getLoadOrder(modArray);
-    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
-    orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
-    if (bundlesOptions.jsBundles) {
-        orderQueue.js = filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, applicationRoot.replace(root, ''));
-    }
+   orderQueue = dg.getLoadOrder(modArray);
+   orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
+   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
+   if (bundlesOptions.jsBundles) {
+      orderQueue.js = filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, applicationRoot.replace(root, ''));
+   }
 
-    if (withoutDefine) {
-        commonPackage.getJsAndCssPackage(orderQueue, root, true, bundlesOptions, done);
-    } else {
-        commonPackage.getJsAndCssPackage(orderQueue, root, false, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM);
-    }
+   if (withoutDefine) {
+      commonPackage.getJsAndCssPackage(orderQueue, root, true, bundlesOptions, done);
+   } else {
+      commonPackage.getJsAndCssPackage(orderQueue, root, false, bundlesOptions, done, themeName, staticHtmlName, themeNameFromDOM);
+   }
 }
 
 module.exports = packInOrder;

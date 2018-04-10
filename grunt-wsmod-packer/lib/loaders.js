@@ -1,20 +1,20 @@
-var esprima = require('esprima');
-var traverse = require('estraverse').traverse;
-var codegen = require('escodegen');
-var stripBOM = require('strip-bom');
-var path = require('path');
-var fs = require('fs');
-var async = require('async');
-var rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
+const esprima = require('esprima');
+const traverse = require('estraverse').traverse;
+const codegen = require('escodegen');
+const stripBOM = require('strip-bom');
+const path = require('path');
+const fs = require('fs');
+const async = require('async');
+const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 
-var dblSlashes = /\\/g;
-var availableLangs;
-var langRegExp = /lang\/([a-z]{2}-[A-Z]{2})/;
+const dblSlashes = /\\/g;
+let availableLangs;
+const langRegExp = /lang\/([a-z]{2}-[A-Z]{2})/;
 
 // FIXME: сделать бы по хорошему, чтобы не через костыль
-var not404error = false;
+let not404error = false;
 
-var currentFile;
+let currentFile;
 
 /**
  * @callback loaders~callback
@@ -35,18 +35,18 @@ var currentFile;
  * @param {String} [module.moduleFeature] - is plugin, module feature
  */
 function parseModule(module) {
-    var res;
-    try {
-        res = esprima.parse(module);
-    } catch (e) {
-        e.message = 'While parsing ' + module.fullName + ' from ' + module.fullPath + ': ' + e.message;
-        res = e;
-    }
-    return res;
+   let res;
+   try {
+      res = esprima.parse(module);
+   } catch (e) {
+      e.message = 'While parsing ' + module.fullName + ' from ' + module.fullPath + ': ' + e.message;
+      res = e;
+   }
+   return res;
 }
 
 function resolverControls(path) {
-    return 'tmpl!' + path;
+   return 'tmpl!' + path;
 }
 
 /**
@@ -58,82 +58,82 @@ function resolverControls(path) {
  * @param {loaders~callback} done
  */
 function jsLoader(module, base, done) {
-    readFile(module.fullPath, ignoreIfNoFile(function addNamesToAnonymousModules(err, res) {
-        var anonymous = false,
-            rebuild = false,
-            amd = module.amd;
+   readFile(module.fullPath, ignoreIfNoFile(function addNamesToAnonymousModules(err, res) {
+      let anonymous = false,
+         rebuild = false,
+         amd = module.amd;
 
-        if (err) {
-            done(err);
-        } else if (!res) {
-            done(null, '');
-        } else if (amd && !module.addDeps) {
-            done(null, res);
-        } else {
-            var ast = parseModule(res);
-            if (ast instanceof Error) {
-                return done(ast);
-            }
+      if (err) {
+         done(err);
+      } else if (!res) {
+         done(null, '');
+      } else if (amd && !module.addDeps) {
+         done(null, res);
+      } else {
+         const ast = parseModule(res);
+         if (ast instanceof Error) {
+            return done(ast);
+         }
 
-            traverse(ast, {
-                enter: function detectAnonymnousModules(node) {
-                    if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
-                        //Check anonnimous define
-                        if (node.arguments.length < 3) {
-                            if (node.arguments.length == 2 &&
-                                node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string') {
-                                // define('somestring', /* whatever */);
-                            } else {
-                                anonymous = true;
-                            }
-                        }
-                        if (node.arguments[0] &&
-                            node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string' &&
+         traverse(ast, {
+            enter: function detectAnonymnousModules(node) {
+               if (node.type == 'CallExpression' && node.callee.type == 'Identifier' && node.callee.name == 'define') {
+                  //Check anonnimous define
+                  if (node.arguments.length < 3) {
+                     if (node.arguments.length == 2 &&
+                                node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string') {
+                        // define('somestring', /* whatever */);
+                     } else {
+                        anonymous = true;
+                     }
+                  }
+                  if (node.arguments[0] &&
+                            node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string' &&
                             node.arguments[0].value == module.fullName) {
-                            amd = true;
-                        }
+                     amd = true;
+                  }
 
-                       //Check additional dependenccies
-                       if (!String(module.fullName).startsWith('Core/') && module.addDeps) {
-                          if (!node.arguments[1].elements) {
-                             node.arguments.splice(1, 0, {
-                                elements:[],
-                                type: 'ArrayExpression'
-                             });
-                          }
-                          node.arguments[1].elements.push({
-                             raw: module.addDeps,
-                             type: 'Literal',
-                             value: module.addDeps
-                          });
-                          rebuild = true;
-                       }
-                    }
-                }
-            });
-            if (anonymous) {
-                done(null, '');
-            } else {
-                /**
+                  //Check additional dependenccies
+                  if (!String(module.fullName).startsWith('Core/') && module.addDeps) {
+                     if (!node.arguments[1].elements) {
+                        node.arguments.splice(1, 0, {
+                           elements: [],
+                           type: 'ArrayExpression'
+                        });
+                     }
+                     node.arguments[1].elements.push({
+                        raw: module.addDeps,
+                        type: 'Literal',
+                        value: module.addDeps
+                     });
+                     rebuild = true;
+                  }
+               }
+            }
+         });
+         if (anonymous) {
+            done(null, '');
+         } else {
+            /**
                  * временный костыль для плагинов requirejs, спилю как будет решение ошибки
                  * https://online.sbis.ru/opendoc.html?guid=04191b13-e919-498d-b2e5-135e85f06f74
                  */
-                if (amd || module.fullPath.indexOf('ext/requirejs/plugins') !== -1) {
-                   if (rebuild) {
-                      done(null, codegen.generate(ast, {
-                          format: {
-                              compact: true
-                          }
-                      }));
-                   } else {
-                      done(null, res);
-                   }
-                } else {
-                   done(null, 'define("' + module.fullName + '", ""); ' + res);
-                }
+            if (amd || module.fullPath.indexOf('ext/requirejs/plugins') !== -1) {
+               if (rebuild) {
+                  done(null, codegen.generate(ast, {
+                     format: {
+                        compact: true
+                     }
+                  }));
+               } else {
+                  done(null, res);
+               }
+            } else {
+               done(null, 'define("' + module.fullName + '", ""); ' + res);
             }
-        }
-    }, 'jsLoader'));
+         }
+      }
+   }, 'jsLoader'));
 }
 
 /**
@@ -144,7 +144,7 @@ function jsLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function xhtmlLoader(module, base, done) {
-   readFile(module.fullPath, ignoreIfNoFile(function (err, res) {
+   readFile(module.fullPath, ignoreIfNoFile(function(err, res) {
       if (err) {
          done(err);
       } else {
@@ -170,24 +170,24 @@ function xhtmlLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function cssLoader(module, base, done, themeName) {
-  var suffix = themeName ? '__' + themeName : '';
-  var modulePath = module.fullPath;
-  if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) {
-    modulePath = modulePath.slice(0, -4) + suffix + '.css';
-  }
-    readFile(modulePath,
-        rebaseUrls(base, modulePath,
-            styleTagLoader(
-                asModuleWithContent(
-                    onlyForIE10AndAbove(
-                        ignoreIfNoFile(done, 'cssLoader'),
-                        module.fullName
-                    ),
-                    module.fullName
-                )
+   const suffix = themeName ? '__' + themeName : '';
+   let modulePath = module.fullPath;
+   if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) {
+      modulePath = modulePath.slice(0, -4) + suffix + '.css';
+   }
+   readFile(modulePath,
+      rebaseUrls(base, modulePath,
+         styleTagLoader(
+            asModuleWithContent(
+               onlyForIE10AndAbove(
+                  ignoreIfNoFile(done, 'cssLoader'),
+                  module.fullName
+               ),
+               module.fullName
             )
-        )
-    );
+         )
+      )
+   );
 }
 
 /**
@@ -197,19 +197,19 @@ function cssLoader(module, base, done, themeName) {
  * @param {loaders~callback} done
  */
 function jsonLoader(module, base, done) {
-    readFile(module.fullPath, ignoreIfNoFile(function (err, res) {
-        if (err) {
-            done(err);
-        } else {
-            try {
-                res = JSON.stringify(JSON.parse(res));
-            } catch (err) {
-                //ignore
-                console.log(err);
-            }
-            done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
-        }
-    }, 'jsonLoader'));
+   readFile(module.fullPath, ignoreIfNoFile(function(err, res) {
+      if (err) {
+         done(err);
+      } else {
+         try {
+            res = JSON.stringify(JSON.parse(res));
+         } catch (err) {
+            //ignore
+            console.log(err);
+         }
+         done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
+      }
+   }, 'jsonLoader'));
 }
 
 /**
@@ -220,13 +220,13 @@ function jsonLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function xmlLoader(module, base, done) {
-    readFile(module.fullPath, ignoreIfNoFile(function (err, res) {
-        if (err) {
-            done(err);
-        } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
-        }
-    }, 'xmlLoader'));
+   readFile(module.fullPath, ignoreIfNoFile(function(err, res) {
+      if (err) {
+         done(err);
+      } else {
+         done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+      }
+   }, 'xmlLoader'));
 }
 
 /**
@@ -237,46 +237,46 @@ function xmlLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function isLoader(module, base, done) {
-    var if_condition = 'if(%c)';
-    var else_condition = 'else';
-    if (module.moduleFeature === 'browser') {
-        if_condition = if_condition.replace('%c', 'typeof window !== "undefined"');
-    }
-    if (module.moduleFeature === 'msIe') {
-        if_condition = if_condition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
-    }
-    if (module.moduleFeature === 'compatibleLayer') {
+   let if_condition = 'if(%c)';
+   let else_condition = 'else';
+   if (module.moduleFeature === 'browser') {
+      if_condition = if_condition.replace('%c', 'typeof window !== "undefined"');
+   }
+   if (module.moduleFeature === 'msIe') {
+      if_condition = if_condition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
+   }
+   if (module.moduleFeature === 'compatibleLayer') {
       if_condition = if_condition.replace('%c', 'typeof window === "undefined" || window && window.location.href.indexOf("withoutLayout")===-1');
    }
-    if (module.moduleYes) {
-        loaders[module.moduleYes.plugin](module.moduleYes, base, function (err, res) {
-            if (err) {
-                done(err);
+   if (module.moduleYes) {
+      loaders[module.moduleYes.plugin](module.moduleYes, base, function(err, res) {
+         if (err) {
+            done(err);
+         } else {
+            if (!res) {
+               done(null, '');
             } else {
-                if (!res) {
-                    done(null, '');
-                } else {
-                    if_condition = if_condition + '{' + removeSourceMap(res) + '}';
-                    if (module.moduleNo) {
-                        loaders[module.moduleNo.plugin](module.moduleNo, base, function (err, res) {
-                            if (err) {
-                                done(err);
-                            } else {
-                                if (!res) {
-                                    done(null, '');
-                                } else {
-                                    else_condition = else_condition + '{' + removeSourceMap(res) + '}';
-                                    done(null, if_condition + else_condition);
-                                }
-                            }
-                        });
-                    } else {
-                        done(null, if_condition);
-                    }
-                }
+               if_condition = if_condition + '{' + removeSourceMap(res) + '}';
+               if (module.moduleNo) {
+                  loaders[module.moduleNo.plugin](module.moduleNo, base, function(err, res) {
+                     if (err) {
+                        done(err);
+                     } else {
+                        if (!res) {
+                           done(null, '');
+                        } else {
+                           else_condition = else_condition + '{' + removeSourceMap(res) + '}';
+                           done(null, if_condition + else_condition);
+                        }
+                     }
+                  });
+               } else {
+                  done(null, if_condition);
+               }
             }
-        });
-    }
+         }
+      });
+   }
 }
 
 /**
@@ -287,8 +287,8 @@ function isLoader(module, base, done) {
  * @param res - модуль в виде строки
  */
 function removeSourceMap(res) {
-    var sourceMapIndex = res.indexOf('\n//# sourceMappingURL');
-    return sourceMapIndex !== -1 ? res.slice(0, sourceMapIndex) : res;
+   const sourceMapIndex = res.indexOf('\n//# sourceMappingURL');
+   return sourceMapIndex !== -1 ? res.slice(0, sourceMapIndex) : res;
 }
 
 /**
@@ -296,19 +296,19 @@ function removeSourceMap(res) {
  * @param {String} base - site root
  * @param {loaders~callback} done
  */
-var if_condition = 'if(typeof window !== "undefined")';
+const if_condition = 'if(typeof window !== "undefined")';
 function browserLoader(module, base, done) {
-    loaders[module.moduleIn.plugin](module.moduleIn, base, function (err, res) {
-        if (err) {
-            done(err);
-        } else {
-            if (!res) {
-                done(null, '');
-            } else {
-                done(null, if_condition + '{' + removeSourceMap(res) + '}');
-            }
-        }
-    });
+   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+      if (err) {
+         done(err);
+      } else {
+         if (!res) {
+            done(null, '');
+         } else {
+            done(null, if_condition + '{' + removeSourceMap(res) + '}');
+         }
+      }
+   });
 }
 
 /**
@@ -317,15 +317,15 @@ function browserLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function optionalLoader(module, base, done) {
-    not404error = true;
-    loaders[module.moduleIn.plugin](module.moduleIn, base, function (err, res) {
-        not404error = false;
-        if (err || !res) {
-            done(null, '');
-        } else {
-            done(null, removeSourceMap(res));
-        }
-    });
+   not404error = true;
+   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+      not404error = false;
+      if (err || !res) {
+         done(null, '');
+      } else {
+         done(null, removeSourceMap(res));
+      }
+   });
 }
 
 /**
@@ -334,13 +334,13 @@ function optionalLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function textLoader(module, base, done) {
-    readFile(module.fullPath, ignoreIfNoFile(function (err, res) {
-        if (err) {
-            done(err);
-        } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
-        }
-    }, 'textLoader'));
+   readFile(module.fullPath, ignoreIfNoFile(function(err, res) {
+      if (err) {
+         done(err);
+      } else {
+         done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+      }
+   }, 'textLoader'));
 }
 
 /**
@@ -351,18 +351,18 @@ function textLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function baseTextLoader(module, base, done) {
-    readFile(module.fullPath, ignoreIfNoFile(asText(done, path.relative(base, module.fullPath)), 'baseTextLoader'));
+   readFile(module.fullPath, ignoreIfNoFile(asText(done, path.relative(base, module.fullPath)), 'baseTextLoader'));
 }
 
 function readFile(fullPath, done) {
-    fs.readFile(fullPath, 'utf8', function (err, file) {
-        currentFile = fullPath;
-        if (err) {
-            done(err);
-        } else {
-            done(null, stripBOM(file));
-        }
-    });
+   fs.readFile(fullPath, 'utf8', function(err, file) {
+      currentFile = fullPath;
+      if (err) {
+         done(err);
+      } else {
+         done(null, stripBOM(file));
+      }
+   });
 }
 
 /**
@@ -373,7 +373,7 @@ function readFile(fullPath, done) {
  * @param {loaders~callback} done
  */
 function tmplLoader(module, base, done) {
-   readFile(module.fullPath, ignoreIfNoFile(function (err, html) {
+   readFile(module.fullPath, ignoreIfNoFile(function(err, html) {
       if (err) {
          done(err);
       } else {
@@ -398,14 +398,14 @@ function tmplLoader(module, base, done) {
  * @return {Function}
  */
 function ignoreIfNoFile(f, loaderName) {
-    return function log404AndIgnoreIt(err, res) {
-        if (err && (err.code == 'ENOENT' || err.code == 'EISDIR') && !not404error) {
-            console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
-            f(null, '');
-            return;
-        }
-        f(err, removeSourceMap(res));
-    }
+   return function log404AndIgnoreIt(err, res) {
+      if (err && (err.code == 'ENOENT' || err.code == 'EISDIR') && !not404error) {
+         console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
+         f(null, '');
+         return;
+      }
+      f(err, removeSourceMap(res));
+   };
 }
 
 /**
@@ -414,20 +414,20 @@ function ignoreIfNoFile(f, loaderName) {
  * @return {Function}
  */
 function onlyForIE10AndAbove(f, modName) {
-    var ifCondition;
-    if (modName.indexOf('SBIS3.CONTROLS') !== -1) {
-        ifCondition = 'if(typeof window !== "undefined" && window.atob && document.cookie.indexOf("thmname") === -1){';
-    } else {
-        ifCondition = 'if(typeof window !== "undefined" && window.atob){';
-    }
+   let ifCondition;
+   if (modName.indexOf('SBIS3.CONTROLS') !== -1) {
+      ifCondition = 'if(typeof window !== "undefined" && window.atob && document.cookie.indexOf("thmname") === -1){';
+   } else {
+      ifCondition = 'if(typeof window !== "undefined" && window.atob){';
+   }
 
-    return function onlyRunCodeForIE10AndAbove(err, res) {
-        if (err) {
-            f(err);
-        } else {
-            f(null, ifCondition + res + '}');
-        }
-    }
+   return function onlyRunCodeForIE10AndAbove(err, res) {
+      if (err) {
+         f(err);
+      } else {
+         f(null, ifCondition + res + '}');
+      }
+   };
 }
 
 /**
@@ -438,14 +438,14 @@ function onlyForIE10AndAbove(f, modName) {
  * @return {Function}
  */
 function asText(done, relPath, withPlugin) {
-    withPlugin = withPlugin ? withPlugin + '!/' : '';
-    return function (err, res) {
-        if (err) {
-            done(err);
-        } else {
-            done(null, 'define("' + withPlugin + relPath.replace(dblSlashes, '/') + '", ' + JSON.stringify(res) + ');');
-        }
-    };
+   withPlugin = withPlugin ? withPlugin + '!/' : '';
+   return function(err, res) {
+      if (err) {
+         done(err);
+      } else {
+         done(null, 'define("' + withPlugin + relPath.replace(dblSlashes, '/') + '", ' + JSON.stringify(res) + ');');
+      }
+   };
 }
 
 /**
@@ -455,13 +455,13 @@ function asText(done, relPath, withPlugin) {
  * @return {Function}
  */
 function asModuleWithContent(f, modName) {
-    return function wrapWithModule(err, res) {
-        if (err) {
-            f(err);
-        } else {
-            f(null, 'define("' + modName + '", ' + res + ');');
-        }
-    };
+   return function wrapWithModule(err, res) {
+      if (err) {
+         f(err);
+      } else {
+         f(null, 'define("' + modName + '", ' + res + ');');
+      }
+   };
 }
 
 /**
@@ -470,11 +470,11 @@ function asModuleWithContent(f, modName) {
  * @return {Function}
  */
 function styleTagLoader(f) {
-    return function createStyleNodeWithText(err, res) {
-        if (err) {
-            f(err);
-        } else {
-            var code = '\
+   return function createStyleNodeWithText(err, res) {
+      if (err) {
+         f(err);
+      } else {
+         const code = '\
 function() {\
 var style = document.createElement("style"),\
 head = document.head || document.getElementsByTagName("head")[0];\
@@ -482,9 +482,9 @@ style.type = "text/css";\
 style.appendChild(document.createTextNode(' + JSON.stringify(res) + '));\
 head.appendChild(style);\
 }';
-            f(null, code);
-        }
-    }
+         f(null, code);
+      }
+   };
 }
 
 /**
@@ -495,13 +495,13 @@ head.appendChild(style);\
  * @return {Function}
  */
 function rebaseUrls(root, sourceFile, f) {
-    return function(err, res) {
-        if (err) {
-            f(err);
-        } else {
-            f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
-        }
-    }
+   return function(err, res) {
+      if (err) {
+         f(err);
+      } else {
+         f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
+      }
+   };
 }
 
 function getTemplateI18nModule(module) {
@@ -528,7 +528,7 @@ function getTemplateI18nModule(module) {
       format: {
          compact: true
       }
-   })
+   });
 }
 
 /**
@@ -541,59 +541,58 @@ function getTemplateI18nModule(module) {
  * @return {Function}
  */
 function i18nLoader(module, base, done) {
-    var
-       _const = global.requirejs('Core/constants'),
-       deps = ['Core/i18n'],
-       css = [];
+   let
+      _const = global.requirejs('Core/constants'),
+      deps = ['Core/i18n'],
+      css = [];
 
-    availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
+   availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
-    if (!availableLangs || (_const && !_const.defaultLanguage) || !module.deps ) {
-        return done(null, getTemplateI18nModule(module));
-    }
+   if (!availableLangs || _const && !_const.defaultLanguage || !module.deps) {
+      return done(null, getTemplateI18nModule(module));
+   }
 
-    var noCssDeps = module.deps.filter(function (d) {
-        //не позвоялем явно загрузить css
-        return d.indexOf('native-css!') == -1
-    });
+   const noCssDeps = module.deps.filter(function(d) {
+      //не позвоялем явно загрузить css
+      return d.indexOf('native-css!') == -1;
+   });
 
-    var noLangDeps = [];
-    var langDeps = [];
-    deps.concat(noCssDeps).forEach(function (d) {
-        if (d.match(langRegExp) == null) {
-            noLangDeps.push(d);
-        }
-        else {
-            langDeps.push(d);
-        }
-    });
+   const noLangDeps = [];
+   const langDeps = [];
+   deps.concat(noCssDeps).forEach(function(d) {
+      if (d.match(langRegExp) == null) {
+         noLangDeps.push(d);
+      } else {
+         langDeps.push(d);
+      }
+   });
 
-    // дописываем зависимость только от необходимого языка
-    var result = 'define("' + module.fullName + '", '+ JSON.stringify(noLangDeps) +', function(i18n) {var langDep = ' + JSON.stringify(langDeps) + '.filter(function(dep){var lang = dep.match(' + langRegExp + '); if (lang && lang[1] == i18n.getLang()){return dep;}}); if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});';
+   // дописываем зависимость только от необходимого языка
+   const result = 'define("' + module.fullName + '", ' + JSON.stringify(noLangDeps) + ', function(i18n) {var langDep = ' + JSON.stringify(langDeps) + '.filter(function(dep){var lang = dep.match(' + langRegExp + '); if (lang && lang[1] == i18n.getLang()){return dep;}}); if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});';
 
-    done(null, result);
+   done(null, result);
 }
 
 //TODO выпилить после 200
 function _isOldStatic() {
-    return true;
+   return true;
 }
 
 var loaders = {
-    js: jsLoader,
-    html: xhtmlLoader,
-    xhtml: xhtmlLoader,
-    css: cssLoader,
-    'native-css': cssLoader,
-    json: jsonLoader,
-    xml: xmlLoader,
-    is: isLoader,
-    text: textLoader,
-    browser: browserLoader,
-    optional: optionalLoader,
-    i18n: i18nLoader,
-    tmpl: tmplLoader,
-    default: baseTextLoader
+   js: jsLoader,
+   html: xhtmlLoader,
+   xhtml: xhtmlLoader,
+   css: cssLoader,
+   'native-css': cssLoader,
+   json: jsonLoader,
+   xml: xmlLoader,
+   is: isLoader,
+   text: textLoader,
+   browser: browserLoader,
+   optional: optionalLoader,
+   i18n: i18nLoader,
+   tmpl: tmplLoader,
+   default: baseTextLoader
 };
 
 module.exports = loaders;

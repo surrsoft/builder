@@ -1,17 +1,17 @@
 'use strict';
 
 function getFunChangeTheme(themeNames, packageCss) {
-    var fun,
-        filesNameCss = '{';
+   let fun,
+      filesNameCss = '{';
 
-    for (var key in packageCss) {
-        filesNameCss += `
+   for (const key in packageCss) {
+      filesNameCss += `
             ${key}: '/${packageCss[key][0].name.replace(/\\/g, '/')}',`;
-    }
-    filesNameCss += `}`;
-    filesNameCss = filesNameCss.replace(/\,\}/g,'}');
+   }
+   filesNameCss += '}';
+   filesNameCss = filesNameCss.replace(/\,\}/g, '}');
 
-    fun =`
+   fun = `
     window.onload = function setTheme() {
                 if (localStorage['themePackage']) {
                     var targetCss = document.getElementById('theme'),
@@ -56,9 +56,9 @@ function getFunChangeTheme(themeNames, packageCss) {
                 }
             }});`;
 
-    return fun;
+   return fun;
 }
 
 module.exports = {
-    getFunChangeTheme: getFunChangeTheme
+   getFunChangeTheme: getFunChangeTheme
 };

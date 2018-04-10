@@ -4,8 +4,8 @@
 
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
+const path = require('path');
+const fs = require('fs');
 
 const dblSlashes = /\\/g;
 
@@ -47,7 +47,7 @@ function getNameModule(pathModule) {
  */
 function getPathDict(name, lang, applicationRoot) {
    //Когда ws станет интерфейсным модулем можно удалить.
-   if(name === 'WS') {
+   if (name === 'WS') {
       name = 'ws';
    } else {
       name = 'resources/' + name;
@@ -77,7 +77,7 @@ function needPushDict(name, lang, isPackedDict) {
  * @returns {string} - имя модуля словаря.
  */
 function getNameDict(name, lang) {
-   return name + '/lang/' + lang + '/' + lang
+   return name + '/lang/' + lang + '/' + lang;
 }
 
 /**
@@ -110,7 +110,7 @@ function createTextModule(modulejs) {
       fullPath: modulejs.fullPath.replace(/\.js$/, '.json'),
       module: modulejs.module + '.json',
       plugin: 'text'
-   }
+   };
 }
 
 /**
@@ -128,7 +128,7 @@ function createJsModule(nameModule, fullPath, lang) {
       fullPath: fullPath.replace(dblSlashes, '/'),
       module: getNameDict(nameModule, lang),
       plugin: 'js'
-   }
+   };
 }
 
 /**
@@ -143,7 +143,7 @@ function createI18nModule(nameModule) {
       fullName: nameModule + '_localization',
       module: nameModule + '"_localization',
       plugin: 'i18n'
-   }
+   };
 }
 
 /**
@@ -169,7 +169,7 @@ function deleteOldDepI18n(deps) {
  * @returns {Object}
  */
 function getAvailableLanguageModule(availableLanguage, nameModule, applicationRoot) {
-   let availableLang = {};
+   const availableLang = {};
 
    Object.keys(availableLanguage).forEach(function(lang) {
       if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot))) {
@@ -187,61 +187,62 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
  * @returns {Array}
  */
 function packCustomDict(modules, applicationRoot) {
-    let packeg = [];
-    /*
+   let packeg = [];
+
+   /*
    костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
    когда словари сформируются и начнут записываться в module-dependencies параллельно и одновременно
     */
-    if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
-        return packeg;
-    }
-    try {
-        let
-            modulesI18n = {},
-            _const = global.requirejs('Core/constants'),
-            modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-            linkModules = modDepend.links,
-            moduleName;
+   if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
+      return packeg;
+   }
+   try {
+      let
+         modulesI18n = {},
+         _const = global.requirejs('Core/constants'),
+         modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
+         linkModules = modDepend.links,
+         moduleName;
 
-        //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
-        modules.forEach(function(module) {
-            if (linkModules.hasOwnProperty(module.fullName)) {
-                linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
-                moduleName = getNameModule(module.fullPath);
-                if (modulesI18n.hasOwnProperty(moduleName)) {
-                    linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                    module.addDeps = modulesI18n[moduleName].fullName;
-                } else {
-                    /**
+      //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
+      modules.forEach(function(module) {
+         if (linkModules.hasOwnProperty(module.fullName)) {
+            linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
+            moduleName = getNameModule(module.fullPath);
+            if (modulesI18n.hasOwnProperty(moduleName)) {
+               linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
+               module.addDeps = modulesI18n[moduleName].fullName;
+            } else {
+               /**
                      * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
                      * для него в пакете модуль локализации
                      */
-                    if (fs.existsSync(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
-                        modulesI18n[moduleName] = createI18nModule(moduleName);
-                        linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                        module.addDeps = modulesI18n[moduleName].fullName;
-                    }
-                }
+               if (fs.existsSync(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
+                  modulesI18n[moduleName] = createI18nModule(moduleName);
+                  linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
+                  module.addDeps = modulesI18n[moduleName].fullName;
+               }
             }
-        });
+         }
+      });
 
-        modDepend.links = linkModules;
-        /*
+      modDepend.links = linkModules;
+
+      /*
         в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
         fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(modDepend, null, 2));
         */
 
-        for (let name in modulesI18n) {
-            modulesI18n[name].availableDict = getAvailableLanguageModule(_const.availableLanguage, name, applicationRoot);
-            packeg.push(modulesI18n[name]);
-        }
+      for (const name in modulesI18n) {
+         modulesI18n[name].availableDict = getAvailableLanguageModule(_const.availableLanguage, name, applicationRoot);
+         packeg.push(modulesI18n[name]);
+      }
 
-        packeg = packeg.concat(modules);
-    }
-    finally {
-        //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
-        return packeg;
-    }
+      packeg = packeg.concat(modules);
+   } finally {
+      //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
+      return packeg;
+   }
 }
 
 /**
@@ -251,60 +252,61 @@ function packCustomDict(modules, applicationRoot) {
  * @returns {Object}
  */
 function packDictClassic(modules, applicationRoot) {
-    var dictPack = {};
+   const dictPack = {};
+
    /*
    костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
    когда словари сформируются и начнут записываться в module-dependencies параллельно и одновременно
     */
-    if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
-        return dictPack;
-    }
-    try {
-        let
-            modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-            _const = global.requirejs('Core/constants'),
-            isPackedDict = {},
-            dictJsModule,
-            dictTextModule,
-            nameModule;
+   if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
+      return dictPack;
+   }
+   try {
+      let
+         modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
+         _const = global.requirejs('Core/constants'),
+         isPackedDict = {},
+         dictJsModule,
+         dictTextModule,
+         nameModule;
 
-        //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
-        Object.keys(_const.availableLanguage).forEach(function(lang) {
-            dictPack[lang] = [];
-        });
+      //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
+      Object.keys(_const.availableLanguage).forEach(function(lang) {
+         dictPack[lang] = [];
+      });
 
-        modules.forEach(function(module) {
-            if(module.fullPath) {
-                nameModule = getNameModule(module.fullPath);
-                Object.keys(dictPack).forEach(function(lang) {
-                    let fullPath = getPathDict(nameModule, lang, applicationRoot);
-                    if(needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
+      modules.forEach(function(module) {
+         if (module.fullPath) {
+            nameModule = getNameModule(module.fullPath);
+            Object.keys(dictPack).forEach(function(lang) {
+               const fullPath = getPathDict(nameModule, lang, applicationRoot);
+               if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
 
-                        dictJsModule = createJsModule(nameModule, fullPath, lang);
-                        dictTextModule = createTextModule(dictJsModule);
+                  dictJsModule = createJsModule(nameModule, fullPath, lang);
+                  dictTextModule = createTextModule(dictJsModule);
 
-                        modDepend = creatTextInModDeps(modDepend, dictTextModule);
+                  modDepend = creatTextInModDeps(modDepend, dictTextModule);
 
-                        dictPack[lang].push(dictTextModule);
-                        dictPack[lang].push(dictJsModule);
+                  dictPack[lang].push(dictTextModule);
+                  dictPack[lang].push(dictJsModule);
 
-                        if (!isPackedDict[nameModule]) {
-                            isPackedDict[nameModule] = {};
-                        }
-                        isPackedDict[nameModule][lang] = true;
-                    }
-                });
-            }
-        });
-        /*
+                  if (!isPackedDict[nameModule]) {
+                     isPackedDict[nameModule] = {};
+                  }
+                  isPackedDict[nameModule][lang] = true;
+               }
+            });
+         }
+      });
+
+      /*
         в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
         fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(modDepend, null, 2));
         */
-    }
-    finally {
-        //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
-        return dictPack;
-    }
+   } finally {
+      //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
+      return dictPack;
+   }
 }
 
 /**

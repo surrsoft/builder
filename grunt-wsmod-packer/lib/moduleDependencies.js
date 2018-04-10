@@ -1,8 +1,8 @@
-var path = require('path');
-var fs = require('fs');
-var DepGraph = require('./dependencyGraph');
+const path = require('path');
+const fs = require('fs');
+const DepGraph = require('./dependencyGraph');
 
-var MODULE_DEPENDENCIES_FILENAME = 'module-dependencies.json';
+const MODULE_DEPENDENCIES_FILENAME = 'module-dependencies.json';
 
 /**
  * @callback checkModuleDependenciesSanity~callback
@@ -17,21 +17,21 @@ var MODULE_DEPENDENCIES_FILENAME = 'module-dependencies.json';
  * @return {boolean}
  */
 function checkModuleDependenciesSanity(applicationRoot, done) {
-    var resourcesPath = path.join(applicationRoot, 'resources'),
-        moduleDependenciesFile = path.join(resourcesPath, MODULE_DEPENDENCIES_FILENAME),
-        contentsFile = path.join(resourcesPath, 'contents.json');
+   let resourcesPath = path.join(applicationRoot, 'resources'),
+      moduleDependenciesFile = path.join(resourcesPath, MODULE_DEPENDENCIES_FILENAME),
+      contentsFile = path.join(resourcesPath, 'contents.json');
 
-    if (!fs.existsSync(moduleDependenciesFile)) {
-        done(new Error('No module dependencies file present. Please create with --collect-dependencies'));
-        return false;
-    }
+   if (!fs.existsSync(moduleDependenciesFile)) {
+      done(new Error('No module dependencies file present. Please create with --collect-dependencies'));
+      return false;
+   }
 
-    if (fs.existsSync(contentsFile) && fs.statSync(contentsFile).mtime > fs.statSync(moduleDependenciesFile).mtime) {
-        done(new Error(MODULE_DEPENDENCIES_FILENAME + ' is outdated. Please recreate with --collect-dependencies'));
-        return false;
-    }
+   if (fs.existsSync(contentsFile) && fs.statSync(contentsFile).mtime > fs.statSync(moduleDependenciesFile).mtime) {
+      done(new Error(MODULE_DEPENDENCIES_FILENAME + ' is outdated. Please recreate with --collect-dependencies'));
+      return false;
+   }
 
-    return true;
+   return true;
 }
 
 /**
@@ -40,7 +40,7 @@ function checkModuleDependenciesSanity(applicationRoot, done) {
  * @return {String}
  */
 function getModuleDependenciesPath(applicationRoot) {
-    return path.join(applicationRoot, 'resources', MODULE_DEPENDENCIES_FILENAME);
+   return path.join(applicationRoot, 'resources', MODULE_DEPENDENCIES_FILENAME);
 }
 
 /**
@@ -49,15 +49,15 @@ function getModuleDependenciesPath(applicationRoot) {
  * @return {DepGraph}
  */
 function getDependencyGraph(applicationRoot) {
-    var dg = new DepGraph();
+   const dg = new DepGraph();
 
-    dg.fromJSON(JSON.parse(fs.readFileSync(getModuleDependenciesPath(applicationRoot))));
+   dg.fromJSON(JSON.parse(fs.readFileSync(getModuleDependenciesPath(applicationRoot))));
 
-    return dg;
+   return dg;
 }
 
 module.exports = {
-    checkModuleDependenciesSanity: checkModuleDependenciesSanity,
-    getModuleDependenciesPath: getModuleDependenciesPath,
-    getDependencyGraph: getDependencyGraph
+   checkModuleDependenciesSanity: checkModuleDependenciesSanity,
+   getModuleDependenciesPath: getModuleDependenciesPath,
+   getDependencyGraph: getDependencyGraph
 };

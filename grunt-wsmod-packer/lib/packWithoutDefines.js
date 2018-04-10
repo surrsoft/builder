@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-var
+let
    path = require('path'),
    fs = require('fs'),
    esprima = require('esprima'),
@@ -13,7 +13,7 @@ var
    coreI18nName = 'Core/i18n';
 
 function getForceCall(value) {
-   return value.indexOf('SBIS3.CORE.ServerEventBus/resources/sockjs') > -1
+   return value.indexOf('SBIS3.CORE.ServerEventBus/resources/sockjs') > -1;
 }
 
 function enableLocalization(text) {
@@ -25,21 +25,21 @@ function enableLocalization(text) {
  * Возвращает коллбек, приведенный к формату самовызывающейся функции со значениями, соответствующими аргументам.
  * */
 function getValue(node, deps, forceCall) {
-   var value;
+   let value;
    if (node.type == 'FunctionExpression') {
-      var paramsLength = node.params.length;
+      const paramsLength = node.params.length;
 
       value = {
-         type: "CallExpression",
+         type: 'CallExpression',
          callee: node,
          arguments: deps || []
-      }
+      };
    } else if (forceCall) {
       value = {
-         type: "CallExpression",
+         type: 'CallExpression',
          callee: node,
          arguments: []
-      }
+      };
    } else {
       value = node;
    }
@@ -58,72 +58,72 @@ function getValue(node, deps, forceCall) {
  * */
 function getDeps(depArray, packStorage) {
    if (depArray.type == 'ArrayExpression') {
-      var deps = [];
-      for (var i = 0; i < depArray.elements.length; i++) {
-         var
+      const deps = [];
+      for (let i = 0; i < depArray.elements.length; i++) {
+         let
             defineName = depArray.elements[i].value,
             defineNameWithoutComplexPlugins = defineName.replace(complexPlugins, '');
 
          if (defineName.indexOf('css!') > -1) {
             deps.push({
-               "type": "Literal",
-               "value": defineName,
-               "raw": defineName
-            })
+               'type': 'Literal',
+               'value': defineName,
+               'raw': defineName
+            });
          } else if (defineName.indexOf('i18n!') > -1) {
             deps.push({
-               "type": "Identifier",
-               "name": "rk"
-            })
+               'type': 'Identifier',
+               'name': 'rk'
+            });
          } else if (packStorage.isNodeResolved(defineName)) {//isNodeResolved(defineName, resolvedNodes)) {
             deps.push({
-               "type": "MemberExpression",
-               "computed": true,
-               "object": {
-                  "type": "Identifier",
-                  "name": "defineStorage"
+               'type': 'MemberExpression',
+               'computed': true,
+               'object': {
+                  'type': 'Identifier',
+                  'name': 'defineStorage'
                },
-               "property": {
-                  "type": "Identifier",
-                  "name": "'" + defineName + "'"
+               'property': {
+                  'type': 'Identifier',
+                  'name': "'" + defineName + "'"
                }
-            })
+            });
          } else if (packStorage.isNodeResolved(defineNameWithoutComplexPlugins)) {//isNodeResolved(defineNameWithoutComplexPlugins, resolvedNodes)) {
             deps.push({
-               "type": "MemberExpression",
-               "computed": true,
-               "object": {
-                  "type": "Identifier",
-                  "name": "defineStorage"
+               'type': 'MemberExpression',
+               'computed': true,
+               'object': {
+                  'type': 'Identifier',
+                  'name': 'defineStorage'
                },
-               "property": {
-                  "type": "Identifier",
-                  "name": "'" + defineNameWithoutComplexPlugins + "'"
+               'property': {
+                  'type': 'Identifier',
+                  'name': "'" + defineNameWithoutComplexPlugins + "'"
                }
-            })
+            });
          } else if (specialPlugins.test(defineNameWithoutComplexPlugins)) {
             deps.push({
-               "type": "CallExpression",
-               "callee": {
-                  "type": "MemberExpression",
-                  "computed": true,
-                  "object": {
-                     "type": "Identifier",
-                     "name": "defineStorage"
+               'type': 'CallExpression',
+               'callee': {
+                  'type': 'MemberExpression',
+                  'computed': true,
+                  'object': {
+                     'type': 'Identifier',
+                     'name': 'defineStorage'
                   },
-                  "property": {
-                     "type": "Literal",
-                     "value": "preloadFunc",
-                     "raw": "'preloadFunc'"
+                  'property': {
+                     'type': 'Literal',
+                     'value': 'preloadFunc',
+                     'raw': "'preloadFunc'"
                   }
                },
-               "arguments": [
+               'arguments': [
                   {
-                     "type": "Identifier",
-                     "name": "'" + defineNameWithoutComplexPlugins + "'"
+                     'type': 'Identifier',
+                     'name': "'" + defineNameWithoutComplexPlugins + "'"
                   }
                ]
-            })
+            });
          } else {
             throw new Error('Can\'t resolve dependency: ' + defineName + ' of module ');
          }
@@ -136,25 +136,25 @@ function getDeps(depArray, packStorage) {
 function getNodeToReplace(defineName, val, packStorage) {
    packStorage.addToResolvedNodes(defineName);
    return {
-      "type": "ExpressionStatement",
-      "expression": {
-         "type": "AssignmentExpression",
-         "operator": "=",
-         "left": {
-            "type": "MemberExpression",
-            "computed": true,
-            "object": {
-               "type": "Identifier",
-               "name": "defineStorage"
+      'type': 'ExpressionStatement',
+      'expression': {
+         'type': 'AssignmentExpression',
+         'operator': '=',
+         'left': {
+            'type': 'MemberExpression',
+            'computed': true,
+            'object': {
+               'type': 'Identifier',
+               'name': 'defineStorage'
             },
-            "property": {
-               "type": "Identifier",
-               "name": "'" + defineName + "'"
+            'property': {
+               'type': 'Identifier',
+               'name': "'" + defineName + "'"
             }
          },
-         "right": val
+         'right': val
       }
-   }
+   };
 }
 
 /**
@@ -165,7 +165,7 @@ function getNodeToReplace(defineName, val, packStorage) {
  * И возвращает объект, содержащий ModuleName и новую ноду.
  */
 function prepareToReplace(node, packStorage) {
-   var
+   let
       defineName = node.arguments[0].value,
       deps,
       val,
@@ -178,7 +178,7 @@ function prepareToReplace(node, packStorage) {
       replaceMeta = {
          defineName: defineName,
          nodeToReplace: nodeToReplace
-      }
+      };
    } else if (node.arguments.length == 3) {
       try {
          deps = getDeps(node.arguments[1], packStorage);
@@ -191,7 +191,7 @@ function prepareToReplace(node, packStorage) {
       replaceMeta = {
          defineName: defineName,
          nodeToReplace: nodeToReplace
-      }
+      };
    }
 
    return replaceMeta;
@@ -201,10 +201,11 @@ function prepareToReplace(node, packStorage) {
 function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
    if (node.callee.type == 'Identifier' && node.callee.name == 'define') {
 
-      if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value == 'string' && pluginList.indexOf(node.arguments[0].value) == -1) {
+      if (node.arguments[0].type == 'Literal' && typeof node.arguments[0].value === 'string' && pluginList.indexOf(node.arguments[0].value) == -1) {
          //Будем игнорировать все вложенные ноды дефайна
          ctx.skip();
-         var replaceMeta = prepareToReplace(node, packStorage);
+         const replaceMeta = prepareToReplace(node, packStorage);
+
          //Если нода для замены успешно получена, то помечаем этот define как разрешенный и возвращаем полученную ноду.
          //Если вернулась ошибка в разборе зависимостей, возвращаем ее. Нужно в replaceSequenceExpression.
          if (replaceMeta && replaceMeta.nodeToReplace) {
@@ -212,17 +213,17 @@ function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
             setModified();
             replacedNames.push(replaceMeta.defineName);
 
-            return replaceMeta.nodeToReplace
+            return replaceMeta.nodeToReplace;
 
          } else if (replaceMeta instanceof Error) {
-            return replaceMeta
+            return replaceMeta;
          }
       }
    }
 }
 function replaceCallExpression(node, replacedNames, packStorage, ctx, setModified) {
 
-   var parsed = parseExpression(node.expression, replacedNames, packStorage, ctx, setModified);
+   const parsed = parseExpression(node.expression, replacedNames, packStorage, ctx, setModified);
    return !parsed || parsed instanceof Error ? node : parsed;
 }
 
@@ -233,7 +234,7 @@ function replaceCallExpression(node, replacedNames, packStorage, ctx, setModifie
  * defineStorage["Module1"] = callback1(), defineStorage["Module2"] = callback2();
  * */
 function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setModified) {
-   var
+   let
       varDeclarations,
       badSequence;
 
@@ -248,9 +249,9 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
    * Таким образом, если вызов parseExpression вернул ошибку, значит где-то не получилось разрешить зависимости,
    * устанавливаем флаг badSequence и оставляем все как есть.
    * */
-   varDeclarations = node.expression.expressions.map(function (exp) {
+   varDeclarations = node.expression.expressions.map(function(exp) {
       if (exp.type == 'CallExpression') {
-         var
+         let
             parsed = parseExpression(exp, replacedNames, packStorage, ctx, setModified),
             toReturn;
 
@@ -260,7 +261,7 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
             badSequence = true;
             toReturn = exp;
          } else {
-            toReturn = parsed.expression
+            toReturn = parsed.expression;
          }
 
 
@@ -278,7 +279,7 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
 }
 
 function main(text, packStorage) {
-   var
+   let
       ast,
       res,
       replacedNames = [],
@@ -300,7 +301,7 @@ function main(text, packStorage) {
    }
 
    replace(ast, {
-      enter: function (node) {
+      enter: function(node) {
          if (node.type == 'ExpressionStatement' && node.expression) {
             if (node.expression.type == 'CallExpression') {
                return replaceCallExpression(node, replacedNames, packStorage, this, setModified);
@@ -315,7 +316,7 @@ function main(text, packStorage) {
       res = escodegen.generate(ast);
 
       //Добавляем дефолтные вызовы define со ссылками на defineStorage, на случай, если кто-то будет звать через requirejs.
-      replacedNames.forEach(function (name) {
+      replacedNames.forEach(function(name) {
          res += 'define("' + name + '", function () {return defineStorage["' + name + '"]});';
          if (name == coreI18nName) {
             res = enableLocalization(res);
