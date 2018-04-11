@@ -13,8 +13,7 @@ const logger = require('../lib/logger').logger();
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
 const QUOTES = /"|'/g;
-const OLD_NAME_NAVIGATION = 'js!SBIS3.NavigationController';
-const NAME_NAVIGATION = 'Navigation/NavigationController';
+const NAME_NAVIGATION = /(optional\!)?(js\!SBIS3\.NavigationController|Navigation\/NavigationController)$/;
 
 const
    contents = {},
@@ -190,7 +189,10 @@ module.exports = function(grunt) {
                      }
                   }
                   if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
-                     if (componentInfo.componentDep.includes(NAME_NAVIGATION) || componentInfo.componentDep.includes(OLD_NAME_NAVIGATION)) {
+                     let isNavigation = componentInfo.componentDep.some(function(name) {
+                        return NAME_NAVIGATION.test(name);
+                     });
+                     if (isNavigation) {
                         listNavMod.push(componentInfo.componentName);
                      }
                   }
