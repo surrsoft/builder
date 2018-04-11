@@ -29,6 +29,9 @@ describe('helpers', function() {
       helpers.prettifyPath('\\\\simple\\\\file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
       helpers.prettifyPath('\\\\simple/file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
 
+      // jinnee-utility может передавать не правильно сетевые пути до файлов. нужно обработать
+      helpers.prettifyPath('//simple\\\\file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
+
       helpers.prettifyPath('C:\\/dir\\/').should.equal('C:/dir/');
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });

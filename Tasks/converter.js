@@ -138,9 +138,7 @@ module.exports = function(grunt) {
       for (const modulePath of paths) {
          if (path.basename(modulePath) === 'SBIS3.CONTROLS') {
             sbis3ControlsPath = modulePath;
-
-            //TODO: отладочный вывод, убрать!
-            console.log('sbis3ControlsPath: ' + sbis3ControlsPath);
+            logger.debug('Путь до модуля SBIS3.CONTROLS: ' + sbis3ControlsPath);
          }
       }
 
