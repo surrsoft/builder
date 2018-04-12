@@ -50,7 +50,7 @@ function checkPathForInterfaceModule(currentPath, application) {
          resultNode = node;
       }
    });
-   return resultPath ? currentPath.replace(resultPath, resultNode) : currentPath;
+   return helpers.prettifyPath(resultPath ? currentPath.replace(resultPath, resultNode) : currentPath);
 }
 
 function errorTmplBuild(err, currentNode, fullPath) {
