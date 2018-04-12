@@ -57,7 +57,7 @@ const removeRSymbol = function(str) {
 //2. при изменении файла
 //3. если файл не менять
 describe('gulp/builder/generate-workflow.js', function() {
-   this.timeout(4000); //eslint-disable-line no-invalid-this
+   this.timeout(10000); //eslint-disable-line no-invalid-this
 
    it('проверка компиляции less', async function() {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
