@@ -12,6 +12,7 @@ const logger = require('../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
+const isJs = /\.js$/;
 const QUOTES = /"|'/g;
 const NAME_NAVIGATION = /(optional\!)?(js\!SBIS3\.NavigationController|Navigation\/NavigationController)$/;
 
@@ -161,12 +162,20 @@ module.exports = function(grunt) {
                const destination = path.join(resourcesPath, tsdModuleName,
                   transliterate(path.relative(input, file)));
 
+               let
+                  text = '',
+                  isNavigationModule = false;
+
+               if (isJs.test(file)) {
+                  grunt.log.ok('Читаем js-файл по пути: ' + file);
+                  text = await fs.readFile(file);
+                  isNavigationModule = text.includes('Navigation/NavigationController');
+               }
+
                if (file.endsWith('.less')) {
                   await compileLess(file, input, sbis3ControlsPath, resourcesPath);
                }
-               if (isModuleJs.test(file)) {
-                  grunt.log.ok('Читаем js-модуль по пути: ' + file);
-                  const text = await fs.readFile(file);
+               if (isModuleJs.test(file) || isNavigationModule) {
 
                   let componentInfo = {};
                   try {
@@ -179,7 +188,7 @@ module.exports = function(grunt) {
                      });
                   }
 
-                  if (componentInfo.hasOwnProperty('componentName')) {
+                  if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
                      const partsComponentName = componentInfo.componentName.split('!');
                      if (partsComponentName[0] === 'js') {
                         jsModules[partsComponentName[1]] = path.join(tsdModuleName,
