@@ -113,10 +113,6 @@ module.exports = function(grunt) {
             helpers.mkSymlink(target, destination, cb);
          }
       }
-      function isNavigation(file) {
-         let text = fs.readFile(file);
-         return text.includes('Navigation/NavigationController');
-      }
 
       //пробуем удалить результат предудущей конвертации, если не получается, то ждём 1 секунду и снова пытаемся
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов`);
