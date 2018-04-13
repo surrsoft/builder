@@ -10,96 +10,100 @@ const path = require('path'),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+   helpers.recurse(
+      resourcesRoot,
+      async function(fullPath, callback) {
+         // фильтр по файлам .html.tmpl
+         if (!helpers.validateFile(fullPath, filePattern)) {
+            setImmediate(callback);
+            return;
+         }
 
-   helpers.recurse(resourcesRoot, async function(fullPath, callback) {
-      // фильтр по файлам .html.tmpl
-      if (!helpers.validateFile(fullPath, filePattern)) {
-         setImmediate(callback);
-         return;
-      }
+         let html, cfg, result, routeTmpl;
 
-      let html, cfg, result, routeTmpl;
-
-      try {
-         routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
-         global.requirejs('Controls/Application');
-      } catch (e) {
-         logger.error({
-            message: 'Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Возможно вы забыли добавить модуль Controls в проект!'
-         });
-         setImmediate(callback.bind(null, e));
-         return;
-      }
-
-      try {
-         html = await fs.readFile(fullPath);
-      } catch (error) {
-         logger.error(`Ошибка чтения файла ${fullPath}: ${error}`);
-         setImmediate(callback);
-         return;
-      }
-
-      const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
-      const isCfgExists = await fs.pathExists(cfgPath);
-      cfg = {};
-      if (isCfgExists) {
          try {
-            cfg = await fs.readJson(cfgPath);
+            routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
+            global.requirejs('Controls/Application');
+         } catch (e) {
+            logger.error({
+               message:
+                  'Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Возможно вы забыли добавить модуль Controls в проект!'
+            });
+            setImmediate(callback.bind(null, e));
+            return;
+         }
+
+         try {
+            html = await fs.readFile(fullPath);
+         } catch (error) {
+            logger.error(`Ошибка чтения файла ${fullPath}: ${error}`);
+            setImmediate(callback);
+            return;
+         }
+
+         const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
+         const isCfgExists = await fs.pathExists(cfgPath);
+         cfg = {};
+         if (isCfgExists) {
+            try {
+               cfg = await fs.readJson(cfgPath);
+            } catch (error) {
+               logger.error({
+                  message: 'Ошибка при обработке конфигурации шаблона',
+                  error: error,
+                  filePath: cfgPath
+               });
+               cfg = {};
+            }
+         }
+
+         try {
+            result = await convertHtmlTmpl.generateFunction(html, fullPath, componentsProperties);
          } catch (error) {
             logger.error({
-               message: 'Ошибка при обработке конфигурации шаблона',
+               message: 'Ошибка при обработке шаблона',
                error: error,
-               filePath: cfgPath
+               filePath: fullPath
             });
-            cfg = {};
+            setImmediate(callback);
+            return;
          }
-      }
 
-      try {
-         result = await convertHtmlTmpl.generateFunction(html, fullPath, componentsProperties);
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка при обработке шаблона',
-            error: error,
-            filePath: fullPath
+         const tmplFunc = result.tmplFunc.toString();
+         const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
+
+         const routeResult = routeTmpl({
+            application: 'Controls/Application',
+            wsRoot: wsPathCalculator.getWsRoot(splittedCore),
+            resourceRoot: wsPathCalculator.getResources(splittedCore),
+            _options: {
+               builder: tmplFunc,
+               builderCompatible: cfg.compatible,
+               dependencies: result.dependencies.map(v => `'${v}'`).toString()
+            }
          });
-         setImmediate(callback);
-         return;
-      }
 
-      const tmplFunc = result.tmplFunc.toString();
-      const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
-
-      const routeResult = routeTmpl({
-         application: 'Controls/Application',
-         wsRoot: wsPathCalculator.getWsRoot(splittedCore),
-         resourceRoot: wsPathCalculator.getResources(splittedCore),
-         _options: {
-            builder: tmplFunc,
-            builderCompatible: cfg.compatible,
-            dependencies: result.dependencies.map(v => `'${v}'`).toString()
-         }
-      });
-
-      if (typeof routeResult === 'string') {
-         await fs.writeFile(newFullPath, routeResult);
-         callback();
-      } else {
-         routeResult
-            .addCallback(async function(res) {
-               await fs.writeFile(newFullPath, res);
-               callback();
-            })
-            .addErrback(function(error) {
-               logger.error({
-                  message: 'Ошибка при обработке шаблона',
-                  error: error,
-                  filePath: fullPath
+         if (typeof routeResult === 'string') {
+            await fs.writeFile(newFullPath, routeResult);
+            callback();
+         } else {
+            routeResult
+               .addCallback(async function(res) {
+                  await fs.writeFile(newFullPath, res);
+                  callback();
+               })
+               .addErrback(function(error) {
+                  logger.error({
+                     message: 'Ошибка при обработке шаблона',
+                     error: error,
+                     filePath: fullPath
+                  });
+                  setImmediate(callback);
                });
-               setImmediate(callback);
-            });
-      }
-   }, cb);
+         }
+      },
+      cb
+   );
 }
 
 module.exports = function(grunt) {
@@ -121,25 +125,25 @@ module.exports = function(grunt) {
 
       convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
-            logger.error({error: err});
+            logger.error({ error: err });
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
+         logger.correctExitCode();
          done();
       });
    });
 
    grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
       logger.debug('Запускается задача static-html.');
-      const
-         start = Date.now(),
-         done = this.async(),
+      const start = Date.now(),
+         doneAsync = this.async(),
          root = this.data.root,
          application = this.data.application,
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
          patterns = this.data.src,
-         oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
+         oldHtml = grunt.file.expand({ cwd: applicationRoot }, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
@@ -149,13 +153,20 @@ module.exports = function(grunt) {
           */
          replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
 
+      const done = () => {
+         logger.correctExitCode();
+         doneAsync();
+      };
+
       if (!modulesOption) {
          logger.error('Parameter "modules" not found');
+         done();
          return;
       }
       const pathsModules = grunt.file.readJSON(modulesOption);
       if (!Array.isArray(pathsModules)) {
          logger.error('Parameter "modules" incorrect');
+         done();
          return;
       }
       const modules = new Map();
@@ -181,7 +192,7 @@ module.exports = function(grunt) {
                fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
                logger.warning({
-                  message: 'Can\'t delete old html',
+                  message: "Can't delete old html",
                   filePath: filePath,
                   error: err
                });
@@ -200,31 +211,32 @@ module.exports = function(grunt) {
          wsPath: grunt.option('splitted-core') ? 'resources/WS.Core/' : 'ws/'
       };
 
-      helpers.recurse(applicationRoot, function(file, callback) {
-         if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
-            fs.readFile(file, (err, text) => {
-               if (err) {
-                  logger.error({
-                     error: err
-                  });
-                  callback();
-                  return;
-               }
-               let componentInfo = {};
-               try {
-                  componentInfo = parseJsComponent(text.toString());
-               } catch (error) {
-                  logger.error({
-                     message: 'Возникла ошибка при парсинге файла',
-                     filePath: file,
-                     error: error
-                  });
-                  callback();
-                  return;
-               }
+      helpers.recurse(
+         applicationRoot,
+         function(file, callback) {
+            if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+               fs.readFile(file, (err, text) => {
+                  if (err) {
+                     logger.error({
+                        error: err
+                     });
+                     callback();
+                     return;
+                  }
+                  let componentInfo = {};
+                  try {
+                     componentInfo = parseJsComponent(text.toString());
+                  } catch (error) {
+                     logger.error({
+                        message: 'Возникла ошибка при парсинге файла',
+                        filePath: file,
+                        error: error
+                     });
+                     callback();
+                     return;
+                  }
 
-               generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath)
-                  .then(
+                  generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
                      result => {
                         if (result) {
                            const outputPath = path.join(applicationRoot, result.outFileName);
@@ -242,30 +254,32 @@ module.exports = function(grunt) {
                         callback();
                      }
                   );
-            });
-         } else {
-            callback();
-         }
-      }, function(err) {
-         if (err) {
-            logger.error({
-               error: err
-            });
-         }
+               });
+            } else {
+               callback();
+            }
+         },
+         function(err) {
+            if (err) {
+               logger.error({
+                  error: err
+               });
+            }
 
-         try {
-            const sorted = helpers.sortObject(contents);
+            try {
+               const sorted = helpers.sortObject(contents);
 
-            grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
-            grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));
-         } catch (error) {
-            logger.error({
-               error: error
-            });
+               grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
+               grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));
+            } catch (error) {
+               logger.error({
+                  error: error
+               });
+            }
+
+            logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
+            done();
          }
-
-         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
-         done();
-      });
+      );
    });
 };
