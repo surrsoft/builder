@@ -1,7 +1,6 @@
 'use strict';
 
-const
-   path = require('path'),
+const path = require('path'),
    fs = require('fs-extra'),
    async = require('async'),
    helpers = require('../lib/helpers'),
@@ -41,7 +40,6 @@ function runPrepareXHTML(root, componentsProperties, done) {
                   filePath: filePath,
                   error: err
                });
-
             }
          }
          setImmediate(fileDone);
@@ -53,48 +51,51 @@ function runPrepareXHTML(root, componentsProperties, done) {
       });
       logger.info('Подготовка xhtml файлов для локализации выполнена.');
    } catch (err) {
-      logger.error({error: err});
+      logger.error({ error: err });
    }
 }
 
 function runCreateResultDictForDir(words, dir, componentsProperties) {
    return new Promise(function(resolve) {
-      helpers.recurse(dir, function(filePath, fileDone) {
-         if (!helpers.validateFile(filePath, ['**/*.xhtml', '**/*.tmpl', '**/*.js'])) {
-            setImmediate(fileDone);
-            return;
-         }
-         fs.readFile(filePath, async function readFileCb(readFileError, textBuffer) {
-            if (readFileError) {
-               logger.error({
-                  message: 'Ошибка при чтении less файла',
-                  error: readFileError,
-                  filePath: filePath
-               });
+      helpers.recurse(
+         dir,
+         function(filePath, fileDone) {
+            if (!helpers.validateFile(filePath, ['**/*.xhtml', '**/*.tmpl', '**/*.js'])) {
                setImmediate(fileDone);
                return;
             }
-            try {
-               const newWords = await collectWords(dir, filePath, textBuffer.toString(), componentsProperties);
-               Array.prototype.push.apply(words, newWords);
-            } catch (error) {
-               logger.error({
-                  message: 'Ошибка при сборе фраз для локализации',
-                  error: error,
-                  filePath: filePath
-               });
+            fs.readFile(filePath, async function readFileCb(readFileError, textBuffer) {
+               if (readFileError) {
+                  logger.error({
+                     message: 'Ошибка при чтении less файла',
+                     error: readFileError,
+                     filePath: filePath
+                  });
+                  setImmediate(fileDone);
+                  return;
+               }
+               try {
+                  const newWords = await collectWords(dir, filePath, textBuffer.toString(), componentsProperties);
+                  Array.prototype.push.apply(words, newWords);
+               } catch (error) {
+                  logger.error({
+                     message: 'Ошибка при сборе фраз для локализации',
+                     error: error,
+                     filePath: filePath
+                  });
+               }
+               setImmediate(fileDone);
+            });
+         },
+         function(err) {
+            if (err) {
+               logger.error({ error: err });
             }
-            setImmediate(fileDone);
-         });
-      }, function(err) {
-         if (err) {
-            logger.error({error: err});
+            resolve();
          }
-         resolve();
-      });
+      );
    });
 }
-
 
 function runCreateResultDict(modules, componentsProperties, out) {
    return new Promise(function(resolve, reject) {
@@ -113,36 +114,40 @@ function runCreateResultDict(modules, componentsProperties, out) {
          let curCountModule = 0;
          const words = [];
 
-         async.eachSeries(paths, function(dir, dirDone) {
-            runCreateResultDictForDir(words, dir, componentsProperties)
-               .then(
+         async.eachSeries(
+            paths,
+            function(dir, dirDone) {
+               runCreateResultDictForDir(words, dir, componentsProperties).then(
                   () => {
                      dirDone();
                      curCountModule += 1;
                      logger.progress(100 * curCountModule / paths.length, path.basename(dir));
                   },
-                  (error) => {
+                  error => {
                      dirDone(error);
+                  }
+               );
+            },
+            function(err) {
+               if (err) {
+                  logger.error({ error: err });
+               }
+
+               // Записать в результирующий словарь
+               try {
+                  fs.writeFileSync(out, JSON.stringify(words, null, 2));
+               } catch (error) {
+                  logger.error({
+                     message: "Could't create output file ",
+                     filePath: out,
+                     error: error
                   });
-         }, function(err) {
-            if (err) {
-               logger.error({error: err});
-            }
+               }
 
-            // Записать в результирующий словарь
-            try {
-               fs.writeFileSync(out, JSON.stringify(words, null, 2));
-            } catch (error) {
-               logger.error({
-                  message: 'Could\'t create output file ',
-                  filePath: out,
-                  error: error
-               });
+               logger.info('Построение результирующего словаря выполнено.');
+               resolve();
             }
-
-            logger.info('Построение результирующего словаря выполнено.');
-            resolve();
-         });
+         );
       } catch (error) {
          reject(error);
       }
@@ -157,7 +162,7 @@ module.exports = function(grunt) {
       let taskCount = 0;
       let isDone = false;
 
-      const readOption = (name) => {
+      const readOption = name => {
          const value = grunt.option(name);
          if (!value) {
             return value;
@@ -194,7 +199,7 @@ module.exports = function(grunt) {
                await runCreateResultDict(optModules, componentsProperties, optOut);
                done();
             } catch (error) {
-               logger.error({error: error});
+               logger.error({ error: error });
             }
          }
 
@@ -206,19 +211,21 @@ module.exports = function(grunt) {
          indexDict(grunt, optIndexDict, this.data, ++taskCount && done);
       }
 
-
       if (taskCount === 0) {
          done();
       }
 
       function done(err) {
          if (err) {
-            logger.error({error: err});
+            logger.error({ error: err });
          }
 
          if (!isDone && --taskCount <= 0) {
             logger.info(grunt.template.today('hh:MM:ss') + ': Задача i18n выполнена.');
             isDone = true;
+
+            //i18n - особая таска. выполняется и отдельно и в составе default задачи
+            logger.correctExitCode(false);
             taskDone();
          }
       }

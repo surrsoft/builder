@@ -1,7 +1,6 @@
 'use strict';
 
-const
-   fs = require('fs-extra'),
+const fs = require('fs-extra'),
    humanize = require('humanize'),
    path = require('path'),
    helpers = require('../lib/helpers'),
@@ -43,7 +42,6 @@ function getName(path, isResources, isRootApp, sep) {
       return splitPath[index + 1];
    }
 
-
    return splitPath[0];
 }
 
@@ -68,7 +66,6 @@ module.exports = function splitResourcesTask(grunt) {
       let pathModule;
 
       Object.keys(data).forEach(function(nameModule) {
-
          pathModule = getPath(name, nameModule);
 
          try {
@@ -88,7 +85,6 @@ module.exports = function splitResourcesTask(grunt) {
       const result = splitData;
       let nameModule;
 
-
       Object.keys(data[option]).forEach(function(key) {
          if (option && option === 'dictionary') {
             return;
@@ -107,7 +103,9 @@ module.exports = function splitResourcesTask(grunt) {
          try {
             result[nameModule][option][key] = data[option][key];
          } catch (err) {
-            grunt.fail.fatal(`Не смог корректно разобрать опцию из contents.json. Опция:${option} Модуль: ${data[option][key]}`);
+            grunt.fail.fatal(
+               `Не смог корректно разобрать опцию из contents.json. Опция:${option} Модуль: ${data[option][key]}`
+            );
          }
       });
 
@@ -115,8 +113,7 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function getOptionHtmlNames(data, splitData) {
-      let
-         result = splitData,
+      let result = splitData,
          nameModule;
 
       Object.keys(data.htmlNames).forEach(function(key) {
@@ -139,8 +136,7 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function getOptionDictionary(data, name) {
-      let
-         regExp = new RegExp('(' + name + ')(\\.)'),
+      let regExp = new RegExp('(' + name + ')(\\.)'),
          result = {};
 
       if (name === 'ws') {
@@ -159,8 +155,7 @@ module.exports = function splitResourcesTask(grunt) {
    function splitRoutes() {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
 
-      let
-         nameModule,
+      let nameModule,
          splitRoutes = {},
          fullRoutes = JSON.parse(fs.readFileSync(getPath('routes-info.json', undefined, true)));
 
@@ -179,7 +174,9 @@ module.exports = function splitResourcesTask(grunt) {
             splitRoutes[nameModule][routes] = fullRoutes[routes];
          });
       } catch (err) {
-         grunt.fail.fatal('Ошибка при обработке routes-info.json.\n Имя модуля: ' + (nameModule ? nameModule : '') + '\n' + err.stack);
+         grunt.fail.fatal(
+            'Ошибка при обработке routes-info.json.\n Имя модуля: ' + (nameModule ? nameModule : '') + '\n' + err.stack
+         );
       }
 
       return splitRoutes;
@@ -188,8 +185,7 @@ module.exports = function splitResourcesTask(grunt) {
    function splitContents(fullContents) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения contents.json`);
 
-      let
-         nameModule,
+      let nameModule,
          splitContents = {};
 
       try {
@@ -207,7 +203,7 @@ module.exports = function splitResourcesTask(grunt) {
                modules: {},
                requirejsPaths: {},
                services: fullContents.services,
-               xmlContents: fullContents.xmlContents,
+               xmlContents: fullContents.xmlContents
             };
 
             splitContents[nameModule].modules[module] = nameModule;
@@ -230,7 +226,9 @@ module.exports = function splitResourcesTask(grunt) {
             splitContents = getOptionHtmlNames(fullContents, splitContents);
          }
       } catch (err) {
-         grunt.fail.fatal('Ошибка при обработке contents.json.\n Имя модуля: ' + (nameModule || err) + '\n' + err.stack);
+         grunt.fail.fatal(
+            'Ошибка при обработке contents.json.\n Имя модуля: ' + (nameModule || err) + '\n' + err.stack
+         );
       }
 
       return splitContents;
@@ -238,8 +236,7 @@ module.exports = function splitResourcesTask(grunt) {
 
    //TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
    function replaceWsInModDepend(modDepends) {
-      let
-         pathModule,
+      let pathModule,
          exception = [],
          fullModuleDep = {
             nodes: {},
@@ -249,15 +246,12 @@ module.exports = function splitResourcesTask(grunt) {
       Object.keys(modDepends.nodes).forEach(function(name) {
          pathModule = modDepends.nodes[name].path;
 
-
          if (fs.existsSync(getPath(pathModule))) {
             fullModuleDep.nodes[name] = modDepends.nodes[name];
             fullModuleDep.links[name] = modDepends.links[name];
          } else {
             exception.push(pathModule);
-
          }
-
       });
 
       //Пока что не будет выводить список файлов которые не были найдены при распили module-dependencies.json
@@ -276,8 +270,7 @@ module.exports = function splitResourcesTask(grunt) {
    function splitModuleDependencies() {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
-      let
-         existFile,
+      let existFile,
          nameModule,
          splitModuleDep = {},
          fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
@@ -289,7 +282,9 @@ module.exports = function splitResourcesTask(grunt) {
             existFile = fs.existsSync(getPath(fullModuleDep.nodes[node].path));
             if (!existFile) {
                if (node.indexOf('/cdn/') === -1) {
-                  grunt.log.warn(`Не нашёл данный модуль ${node},\n по указанному пути ${fullModuleDep.nodes[node].path}`);
+                  grunt.log.warn(
+                     `Не нашёл данный модуль ${node},\n по указанному пути ${fullModuleDep.nodes[node].path}`
+                  );
                }
                return;
             }
@@ -314,10 +309,11 @@ module.exports = function splitResourcesTask(grunt) {
 
             splitModuleDep[nameModule].nodes[node] = fullModuleDep.nodes[node];
             splitModuleDep[nameModule].links[node] = fullModuleDep.links[node];
-
          });
       } catch (err) {
-         grunt.fail.fatal('Ошибка при обработке module-dependencies.json.\n Имя модуля: ' + nameModule + '\n' + err.stack);
+         grunt.fail.fatal(
+            'Ошибка при обработке module-dependencies.json.\n Имя модуля: ' + nameModule + '\n' + err.stack
+         );
       }
       return splitModuleDep;
    }
@@ -325,14 +321,12 @@ module.exports = function splitResourcesTask(grunt) {
    function splitPreloadUrls(modules) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения preload_urls.json`);
 
-      let
-         preloadUrls = {},
+      let preloadUrls = {},
          matchs,
          modulePreload,
          preload,
          allFiles,
          nameModules;
-
 
       Object.keys(modules).forEach(function(module) {
          try {
@@ -345,7 +339,7 @@ module.exports = function splitResourcesTask(grunt) {
             allFiles = fs.readdirSync(getPath(nameModules, undefined, true));
             allFiles.some(function(file) {
                if (file.indexOf('.s3mod') > -1) {
-                  modulePreload = fs.readFileSync(getPath(file, nameModules), {encoding: 'utf8'}).replace(/\s/g, '');
+                  modulePreload = fs.readFileSync(getPath(file, nameModules), { encoding: 'utf8' }).replace(/\s/g, '');
                   return true;
                }
             });
@@ -369,18 +363,13 @@ module.exports = function splitResourcesTask(grunt) {
          }
       });
 
-
       return preloadUrls;
    }
-
 
    function slpitStaticHtml(modules) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача распределения статически html страничек`);
 
-      let
-         nameModules,
-         pathContents,
-         contents;
+      let nameModules, pathContents, contents;
 
       Object.keys(modules).forEach(function(module) {
          nameModules = getName(modules[module], true, false);
@@ -391,13 +380,12 @@ module.exports = function splitResourcesTask(grunt) {
 
          try {
             pathContents = path.join(rootPath, resources, nameModules, 'contents.json');
-            contents = JSON.parse(fs.readFileSync(pathContents, {encoding: 'utf8'}));
+            contents = JSON.parse(fs.readFileSync(pathContents, { encoding: 'utf8' }));
          } catch (err) {
             grunt.fail.fatal('Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
          }
 
-         let
-            listPathStaticHtml = {},
+         let listPathStaticHtml = {},
             staticHtml = Object.keys(contents.htmlNames),
             contentsHtml,
             nameHtml;
@@ -406,7 +394,7 @@ module.exports = function splitResourcesTask(grunt) {
             staticHtml.forEach(function(Html) {
                try {
                   nameHtml = getName(contents.htmlNames[Html], false, true);
-                  contentsHtml = fs.readFileSync(getPath(nameHtml), {encoding: 'utf8'});
+                  contentsHtml = fs.readFileSync(getPath(nameHtml), { encoding: 'utf8' });
                   fs.writeFileSync(getPath(nameHtml, nameModules), contentsHtml);
                   listPathStaticHtml[nameHtml] = nameModules + '/' + nameHtml;
                } catch (err) {
@@ -416,12 +404,10 @@ module.exports = function splitResourcesTask(grunt) {
             const sorted = helpers.sortObject(listPathStaticHtml);
             fs.writeFileSync(getPath('static_templates.json', nameModules), JSON.stringify(sorted, undefined, 2));
          }
-
       });
    }
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function() {
-
       const fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
 
       logger.info(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
@@ -446,5 +432,7 @@ module.exports = function splitResourcesTask(grunt) {
       logger.debug(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
 
       logger.info(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
+
+      logger.correctExitCode();
    });
 };
