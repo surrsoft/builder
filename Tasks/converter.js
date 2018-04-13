@@ -111,7 +111,7 @@ module.exports = function(grunt) {
 
       function copyFile(target, destination, data, cb) {
          const ext = path.extname(target);
-         if (!symlink || (i18n && (ext === '.xhtml' || ext === '.html'))) {
+         if (!symlink || i18n && (ext === '.xhtml' || ext === '.html')) {
             helpers.copyFile(target, destination, data, cb);
          } else {
             helpers.mkSymlink(target, destination, cb);
@@ -212,7 +212,7 @@ module.exports = function(grunt) {
                            }
                         }
                         if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
-                           let isNavigation = componentInfo.componentDep.some(function(name) {
+                           const isNavigation = componentInfo.componentDep.some(function(name) {
                               return NAME_NAVIGATION.test(name);
                            });
                            if (isNavigation) {
