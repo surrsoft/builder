@@ -16,8 +16,7 @@ const isJs = /\.js$/;
 const QUOTES = /"|'/g;
 const NAME_NAVIGATION = /(optional\!)?(js\!SBIS3\.NavigationController|Navigation\/NavigationController)$/;
 
-const
-   contents = {},
+const contents = {},
    contentsModules = {},
    xmlContents = {},
    htmlNames = {},
@@ -32,7 +31,8 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
          //если файл уже есть, то не нужно его перезаписывать.
          //иначе при деплое локального стенда мы перезапишем css в исходниках.
          //просто ругаемся и ждём, что поправят.
-         const message = `Существующий CSS-файл мешает записи результата компиляции '${lessFilePath}'. ` +
+         const message =
+            `Существующий CSS-файл мешает записи результата компиляции '${lessFilePath}'. ` +
             'Необходимо удалить лишний CSS-файл';
 
          logger.warning({
@@ -48,13 +48,14 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
          logger.debug(result.ignoreMessage);
       } else {
          const relativeLessFilePath = path.relative(modulePath, lessFilePath);
-         const relativeResultCssFilePath = transliterate(path.join(moduleName, relativeLessFilePath.replace('.less', '.css')));
+         const relativeResultCssFilePath = transliterate(
+            path.join(moduleName, relativeLessFilePath.replace('.less', '.css'))
+         );
          const resultCssPath = path.join(resourcePath, relativeResultCssFilePath);
          await fs.ensureDir(path.dirname(resultCssPath));
-         await fs.writeFile(resultCssPath, result.text, {flag: 'w'});
+         await fs.writeFile(resultCssPath, result.text, { flag: 'w' });
          logger.debug(`file ${resultCssPath} successfully compiled`);
       }
-
    } catch (error) {
       logger.warning({
          message: 'Ошибка при компиляции less файла',
@@ -68,9 +69,12 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', async function() {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача конвертации ресурсов`);
       const startTask = Date.now();
-      const done = this.async(); //eslint-disable-line no-invalid-this
-      const
-         splittedCore = grunt.option('splitted-core'),
+      const doneAsync = this.async(); //eslint-disable-line no-invalid-this
+      const done = () => {
+         logger.correctExitCode();
+         doneAsync();
+      };
+      const splittedCore = grunt.option('splitted-core'),
          symlink = !!grunt.option('symlink'),
          modulesFilePath = (grunt.option('modules') || '').replace(QUOTES, ''),
          serviceMapping = (grunt.option('service_mapping') || '').replace(QUOTES, ''),
@@ -107,7 +111,7 @@ module.exports = function(grunt) {
 
       function copyFile(target, destination, data, cb) {
          const ext = path.extname(target);
-         if (!symlink || i18n && (ext === '.xhtml' || ext === '.html')) {
+         if (!symlink || (i18n && (ext === '.xhtml' || ext === '.html'))) {
             helpers.copyFile(target, destination, data, cb);
          } else {
             helpers.mkSymlink(target, destination, cb);
@@ -118,7 +122,8 @@ module.exports = function(grunt) {
       grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов`);
       let errorRemove = await helpers.tryRemoveFolder(resourcesPath);
       let attemptRemove = 5;
-      while (errorRemove && attemptRemove) { //eslint-disable-line no-await-in-loop
+      while (errorRemove && attemptRemove) {
+         //eslint-disable-line no-await-in-loop
          await helpers.delay(1000);
          grunt.log.ok(`${humanize.date('H:i:s')}: Удаление завершилось с ошибкой, пробуем ещё раз`);
          errorRemove = await helpers.tryRemoveFolder(resourcesPath);
@@ -144,136 +149,152 @@ module.exports = function(grunt) {
       }
 
       //обработка модулей
-      async.eachSeries(paths, function(input, callbackForProcessingModule) {
-         const partsFilePath = input.replace(dblSlashes, '/').split('/');
-         const moduleName = partsFilePath[partsFilePath.length - 1];
-         const tsdModuleName = transliterate(moduleName);
-         const listNavMod = [];
+      async.eachSeries(
+         paths,
+         function(input, callbackForProcessingModule) {
+            const partsFilePath = input.replace(dblSlashes, '/').split('/');
+            const moduleName = partsFilePath[partsFilePath.length - 1];
+            const tsdModuleName = transliterate(moduleName);
+            const listNavMod = [];
 
-         if (applicationName === tsdModuleName) {
-            grunt.fail.fatal('Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName, '; Модуль: ' + tsdModuleName);
-         }
+            if (applicationName === tsdModuleName) {
+               grunt.fail.fatal(
+                  'Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName,
+                  '; Модуль: ' + tsdModuleName
+               );
+            }
 
-         contentsModules[moduleName] = tsdModuleName;
-         requirejsPaths[tsdModuleName] = helpers.removeLeadingSlash(path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/'));
+            contentsModules[moduleName] = tsdModuleName;
+            requirejsPaths[tsdModuleName] = helpers.removeLeadingSlash(
+               path.join(application, 'resources', tsdModuleName).replace(dblSlashes, '/')
+            );
 
-         helpers.recurse(input, async function(file, callbackForProcessingFile) {
-            try {
-               const destination = path.join(resourcesPath, tsdModuleName,
-                  transliterate(path.relative(input, file)));
-
-               let
-                  text = '',
-                  isNavigationModule = false;
-
-               if (isJs.test(file)) {
-                  grunt.log.ok('Читаем js-файл по пути: ' + file);
-                  text = await fs.readFile(file);
-                  isNavigationModule = text.includes('Navigation/NavigationController');
-               }
-
-               if (file.endsWith('.less')) {
-                  await compileLess(file, input, sbis3ControlsPath, resourcesPath);
-               }
-               if (isModuleJs.test(file) || isNavigationModule) {
-
-                  let componentInfo = {};
+            helpers.recurse(
+               input,
+               async function(file, callbackForProcessingFile) {
                   try {
-                     componentInfo = parseJsComponent(text.toString());
-                  } catch (e) {
-                     logger.error({
-                        message: 'Возникла ошибка при парсинге файла',
-                        filePath: file,
-                        error: e
-                     });
-                  }
+                     const destination = path.join(
+                        resourcesPath,
+                        tsdModuleName,
+                        transliterate(path.relative(input, file))
+                     );
 
-                  if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
-                     const partsComponentName = componentInfo.componentName.split('!');
-                     if (partsComponentName[0] === 'js') {
-                        jsModules[partsComponentName[1]] = path.join(tsdModuleName,
-                           transliterate(path.relative(input, file))).replace(dblSlashes, '/');
+                     let text = '',
+                        isNavigationModule = false;
+
+                     if (isJs.test(file)) {
+                        grunt.log.ok('Читаем js-файл по пути: ' + file);
+                        text = await fs.readFile(file);
+                        isNavigationModule = text.includes('Navigation/NavigationController');
                      }
-                  }
-                  if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
-                     let isNavigation = componentInfo.componentDep.some(function(name) {
-                        return NAME_NAVIGATION.test(name);
+
+                     if (file.endsWith('.less')) {
+                        await compileLess(file, input, sbis3ControlsPath, resourcesPath);
+                     }
+                     if (isModuleJs.test(file) || isNavigationModule) {
+                        let componentInfo = {};
+                        try {
+                           componentInfo = parseJsComponent(text.toString());
+                        } catch (e) {
+                           logger.error({
+                              message: 'Возникла ошибка при парсинге файла',
+                              filePath: file,
+                              error: e
+                           });
+                        }
+
+                        if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
+                           const partsComponentName = componentInfo.componentName.split('!');
+                           if (partsComponentName[0] === 'js') {
+                              jsModules[partsComponentName[1]] = path
+                                 .join(tsdModuleName, transliterate(path.relative(input, file)))
+                                 .replace(dblSlashes, '/');
+                           }
+                        }
+                        if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
+                           let isNavigation = componentInfo.componentDep.some(function(name) {
+                              return NAME_NAVIGATION.test(name);
+                           });
+                           if (isNavigation) {
+                              listNavMod.push(componentInfo.componentName);
+                           }
+                        }
+                        copyFile(file, destination, text, callbackForProcessingFile);
+                     } else {
+                        copyFile(file, destination, null, callbackForProcessingFile);
+                     }
+                  } catch (error) {
+                     logger.error({
+                        error: error
                      });
-                     if (isNavigation) {
-                        listNavMod.push(componentInfo.componentName);
+                     callbackForProcessingFile();
+                  }
+               },
+               function() {
+                  if (listNavMod.length !== 0) {
+                     if (splittedCore) {
+                        const output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
+                        grunt.file.write(output, JSON.stringify(listNavMod.sort(), null, 2));
+                     } else {
+                        fullListNavMod = fullListNavMod.concat(listNavMod);
                      }
                   }
-                  copyFile(file, destination, text, callbackForProcessingFile);
-               } else {
-                  copyFile(file, destination, null, callbackForProcessingFile);
+                  logger.progress(helpers.percentage(++indexModule, paths.length), input);
+                  callbackForProcessingModule();
                }
+            );
+         },
+         function(err) {
+            try {
+               if (err) {
+                  logger.error({
+                     error: err
+                  });
+                  grunt.fail.fatal(err);
+                  return;
+               }
+
+               contents.modules = contentsModules;
+               contents.xmlContents = xmlContents;
+               contents.jsModules = jsModules;
+               contents.htmlNames = htmlNames;
+
+               requirejsPaths.WS = helpers.removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
+
+               contents.requirejsPaths = requirejsPaths;
+
+               if (serviceMapping) {
+                  const srvArr = serviceMapping.trim().split(' ');
+                  if (srvArr.length % 2 === 0) {
+                     const services = {};
+                     for (let i = 0; i < srvArr.length; i += 2) {
+                        services[srvArr[i]] = srvArr[i + 1];
+                     }
+                     contents.services = services;
+                  } else {
+                     grunt.fail.fatal('Services list must be even!');
+                  }
+               }
+
+               if (fullListNavMod.length !== 0 && !splittedCore) {
+                  grunt.file.write(
+                     path.join(resourcesPath, 'navigation-modules.json'),
+                     JSON.stringify(fullListNavMod.sort(), null, 2)
+                  );
+               }
+
+               contents.buildMode = packaging ? 'release' : 'debug';
+               const sorted = helpers.sortObject(contents);
+               grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
+               grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
+               logger.info(`Duration: ${(Date.now() - startTask) / 1000} sec`);
             } catch (error) {
                logger.error({
                   error: error
                });
-               callbackForProcessingFile();
             }
-
-         }, function() {
-            if (listNavMod.length !== 0) {
-               if (splittedCore) {
-                  const output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
-                  grunt.file.write(output, JSON.stringify(listNavMod.sort(), null, 2));
-               } else {
-                  fullListNavMod = fullListNavMod.concat(listNavMod);
-               }
-            }
-            logger.progress(helpers.percentage(++indexModule, paths.length), input);
-            callbackForProcessingModule();
-         });
-      }, function(err) {
-         try {
-            if (err) {
-               logger.error({
-                  error: err
-               });
-               grunt.fail.fatal(err);
-               return;
-            }
-
-            contents.modules = contentsModules;
-            contents.xmlContents = xmlContents;
-            contents.jsModules = jsModules;
-            contents.htmlNames = htmlNames;
-
-            requirejsPaths.WS = helpers.removeLeadingSlash(path.join(application, 'ws/').replace(dblSlashes, '/'));
-
-            contents.requirejsPaths = requirejsPaths;
-
-            if (serviceMapping) {
-               const srvArr = serviceMapping.trim().split(' ');
-               if (srvArr.length % 2 === 0) {
-                  const services = {};
-                  for (let i = 0; i < srvArr.length; i += 2) {
-                     services[srvArr[i]] = srvArr[i + 1];
-                  }
-                  contents.services = services;
-               } else {
-                  grunt.fail.fatal('Services list must be even!');
-               }
-            }
-
-            if (fullListNavMod.length !== 0 && !splittedCore) {
-               grunt.file.write(path.join(resourcesPath, 'navigation-modules.json'), JSON.stringify(fullListNavMod.sort(), null, 2));
-            }
-
-            contents.buildMode = packaging ? 'release' : 'debug';
-            const sorted = helpers.sortObject(contents);
-            grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
-            grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
-            logger.info(`Duration: ${(Date.now() - startTask) / 1000} sec`);
-         } catch (error) {
-            logger.error({
-               error: error
-            });
+            done();
          }
-         done();
-      });
-
+      );
    });
 };

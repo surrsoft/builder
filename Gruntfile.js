@@ -16,7 +16,14 @@ module.exports = function(grunt) {
 
       process.on('unhandledRejection', (reason, p) => {
          //eslint-disable-next-line no-console
-         console.log('[ERROR] Критическая ошибка в работе builder\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+         console.log(
+            "[ERROR] Критическая ошибка в работе builder'а. ",
+            'Unhandled Rejection at:\n',
+            p,
+            '\nreason:\n',
+            reason
+         );
+         process.exit(1);
       });
 
       // Read options
@@ -82,16 +89,17 @@ module.exports = function(grunt) {
       if (!packaging && versionize && typeof versionize === 'string') {
          defaultTasks.push('replace:html');
       }
+      defaultTasks.push('correct-exit-code');
 
       grunt.fail.warn = grunt.fail.fatal;
 
       grunt.registerTask('default', defaultTasks);
 
       grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
-
    } catch (error) {
       //eslint-disable-next-line no-console
-      console.log('[ERROR] Критическая ошибка в работе builder\'а: ', error.stack);
+      console.log("[ERROR] Критическая ошибка в работе builder'а: ", error.stack);
+      process.exit(1);
    }
 };
 
