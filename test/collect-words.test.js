@@ -220,7 +220,7 @@ describe('collect words', () => {
       //words[0].context.should.equal('Контекст');
    });
 
-   //опции-массивы
+   //WS-EXPERT
    it('collect words in xhtml. WS-EXPERT', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
@@ -245,13 +245,28 @@ describe('collect words', () => {
       words[1].context.should.equal('');
    });
 
-   //проверим, что tmpl обрабатываются с учётом
+   //проверим, что tmpl обрабатываются с учётом описания опций
    it('collect words in tmpl. simple component option', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.tmpl');
-      const text = '<ws:Test.Component test1="Текст1"/>' +
-         '<ws:Test.Component test1="Контекст@@Текст2"/>' +
-         '<ws:Test.Component not_translatable="Контекст@@Текст2"/>';
+      const text = '<Test.Component test1="Текст1"/>' + //компонент. упрощеннённый способ конфигурации. переводимая опция
+         '<Test.Component test1="Контекст@@Текст2"/>' + //компонент. упрощеннённый способ конфигурации. переводимая опция с контекстом
+         '<Test.Component translatable_wo_description="{[Текст3]}"/>' + //ручная расстановка скобок
+         '<Test.Component>' +  //компонент. расширенный способ конфигурации. переводимая опция
+         '  <ws:test1>' +
+         '     <ws:string>Текст4</ws:string>' +
+         '  </ws:test1>' +
+         '</Test.Component>' +
+         '<ws:partial template="Test/Component" test1="Текст5"/>' + //встроенный шаблон. переводимая опция
+         '<ws:partial template="optional!Test/Component" test1="Текст6"/>' + //встроенный шаблон с плагином optional. переводимая опция
+         '<Test.Component test1="{{ \'not_translatable\'|bind:not_translatableValue, direction}}"/>' + // привязка к полям контекста
+         '<Test.Component not_translatable="not_translatable"/>' + //упрощеннённый способ конфигурации. непереводимая опция
+         '<Test.Component>' + //расширенный способ конфигурации. непереводимая опция
+         '  <ws:not_translatable>' +
+         '     <ws:string>not_translatable</ws:string>' +
+         '  </ws:not_translatable>' +
+         '</Test.Component>' +
+         '<ws:partial template="Test/Component" not_translatable="not_translatable"/>';//встроенный шаблон. непереводимая опция
       const componentsProperties = {
          'Test/Component': {
             'properties': {
@@ -267,12 +282,81 @@ describe('collect words', () => {
       };
       const words = await collectWords(moduleDir, filePath, text, componentsProperties);
 
-      words.length.should.equal(2);
+      words.length.should.equal(6);
 
       words[0].key.should.equal('Текст1');
       words[0].context.should.equal('');
 
       words[1].key.should.equal('Текст2');
       words[1].context.should.equal('Контекст');
+
+      words[2].key.should.equal('Текст3');
+      words[2].context.should.equal('');
+
+      words[3].key.should.equal('Текст4');
+      words[3].context.should.equal('');
+
+      words[4].key.should.equal('Текст5');
+      words[4].context.should.equal('');
+
+      words[5].key.should.equal('Текст6');
+      words[5].context.should.equal('');
+   });
+
+   //опции-массивы и опции-объекты
+   it('collect words in tmpl. array and object component option', async() => {
+      const moduleDir = 'long/path/moduleName';
+      const filePath = path.join(moduleDir, 'file.tmpl');
+
+      const text =
+         '<Test.Component>' +
+         '  <ws:arrayOpt>' +
+         '     <ws:Array>' +
+         '        <ws:Object>' +
+         '           <ws:test>' +
+         '              <ws:String>Контекст@@Текст</ws:String>' +
+         '           </ws:test>' +
+         '           <ws:not_translatable>' +
+         '              <ws:String>not_translatable</ws:String>' +
+         '           </ws:not_translatable>' +
+         '        </ws:Object>' +
+         '     </ws:Array>' +
+         '  </ws:arrayOpt>' +
+         '</Test.Component>';
+      const componentsProperties = {
+         'Test/Component': {
+            'properties': {
+               'ws-config': {
+                  'options': {
+                     'arrayOpt': {
+                        'itemType': 'Items.typedef',
+                        'type': 'array'
+                     }
+                  }
+               }
+            }
+         },
+         'Items.typedef': {
+            'properties': {
+               'ws-config': {
+                  'options': {
+                     'test': {
+                        'translatable': true
+                     },
+                     'not_translatable': {
+                        'translatable': false
+                     }
+                  }
+               }
+            }
+         }
+      };
+
+      const words = await collectWords(moduleDir, filePath, text, componentsProperties);
+
+      words.length.should.equal(1);
+
+      words[0].key.should.equal('Текст');
+      words[0].context.should.equal('Контекст');
    });
 });
