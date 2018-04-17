@@ -34,7 +34,7 @@
       "gulp-plumber": "^1.2.0",
       "gulp-rename": "^1.2.2",
       "humanize": "0.0.9",
-      "less": "^2.7.3",
+      "less": "^3.0.1",
       "minimatch": "^3.0.4",
       "postcss": "^6.0.21",
       "postcss-safe-parser": "^3.0.1",
