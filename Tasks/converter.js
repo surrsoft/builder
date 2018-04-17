@@ -23,7 +23,7 @@ const contents = {},
    jsModules = {},
    requirejsPaths = {};
 
-async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath) {
+async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath, appRoot) {
    try {
       const moduleName = path.basename(modulePath);
       const cssFilePath = lessFilePath.replace('.less', '.css');
@@ -43,7 +43,7 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
       }
 
       const data = await fs.readFile(lessFilePath);
-      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath);
+      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath, appRoot);
       if (result.ignoreMessage) {
          logger.debug(result.ignoreMessage);
       } else {
@@ -189,7 +189,7 @@ module.exports = function(grunt) {
                      }
 
                      if (file.endsWith('.less')) {
-                        await compileLess(file, input, sbis3ControlsPath, resourcesPath);
+                        await compileLess(file, input, sbis3ControlsPath, resourcesPath, application);
                      }
                      if (isModuleJs.test(file) || isNavigationModule) {
                         let componentInfo = {};
