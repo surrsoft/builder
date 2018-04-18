@@ -27,28 +27,32 @@ function runPrepareXHTML(root, componentsProperties, done) {
       logger.info('Подготавливаем xhtml файлы для локализации.');
 
       // Находим все xhtml файлы
-      helpers.recurse(root, async function(filePath, fileDone) {
-         if (/\.xhtml$/.test(filePath)) {
-            try {
-               const text = await fs.readFile(filePath).toString();
-               if (text) {
-                  await fs.writeFile(filePath, prepareXHTML(text, componentsProperties));
+      helpers.recurse(
+         root,
+         async function(filePath, fileDone) {
+            if (/\.xhtml$/.test(filePath)) {
+               try {
+                  const text = (await fs.readFile(filePath)).toString();
+                  if (text) {
+                     await fs.writeFile(filePath, prepareXHTML(text, componentsProperties));
+                  }
+               } catch (err) {
+                  logger.error({
+                     message: 'Error on localization XHTML',
+                     filePath: filePath,
+                     error: err
+                  });
                }
-            } catch (err) {
-               logger.error({
-                  message: 'Error on localization XHTML',
-                  filePath: filePath,
-                  error: err
-               });
             }
+            setImmediate(fileDone);
+         },
+         function(err) {
+            if (err) {
+               logger.error({ error: err });
+            }
+            done();
          }
-         setImmediate(fileDone);
-      }, function(err) {
-         if (err) {
-            logger.error({error: err});
-         }
-         done();
-      });
+      );
       logger.info('Подготовка xhtml файлов для локализации выполнена.');
    } catch (err) {
       logger.error({ error: err });
@@ -103,10 +107,12 @@ function runCreateResultDict(modules, componentsProperties, out) {
          logger.info('Запускается построение результирующего словаря.');
 
          if (!out) {
-            return reject(new Error('Parameter "out" is not find'));
+            reject(new Error('Parameter "out" is not find'));
+            return;
          }
          if (!modules) {
-            return reject(new Error('Parameter "modules" is not find'));
+            reject(new Error('Parameter "modules" is not find'));
+            return;
          }
 
          const paths = JSON.parse(fs.readFileSync(modules).toString());
@@ -203,7 +209,9 @@ module.exports = function(grunt) {
             }
          }
 
-         optPrepareXhtml && runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
+         if (optPrepareXhtml) {
+            runPrepareXHTML(this.data.cwd, componentsProperties, ++taskCount && done);
+         }
       }
 
       if (optIndexDict) {
