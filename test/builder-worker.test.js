@@ -16,7 +16,8 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
    workerPath = path.join(__dirname, '../gulp/builder/worker.js'),
    modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
+   builderFolder = helpers.prettifyPath(path.normalize(path.join(__dirname, '/../')));
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -26,7 +27,6 @@ const prepareTest = async function() {
    await clearWorkspace();
    await fs.ensureDir(workspaceFolder);
    await fs.copy(fixtureFolder, workspaceFolder);
-
 };
 
 describe('gulp/builder/worker.js', function() {
@@ -49,7 +49,6 @@ describe('gulp/builder/worker.js', function() {
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
          resultsBuildLess.text.should.equal('');
-
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -66,11 +65,12 @@ describe('gulp/builder/worker.js', function() {
          Object.keys(resultParseJsComponent).length.should.equal(1);
          resultParseJsComponent.componentName.should.equal('My.Module/Name');
 
-         const textForParseRoutes = 'module.exports = function() {\n' +
-         '   return {\n' +
-         '      \'/test_1.html\': \'js!SBIS3.Test1\'\n' +
-         '   };\n' +
-         '};\n';
+         const textForParseRoutes =
+            'module.exports = function() {\n' +
+            '   return {\n' +
+            "      '/test_1.html': 'js!SBIS3.Test1'\n" +
+            '   };\n' +
+            '};\n';
          const resultParseRoutes = await pool.exec('parseRoutes', [textForParseRoutes]);
          Object.getOwnPropertyNames(resultParseRoutes).length.should.equal(1);
          Object.getOwnPropertyNames(resultParseRoutes['/test_1.html']).length.should.equal(1);
@@ -82,10 +82,9 @@ describe('gulp/builder/worker.js', function() {
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
-         resultsBuildLess.text.should.equal('.test-selector {\n' +
-            '  test-mixin: \'mixin there\';\n' +
-            '  test-var: \'it is online\';\n' +
-            '}\n');
+         resultsBuildLess.text.should.equal(
+            '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+         );
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -99,12 +98,18 @@ describe('gulp/builder/worker.js', function() {
 
          const promiseParseJsComponent = pool.exec('parseJsComponent', ['define(']);
          await expect(promiseParseJsComponent).to.be.rejected.then(function(error) {
-            return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+            return expect(error).to.have.property(
+               'message',
+               'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
+            );
          });
 
          const promiseParseRoutes = pool.exec('parseRoutes', ['define(']);
          await expect(promiseParseRoutes).to.be.rejected.then(function(error) {
-            return expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+            return expect(error).to.have.property(
+               'message',
+               'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
+            );
          });
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
@@ -116,8 +121,12 @@ describe('gulp/builder/worker.js', function() {
             const errorMessage = error.message.replace(/\\/g, '/');
             return errorMessage.should.equal(
                `Ошибка компиляции ${filePath} на строке 1: ` +
-               '\'notExist.less\' wasn\'t found. ' +
-               `Tried - ${modulePath}/notExist.less,notExist.less`);
+                  "'notExist' wasn't found. " +
+                  'Tried - ' +
+                  `${modulePath}/notExist.less,` +
+                  `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
+                  'notExist.less'
+            );
          });
       } finally {
          await clearWorkspace();

@@ -14,10 +14,10 @@ const expect = chai.expect;
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
    anyModulePath = path.join(workspaceFolder, 'AnyModule'),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
+   builderFolder = helpers.prettifyPath(path.normalize(path.join(__dirname, '/../')));
 
 describe('build less', function() {
-
    it('empty less', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
@@ -27,54 +27,41 @@ describe('build less', function() {
    });
    it('less with default theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
-      const text = '.test-selector {\n' +
-         'test-mixin: @test-mixin;' +
-         'test-var: @test-var;' +
-         '}';
+      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
       result.imports.length.should.equal(2);
-      result.text.should.equal('.test-selector {\n' +
-         '  test-mixin: \'mixin there\';\n' +
-         '  test-var: \'it is online\';\n' +
-         '}\n');
+      result.text.should.equal(
+         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+      );
    });
    it('less from retail', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
-      const text = '.test-selector {\n' +
-         'test-mixin: @test-mixin;' +
-         'test-var: @test-var;' +
-         '}';
+      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
       result.imports.length.should.equal(2);
-      result.text.should.equal('.test-selector {\n' +
-         '  test-mixin: \'mixin there\';\n' +
-         '  test-var: \'it is carry\';\n}\n');
+      result.text.should.equal(
+         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is carry';\n}\n"
+      );
    });
    it('less from retail with presto theme', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/test.less');
-      const text = '.test-selector {\n' +
-         'test-mixin: @test-mixin;' +
-         'test-var: @test-var;' +
-         '}';
+      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
       result.imports.length.should.equal(2);
-      result.text.should.equal('.test-selector {\n' +
-         '  test-mixin: \'mixin there\';\n' +
-         '  test-var: \'it is presto\';\n}\n');
+      result.text.should.equal(
+         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is presto';\n}\n"
+      );
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
-      const text = '.test-selector {\n' +
-         'test-mixin: @test-mixin;' +
-         'test-var: @test-var;' +
-         '}';
+      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
       const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath);
       result.imports.length.should.equal(2);
-      result.text.should.equal('.test-selector {\n' +
-         '  test-mixin: \'mixin there\';\n' +
-         '  test-var: \'it is online\';\n}\n');
+      result.text.should.equal(
+         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n}\n"
+      );
    });
 
    //важно отобразить корректно строку в которой ошибка
@@ -88,7 +75,11 @@ describe('build less', function() {
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+               "'notExist' wasn't found. Tried - " +
+               `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
+               `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
+               'notExist.less'
+         );
       });
    });
 
@@ -102,7 +93,11 @@ describe('build less', function() {
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+               "'notExist' wasn't found. Tried - " +
+               `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
+               `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
+               'notExist.less'
+         );
       });
    });
 
@@ -116,13 +111,17 @@ describe('build less', function() {
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/notExist.less,notExist.less`);
+               "'notExist' wasn't found. Tried - " +
+               `${workspaceFolder}/AnyModule/notExist.less,` +
+               `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
+               'notExist.less'
+         );
       });
    });
 
    it('variables.less from themes', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes/presto/variables.less');
+      const filePath = path.join(retailModulePath, 'themes/presto/_variables.less');
       const text = '';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
       result.hasOwnProperty('ignoreMessage').should.equal(true);
@@ -130,16 +129,11 @@ describe('build less', function() {
 
    it('less from ws', async() => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
-      const text = '.test-selector {\n' +
-         'test-mixin: @test-mixin;' +
-         'test-var: @test-var;' +
-         '}';
+      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
       const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath);
       result.imports.length.should.equal(2);
-      result.text.should.equal('.test-selector {\n' +
-         '  test-mixin: \'mixin there\';\n' +
-         '  test-var: \'it is online\';\n' +
-         '}\n');
+      result.text.should.equal(
+         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+      );
    });
 });
-
