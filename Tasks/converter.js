@@ -208,6 +208,12 @@ module.exports = function(grunt) {
                            const partsComponentName = componentInfo.componentName.split('!');
                            if (partsComponentName[0] === 'js') {
                               if (fixedJsModules.has(partsComponentName[1])) {
+                                 logger.warning({
+                                    message: `Для компонента ${
+                                       componentInfo.componentName
+                                    } следует отказаться от использования плагина js.`,
+                                    filePath: file
+                                 });
                                  jsModules[partsComponentName[1]] = path
                                     .join(tsdModuleName, transliterate(path.relative(input, file)))
                                     .replace(dblSlashes, '/');
