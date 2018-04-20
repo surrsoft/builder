@@ -9,7 +9,7 @@ const buildLess = require('../lib/build-less');
 const parseJsComponent = require('../lib/parse-js-component');
 const humanize = require('humanize');
 const logger = require('../lib/logger').logger();
-const fixedJsModules = require('../lib/fixedModuleJs');
+const fixedJsModules = new Set(require('../lib/fixedModuleJs'));
 
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
@@ -207,7 +207,7 @@ module.exports = function(grunt) {
                         if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
                            const partsComponentName = componentInfo.componentName.split('!');
                            if (partsComponentName[0] === 'js') {
-                              if (fixedJsModules.hasOwnProperty(partsComponentName[1])) {
+                              if (fixedJsModules.has(partsComponentName[1])) {
                                  jsModules[partsComponentName[1]] = path
                                     .join(tsdModuleName, transliterate(path.relative(input, file)))
                                     .replace(dblSlashes, '/');
