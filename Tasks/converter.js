@@ -206,10 +206,19 @@ module.exports = function(grunt) {
 
                         if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
                            const partsComponentName = componentInfo.componentName.split('!');
-                           if (partsComponentName[0] === 'js' && fixedJsModules.hasOwnProperty(partsComponentName[1])) {
-                              jsModules[partsComponentName[1]] = path
-                                 .join(tsdModuleName, transliterate(path.relative(input, file)))
-                                 .replace(dblSlashes, '/');
+                           if (partsComponentName[0] === 'js') {
+                              if (fixedJsModules.hasOwnProperty(partsComponentName[1])) {
+                                 jsModules[partsComponentName[1]] = path
+                                    .join(tsdModuleName, transliterate(path.relative(input, file)))
+                                    .replace(dblSlashes, '/');
+                              } else {
+                                 logger.error({
+                                    message: `Имя компонента ${
+                                       componentInfo.componentName
+                                    } не будет добавлено в contents.json. Использование плагина js! недопустимо.`,
+                                    filePath: file
+                                 });
+                              }
                            }
                         }
                         if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
