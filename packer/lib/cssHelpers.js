@@ -13,13 +13,13 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
    let result;
    try {
       result = postcss().use(postcssUrl({
-         url: function(url, decl, from, dirname, to) {
+         url: function(asset, dir) {
             // ignore absolute urls, hashes or data uris
-            if (invalidUrl.test(url)) {
-               return url;
+            if (invalidUrl.test(asset.url)) {
+               return asset.url;
             }
 
-            return '/' + path.relative(to, path.join(from, url)).replace(dblSlashes, '/');
+            return '/' + path.relative(dir.to, path.join(dir.from, asset.url)).replace(dblSlashes, '/');
          }
       })).process(css, {
          parser: safe,
