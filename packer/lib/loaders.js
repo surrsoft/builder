@@ -445,11 +445,11 @@ function onlyForIE10AndAbove(f, modName) {
             let indexVar = res.indexOf('var style = document.createElement(');
             result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
          } else {
-            result = ifCondition + res + '}'
+            result = ifCondition + res + '}';
          }
          f(null, result);
       }
-   }
+   };
 }
 
 /**
