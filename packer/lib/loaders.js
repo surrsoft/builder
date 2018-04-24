@@ -429,20 +429,27 @@ function ignoreIfNoFile(f, loaderName) {
  * @return {Function}
  */
 function onlyForIE10AndAbove(f, modName) {
-   let ifCondition;
-   if (modName.indexOf('SBIS3.CONTROLS') !== -1) {
-      ifCondition = 'if(typeof window !== "undefined" && window.atob && document.cookie.indexOf("thmname") === -1){';
-   } else {
+   let ifConditionThemes,
       ifCondition = 'if(typeof window !== "undefined" && window.atob){';
+
+   if (modName.indexOf('SBIS3.CONTROLS') !== -1) {
+      ifConditionThemes = 'if(document.cookie.indexOf("thmname") !== -1){return;}';
    }
 
    return function onlyRunCodeForIE10AndAbove(err, res) {
       if (err) {
          f(err);
       } else {
-         f(null, ifCondition + res + '}');
+         let result;
+         if (ifConditionThemes) {
+            let indexVar = res.indexOf('var style = document.createElement(');
+            result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
+         } else {
+            result = ifCondition + res + '}'
+         }
+         f(null, result);
       }
-   };
+   }
 }
 
 /**
