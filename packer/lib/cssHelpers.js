@@ -56,8 +56,8 @@ function bumpImportsUp(packedCss) {
 
 function splitIntoBatches(numSelectorsPerBatch, content) {
 
-   let batches = [],
-      numSelectorsInCurrentBatch = 0;
+   const batches = [];
+   let numSelectorsInCurrentBatch = 0;
 
    function mkBatch() {
       const batch = postcss.root();
@@ -85,7 +85,10 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
       return root.nodes.reduce(fastSerialize, '');
    }
 
-   postcss().process(content, {parser: safe}).root.nodes.reduce(function splitRulesToBatches(batch, node) {
+   //wtf: если не сделать slice, то ровно половина массива пропадёт
+   const nodes = postcss().process(content, {parser: safe}).root.nodes.slice();
+   let batch = mkBatch();
+   for (const node of nodes) {
       // Считать селекторы будем только для CSS-правил (AtRules и т.п. - игнорируем)
       if (node.type === 'rule') {
          const numSelectorsInThisRule = node.selectors.length;
@@ -101,14 +104,9 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
       }
 
       batch.append(node);
+   }
 
-      return batch;
-
-   }, mkBatch());
-
-   batches = batches.map(toCSSString);
-
-   return batches;
+   return batches.map(toCSSString);
 }
 
 module.exports = {
