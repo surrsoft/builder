@@ -42,7 +42,8 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
 
          let result;
          try {
-            result = await pool.exec('buildLess', [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath]);
+            //TODO: нужен pathsForImport как для grunt
+            result = await pool.exec('buildLess', [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, []]);
          } catch (error) {
             logger.warning({
                error: error,
