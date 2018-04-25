@@ -501,6 +501,7 @@ function() {\
 var style = document.createElement("style"),\
 head = document.head || document.getElementsByTagName("head")[0];\
 style.type = "text/css";\
+style.setAttribute("data-vdomignore", "true");\
 style.appendChild(document.createTextNode(' + JSON.stringify(res) + '));\
 head.appendChild(style);\
 }';
