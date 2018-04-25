@@ -29,7 +29,8 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
 
          const cssInSources = file.history[0].replace(/\.less$/, '.css');
          if (await fs.pathExists(cssInSources)) {
-            const message = `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
+            const message =
+               `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                'Необходимо удалить лишний CSS-файл';
             logger.warning({
                message: message,
@@ -43,7 +44,13 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
          let result;
          try {
             //TODO: нужен pathsForImport как для grunt
-            result = await pool.exec('buildLess', [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, []]);
+            result = await pool.exec('buildLess', [
+               file.history[0],
+               file.contents.toString(),
+               moduleInfo.path,
+               sbis3ControlsPath,
+               []
+            ]);
          } catch (error) {
             logger.warning({
                error: error,
@@ -59,15 +66,17 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
          } else {
             changesStore.addOutputFile(file.history[0], outputPath);
             changesStore.addDependencies(file.history[0], result.imports);
-            this.push(new Vinyl({
-               base: moduleInfo.output,
-               path: outputPath,
-               contents: Buffer.from(result.text)
-            }));
+            this.push(
+               new Vinyl({
+                  base: moduleInfo.output,
+                  path: outputPath,
+                  contents: Buffer.from(result.text)
+               })
+            );
          }
       } catch (error) {
          logger.error({
-            message: 'Ошибка builder\'а при компиляции less',
+            message: "Ошибка builder'а при компиляции less",
             error: error,
             moduleInfo: moduleInfo,
             filePath: file.history[0]

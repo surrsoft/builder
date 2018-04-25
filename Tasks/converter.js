@@ -44,7 +44,14 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
       }
 
       const data = await fs.readFile(lessFilePath);
-      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath, pathsForImport, appRoot);
+      const result = await buildLess(
+         lessFilePath,
+         data.toString(),
+         modulePath,
+         sbis3ControlsPath,
+         pathsForImport,
+         appRoot
+      );
       if (result.ignoreMessage) {
          logger.debug(result.ignoreMessage);
       } else {
