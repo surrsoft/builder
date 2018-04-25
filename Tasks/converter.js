@@ -23,7 +23,7 @@ const contents = {},
    jsModules = {},
    requirejsPaths = {};
 
-async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath, appRoot) {
+async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resourcePath, pathsForImport, appRoot) {
    try {
       const moduleName = path.basename(modulePath);
       const cssFilePath = lessFilePath.replace('.less', '.css');
@@ -43,7 +43,7 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
       }
 
       const data = await fs.readFile(lessFilePath);
-      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath, appRoot);
+      const result = await buildLess(lessFilePath, data.toString(), modulePath, sbis3ControlsPath, pathsForImport, appRoot);
       if (result.ignoreMessage) {
          logger.debug(result.ignoreMessage);
       } else {
@@ -140,13 +140,16 @@ module.exports = function(grunt) {
       }
       grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено`);
 
+      const pathsForImportSet = new Set();
       let sbis3ControlsPath = '';
       for (const modulePath of paths) {
+         pathsForImportSet.add(path.dirname(modulePath));
          if (path.basename(modulePath) === 'SBIS3.CONTROLS') {
             sbis3ControlsPath = modulePath;
             logger.debug('Путь до модуля SBIS3.CONTROLS: ' + sbis3ControlsPath);
          }
       }
+      const pathsForImport = [...pathsForImportSet];
 
       //обработка модулей
       async.eachSeries(
@@ -189,7 +192,7 @@ module.exports = function(grunt) {
                      }
 
                      if (file.endsWith('.less')) {
-                        await compileLess(file, input, sbis3ControlsPath, resourcesPath, application);
+                        await compileLess(file, input, sbis3ControlsPath, resourcesPath, pathsForImport, application);
                      }
                      if (isModuleJs.test(file) || isNavigationModule) {
                         let componentInfo = {};

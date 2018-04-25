@@ -14,14 +14,15 @@ const expect = chai.expect;
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
    anyModulePath = path.join(workspaceFolder, 'AnyModule'),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
+   pathsForImport = [workspaceFolder];
 
 describe('build less', function() {
 
    it('empty less', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
-      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('');
    });
@@ -31,7 +32,7 @@ describe('build less', function() {
          'test-mixin: @test-mixin;' +
          'test-var: @test-var;' +
          '}';
-      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -45,7 +46,7 @@ describe('build less', function() {
          'test-mixin: @test-mixin;' +
          'test-var: @test-var;' +
          '}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -58,7 +59,7 @@ describe('build less', function() {
          'test-mixin: @test-mixin;' +
          'test-var: @test-var;' +
          '}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -70,7 +71,7 @@ describe('build less', function() {
          'test-mixin: @test-mixin;' +
          'test-var: @test-var;' +
          '}';
-      const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
@@ -82,13 +83,16 @@ describe('build less', function() {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
+      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+            '\'notExist.less\' wasn\'t found. Tried - ' +
+            `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
+            `${workspaceFolder}/notExist.less,` +
+            'notExist.less');
       });
    });
 
@@ -96,13 +100,16 @@ describe('build less', function() {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
+      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,notExist.less`);
+            '\'notExist.less\' wasn\'t found. Tried - ' +
+            `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
+            `${workspaceFolder}/notExist.less,` +
+            'notExist.less');
       });
    });
 
@@ -110,13 +117,16 @@ describe('build less', function() {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
       const text = '@import "Error";';
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath);
+      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return errorMessage.should.equal(
             `Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less на строке 1: ` +
-            `'notExist.less' wasn't found. Tried - ${workspaceFolder}/AnyModule/notExist.less,notExist.less`);
+            '\'notExist.less\' wasn\'t found. Tried - ' +
+            `${workspaceFolder}/AnyModule/notExist.less,` +
+            `${workspaceFolder}/notExist.less,` +
+            'notExist.less');
       });
    });
 
@@ -124,7 +134,7 @@ describe('build less', function() {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/variables.less');
       const text = '';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
       result.hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
@@ -134,7 +144,7 @@ describe('build less', function() {
          'test-mixin: @test-mixin;' +
          'test-var: @test-var;' +
          '}';
-      const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath);
+      const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal('.test-selector {\n' +
          '  test-mixin: \'mixin there\';\n' +
