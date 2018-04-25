@@ -44,7 +44,7 @@ describe('gulp/builder/worker.js', function() {
 
          const filePath = path.join(modulePath, 'Empty.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
@@ -78,7 +78,7 @@ describe('gulp/builder/worker.js', function() {
 
          const filePath = path.join(modulePath, 'Correct.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
@@ -114,7 +114,7 @@ describe('gulp/builder/worker.js', function() {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         const promise = pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath]);
+         const promise = pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
 
          return expect(promise).to.be.rejected.then(function(error) {
             //заменяем слеши, иначе не сравнить на linux и windows одинаково
