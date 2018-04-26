@@ -23,7 +23,10 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       const isStaticTemplateExists = await fs.pathExists(absoluteStaticTemplate);
       if (isStaticTemplateExists) {
-         staticTemplates = await fs.readFile(absoluteStaticTemplate);
+         // здесь специально синхронные readFileSync и writeFileSync, потому что все это гоняется в helpers.recurse в несколько потоков,
+         // и если будет асихронно - есть вероятность что будет последовательность "прочитать файл", "прочитать файл", "записать файл", "записать файл"
+         // а так точно за считыванием файла последует запись в него, и файл всегда будет актуален
+         staticTemplates = fs.readFileSync(absoluteStaticTemplate);
          staticTemplates = JSON.parse(staticTemplates);
       } else {
          staticTemplates = {};
@@ -31,7 +34,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       staticTemplates[fileName] = path.normalize(relativePath).replace(/\\/ig, '/');
 
-      await fs.writeFile(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
+      fs.writeFileSync(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
    }
 
    helpers.recurse(

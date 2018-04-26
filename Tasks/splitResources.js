@@ -420,31 +420,35 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    grunt.registerMultiTask('splitResources', 'Разбивает мета данные по модулям', function() {
-      const fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
+      try {
+         const fullContents = JSON.parse(fs.readFileSync(getPath('contents.json', undefined, true)));
 
-      logger.info(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
+         logger.info(`${humanize.date('H:i:s')} : Запускается задача разбиения мета данных.`);
 
-      writeFileInModules(splitRoutes(), 'routes-info.json');
-      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена.`);
+         writeFileInModules(splitRoutes(), 'routes-info.json');
+         logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения routes-info.json успешно выполнена.`);
 
-      const splitCont = splitContents(fullContents);
-      writeFileInModules(splitCont, 'contents.json');
-      writeFileInModules(splitCont, 'contents.js');
-      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена.`);
+         const splitCont = splitContents(fullContents);
+         writeFileInModules(splitCont, 'contents.json');
+         writeFileInModules(splitCont, 'contents.js');
+         logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения contents.json успешно выполнена.`);
 
-      writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
-      logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена.`);
+         writeFileInModules(splitModuleDependencies(), 'module-dependencies.json');
+         logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения module-dependencies.json успешно выполнена.`);
 
-      if (fs.existsSync(getPath('preload_urls.json', undefined, true))) {
-         writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
-         logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена.`);
+         if (fs.existsSync(getPath('preload_urls.json', undefined, true))) {
+            writeFileInModules(splitPreloadUrls(fullContents.requirejsPaths), 'preload_urls.json');
+            logger.debug(`${humanize.date('H:i:s')} : Подзадача разбиения preload_urls.json успешно выполнена.`);
+         }
+
+         slpitStaticHtml(fullContents.requirejsPaths);
+         logger.debug(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
+
+         logger.info(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
+
+         logger.correctExitCode();
+      } catch (err) {
+         logger.error({error: err});
       }
-
-      slpitStaticHtml(fullContents.requirejsPaths);
-      logger.debug(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
-
-      logger.info(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
-
-      logger.correctExitCode();
    });
 };
