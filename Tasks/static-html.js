@@ -21,7 +21,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       let staticTemplates;
 
-      const isStaticTemplateExists = await fs.pathExists(absoluteStaticTemplate);
+      const isStaticTemplateExists = fs.pathExistsSync(absoluteStaticTemplate);
       if (isStaticTemplateExists) {
          // здесь специально синхронные readFileSync и writeFileSync, потому что все это гоняется в helpers.recurse в несколько потоков,
          // и если будет асихронно - есть вероятность что будет последовательность "прочитать файл", "прочитать файл", "записать файл", "записать файл"
