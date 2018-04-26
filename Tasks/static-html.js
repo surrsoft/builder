@@ -10,6 +10,30 @@ const path = require('path'),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+   async function handleResult(newFullPath, res) {
+      await fs.writeFile(newFullPath, res);
+
+      const fileName = path.basename(newFullPath),
+         relativePath = path.relative(resourcesRoot, newFullPath),
+         moduleName = relativePath.slice(0, relativePath.indexOf('\\')),
+         absoulteModuleName = path.join(resourcesRoot, moduleName),
+         absoluteStaticTemplate = path.join(absoulteModuleName, 'static_templates.json');
+
+      let staticTemplates;
+
+      const isStaticTemplateExists = await fs.pathExists(absoluteStaticTemplate);
+      if (isStaticTemplateExists) {
+         staticTemplates = await fs.readFile(absoluteStaticTemplate);
+         staticTemplates = JSON.parse(staticTemplates);
+      } else {
+         staticTemplates = {};
+      }
+
+      staticTemplates[fileName] = path.normalize(relativePath).replace(/\\/ig, '/');
+
+      await fs.writeFile(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
+   }
+
    helpers.recurse(
       resourcesRoot,
       async function(fullPath, callback) {
@@ -84,12 +108,12 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          });
 
          if (typeof routeResult === 'string') {
-            await fs.writeFile(newFullPath, routeResult);
+            await handleResult(newFullPath, routeResult);
             callback();
          } else {
             routeResult
                .addCallback(async function(res) {
-                  await fs.writeFile(newFullPath, res);
+                  await handleResult(newFullPath, res);
                   callback();
                })
                .addErrback(function(error) {

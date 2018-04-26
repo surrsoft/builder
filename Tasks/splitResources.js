@@ -402,7 +402,19 @@ module.exports = function splitResourcesTask(grunt) {
                }
             });
             const sorted = helpers.sortObject(listPathStaticHtml);
-            fs.writeFileSync(getPath('static_templates.json', nameModules), JSON.stringify(sorted, undefined, 2));
+
+            const absoluteStaticTemplate = getPath('static_templates.json', nameModules);
+            const isStaticTemplateExists = fs.pathExistsSync(absoluteStaticTemplate);
+            let staticTemplates;
+            if (isStaticTemplateExists) {
+               staticTemplates = fs.readFileSync(absoluteStaticTemplate);
+               staticTemplates = JSON.parse(staticTemplates);
+            } else {
+               staticTemplates = {};
+            }
+            Object.assign(staticTemplates, sorted);
+
+            fs.writeFileSync(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
          }
       });
    }
