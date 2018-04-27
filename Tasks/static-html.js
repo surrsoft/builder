@@ -10,6 +10,33 @@ const path = require('path'),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
 function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+   async function handleResult(newFullPath, res) {
+      await fs.writeFile(newFullPath, res);
+
+      const fileName = path.basename(newFullPath),
+         relativePath = path.relative(resourcesRoot, newFullPath),
+         moduleName = helpers.getFirstDirInRelativePath(relativePath),
+         absoulteModuleName = path.join(resourcesRoot, moduleName),
+         absoluteStaticTemplate = path.join(absoulteModuleName, 'static_templates.json');
+
+      let staticTemplates;
+
+      const isStaticTemplateExists = fs.pathExistsSync(absoluteStaticTemplate);
+      if (isStaticTemplateExists) {
+         // здесь специально синхронные readFileSync и writeFileSync, потому что все это гоняется в helpers.recurse в несколько потоков,
+         // и если будет асихронно - есть вероятность что будет последовательность "прочитать файл", "прочитать файл", "записать файл", "записать файл"
+         // а так точно за считыванием файла последует запись в него, и файл всегда будет актуален
+         staticTemplates = fs.readFileSync(absoluteStaticTemplate);
+         staticTemplates = JSON.parse(staticTemplates);
+      } else {
+         staticTemplates = {};
+      }
+
+      staticTemplates[fileName] = helpers.prettifyPath(relativePath);
+
+      fs.writeFileSync(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
+   }
+
    helpers.recurse(
       resourcesRoot,
       async function(fullPath, callback) {
@@ -84,12 +111,12 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          });
 
          if (typeof routeResult === 'string') {
-            await fs.writeFile(newFullPath, routeResult);
+            await handleResult(newFullPath, routeResult);
             callback();
          } else {
             routeResult
                .addCallback(async function(res) {
-                  await fs.writeFile(newFullPath, res);
+                  await handleResult(newFullPath, res);
                   callback();
                })
                .addErrback(function(error) {
