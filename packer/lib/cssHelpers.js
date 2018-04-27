@@ -4,6 +4,7 @@ const path = require('path');
 const postcss = require('postcss');
 const postcssUrl = require('postcss-url');
 const safe = require('postcss-safe-parser');
+const logger = require('../../lib/logger').logger();
 
 const invalidUrl = /^(\/|#|data:|[a-z]+:\/\/)(?=.*)/i;
 const importCss = /@import[^;]+;/ig;
@@ -29,7 +30,11 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
          to: path.join(root, 'someFakeInline.css')
       }).css;
    } catch (e) {
-      console.log('Failed to parse CSS file. ' + e);
+      logger.warning({
+         message: 'Failed to parse CSS file.',
+         filePath: sourceFile,
+         error: e
+      });
       result = '';
    }
 

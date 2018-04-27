@@ -1,3 +1,4 @@
+/*eslint-disable max-nested-callbacks*/
 'use strict';
 
 const path = require('path');
@@ -163,12 +164,8 @@ function createTemplate(templateOptions, namesForCurrentTemplate, nodes, applica
             nodes[nameModule].amd = true;
             nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
             if (nodes[secondName]) {
-               try {
-                  nodes[secondName].amd = true;
-                  nodes[secondName].path = nodes[secondName].path.replace(extFile, '.min$1');
-               } catch (e) {
-                  console.dir(e.stack);
-               }
+               nodes[secondName].amd = true;
+               nodes[secondName].path = nodes[secondName].path.replace(extFile, '.min$1');
             }
 
             //Если имеются дополнительные дефайны для шаблонов, меняем пути и для них

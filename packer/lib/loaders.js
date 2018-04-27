@@ -7,6 +7,7 @@ const stripBOM = require('strip-bom');
 const path = require('path');
 const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
+const logger = require('../../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 let availableLangs;
@@ -219,8 +220,9 @@ function jsonLoader(module, base, done) {
          try {
             res = JSON.stringify(JSON.parse(res));
          } catch (error) {
-            //ignore
-            console.log(error);
+            logger.warning({
+               error: error
+            });
          }
          done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
       }
@@ -252,16 +254,16 @@ function xmlLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function isLoader(module, base, done) {
-   let if_condition = 'if(%c)';
-   let else_condition = 'else';
+   let ifCondition = 'if(%c)';
+   let elseCondition = 'else';
    if (module.moduleFeature === 'browser') {
-      if_condition = if_condition.replace('%c', 'typeof window !== "undefined"');
+      ifCondition = ifCondition.replace('%c', 'typeof window !== "undefined"');
    }
    if (module.moduleFeature === 'msIe') {
-      if_condition = if_condition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
+      ifCondition = ifCondition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
    }
    if (module.moduleFeature === 'compatibleLayer') {
-      if_condition = if_condition.replace('%c', 'typeof window === "undefined" || window && window.location.href.indexOf("withoutLayout")===-1');
+      ifCondition = ifCondition.replace('%c', 'typeof window === "undefined" || window && window.location.href.indexOf("withoutLayout")===-1');
    }
    if (module.moduleYes) {
       loaders[module.moduleYes.plugin](module.moduleYes, base, function(err, res) {
@@ -271,7 +273,7 @@ function isLoader(module, base, done) {
             if (!res) {
                done(null, '');
             } else {
-               if_condition = if_condition + '{' + removeSourceMap(res) + '}';
+               ifCondition = ifCondition + '{' + removeSourceMap(res) + '}';
                if (module.moduleNo) {
                   loaders[module.moduleNo.plugin](module.moduleNo, base, function(err, res) {
                      if (err) {
@@ -280,13 +282,13 @@ function isLoader(module, base, done) {
                         if (!res) {
                            done(null, '');
                         } else {
-                           else_condition = else_condition + '{' + removeSourceMap(res) + '}';
-                           done(null, if_condition + else_condition);
+                           elseCondition = elseCondition + '{' + removeSourceMap(res) + '}';
+                           done(null, ifCondition + elseCondition);
                         }
                      }
                   });
                } else {
-                  done(null, if_condition);
+                  done(null, ifCondition);
                }
             }
          }
@@ -311,7 +313,7 @@ function removeSourceMap(res) {
  * @param {String} base - site root
  * @param {loaders~callback} done
  */
-const if_condition = 'if(typeof window !== "undefined")';
+const ifCondition = 'if(typeof window !== "undefined")';
 function browserLoader(module, base, done) {
    loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
       if (err) {
@@ -320,7 +322,7 @@ function browserLoader(module, base, done) {
          if (!res) {
             done(null, '');
          } else {
-            done(null, if_condition + '{' + removeSourceMap(res) + '}');
+            done(null, ifCondition + '{' + removeSourceMap(res) + '}');
          }
       }
    });
@@ -415,7 +417,11 @@ function tmplLoader(module, base, done) {
 function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
       if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
-         console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
+         logger.warning({
+            message: 'Potential 404 error for loader ' + loaderName,
+            filePath: currentFile,
+            error: err
+         });
          f(null, '');
          return;
       }
@@ -442,7 +448,7 @@ function onlyForIE10AndAbove(f, modName) {
       } else {
          let result;
          if (ifConditionThemes) {
-            let indexVar = res.indexOf('var style = document.createElement(');
+            const indexVar = res.indexOf('var style = document.createElement(');
             result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
          } else {
             result = ifCondition + res + '}';

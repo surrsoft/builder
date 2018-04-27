@@ -8,6 +8,8 @@ const loadersWithoutDefine = require('./loadersWithoutDefines');
 const getMeta = require('./getDependencyMeta');
 const packCSS = require('./../tasks/lib/packCSS').packCSS;
 const packerDictionary = require('./../tasks/lib/packDictionary');
+const logger = require('../../lib/logger').logger();
+
 const dblSlashes = /\\/g,
    CDN = /\/?cdn\//,
    replacedRequire = fs.readFileSync(path.join(__dirname, 'replaceRequirejs.res')),
@@ -185,20 +187,20 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
       .filter(function(module) {
          if (module.plugin === 'is') {
             if (module.moduleYes && !module.moduleYes.fullPath) {
-               console.log('Empty file name: ' + module.moduleYes.fullName);
+               logger.warning('Empty file name: ' + module.moduleYes.fullName);
                return false;
             }
             if (module.moduleNo && !module.moduleNo.fullPath) {
-               console.log('Empty file name: ' + module.moduleNo.fullName);
+               logger.warning('Empty file name: ' + module.moduleNo.fullName);
                return false;
             }
          } else if (module.plugin === 'browser' || module.plugin === 'optional') {
             if (module.moduleIn && !module.moduleIn.fullPath) {
-               console.log('Empty file name: ' + module.moduleIn.fullName);
+               logger.warning('Empty file name: ' + module.moduleIn.fullName);
                return false;
             }
          } else if (!module.fullPath) {
-            console.log('Empty file name: ' + module.fullName);
+            logger.warning('Empty file name: ' + module.fullName);
             return false;
          }
          return true;
