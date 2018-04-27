@@ -15,7 +15,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       const fileName = path.basename(newFullPath),
          relativePath = path.relative(resourcesRoot, newFullPath),
-         moduleName = relativePath.slice(0, relativePath.indexOf('\\')),
+         moduleName = helpers.getFirstDirInRelativePath(relativePath),
          absoulteModuleName = path.join(resourcesRoot, moduleName),
          absoluteStaticTemplate = path.join(absoulteModuleName, 'static_templates.json');
 
@@ -32,7 +32,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
          staticTemplates = {};
       }
 
-      staticTemplates[fileName] = path.normalize(relativePath).replace(/\\/ig, '/');
+      staticTemplates[fileName] = helpers.prettifyPath(relativePath);
 
       fs.writeFileSync(absoluteStaticTemplate, JSON.stringify(staticTemplates, undefined, 2));
    }
