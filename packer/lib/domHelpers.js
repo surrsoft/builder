@@ -84,7 +84,7 @@ function checkFiles(root, sourceFile, result) {
       if (!fs.existsSync(fullPath)) {
          let l = result.nodes[i].lineNumber,
             c = result.nodes[i].columnNumber;
-         errors.push(('line ' + l + ' col ' + c + ': file not found') + ' ' + packItem);
+         errors.push('line ' + l + ' col ' + c + ': file not found' + ' ' + packItem);
          isSane = false;
       }
    });

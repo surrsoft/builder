@@ -448,7 +448,7 @@ function onlyForIE10AndAbove(f, modName) {
       } else {
          let result;
          if (ifConditionThemes) {
-            let indexVar = res.indexOf('var style = document.createElement(');
+            const indexVar = res.indexOf('var style = document.createElement(');
             result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
          } else {
             result = ifCondition + res + '}';
