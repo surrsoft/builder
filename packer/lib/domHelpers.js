@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const parser = new xmldom.DOMParser();
 const serializer = new xmldom.XMLSerializer();
+const logger = require('../../lib/logger').logger();
 
 const domCache = {};
 
@@ -35,7 +36,11 @@ function domify(f, mime) {
       errors.push(m);
    });
    domCache[f] = parser.parseFromString(fs.readFileSync(f, 'utf-8'), mime || 'text/html');
+
+   //eslint-disable-next-line no-console
    console.log.restore();
+
+   //eslint-disable-next-line no-console
    console.error.restore();
 
    return domCache[f];
@@ -79,13 +84,13 @@ function checkFiles(root, sourceFile, result) {
       if (!fs.existsSync(fullPath)) {
          let l = result.nodes[i].lineNumber,
             c = result.nodes[i].columnNumber;
-         errors.push(('line ' + l + ' col ' + c + ': file not found').bold + ' ' + packItem);
+         errors.push(('line ' + l + ' col ' + c + ': file not found') + ' ' + packItem);
          isSane = false;
       }
    });
    if (!isSane) {
-      console.log('Warning: '.yellow.bold + path.relative(root, sourceFile) + ' skipped');
-      console.log(errors.join('\n'));
+      logger.warning('Warning: ' + path.relative(root, sourceFile) + ' skipped');
+      logger.warning(errors.join('\n'));
    }
    return isSane;
 }
@@ -141,9 +146,12 @@ const helpers = {
                   // update HTML
                   fs.writeFileSync(f, stringify(dom));
 
-                  console.log('OK  : '.green + f);
+                  logger.debug('OK  : ' + f);
                } else {
-                  console.error('Skip: '.red.bold + f);
+                  logger.warning({
+                     message: 'Skip file',
+                     filePath: f
+                  });
                }
             }
          });

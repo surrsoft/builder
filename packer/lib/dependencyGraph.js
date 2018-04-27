@@ -1,5 +1,7 @@
 'use strict';
 
+const logger = require('../../lib/logger').logger();
+
 /**
  * Dependency graph
  * @constructor
@@ -18,14 +20,14 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
 
    this._path.push(name);
 
-   let nodes = this._nodes,
+   const nodes = this._nodes,
       links = this._links,
       node = nodes[name];
 
    if (node) {
       if (node.mark > 0) {
-         if (node.mark == 1) {
-            console.log('WARNING! Cycle dependency detected: ' + this._path.join(', '));
+         if (node.mark === 1) {
+            logger.warning('Cycle dependency detected: ' + this._path.join(', '));
          }
          this._path.pop();
          return;

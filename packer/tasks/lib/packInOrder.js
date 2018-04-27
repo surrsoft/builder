@@ -11,7 +11,7 @@ const path = require('path');
  * которые впоследствии мы вставим в разметку
  * @returns {Array.<T>|*}
  */
-function filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, application) {
+function filterModulesAndGenerateBundles(orderQueue, bundlesOptions, application) {
    //добавляем лидирующий слэш если root и applicationRoot полностью совпали и replace вернул пустоту
    application = application ? application : '/';
    return orderQueue.js.filter(function(module) {
@@ -50,7 +50,7 @@ function packInOrder(dg, modArray, root, applicationRoot, withoutDefine, bundles
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
    orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
    if (bundlesOptions.jsBundles) {
-      orderQueue.js = filterModulesAndGenerateBundlesHref(orderQueue, bundlesOptions, applicationRoot.replace(root, ''));
+      orderQueue.js = filterModulesAndGenerateBundles(orderQueue, bundlesOptions, applicationRoot.replace(root, ''));
    }
 
    if (withoutDefine) {

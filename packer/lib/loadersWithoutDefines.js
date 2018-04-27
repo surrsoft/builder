@@ -1,3 +1,4 @@
+/*eslint-disable max-nested-callbacks*/
 'use strict';
 
 const esprima = require('esprima');
@@ -6,6 +7,7 @@ const stripBOM = require('strip-bom');
 const path = require('path');
 const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
+const logger = require('../../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 let availableLangs;
@@ -223,7 +225,10 @@ function xhtmlLoader(module, base, packStorage, done) {
 
             done(null, withoutDefine + '\n' + withDefine);
          } catch (error) {
-            console.log(error, module.fullName, module.fullPath);
+            logger.error({
+               filePath: module.fullPath,
+               error: error
+            });
             done(null, '');
          }
       }
@@ -275,8 +280,9 @@ function jsonLoader(module, base, packStorage, done) {
          try {
             res = JSON.stringify(JSON.parse(res));
          } catch (error) {
-            //ignore
-            console.log(error);
+            logger.warning({
+               error: error
+            });
          }
          packStorage.addToResolvedNodes(defineName);
 
@@ -325,13 +331,13 @@ function xmlLoader(module, base, packStorage, done) {
  * @param {loaders~callback} done
  */
 function isLoader(module, base, packStorage, done) {
-   let if_condition = 'if(%c)';
-   let else_condition = 'else';
+   let ifCondition = 'if(%c)';
+   let elseCondition = 'else';
    if (module.moduleFeature === 'browser') {
-      if_condition = if_condition.replace('%c', 'typeof window !== "undefined"');
+      ifCondition = ifCondition.replace('%c', 'typeof window !== "undefined"');
    }
    if (module.moduleFeature === 'msIe') {
-      if_condition = if_condition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
+      ifCondition = ifCondition.replace('%c', 'typeof window !== "undefined" && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/)');
    }
    if (module.moduleYes) {
       loaders[module.moduleYes.plugin](module.moduleYes, base, packStorage, function(err, res) {
@@ -341,7 +347,7 @@ function isLoader(module, base, packStorage, done) {
             if (!res) {
                done(null, '');
             } else {
-               if_condition = if_condition + '{' + removeSourceMap(res) + '}';
+               ifCondition = ifCondition + '{' + removeSourceMap(res) + '}';
                if (module.moduleNo) {
                   loaders[module.moduleNo.plugin](module.moduleNo, base, packStorage, function(err, res) {
                      if (err) {
@@ -350,13 +356,13 @@ function isLoader(module, base, packStorage, done) {
                         if (!res) {
                            done(null, '');
                         } else {
-                           else_condition = else_condition + '{' + removeSourceMap(res) + '}';
-                           done(null, if_condition + else_condition);
+                           elseCondition = elseCondition + '{' + removeSourceMap(res) + '}';
+                           done(null, ifCondition + elseCondition);
                         }
                      }
                   });
                } else {
-                  done(null, if_condition);
+                  done(null, ifCondition);
                }
             }
          }
@@ -370,7 +376,7 @@ function isLoader(module, base, packStorage, done) {
  * @param {Array} resolvedNodes
  * @param {loaders~callback} done
  */
-const if_condition = 'if(typeof window !== "undefined")';
+const ifCondition = 'if(typeof window !== "undefined")';
 
 function browserLoader(module, base, packStorage, done) {
    loaders[module.moduleIn.plugin](module.moduleIn, base, packStorage, function(err, res) {
@@ -380,7 +386,7 @@ function browserLoader(module, base, packStorage, done) {
          if (!res) {
             done(null, '');
          } else {
-            done(null, if_condition + '{' + removeSourceMap(res) + '}');
+            done(null, ifCondition + '{' + removeSourceMap(res) + '}');
          }
       }
    });
@@ -510,11 +516,17 @@ function tmplLoader(module, base, packStorage, done) {
                   done(null, withoutDefine + '\n' + withDefine);
                }
             } catch (error) {
-               console.log(error, module.fullName, module.fullPath);
+               logger.warning({
+                  filePath: module.fullPath,
+                  error: error
+               });
                done(error);
             }
          }, function(err) {
-            console.log(err, module.fullName, module.fullPath);
+            logger.warning({
+               filePath: module.fullPath,
+               error: err
+            });
             done(err);
          });
       }, 'tmplLoader'));
@@ -531,7 +543,11 @@ function tmplLoader(module, base, packStorage, done) {
 function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
       if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
-         console.log('Potential 404 error: ' + err + '. ' + currentFile, loaderName);
+         logger.warning({
+            message: 'Potential 404 error for loader ' + loaderName,
+            filePath: currentFile,
+            error: err
+         });
          f(null, '');
          return;
       }

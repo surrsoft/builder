@@ -8,7 +8,8 @@ const
    specialPlugins = /preload!/,
    pluginList = ['css', 'js', 'html', 'cdn', 'browser', 'datasource', 'i18n', 'is', 'is-api', 'json', 'native-css', 'normalize', 'optional', 'order', 'preload', 'remote', 'template', 'text', 'tmpl', 'xml'],
    defineRegexp = /define\([\'"][\S]+?,/,
-   coreI18nName = 'Core/i18n';
+   coreI18nName = 'Core/i18n',
+   logger = require('../../lib/logger').logger();
 
 function getForceCall(value) {
    return value.indexOf('SBIS3.CORE.ServerEventBus/resources/sockjs') > -1;
@@ -81,7 +82,7 @@ function getDeps(depArray, packStorage) {
                },
                'property': {
                   'type': 'Identifier',
-                  'name': "'" + defineName + "'"
+                  'name': '\'' + defineName + '\''
                }
             });
          } else if (packStorage.isNodeResolved(defineNameWithoutComplexPlugins)) {//isNodeResolved(defineNameWithoutComplexPlugins, resolvedNodes)) {
@@ -94,7 +95,7 @@ function getDeps(depArray, packStorage) {
                },
                'property': {
                   'type': 'Identifier',
-                  'name': "'" + defineNameWithoutComplexPlugins + "'"
+                  'name': '\'' + defineNameWithoutComplexPlugins + '\''
                }
             });
          } else if (specialPlugins.test(defineNameWithoutComplexPlugins)) {
@@ -110,13 +111,13 @@ function getDeps(depArray, packStorage) {
                   'property': {
                      'type': 'Literal',
                      'value': 'preloadFunc',
-                     'raw': "'preloadFunc'"
+                     'raw': '\'preloadFunc\''
                   }
                },
                'arguments': [
                   {
                      'type': 'Identifier',
-                     'name': "'" + defineNameWithoutComplexPlugins + "'"
+                     'name': '\'' + defineNameWithoutComplexPlugins + '\''
                   }
                ]
             });
@@ -145,7 +146,7 @@ function getNodeToReplace(defineName, val, packStorage) {
             },
             'property': {
                'type': 'Identifier',
-               'name': "'" + defineName + "'"
+               'name': '\'' + defineName + '\''
             }
          },
          'right': val
@@ -217,6 +218,7 @@ function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
       }
    }
 }
+
 function replaceCallExpression(node, replacedNames, packStorage, ctx, setModified) {
 
    const parsed = parseExpression(node.expression, replacedNames, packStorage, ctx, setModified);
@@ -266,7 +268,7 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
          return exp;
       }
    });
-   
+
    if (!badSequence) {
       node.expression.expressions = varDeclarations;
    }
@@ -292,7 +294,7 @@ function main(text, packStorage) {
    try {
       ast = esprima.parse(text);
    } catch (e) {
-      console.error(e.message);
+      logger.error({error: e.message});
       throw e;
    }
 

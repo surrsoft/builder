@@ -65,7 +65,7 @@
       "no-new-wrappers": 1,
       "max-nested-callbacks": [
          1,
-         4
+         3
       ],
       "curly": 1,
       "operator-linebreak": 1,

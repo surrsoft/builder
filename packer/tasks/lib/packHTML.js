@@ -1,3 +1,4 @@
+/*eslint-disable max-nested-callbacks*/
 'use strict';
 
 const fs = require('fs-extra');

@@ -1,9 +1,11 @@
+/*eslint-disable max-nested-callbacks*/
 'use strict';
 
 const path = require('path');
 const fs = require('fs-extra');
 const helpers = require('../lib/helpers');
 const humanize = require('humanize');
+const logger = require('../lib/logger').logger();
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('gzip', 'Archive resources', function() {
@@ -27,8 +29,8 @@ module.exports = function(grunt) {
 
                if (text.byteLength > 1024) {
                   helpers.writeGzip(`${file}.gz`, text, function() {
-                     if (++i % 1000 == 0) {
-                        console.log(`${i} files processed`);
+                     if (++i % 1000 === 0) {
+                        logger.debug(`${i} files processed`);
                      }
                      callback();
                   });
@@ -44,7 +46,7 @@ module.exports = function(grunt) {
             grunt.fail.fatal(err);
          }
 
-         console.log(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);
+         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);
          done();
       });
    });

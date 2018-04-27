@@ -3,6 +3,7 @@
 const fs = require('fs-extra');
 const dom = require('tensor-xmldom');
 const domParser = new dom.DOMParser();
+const logger = require('../../lib/logger').logger();
 
 const cache = {};
 
@@ -246,7 +247,10 @@ module.exports = {
                                  const failedPaths = findPath(typename, failedModule[1], graph);
                                  e.message += '\nFailed chains:\n' + JSON.stringify(failedPaths, null, 3);
                               }
-                              console.error('Error while resolving type "' + typename + '"', e.message, e.stack);
+                              logger.warning({
+                                 message: 'Error while resolving type "' + typename + '"',
+                                 error: e
+                              });
                               return e;
                            }));
                         })(div, configAttr);
