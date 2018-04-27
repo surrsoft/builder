@@ -93,7 +93,7 @@ module.exports = function uglifyJsTask(grunt) {
 
             let
                currentEXTString = currentEXT.toString(),
-               currentNodePath = helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', ''),
+               currentNodePath = helpers.prettifyPath(helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')),
                currentNode = nodes.filter(function(node) {
                   return mDeps.nodes[node].path === currentNodePath;
                }),
@@ -132,6 +132,11 @@ module.exports = function uglifyJsTask(grunt) {
                    */
                   try {
                      fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
+                     if (splittedCore && currentNode.length > 0) {
+                        currentNode.forEach(function(node) {
+                           mDeps.nodes[node].path = mDeps.nodes[node].path.replace(currentEXT, '.min.json');
+                        });
+                     }
                   } catch (err) {
                      logger.error({
                         message: 'Проблема с парсингом и сохранением json-файла',
