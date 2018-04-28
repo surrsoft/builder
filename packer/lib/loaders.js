@@ -439,7 +439,7 @@ function onlyForIE10AndAbove(f, modName) {
       ifCondition = 'if(typeof window !== "undefined" && window.atob){';
 
    if (modName.startsWith('css!SBIS3.CONTROLS') || modName.startsWith('css!Controls')) {
-      ifConditionThemes = 'if(document.cookie.indexOf("thmname") !== -1){return;}';
+      ifConditionThemes = 'var global=(function(){return this || (0,eval)(this);})();if(global.wsConfig && global.wsConfig.themeName){return;}';
    }
 
    return function onlyRunCodeForIE10AndAbove(err, res) {
