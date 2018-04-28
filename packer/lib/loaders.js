@@ -438,7 +438,7 @@ function onlyForIE10AndAbove(f, modName) {
    let ifConditionThemes,
       ifCondition = 'if(typeof window !== "undefined" && window.atob){';
 
-   if (modName.indexOf('SBIS3.CONTROLS') !== -1) {
+   if (modName.startsWith('css!SBIS3.CONTROLS') || modName.startsWith('css!Controls')) {
       ifConditionThemes = 'if(document.cookie.indexOf("thmname") !== -1){return;}';
    }
 
