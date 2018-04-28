@@ -152,7 +152,7 @@ module.exports = function(grunt) {
 
       convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
-            logger.error({ error: err });
+            logger.error({error: err});
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
@@ -170,7 +170,7 @@ module.exports = function(grunt) {
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
          patterns = this.data.src,
-         oldHtml = grunt.file.expand({ cwd: applicationRoot }, this.data.html),
+         oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
@@ -178,7 +178,8 @@ module.exports = function(grunt) {
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-         replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
+         splittedCore = grunt.option('splitted-core'),
+         replacePath = !(splittedCore && grunt.option('multi-service'));
 
       const done = () => {
          logger.correctExitCode();
@@ -219,7 +220,7 @@ module.exports = function(grunt) {
                fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
                logger.warning({
-                  message: "Can't delete old html",
+                  message: 'Can\'t delete old html',
                   filePath: filePath,
                   error: err
                });
@@ -235,7 +236,7 @@ module.exports = function(grunt) {
          userParams: userParams,
          globalParams: globalParams,
          urlServicePath: grunt.option('url-service-path') ? grunt.option('url-service-path') : application,
-         wsPath: grunt.option('splitted-core') ? 'resources/WS.Core/' : 'ws/'
+         wsPath: splittedCore ? 'resources/WS.Core/' : 'ws/'
       };
 
       helpers.recurse(
@@ -266,7 +267,17 @@ module.exports = function(grunt) {
                   generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
                      result => {
                         if (result) {
-                           const outputPath = path.join(applicationRoot, result.outFileName);
+                           let outputPath;
+                           if (splittedCore) {
+                              const
+                                 relativePath = path.relative(resourcesRoot, file),
+                                 moduleName = helpers.getFirstDirInRelativePath(relativePath),
+                                 absoulteModulePath = path.join(resourcesRoot, moduleName);
+                              outputPath = path.join(absoulteModulePath, result.outFileName);
+                           } else {
+                              outputPath = path.join(applicationRoot, result.outFileName);
+                           }
+
                            helpers.writeFile(outputPath, result.text, callback);
                         } else {
                            callback();
