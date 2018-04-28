@@ -394,8 +394,6 @@ module.exports = function splitResourcesTask(grunt) {
             staticHtml.forEach(function(Html) {
                try {
                   nameHtml = getName(contents.htmlNames[Html], false, true);
-                  contentsHtml = fs.readFileSync(getPath(nameHtml), { encoding: 'utf8' });
-                  fs.writeFileSync(getPath(nameHtml, nameModules), contentsHtml);
                   listPathStaticHtml[nameHtml] = nameModules + '/' + nameHtml;
                } catch (err) {
                   grunt.fail.fatal('Не смог найти файл' + nameHtml + '.\n' + err.stack);
