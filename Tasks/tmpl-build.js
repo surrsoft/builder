@@ -169,8 +169,6 @@ module.exports = function(grunt) {
          const tmpl = global.requirejs('View/Builder/Tmpl'),
             config = global.requirejs('View/config');
 
-         const tclosureStr = 'var tclosure=deps[0];';
-
          await pMap(
             self.files,
             async value => {
@@ -229,7 +227,7 @@ module.exports = function(grunt) {
                   );
                   result.push('return templateFunction;');
 
-                  let depsStr = 'var deps = {};';
+                  let depsStr = 'var _deps = {};';
 
                   const deps = [...templateRender.getComponents(html)];
                   depsStr += deps.reduce((accumulator, currentValue, index) => {
@@ -237,19 +235,19 @@ module.exports = function(grunt) {
                      return `${accumulator}_deps["${currentValue}"] = deps[${indexStr}];`;
                   }, '');
 
-                  const contents = tclosureStr + depsStr + result.join('');
+                  const contents = 'var tclosure=deps[0];' + depsStr + result.join('');
 
                   const templateOptions = {
                      fullPath: fullPath,
                      currentNode: currentNode,
                      contents: contents,
                      original: original,
-                     deps: deps
+                     deps: ['View/Runner/tclosure', ...deps]
                   };
                   templateOptions.data = createTemplate(templateOptions, namesForPaths[filename]);
                   await writeTemplate(templateOptions, namesForPaths[filename], nodes, splittedCore);
                } catch (error) {
-                  logger.error({
+                  logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
                      error: error
@@ -340,7 +338,7 @@ module.exports = function(grunt) {
                   templateOptions.data = createTemplate(templateOptions, namesForPaths[filename]);
                   await writeTemplate(templateOptions, namesForPaths[filename], nodes, splittedCore);
                } catch (error) {
-                  logger.error({
+                  logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
                      error: error
