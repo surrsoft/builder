@@ -10,7 +10,7 @@ const through = require('through2'),
 
 //если есть ресурсы локализации, то нужно записать <локаль>.js файл в папку "lang/<локаль>" и занести данные в contents.json
 // + css локализации нужно объединить
-module.exports = function(moduleInfo, config) {
+module.exports = function(config, moduleInfo) {
    const indexer = new DictionaryIndexer(config.localizations);
    return through.obj(function(file, encoding, callback) {
       try {

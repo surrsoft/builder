@@ -17,7 +17,8 @@ const
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    indexDictionary = require('../plugins/index-dictionary'),
-   markupLocalization = require('../plugins/markup-localization'),
+   localizeXhtml = require('../plugins/localize-xhtml'),
+   buildTmpl = require('../plugins/build-tmpl'),
    createContentsJson = require('../plugins/create-contents-json'),
    filterCached = require('../plugins/filter-cached');
 
@@ -26,7 +27,7 @@ const
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, config, pool) {
+function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
    let sbis3ControlsPath = '';
    if (modulesMap.has('SBIS3.CONTROLS')) {
@@ -49,13 +50,14 @@ function generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, 
          .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
+         .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
          .pipe(gulpHtmlTmpl(moduleInfo))
          .pipe(gulpRename(file => {
             file.dirname = transliterate(file.dirname);
             file.basename = transliterate(file.basename);
          }))
-         .pipe(gulpIf(hasLocalization, indexDictionary(moduleInfo, config)))
-         .pipe(gulpIf(hasLocalization, markupLocalization(config, moduleInfo, pool)))
+         .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
+         .pipe(gulpIf(hasLocalization, localizeXhtml(config, moduleInfo, pool)))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(gulpChmod({
@@ -85,7 +87,7 @@ function generateTaskForBuildModules(changesStore, config, pool) {
    for (const moduleInfo of config.modules) {
       tasks.push(
          gulp.series(
-            generateTaskForBuildSingleModule(moduleInfo, modulesMap, changesStore, config, pool),
+            generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap),
             printPercentComplete));
    }
    return gulp.parallel(tasks);
