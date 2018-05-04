@@ -387,7 +387,6 @@ module.exports = function splitResourcesTask(grunt) {
 
          let listPathStaticHtml = {},
             staticHtml = Object.keys(contents.htmlNames),
-            contentsHtml,
             nameHtml;
 
          if (staticHtml.length !== 0) {
