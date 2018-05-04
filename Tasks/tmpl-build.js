@@ -6,7 +6,7 @@ const path = require('path'),
    pMap = require('p-map');
 
 const logger = require('../lib/logger').logger(),
-   tmplLocalizator = require('../lib/i18n/tmpl-localizator'),
+   processingTmpl = require('../lib/processing-tmpl'),
    runJsonGenerator = require('../lib/i18n/run-json-generator'),
    helpers = require('../lib/helpers');
 
@@ -55,34 +55,7 @@ function checkPathForInterfaceModule(currentPath, application) {
    return helpers.prettifyPath(resultPath ? prettyCurrentPath.replace(resultPath, resultNode) : prettyCurrentPath);
 }
 
-/**
- * Создаёт шаблон в зависимости от типа шаблона (tmpl, xhtml, html)
- */
-function createTemplate(templateOptions, namesForCurrentTemplate) {
-   const contents = templateOptions.contents,
-      deps = templateOptions.deps,
-      nameModule = templateOptions.currentNode,
-      plugin = nameModule.substr(0, nameModule.lastIndexOf('!') + 1);
-   let data;
-
-   if (plugin.indexOf('html!') > -1) {
-      data = `define("${nameModule}",function(){var f=${contents};f.toJSON=function(){return {$serialized$:"func", module:"${nameModule}"}};return f;});`;
-   } else if (plugin.indexOf('tmpl!') > -1) {
-      data = `define("${nameModule}",${JSON.stringify(
-         deps
-      )},function(){var deps=Array.prototype.slice.call(arguments);${contents}});`;
-   }
-
-   if (namesForCurrentTemplate && namesForCurrentTemplate.length > 1) {
-      const firstName = namesForCurrentTemplate.shift();
-      namesForCurrentTemplate.forEach(function(moduleName) {
-         data += `\ndefine("${moduleName}",["${firstName}"],function(template){return template;});`;
-      });
-   }
-   return data;
-}
-
-async function writeTemplate(templateOptions, namesForCurrentTemplate, nodes, splittedCore) {
+async function writeTemplate(templateOptions, nodes, splittedCore) {
    /**
     * Позорный костыль для обратной поддержки препроцессора
     */
@@ -96,14 +69,6 @@ async function writeTemplate(templateOptions, namesForCurrentTemplate, nodes, sp
       if (nodes.hasOwnProperty(nameModule)) {
          nodes[nameModule].amd = true;
          nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
-
-         //Если имеются дополнительные дефайны для шаблонов, меняем пути и для них
-         if (namesForCurrentTemplate && namesForCurrentTemplate[0] !== nameModule) {
-            namesForCurrentTemplate.forEach(function(moduleName) {
-               nodes[moduleName].amd = true;
-               nodes[moduleName].path = nodes[moduleName].path.replace(extFile, '.min$1');
-            });
-         }
       }
    } else {
       await Promise.all([
@@ -144,9 +109,9 @@ module.exports = function(grunt) {
             root = self.data.root,
             application = self.data.application,
             applicationRoot = path.join(root, application),
-            mDeps = await fs.readJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
-            nodes = mDeps.nodes,
-            namesForPaths = getModulenamesForPaths(mDeps, 'tmpl!');
+            resourcesRoot = path.join(root, application, 'resources'),
+            mDeps = await fs.readJSON(path.join(resourcesRoot, 'module-dependencies.json')),
+            nodes = mDeps.nodes;
 
          let componentsProperties = {};
 
@@ -166,9 +131,6 @@ module.exports = function(grunt) {
             componentsProperties = resultJsonGenerator.index;
          }
 
-         const tmpl = global.requirejs('View/Builder/Tmpl'),
-            config = global.requirejs('View/config');
-
          await pMap(
             self.files,
             async value => {
@@ -186,66 +148,16 @@ module.exports = function(grunt) {
                      await fs.writeFile(fullPath.replace(extFile, '.min$1'), html);
                   }
 
-                  if (html.indexOf('define') === 0) {
-                     return;
-                  }
-
-                  const templateRender = Object.create(tmpl);
-                  const filename = helpers.removeLeadingSlash(
-                     fullPath.replace(helpers.prettifyPath(applicationRoot), '')
-                  );
-                  const traversedObj = await tmplLocalizator.parseTmpl(html, filename, componentsProperties);
-                  const tmplFunc = templateRender.func(traversedObj.astResult, {
-                     config: config,
-                     filename: filename,
-                     fromBuilderTmpl: true
-                  });
-
-                  const result = ['var templateFunction = '];
-                  result.push(tmplFunc.toString() + ';');
-
-                  if (tmplFunc.includedFunctions) {
-                     result.push('templateFunction.includedFunctions = {');
-                     result.push('};');
-                  }
-
-                  result.push('templateFunction.stable = true;');
-
-                  /**
-                   * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
-                   * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
-                   */
-                  let currentNode = namesForPaths[filename] ? namesForPaths[filename][0] : null;
-                  if (!currentNode) {
-                     currentNode = `tmpl!${checkPathForInterfaceModule(filename, application).replace(
-                        /(\.min)?\.tmpl$/g,
-                        ''
-                     )}`;
-                  }
-                  result.push(
-                     `templateFunction.toJSON = function() {return {$serialized$: "func", module: "${currentNode}"}};`
-                  );
-                  result.push('return templateFunction;');
-
-                  let depsStr = 'var _deps = {};';
-
-                  const deps = [...templateRender.getComponents(html)];
-                  depsStr += deps.reduce((accumulator, currentValue, index) => {
-                     const indexStr = (index + 1).toString();
-                     return `${accumulator}_deps["${currentValue}"] = deps[${indexStr}];`;
-                  }, '');
-
-                  const contents = 'var tclosure=deps[0];' + depsStr + result.join('');
-
+                  //relativePath должен начинаться с имени модуля
+                  const relativePath = path.relative(resourcesRoot, fullPath);
+                  const tmplObj = await processingTmpl.buildTmpl(original, relativePath, componentsProperties);
                   const templateOptions = {
                      fullPath: fullPath,
-                     currentNode: currentNode,
-                     contents: contents,
+                     currentNode: tmplObj.nodeName,
                      original: original,
-                     deps: ['View/Runner/tclosure', ...deps]
+                     data: tmplObj.text
                   };
-                  templateOptions.data = createTemplate(templateOptions, namesForPaths[filename]);
-                  await writeTemplate(templateOptions, namesForPaths[filename], nodes, splittedCore);
+                  await writeTemplate(templateOptions, nodes, splittedCore);
                } catch (error) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
@@ -265,7 +177,7 @@ module.exports = function(grunt) {
          });
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({error: error});
+         logger.error({ error: error });
       }
       done();
    });
@@ -328,15 +240,20 @@ module.exports = function(grunt) {
                      config.encode = config.interpolate;
                   }
                   const template = DoT.template(html, config);
-                  const contents = template.toString().replace(/[\n\r]/g, '');
+                  const contents =
+                     `define("${currentNode}",function(){` +
+                     `var f=${template.toString().replace(/[\n\r]/g, '')};` +
+                     'f.toJSON=function(){' +
+                     `return {$serialized$:"func", module:"${currentNode}"}` +
+                     '};return f;});';
                   const templateOptions = {
                      fullPath: fullPath,
                      currentNode: currentNode,
-                     contents: contents,
-                     original: original
+                     original: original,
+                     data: contents
                   };
-                  templateOptions.data = createTemplate(templateOptions, namesForPaths[filename]);
-                  await writeTemplate(templateOptions, namesForPaths[filename], nodes, splittedCore);
+
+                  await writeTemplate(templateOptions, nodes, splittedCore);
                } catch (error) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
@@ -351,11 +268,11 @@ module.exports = function(grunt) {
          );
 
          mDeps.nodes = nodes;
-         await fs.outputJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json'), mDeps, {spaces: 2});
+         await fs.outputJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json'), mDeps, { spaces: 2 });
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({error: error});
+         logger.error({ error: error });
       }
       done();
    });

@@ -10,7 +10,7 @@ const
    fs = require('fs-extra'),
    workerPool = require('workerpool'),
    buildLess = require('../../lib/build-less'),
-   buildTmplPrimitive = require('../../lib/build-tmpl'),
+   processingTmpl = require('../../lib/processing-tmpl'),
    parseJsComponent = require('../../lib/parse-js-component'),
    processingRoutes = require('../../lib/processing-routes'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
@@ -27,7 +27,7 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
    if (!componentsProperties) {
       componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
    }
-   return buildTmplPrimitive(text, relativeFilePath, componentsProperties);
+   return processingTmpl.buildTmpl(text, relativeFilePath, componentsProperties);
 }
 
 async function prepareXHTML(text, componentsPropertiesFilePath) {

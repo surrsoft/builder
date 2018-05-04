@@ -35,7 +35,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
-            newText = await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath]);
+            newText = (await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath])).text;
          } catch (error) {
             logger.warning({
                message: 'Ошибка компиляции TMPL',
