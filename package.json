@@ -40,6 +40,7 @@
       "postcss-safe-parser": "^3.0.1",
       "postcss-url": "^7.3.2",
       "requirejs": "^2.3.5",
+      "p-map": "^1.2.0",
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.300",
       "strip-bom": "^3.0.0",
       "tensor-xmldom": "0.2.0-b9",

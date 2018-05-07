@@ -21,7 +21,7 @@ module.exports = function(config, moduleInfo, pool) {
          file.contents = Buffer.from(newText);
       } catch (error) {
          logger.error({
-            message: 'Ошибка Builder\'а',
+            message: 'Ошибка при локализации XHTML',
             error: error,
             moduleInfo: moduleInfo,
             filePath: file.path
