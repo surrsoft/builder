@@ -6,6 +6,7 @@ require('./init-test');
 
 const chai = require('chai'),
    path = require('path'),
+   lib = require('./lib'),
    helpers = require('../lib/helpers'),
    buildLess = require('../lib/build-less');
 
@@ -15,7 +16,6 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
    anyModulePath = path.join(workspaceFolder, 'AnyModule'),
    sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
-   builderFolder = helpers.prettifyPath(path.normalize(path.join(__dirname, '/../'))),
    pathsForImport = [workspaceFolder];
 
 describe('build less', function() {
@@ -74,15 +74,12 @@ describe('build less', function() {
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
-         return errorMessage.should.equal(
-            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-               "'notExist' wasn't found. Tried - " +
-               `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
-
-               `${workspaceFolder}/notExist.less,` +
-            `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
-               'notExist.less'
-         );
+         return lib
+            .trimLessError(errorMessage)
+            .should.equal(
+               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+                  "'notExist' wasn't found."
+            );
       });
    });
 
@@ -94,15 +91,12 @@ describe('build less', function() {
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
-         return errorMessage.should.equal(
-            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
-               "'notExist' wasn't found. Tried - " +
-               `${workspaceFolder}/AnyModule/bla/bla/long/path/notExist.less,` +
-
-               `${workspaceFolder}/notExist.less,` +
-            `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
-               'notExist.less'
-         );
+         return lib
+            .trimLessError(errorMessage)
+            .should.equal(
+               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+                  "'notExist' wasn't found."
+            );
       });
    });
 
@@ -114,7 +108,11 @@ describe('build less', function() {
       return expect(promise).to.be.rejected.then(function(error) {
          //заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
-         return errorMessage.should.equal(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less на строке 1: ` + "'notExist' wasn't found. Tried - " + `${workspaceFolder}/AnyModule/notExist.less,` + `${workspaceFolder}/notExist.less,` + `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` + 'notExist.less');
+         return lib
+            .trimLessError(errorMessage)
+            .should.equal(
+               `Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less на строке 1: 'notExist' wasn't found.`
+            );
       });
    });
 
