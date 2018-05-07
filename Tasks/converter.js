@@ -169,7 +169,7 @@ module.exports = function(grunt) {
             const listNavMod = [];
 
             if (applicationName === tsdModuleName) {
-               grunt.fail.fatal(
+               logger.error(
                   'Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName,
                   '; Модуль: ' + tsdModuleName
                );
@@ -276,7 +276,6 @@ module.exports = function(grunt) {
                   logger.error({
                      error: err
                   });
-                  grunt.fail.fatal(err);
                   return;
                }
 
@@ -298,7 +297,7 @@ module.exports = function(grunt) {
                      }
                      contents.services = services;
                   } else {
-                     grunt.fail.fatal('Services list must be even!');
+                     logger.error('Services list must be even!');
                   }
                }
 

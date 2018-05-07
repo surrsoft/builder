@@ -9,6 +9,7 @@ const customPackage = require('./lib/customPackage');
 const makeDependenciesGraph = require('./lib/collectDependencies');
 const packCSS = require('./lib/packCSS').gruntPackCSS;
 const packJS = require('./lib/packJS');
+const logger = require('../../lib/logger').logger();
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
 const badConfigs = [];
@@ -245,12 +246,11 @@ function gruntCustomPack(grunt) {
          const packageNames = Object.keys(errors);
          if (packageNames.length > 0) {
             packageNames.forEach(function(packageName) {
-               grunt.log.ok('Ошибка в кастомном пакете ' + packageName);
-               grunt.log.error(errors[packageName]);
+               logger.error(`Ошибка в кастомном пакете ${packageName}: ${errors[packageName]}`);
             });
-            grunt.log.error('Fatal error: Некоторые кастомные пакеты не были созданы. Данные пакеты будут проигнорированы и не попадут в бандлы. Подробнее в логах билдера');
+            logger.error('Fatal error: Некоторые кастомные пакеты не были созданы. Данные пакеты будут проигнорированы и не попадут в бандлы. Подробнее в логах билдера');
          } else {
-            grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача создания кастомных пакетов выполнена.');
+            logger.debug('Задача создания кастомных пакетов выполнена.');
          }
 
          applicationRoot = applicationRoot.replace(dblSlashes, '/');
@@ -259,11 +259,12 @@ function gruntCustomPack(grunt) {
          }
          bundlesRoutePath = path.join(wsRoot, bundlesPath, 'bundlesRoute').replace(dblSlashes, '/');
          grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js'), `bundles=${JSON.stringify(bundlesOptions.bundles)};`);
-         grunt.log.ok(`Записали bundles.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js')}`);
+         logger.debug(`Записали bundles.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js')}`);
+
          grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'output.json'), `${JSON.stringify(bundlesOptions.outputs)}`);
-         grunt.log.ok(`Записали output.json по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'output.json')}`);
+         logger.debug(`Записали output.json по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'output.json')}`);
          grunt.file.write(path.join(applicationRoot, `${bundlesRoutePath}.json`), JSON.stringify(bundlesOptions.modulesInBundles));
-         grunt.log.ok(`Записали bundlesRoute.json по пути: ${path.join(applicationRoot, `${bundlesRoutePath}.json`)}`);
+         logger.debug(`Записали bundlesRoute.json по пути: ${path.join(applicationRoot, `${bundlesRoutePath}.json`)}`);
          grunt.file.write(path.join(applicationRoot, `${bundlesRoutePath}.js`), `define("${bundlesRoutePath}",[],function(){return ${JSON.stringify(bundlesOptions.modulesInBundles)};});`);
 
          /**
@@ -272,7 +273,7 @@ function gruntCustomPack(grunt) {
             */
          if (bundlesOptions.splittedCore) {
             grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js'), `bundles=${JSON.stringify(bundlesOptions.bundles)};`);
-            grunt.log.ok(`Записали bundles.min.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js')}`);
+            logger.debug(`Записали bundles.min.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js')}`);
          }
          done();
       };
@@ -308,7 +309,7 @@ function gruntCustomPack(grunt) {
          errorMessage += badConfigs.map(function(item) {
             return '"' + item.path + '"';
          }).join(', ');
-         grunt.log.error(errorMessage);
+         logger.error(errorMessage);
       }
 
       bundlesOptions.splittedCore = this.data.splittedCore;

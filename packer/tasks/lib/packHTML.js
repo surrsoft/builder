@@ -7,9 +7,7 @@ const async = require('async');
 const packInOrder = require('./packInOrder');
 const domHelpers = require('./../../lib/domHelpers');
 const indexer = require('./../../lib/index-project');
-
-const ERROR_INDEX_FAILED = 100;
-const ERROR_PACKING_FAILED = 101;
+const logger = require('../../../lib/logger').logger();
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
    const type2attr = {
@@ -136,16 +134,16 @@ function getStartNodes(grunt, divs, application) {
       div = divs[i];
       const divClass = div.getAttribute('class');
       if (divClass && divClass.indexOf('ws-root-template') > -1 && (tmplName = div.getAttribute('data-template-name'))) {
-         grunt.log.debug('Packing inner template \'' + tmplName + '\'');
+         logger.debug('Packing inner template \'' + tmplName + '\'');
 
          startNodes = startNodes.concat(getStartNodeByTemplate(tmplName, application));
       }
 
       if (tmplName) {
          if (startNodes.length === 0) {
-            grunt.log.debug('No any dependencies collected for \'' + tmplName + '\'');
+            logger.debug('No any dependencies collected for \'' + tmplName + '\'');
          } else {
-            grunt.log.debug('Got ' + startNodes.length + ' start nodes for \'' + tmplName + '\': ' + startNodes.join(','));
+            logger.debug('Got ' + startNodes.length + ' start nodes for \'' + tmplName + '\': ' + startNodes.join(','));
          }
       }
    }
@@ -168,14 +166,14 @@ function getKey(buildNumber, key) {
 }
 
 function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
-   grunt.log.ok('Packing dependencies of ' + htmlFileset.length + ' files...');
+   logger.debug('Packing dependencies of ' + htmlFileset.length + ' files...');
    const
       bundlesOptions = {},
       buildNumber = grunt.option('versionize');
 
    async.eachLimit(htmlFileset, 1, function(htmlFile, done) {
       try {
-         grunt.log.ok(htmlFile);
+         logger.debug(htmlFile);
 
          const dom = domHelpers.domify(htmlFile),
             divs = dom.getElementsByTagName('div'),
@@ -190,7 +188,7 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
 
             packInOrder(dg, startNodes, root, path.join(root, application), false, {}, function(err, filesToPack) {
                if (err) {
-                  grunt.log.debug(err); //Имееет ли смысл?
+                  logger.debug(err); //Имееет ли смысл?
                   done(err);
                } else {
                   // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты + пакеты для каждой локали).
@@ -223,7 +221,10 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
                                */
                               fs.writeFileSync(path.join(root, `${generatedScript[0].name.replace('%{RESOURCE_ROOT}', 'resources/')}.log`), JSON.stringify(bundlesOptions.logs, null, 3));
                            } catch (e) {
-                              grunt.log.error(`Ошибка сохранения лога для статического пакета: ${generatedScript[0].name}\n${e.stack}`);
+                              logger.error({
+                                 message: `Ошибка сохранения лога для статического пакета: ${generatedScript[0].name}`,
+                                 error: e
+                              });
                            }
                         }
                      }
@@ -246,14 +247,18 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
                }
             }, null, htmlName);
          } else {
-            grunt.log.debug('No any packing target in \'' + htmlFile + '\'');
+            logger.debug('No any packing target in \'' + htmlFile + '\'');
             done();
          }
       } catch (err) {
          if (typeof err === 'string') {
             err = new Error(err);
          }
-         grunt.fail.warn('ERROR! Failed to process \'' + htmlFile + '\'!\n' + err.message + '\n' + err.stack + '\n', ERROR_PACKING_FAILED);
+         logger.warning({
+            message: 'ERROR! Failed to process HTML',
+            filePath: htmlFile,
+            error: err
+         });
          done(err);
       }
    }, function(err) {
@@ -266,11 +271,14 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
 }
 
 function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
-   grunt.log.ok('Indexing resources in ' + application);
+   logger.debug('Indexing resources in ' + application);
    indexer.index(root, application, grunt, dg).addCallbacks(function() {
       packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone);
    }, function(e) {
-      grunt.fail.fatal('ERROR! Indexing failed!\n' + e.message + '\n' + e.stack + '\n', ERROR_INDEX_FAILED);
+      logger.error({
+         message: 'ERROR! Indexing failed!',
+         error: e
+      });
       taskDone();
    });
 }

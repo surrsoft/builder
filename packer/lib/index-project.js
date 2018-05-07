@@ -220,7 +220,9 @@ module.exports = {
             try {
                fileContent = fs.readFileSync(root + xmlContents[res] + '.xml');
             } catch (e) {
-               grunt.fail.fatal(e);
+               logger.error({
+                  error: e
+               });
             }
 
             if (fileContent) {

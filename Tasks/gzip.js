@@ -23,7 +23,9 @@ module.exports = function(grunt) {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
                if (err) {
-                  grunt.fail.fatal(err);
+                  logger.error({
+                     error: err
+                  });
                   return callback(err);
                }
 
@@ -43,7 +45,9 @@ module.exports = function(grunt) {
          }
       }, function(err) {
          if (err) {
-            grunt.fail.fatal(err);
+            logger.error({
+               error: err
+            });
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);

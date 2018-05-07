@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const DepGraph = require('./../../lib/dependencyGraph');
 const getMeta = require('./../../lib/getDependencyMeta');
+const logger = require('../../../lib/logger').logger();
 
 const rjsPaths = global.requirejs.s.contexts._.config.paths || {};
 const requirejsPathResolver = global.requirejs('Core/pathResolver');
@@ -129,7 +130,7 @@ function getDependencies(grunt, fullPath, deps) {
    deps = deps
       .map(function getValue(i) {
          if (!i || i.type !== 'Literal') {
-            grunt.log.ok('Warning! Dependencies is not literal. %s. %s', fullPath, JSON.stringify(i));
+            logger.debug(`Warning! Dependencies is not literal. ${fullPath}. ${JSON.stringify(i)}`);
             return '';
          }
          return i.value;
@@ -269,14 +270,17 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * данный путь в module dependencies
           */
          if (modulePlugins.has('optional')) {
-            if (!grunt.file.exists(pathToModule)) {
+            if (!fs.pathExistsSync(pathToModule)) {
                return '';
             }
          }
       }
    } catch (e) {
       if (!modulePlugins.has('optional') && !rjsPaths[dep.fullName]) {
-         grunt.log.warn(e + errMes);
+         logger.warning({
+            message: errMes,
+            error: e
+         });
       }
    }
 
@@ -362,7 +366,9 @@ function getComponentForTmpl(grunt, graph, applicationRoot, mod) {
             graph.addDependencyFor(mod.fullName, d.map(registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes)));
          }
       } catch (err) {
-         grunt.log.warn(err);
+         logger.warning({
+            error: err
+         });
       }
    }
 }
@@ -415,7 +421,9 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
             return dep.fullName;
          }));
       } catch (err) {
-         grunt.log.warn(err);
+         logger.warning({
+            error: err
+         });
       }
    }
 }
@@ -478,9 +486,9 @@ function parsePathForPresentationService(applicationRoot, fullPath) {
  * @param {collectDependencies~callback} taskDone
  */
 function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, taskDone) {
-   grunt.log.ok('Building dependencies tree on ' + jsFiles.length + ' files');
+   logger.debug(`Building dependencies tree on ${jsFiles.length} files`);
    async.eachSeries(jsFiles, function(fullPath, done) {
-      grunt.log.debug('Loading dependencies for %s', fullPath);
+      logger.debug(`Loading dependencies for ${fullPath}`);
       fs.readFile(fullPath, 'utf8', function moduleParser(err, res) {
          if (err) {
             done(err);
@@ -504,10 +512,10 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
                            deps = getDependencies(grunt, fullPath, node.arguments[1].elements);
                         }
                      } else if (node.arguments[0].type === 'ArrayExpression' || node.arguments[0].type === 'FunctionExpression') {
-                        grunt.log.ok('Ignore anonymous define %s', fullPath);
+                        logger.debug(`Ignore anonymous define ${fullPath}`);
                         return;
                      } else {
-                        grunt.log.debug('Fail parse %s', fullPath);
+                        logger.debug(`Fail parse ${fullPath}`);
                         return;
                      }
 
@@ -604,7 +612,7 @@ function addI18NDep(meta, deps) {
 }*/
 
 function makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, done) {
-   let graph = new DepGraph(),
+   const graph = new DepGraph(),
       _const = global.requirejs('Core/constants'),
       jsCoreModules = map(_const.jsCoreModules, addRoot(path.join(applicationRoot, 'ws'))),
       jsModules = map(_const.jsModules, addRoot(root)),

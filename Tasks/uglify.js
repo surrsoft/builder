@@ -66,7 +66,7 @@ module.exports = function uglifyJsTask(grunt) {
          getAvailableFiles = function(filesArray) {
             return filesArray.filter(function(filepath) {
                if (!grunt.file.exists(filepath)) {
-                  grunt.log.warn('Source file ' + filepath + ' not found');
+                  logger.warning('Source file ' + filepath + ' not found');
                   return false;
                }
                return true;
@@ -81,7 +81,7 @@ module.exports = function uglifyJsTask(grunt) {
       async.eachSeries(this.files, function(currentFile, done) {
          const availableFiles = getAvailableFiles(currentFile.src);
          if (availableFiles.length === 0) {
-            grunt.log.warn('Destination ' + currentFile.dest + ' not written because src files were empty.');
+            logger.warning('Destination ' + currentFile.dest + ' not written because src files were empty.');
             return;
          }
          availableFiles.forEach(function(file) {
@@ -105,7 +105,7 @@ module.exports = function uglifyJsTask(grunt) {
              * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
              */
             if ((currentEXTString.match(extensions[1]) || currentEXTString.match(extensions[2])) && !isMarkup) {
-               grunt.log.ok(`Template ${currentPath} doesnt generated. Check tmpl/xhtml-build task logs for errors. `);
+               logger.debug(`Template ${currentPath} doesnt generated. Check tmpl/xhtml-build task logs for errors. `);
                return;
             }
             if (splittedCore) {
@@ -181,7 +181,9 @@ module.exports = function uglifyJsTask(grunt) {
          setImmediate(done);
       }, function(err) {
          if (err) {
-            grunt.fail.fatal(err);
+            logger.error({
+               error: err
+            });
          }
          if (splittedCore) {
             fs.writeFileSync(path.join(applicationRoot, 'resources/module-dependencies.json'), JSON.stringify(mDeps, null, 3));

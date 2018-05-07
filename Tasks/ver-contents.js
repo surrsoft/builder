@@ -2,6 +2,7 @@
 
 const path = require('path');
 const helpers = require('../lib/helpers');
+const logger = require('../lib/logger').logger();
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('ver-contents', 'versionize contents.[js|json]', function() {
@@ -13,7 +14,10 @@ module.exports = function(grunt) {
       try {
          contents = grunt.file.readJSON(path.join(resourcesPath, 'contents.json'));
       } catch (err) {
-         grunt.log.warn('Error while requiring contents.json', err);
+         logger.warning({
+            message: 'Error while requiring contents.json',
+            error: err
+         });
       }
 
       try {
@@ -22,7 +26,9 @@ module.exports = function(grunt) {
          grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
          grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
       } catch (err) {
-         grunt.fail.fatal(err);
+         logger.error({
+            error: err
+         });
       }
    });
 };
