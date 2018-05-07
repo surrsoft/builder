@@ -196,6 +196,12 @@ function getDependencies(grunt, fullPath, deps) {
  * @return {string}
  */
 function getModulePath(grunt, dep, plugin, errMes) {
+   /**
+    * Набор плагинов для модулей типа plugin1!plugin2!SomeModule
+    * чтобы независимо от порядка плагинов правильно определять наличие
+    * определённого плагина.
+    */
+   const modulePlugins = new Set([plugin, dep.plugin]);
    let pathToModule = '';
    try {
       if (dep.module) {
@@ -262,14 +268,14 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * Если плагин optional и сформированного пути не существует, тогда нету смысла помещать
           * данный путь в module dependencies
           */
-         if (plugin === 'optional') {
+         if (modulePlugins.has('optional')) {
             if (!grunt.file.exists(pathToModule)) {
                return '';
             }
          }
       }
    } catch (e) {
-      if (plugin !== 'optional' && !rjsPaths[dep.fullName]) {
+      if (!modulePlugins.has('optional') && !rjsPaths[dep.fullName]) {
          grunt.log.warn(e + errMes);
       }
    }
