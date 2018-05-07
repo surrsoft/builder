@@ -2,7 +2,6 @@
 
 const path = require('path');
 const async = require('async');
-const fs = require('fs-extra');
 const dblSlashes = /\\/g;
 const packerDictionary = require('./packDictionary');
 const commonPackage = require('./../../lib/commonPackage');
