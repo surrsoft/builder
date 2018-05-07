@@ -160,22 +160,10 @@ function getBundlePath(currentOutput, applicationRoot, wsRoot) {
  */
 function generateBundle(orderQueue) {
    const
-      bundle = [],
-      moduleExtReg = /(\.module)(\.min)?(\.original)?\.js$/;
+      bundle = [];
 
    orderQueue.forEach(function(node) {
-      const
-         isJSModuleWithoutJSPlugin = node.fullName.indexOf('!') === -1 && node.plugin === 'js',
-         modulePath = node.fullPath ? node.fullPath
-            : node.moduleYes.fullPath ? node.moduleYes.fullPath : node.moduleNo.fullPath,
-         moduleHaveTemplate = fs.pathExistsSync(modulePath.replace(moduleExtReg, '.xhtml')) ||
-            fs.pathExistsSync(modulePath.replace(moduleExtReg, '.tmpl'));
-
-      if (node.amd) {
-         if (!(isJSModuleWithoutJSPlugin && moduleHaveTemplate)) {
-            bundle.push(node.fullName);
-         }
-      } else if (node.plugin === 'css') {
+      if (node.amd || node.plugin === 'css') {
          bundle.push(node.fullName);
       }
    });
