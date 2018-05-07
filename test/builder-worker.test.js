@@ -7,6 +7,7 @@ require('./init-test');
 const chai = require('chai'),
    path = require('path'),
    fs = require('fs-extra'),
+   lib = require('./lib'),
    helpers = require('../lib/helpers'),
    workerPool = require('workerpool');
 
@@ -16,8 +17,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
    workerPath = path.join(__dirname, '../gulp/builder/worker.js'),
    modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
-   builderFolder = helpers.prettifyPath(path.normalize(path.join(__dirname, '/../')));
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -119,14 +119,9 @@ describe('gulp/builder/worker.js', function() {
          return expect(promise).to.be.rejected.then(function(error) {
             //заменяем слеши, иначе не сравнить на linux и windows одинаково
             const errorMessage = error.message.replace(/\\/g, '/');
-            return errorMessage.should.equal(
-               `Ошибка компиляции ${filePath} на строке 1: ` +
-                  "'notExist' wasn't found. " +
-                  'Tried - ' +
-                  `${modulePath}/notExist.less,` +
-                  `${helpers.prettifyPath(path.join(builderFolder, '/node_modules/notExist.less'))},` +
-                  'notExist.less'
-            );
+            return lib
+               .trimLessError(errorMessage)
+               .should.equal(`Ошибка компиляции ${filePath} на строке 1: ` + "'notExist' wasn't found.");
          });
       } finally {
          await clearWorkspace();
