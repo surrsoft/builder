@@ -368,7 +368,6 @@ module.exports = function(grunt) {
                grunt.file.write(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(mDeps, null, 2));
             } catch (error) {
                logger.error({error: error});
-               grunt.fail.fatal(error);
             }
 
             logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
@@ -467,7 +466,9 @@ module.exports = function(grunt) {
             mDeps.nodes = nodes;
             grunt.file.write(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(mDeps, null, 2));
          } catch (error) {
-            grunt.fail.fatal(error);
+            logger.error({
+               error: error
+            });
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
