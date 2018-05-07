@@ -76,7 +76,10 @@ module.exports = function splitResourcesTask(grunt) {
                fs.writeFileSync(pathModule, 'contents=' + JSON.stringify(sortedContents));
             }
          } catch (err) {
-            grunt.fail.fatal(`Не смог записать файл: ${pathModule} \n ${err.stack}`);
+            logger.error({
+               message: `Не смог записать файл: ${pathModule}`,
+               error: err
+            });
          }
       });
    }
@@ -103,9 +106,12 @@ module.exports = function splitResourcesTask(grunt) {
          try {
             result[nameModule][option][key] = data[option][key];
          } catch (err) {
-            grunt.fail.fatal(
-               `Не смог корректно разобрать опцию из contents.json. Опция:${option} Модуль: ${data[option][key]}`
-            );
+            logger.error({
+               message: `Не смог корректно разобрать опцию из contents.json. Опция:${option} Модуль: ${
+                  data[option][key]
+               }`,
+               error: err
+            });
          }
       });
 
@@ -174,9 +180,10 @@ module.exports = function splitResourcesTask(grunt) {
             splitRoutes[nameModule][routes] = fullRoutes[routes];
          });
       } catch (err) {
-         grunt.fail.fatal(
-            'Ошибка при обработке routes-info.json.\n Имя модуля: ' + (nameModule ? nameModule : '') + '\n' + err.stack
-         );
+         logger.error({
+            message: 'Ошибка при обработке routes-info.json.\n Имя модуля: ' + (nameModule ? nameModule : ''),
+            error: err
+         });
       }
 
       return splitRoutes;
@@ -226,9 +233,10 @@ module.exports = function splitResourcesTask(grunt) {
             splitContents = getOptionHtmlNames(fullContents, splitContents);
          }
       } catch (err) {
-         grunt.fail.fatal(
-            'Ошибка при обработке contents.json.\n Имя модуля: ' + (nameModule || err) + '\n' + err.stack
-         );
+         logger.error({
+            message: 'Ошибка при обработке contents.json.\n Имя модуля: ' + (nameModule || err),
+            error: err
+         });
       }
 
       return splitContents;
@@ -271,7 +279,7 @@ module.exports = function splitResourcesTask(grunt) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
       let existFile,
-         nameModule,
+         nameModule = '',
          splitModuleDep = {},
          fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
 
@@ -282,7 +290,7 @@ module.exports = function splitResourcesTask(grunt) {
             existFile = fs.existsSync(getPath(fullModuleDep.nodes[node].path));
             if (!existFile) {
                if (node.indexOf('/cdn/') === -1) {
-                  grunt.log.warn(
+                  logger.warning(
                      `Не нашёл данный модуль ${node},\n по указанному пути ${fullModuleDep.nodes[node].path}`
                   );
                }
@@ -292,7 +300,7 @@ module.exports = function splitResourcesTask(grunt) {
             if (fullModuleDep.nodes[node].path) {
                nameModule = getName(fullModuleDep.nodes[node].path, true, false, path.sep);
             } else {
-               grunt.log.warn(`Не нашёл путь до модуля:  ${node}`);
+               logger.warning(`Не нашёл путь до модуля:  ${node}`);
                return;
             }
 
@@ -311,9 +319,10 @@ module.exports = function splitResourcesTask(grunt) {
             splitModuleDep[nameModule].links[node] = fullModuleDep.links[node];
          });
       } catch (err) {
-         grunt.fail.fatal(
-            'Ошибка при обработке module-dependencies.json.\n Имя модуля: ' + nameModule + '\n' + err.stack
-         );
+         logger.error({
+            message: 'Ошибка при обработке module-dependencies.json.\n Имя модуля: ' + nameModule,
+            error: err
+         });
       }
       return splitModuleDep;
    }
@@ -321,12 +330,8 @@ module.exports = function splitResourcesTask(grunt) {
    function splitPreloadUrls(modules) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения preload_urls.json`);
 
-      let preloadUrls = {},
-         matchs,
-         modulePreload,
-         preload,
-         allFiles,
-         nameModules;
+      const preloadUrls = {};
+      let matchs, modulePreload, preload, allFiles, nameModules;
 
       Object.keys(modules).forEach(function(module) {
          try {
@@ -359,7 +364,10 @@ module.exports = function splitResourcesTask(grunt) {
                preloadUrls[nameModules].push(value.replace(/['|"]/g, ''));
             });
          } catch (err) {
-            grunt.fail.fatal('Ошибка при обработке preload_urls.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
+            logger.error({
+               message: 'Ошибка при обработке preload_urls.json.\n Имя модуля: ' + nameModules,
+               error: err
+            });
          }
       });
 
@@ -382,13 +390,15 @@ module.exports = function splitResourcesTask(grunt) {
             pathContents = path.join(rootPath, resources, nameModules, 'contents.json');
             contents = JSON.parse(fs.readFileSync(pathContents, { encoding: 'utf8' }));
          } catch (err) {
-            grunt.fail.fatal('Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules + '\n' + err.stack);
+            logger.error({
+               message: 'Не смог найти фалй contents.json.\n Имя модуля: ' + nameModules,
+               error: err
+            });
          }
 
-         let listPathStaticHtml = {},
-            staticHtml = Object.keys(contents.htmlNames),
-            contentsHtml,
-            nameHtml;
+         const listPathStaticHtml = {},
+            staticHtml = Object.keys(contents.htmlNames);
+         let nameHtml;
 
          if (staticHtml.length !== 0) {
             staticHtml.forEach(function(Html) {
@@ -396,7 +406,10 @@ module.exports = function splitResourcesTask(grunt) {
                   nameHtml = getName(contents.htmlNames[Html], false, true);
                   listPathStaticHtml[nameHtml] = nameModules + '/' + nameHtml;
                } catch (err) {
-                  grunt.fail.fatal('Не смог найти файл' + nameHtml + '.\n' + err.stack);
+                  logger.error({
+                     message: 'Не смог найти файл' + nameHtml,
+                     error: err
+                  });
                }
             });
             const sorted = helpers.sortObject(listPathStaticHtml);
@@ -440,13 +453,15 @@ module.exports = function splitResourcesTask(grunt) {
          }
 
          slpitStaticHtml(fullContents.requirejsPaths);
-         logger.debug(`${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`);
+         logger.debug(
+            `${humanize.date('H:i:s')} : Подзадача распределения статически html страничек успешно выполнена.`
+         );
 
          logger.info(`${humanize.date('H:i:s')} : Задача разбиения мета данных завершена успешно.`);
 
          logger.correctExitCode();
       } catch (err) {
-         logger.error({error: err});
+         logger.error({ error: err });
       }
    });
 };
