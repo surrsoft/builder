@@ -7,6 +7,7 @@ const dblSlashes = /\\/g;
 const packerDictionary = require('./packDictionary');
 const commonPackage = require('./../../lib/commonPackage');
 const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
+const logger = require('../../../lib/logger').logger();
 
 /**
  * Путь до original файла
@@ -374,9 +375,12 @@ function createGruntPackage(grunt, configs, root, badConfigs, bundlesOptions, ta
                   delete bundlesOptions.modulesInBundles[moduleName];
                }
             });
-            grunt.log.error('Ошибка создания кастомного пакета по конфигурационному файлу', config.packageName, '-', configNum, '\n', err);
+            logger.error({
+               message: `Ошибка создания кастомного пакета по конфигурационному файлу ${config.packageName} - ${configNum}`,
+               error: err
+            });
          } else {
-            grunt.log.ok('Создан кастомный пакет по конфигурационному файлу', config.packageName, '-', configNum);
+            logger.debug(`Создан кастомный пакет по конфигурационному файлу ${config.packageName} - ${configNum}`);
          }
 
          /**
