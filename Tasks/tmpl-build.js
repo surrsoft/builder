@@ -149,7 +149,12 @@ module.exports = function(grunt) {
                   }
 
                   //relativePath должен начинаться с имени модуля
-                  const relativePath = path.relative(resourcesRoot, fullPath);
+                  let relativePath = path.relative(resourcesRoot, fullPath);
+
+                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  if (!splittedCore && relativePath.includes('..')) {
+                     relativePath = path.relative(applicationRoot, fullPath);
+                  }
                   const tmplObj = await processingTmpl.buildTmpl(original, relativePath, componentsProperties);
                   const templateOptions = {
                      fullPath: fullPath,
