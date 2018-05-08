@@ -6,8 +6,7 @@ require('../../lib/logger').setGulpLogger();
 //ws должен быть вызван раньше чем первый global.requirejs
 require('../helpers/node-ws').init();
 
-const
-   fs = require('fs-extra'),
+const fs = require('fs-extra'),
    workerPool = require('workerpool'),
    buildLess = require('../../lib/build-less'),
    processingTmpl = require('../../lib/processing-tmpl'),
@@ -19,22 +18,46 @@ let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
-   console.log('[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
+   console.log(
+      "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
+      'Unhandled Rejection at:\n',
+      p,
+      '\nreason:\n',
+      reason
+   );
    process.exit(1);
 });
 
-async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
+async function readComponentsProperties(componentsPropertiesFilePath) {
    if (!componentsProperties) {
-      componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
+      if (await fs.pathExists(componentsPropertiesFilePath)) {
+         componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
+      } else {
+         componentsProperties = {};
+      }
    }
-   return processingTmpl.buildTmpl(text, relativeFilePath, componentsProperties);
+   return componentsProperties;
+}
+
+async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
+   return processingTmpl.buildTmpl(
+      text,
+      relativeFilePath,
+      await readComponentsProperties(componentsPropertiesFilePath)
+   );
+}
+
+async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropertiesFilePath) {
+   return processingTmpl.buildHtmlTmpl(
+      text,
+      fullPath,
+      relativeFilePath,
+      await readComponentsProperties(componentsPropertiesFilePath)
+   );
 }
 
 async function prepareXHTML(text, componentsPropertiesFilePath) {
-   if (!componentsProperties) {
-      componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
-   }
-   return prepareXHTMLPrimitive(text, componentsProperties);
+   return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
 workerPool.worker({
@@ -42,5 +65,6 @@ workerPool.worker({
    parseRoutes: processingRoutes.parseRoutes,
    buildLess: buildLess,
    buildTmpl: buildTmpl,
+   buildHtmlTmpl: buildHtmlTmpl,
    prepareXHTML: prepareXHTML
 });
