@@ -10,6 +10,18 @@ describe('run uglify-js', function() {
       const result = runUglifyJs('virtual.js', text);
       result.code.should.equal('');
    });
+   it('uglifyjs-test-eval-minify', () => {
+      /**
+       * uglifyJS может сломать конструкцию с определением глобального
+       * объекта.
+       * Если такое произошло, значит надо откатить версию uglify-js
+       * и добиться работы данного теста.( и пожаловаться авторам сия чуда:))
+       */
+
+      const text = '(function(){ return this || (0,eval)(\'this\'); }())';
+      const result = runUglifyJs('virtual.js', text);
+      result.code.should.equal('(function(){this||(0,eval)("this")})();');
+   });
    it('simple', () => {
       const text = 'var r = 0;';
       const result = runUglifyJs('virtual.js', text);
