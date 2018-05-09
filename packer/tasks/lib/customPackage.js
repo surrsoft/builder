@@ -175,7 +175,7 @@ function generateBundle(orderQueue) {
          if (!(isJSModuleWithoutJSPlugin && moduleHaveTemplate)) {
             bundle.push(node.fullName);
          }
-      } else if (node.plugin === 'css') {
+      } else if (node.plugin === 'css' || node.plugin === 'text') {
          bundle.push(node.fullName);
       }
    });
