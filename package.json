@@ -23,7 +23,7 @@
    "dependencies": {
       "async": "^2.6.0",
       "autoprefixer": "^8.2.0",
-      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.300",
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
       "clean-css": "^4.1.11",
       "escodegen": "^1.8.1",
       "esprima": "^4.0.0",
@@ -52,7 +52,7 @@
       "uglify-js": "3.3.23",
       "vinyl": "^2.1.0",
       "workerpool": "^2.3.0",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.300"
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.350"
    },
    "devDependencies": {
       "chai": "^4.1.2",
@@ -63,7 +63,7 @@
       "eslint-plugin-node": "^6.0.0",
       "eslint-plugin-promise": "^3.6.0",
       "mocha": "^5.0.0",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.300"
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350"
    },
    "engines": {
       "node": ">=8.9.3"
