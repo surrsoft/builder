@@ -7,7 +7,6 @@ const helpers = require('../lib/helpers');
 const transliterate = require('../lib/transliterate');
 const buildLess = require('../lib/build-less');
 const parseJsComponent = require('../lib/parse-js-component');
-const humanize = require('humanize');
 const logger = require('../lib/logger').logger();
 const fixedJsModules = new Set(require('../lib/fixedModuleJs'));
 
@@ -15,7 +14,6 @@ const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
 const isJs = /\.js$/;
 const QUOTES = /"|'/g;
-const NAME_NAVIGATION = /(optional\!)?(js\!SBIS3\.NavigationController|Navigation\/NavigationController)$/;
 
 const contents = {},
    contentsModules = {},
@@ -75,7 +73,7 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', async function() {
-      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача конвертации ресурсов`);
+      logger.debug('Запускается задача конвертации ресурсов');
       const startTask = Date.now();
       const doneAsync = this.async(); //eslint-disable-line no-invalid-this
       const done = () => {
@@ -127,13 +125,14 @@ module.exports = function(grunt) {
       }
 
       //пробуем удалить результат предудущей конвертации, если не получается, то ждём 1 секунду и снова пытаемся
-      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается удаление ресурсов`);
+      logger.debug('Запускается удаление ресурсов');
       let errorRemove = await helpers.tryRemoveFolder(resourcesPath);
       let attemptRemove = 5;
       while (errorRemove && attemptRemove) {
-         //eslint-disable-line no-await-in-loop
+         //eslint-disable-next-line no-await-in-loop
          await helpers.delay(1000);
-         grunt.log.ok(`${humanize.date('H:i:s')}: Удаление завершилось с ошибкой, пробуем ещё раз`);
+         logger.debug('Удаление завершилось с ошибкой, пробуем ещё раз');
+         //eslint-disable-next-line no-await-in-loop
          errorRemove = await helpers.tryRemoveFolder(resourcesPath);
          attemptRemove--;
       }
@@ -146,7 +145,7 @@ module.exports = function(grunt) {
          done();
          return;
       }
-      grunt.log.ok(`${humanize.date('H:i:s')}: Удаление ресурсов завершено`);
+      logger.debug('Удаление ресурсов завершено');
 
       const pathsForImportSet = new Set();
       let sbis3ControlsPath = '';
@@ -194,7 +193,7 @@ module.exports = function(grunt) {
                         isNavigationModule = false;
 
                      if (isJs.test(file)) {
-                        grunt.log.ok('Читаем js-файл по пути: ' + file);
+                        logger.debug('Читаем js-файл по пути: ' + file);
                         text = await fs.readFile(file);
                         isNavigationModule = text.includes('Navigation/NavigationController');
                      }
@@ -237,13 +236,8 @@ module.exports = function(grunt) {
                               }
                            }
                         }
-                        if (componentInfo.hasOwnProperty('componentDep') && componentInfo.componentName) {
-                           const isNavigation = componentInfo.componentDep.some(function(name) {
-                              return NAME_NAVIGATION.test(name);
-                           });
-                           if (isNavigation) {
-                              listNavMod.push(componentInfo.componentName);
-                           }
+                        if (componentInfo.hasOwnProperty('isNavigation') && componentInfo.isNavigation) {
+                           listNavMod.push(componentInfo.componentName);
                         }
                         copyFile(file, destination, text, callbackForProcessingFile);
                      } else {

@@ -14,6 +14,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
+   createNavigationModulesJson = require('../plugins/create-navigation-modules-json'),
    indexDictionary = require('../plugins/index-dictionary'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
@@ -61,6 +62,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
          .pipe(gulpIf(hasLocalization, localizeXhtml(config, moduleInfo, pool)))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
+         .pipe(createNavigationModulesJson(moduleInfo))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(createStaticTemplatesJson(moduleInfo)) //зависит от buildStaticHtml и gulpBuildHtmlTmpl
          .pipe(filterCached())

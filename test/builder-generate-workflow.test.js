@@ -93,6 +93,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.less',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -129,6 +130,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.less',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -172,6 +174,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Test1.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -223,6 +226,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Test1.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -284,6 +288,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -328,6 +333,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -390,6 +396,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.html',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -502,6 +509,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.html',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
