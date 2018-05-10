@@ -65,8 +65,6 @@ const checkResult = async function(extension, context) {
 
 //нужно проверить что происходить, что кеш работает
 describe('gulp/grabber/generate-workflow.js', function() {
-   this.timeout(10000); //eslint-disable-line no-invalid-this
-
    describe('проверка сбора фраз локализации по js коду', function() {
       it('перезапуск без изменений', async function() {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
