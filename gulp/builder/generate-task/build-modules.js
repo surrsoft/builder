@@ -33,7 +33,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
    const hasLocalization = config.localizations.length > 0;
    return function buildModule() {
       return gulp
-         .src(moduleInput, { dot: false, nodir: true })
+         .src(moduleInput, {dot: false, nodir: true})
          .pipe(
             plumber({
                errorHandler: function(err) {
@@ -63,14 +63,44 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(createStaticTemplatesJson(moduleInfo)) //зависит от buildStaticHtml и gulpBuildHtmlTmpl
+         .pipe(filterCached())
          .pipe(
             gulpChmod({
                read: true,
                write: true
             })
          )
-         .pipe(filterCached())
-         .pipe(gulp.dest(moduleInfo.output));
+         .pipe(
+            gulpIf(
+               needSymlink(hasLocalization, config, moduleInfo),
+               gulp.symlink(moduleInfo.output),
+               gulp.dest(moduleInfo.output)
+            )
+         );
+   };
+}
+
+function needSymlink(hasLocalization, config, moduleInfo) {
+   return file => {
+      //в релизе нельзя применять симлинки
+      if (config.isReleaseMode) {
+         return false;
+      }
+
+      //при локализации изменяются файлы с вёрсткой, нельзя использовать симлинки
+      if (hasLocalization && ['.html', '.tmpl', 'xhtml'].includes(file.extname)) {
+         return false;
+      }
+
+      //нельзя использовать симлинки для файлов, которые мы сами генерируем
+      const relativePath = path.relative(moduleInfo.path, file.history[0]);
+      if (relativePath.includes('..')) {
+         return false;
+      }
+
+      //если была транслитерация путей(признак file.history.length > 1), то симлинки не работают.
+      //ошибка в самом gulp.
+      return file.history.length === 1;
    };
 }
 
