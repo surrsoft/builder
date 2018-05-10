@@ -10,14 +10,18 @@ const transliterate = require('../../../lib/transliterate'),
    generateStaticHtmlForJs = require('../../../lib/generate-static-html-for-js'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(changesStore, moduleInfo, modulesMap) {
+module.exports = function(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(
       function(file, encoding, callback) {
          callback(null, file);
       },
       async function(callback) {
          try {
-            const config = {}; //TODO:нужно доработать для desktop приложений
+            const configForReplaceInHTML = {
+               urlServicePath: config.urlServicePath,
+               wsPath: 'resources/WS.Core/'
+            };
+            const needReplacePath = !config.multiService;
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             const results = await pMap(
                Object.keys(componentsInfo),
@@ -27,9 +31,9 @@ module.exports = function(changesStore, moduleInfo, modulesMap) {
                         filePath,
                         componentsInfo[filePath],
                         moduleInfo.contents,
-                        config,
+                        configForReplaceInHTML,
                         modulesMap,
-                        false
+                        needReplacePath
                      );
                      if (result) {
                         result.source = filePath;

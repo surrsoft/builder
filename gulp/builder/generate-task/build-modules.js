@@ -34,7 +34,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
    const hasLocalization = config.localizations.length > 0;
    return function buildModule() {
       return gulp
-         .src(moduleInput, {dot: false, nodir: true})
+         .src(moduleInput, { dot: false, nodir: true })
          .pipe(
             plumber({
                errorHandler: function(err) {
@@ -51,7 +51,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
-         .pipe(buildStaticHtml(changesStore, moduleInfo, modulesMap))
+         .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
          .pipe(
             gulpRename(file => {
