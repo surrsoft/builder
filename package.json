@@ -52,7 +52,8 @@
       "uglify-js": "3.3.23",
       "vinyl": "^2.1.0",
       "workerpool": "^2.3.0",
-"ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.300"   },
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.300"
+   },
    "devDependencies": {
       "chai": "^4.1.2",
       "chai-as-promised": "^7.1.1",

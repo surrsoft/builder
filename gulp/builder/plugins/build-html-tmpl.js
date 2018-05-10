@@ -14,9 +14,8 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
 
    return through.obj(async function(file, encoding, callback) {
       try {
-         this.push(file);
          if (!file.path.endsWith('.html.tmpl')) {
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -50,6 +49,6 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             filePath: file.history[0]
          });
       }
-      callback();
+      callback(null, file);
    });
 };
