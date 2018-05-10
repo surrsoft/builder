@@ -1,8 +1,7 @@
 /* eslint-disable no-sync */
 'use strict';
 
-const
-   ConfigurationReader = require('../../helpers/configuration-reader'),
+const ConfigurationReader = require('../../helpers/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
    availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
@@ -59,8 +58,12 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
 
-      const hasLocalizations = this.rawConfig.hasOwnProperty('localization');
-      const hasDefaultLocalization = this.rawConfig.hasOwnProperty('default-localization');
+      //localization может быть списком или false
+      const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && this.rawConfig.localization;
+
+      //default-localization может быть строкой или false
+      const hasDefaultLocalization =
+         this.rawConfig.hasOwnProperty('default-localization') && this.rawConfig['default-localization'];
 
       if (hasDefaultLocalization !== hasLocalizations) {
          throw new Error(`${startErrorMessage} Список локализаций и дефолтная локализация не согласованы`);
@@ -76,7 +79,11 @@ class BuildConfiguration {
 
          this.defaultLocalization = this.rawConfig['default-localization'];
          if (!availableLanguage.hasOwnProperty(this.defaultLocalization)) {
-            throw new Error(`${startErrorMessage} Задан не корректный идентификатор локализаци по умолчанию: ${this.defaultLocalization}`);
+            throw new Error(
+               `${startErrorMessage} Задан не корректный идентификатор локализаци по умолчанию: ${
+                  this.defaultLocalization
+               }`
+            );
          }
 
          if (!this.localizations.includes(this.defaultLocalization)) {
@@ -84,14 +91,8 @@ class BuildConfiguration {
          }
       }
 
-
       for (const module of this.rawConfig.modules) {
-         const moduleInfo = new ModuleInfo(
-            module.name,
-            module.responsible,
-            module.path,
-            this.outputPath,
-         );
+         const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path, this.outputPath);
          moduleInfo.contents.buildMode = mode;
          if (this.defaultLocalization && this.localizations.length > 0) {
             moduleInfo.contents.defaultLanguage = this.defaultLocalization;

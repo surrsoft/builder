@@ -10,8 +10,8 @@ const path = require('path'),
 
 const dblSlashes = /\\/g;
 
-const appRoot = path.join(__dirname, '../../node_modules/sbis3-ws').replace(dblSlashes, '/'),
-   wsRoot = '/ws/',
+const appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '/'),
+   wsRoot = '/sbis3-ws/ws/',
    resourceRoot = '/';
 
 const wsLogger = {
@@ -74,10 +74,14 @@ function _init() {
    const appContents = {
       'jsModules': {},
       'modules': {
-         'View': 'View'
+         'View': 'sbis3-ws/View',
+         'Controls': 'sbis3-controls/Controls',
+         'WS.Data': 'ws-data/WS.Data'
       },
       'requirejsPaths': {
-         'View': 'View'
+         'View': 'sbis3-ws/View',
+         'Controls': 'sbis3-controls/Controls',
+         'WS.Data': 'ws-data/WS.Data'
       }
    };
    loadContents(appContents, true, {service: appRoot});
