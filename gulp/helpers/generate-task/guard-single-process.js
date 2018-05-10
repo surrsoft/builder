@@ -6,15 +6,15 @@ const
    path = require('path'),
    fs = require('fs-extra');
 
-let lockFle;
+let lockFile;
 
 function generateTaskForLock(cachePath) {
    return function lock() {
       return new Promise(async(resolve, reject) => {
          await fs.ensureDir(cachePath);
-         lockFle = path.join(cachePath, 'builder.lockfile');
+         lockFile = path.join(cachePath, 'builder.lockfile');
 
-         const isFileExist = await fs.pathExists(lockFle);
+         const isFileExist = await fs.pathExists(lockFile);
          if (isFileExist) {
             const errorMessage = 'Похоже, что запущен другой процесс builder в этой же папке, попробуйте перезапустить его позже. ' +
                `Если вы уверены, что предыдущий запуск завершился, то удалите папку '${cachePath}' и перезапустите процесс.`;
@@ -23,8 +23,8 @@ function generateTaskForLock(cachePath) {
             reject(new Error(errorMessage));
             return;
          }
-         await fs.ensureFile(lockFle);
-         logger.debug(`Создали файл '${lockFle}'`);
+         await fs.ensureFile(lockFile);
+         logger.debug(`Создали файл '${lockFile}'`);
          resolve();
       });
 
@@ -34,17 +34,17 @@ function generateTaskForLock(cachePath) {
 function generateTaskForUnlock() {
    return function unlock() {
       return new Promise(async(resolve, reject) => {
-         const isFileExist = await fs.pathExists(lockFle);
+         const isFileExist = await fs.pathExists(lockFile);
          if (!isFileExist) {
-            const errorMessage = `В процессе выполнения кто-то удалил файл '${lockFle}'. ` +
+            const errorMessage = `В процессе выполнения кто-то удалил файл '${lockFile}'. ` +
                'Нет гарантий, что результат не пострадал. Перезапустите процесс.';
 
             logger.error(errorMessage);
             reject(new Error(errorMessage));
             return;
          }
-         await fs.remove(lockFle);
-         logger.debug(`Удалили файл '${lockFle}'`);
+         await fs.remove(lockFile);
+         logger.debug(`Удалили файл '${lockFile}'`);
          resolve();
       });
    };
