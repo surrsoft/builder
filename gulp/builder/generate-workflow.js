@@ -1,15 +1,13 @@
 'use strict';
 
-//модули из npm
-const
-   path = require('path'),
+const path = require('path'),
    fs = require('fs-extra'),
    gulp = require('gulp'),
    os = require('os'),
-   workerPool = require('workerpool');
+   workerPool = require('workerpool'),
+   pMap = require('p-map');
 
-const
-   generateTaskForBuildModules = require('./generate-task/build-modules'),
+const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
@@ -42,7 +40,9 @@ function generateTaskForSaveChangesStore(changesStore) {
 function generateTaskForRemoveFiles(changesStore) {
    return async function removeOutdatedFiles() {
       const filesForRemove = await changesStore.getListForRemoveFromOutputDir();
-      return Promise.all(filesForRemove.map(filePath => fs.remove(filePath)));
+      return pMap(filesForRemove, filePath => fs.remove(filePath), {
+         concurrency: 20
+      });
    };
 }
 
@@ -53,11 +53,9 @@ function generateWorkflow(processArgv) {
 
    const changesStore = new ChangesStore(config);
 
-   const pool = workerPool.pool(
-      path.join(__dirname, './worker.js'),
-      {
-         maxWorkers: os.cpus().length
-      });
+   const pool = workerPool.pool(path.join(__dirname, './worker.js'), {
+      maxWorkers: os.cpus().length
+   });
 
    const localizationEnable = config.localizations.length > 0;
 
@@ -67,10 +65,13 @@ function generateWorkflow(processArgv) {
       generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
       generateTaskForGenerateJson(changesStore, config, localizationEnable),
       generateTaskForBuildModules(changesStore, config, pool),
-      gulp.parallel( //завершающие задачи
+      gulp.parallel(
+
+         //завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
-         generateTaskForTerminatePool(pool)),
+         generateTaskForTerminatePool(pool)
+      ),
       guardSingleProcess.generateTaskForUnlock() //после всего
    );
 }

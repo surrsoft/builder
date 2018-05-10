@@ -3,7 +3,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert'),
-   helpers = require('../../../lib/helpers'),
+   pMap = require('p-map');
+const helpers = require('../../../lib/helpers'),
    packageJson = require('../../../package.json'),
    logger = require('../../../lib/logger').logger();
 
@@ -43,14 +44,18 @@ class StoreInfo {
    }
 
    save(filePath) {
-      return fs.outputJson(filePath, {
-         runningParameters: this.runningParameters,
-         versionOfBuilder: this.versionOfBuilder,
-         startBuildTime: this.startBuildTime,
-         cachedFiles: this.cachedFiles,
-      }, {
-         spaces: 1
-      });
+      return fs.outputJson(
+         filePath,
+         {
+            runningParameters: this.runningParameters,
+            versionOfBuilder: this.versionOfBuilder,
+            startBuildTime: this.startBuildTime,
+            cachedFiles: this.cachedFiles
+         },
+         {
+            spaces: 1
+         }
+      );
    }
 }
 
@@ -86,14 +91,14 @@ class Cache {
       try {
          assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
       } catch (error) {
-         logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
+         logger.info("Параметры запуска builder'а поменялись. " + finishText);
          return true;
       }
 
       //новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
-         logger.info('Версия builder\'а не соответствует сохранённому значению в кеше. ' + finishText);
+         logger.info("Версия builder'а не соответствует сохранённому значению в кеше. " + finishText);
          return true;
       }
 
@@ -101,7 +106,7 @@ class Cache {
    }
 
    async clearCacheIfNeeded() {
-      const removePromises = [];
+      const filesForRemove = [];
       if (this.cacheHasIncompatibleChanges()) {
          this.lastStore = new StoreInfo();
 
@@ -109,14 +114,15 @@ class Cache {
          if (await fs.pathExists(this.config.cachePath)) {
             for (const fullPath of await fs.readdir(this.config.cachePath)) {
                if (!fullPath.endsWith('.lockfile')) {
-                  removePromises.push(fs.remove(fullPath));
+                  filesForRemove.push(fullPath);
                }
             }
-
          }
       }
 
-      return Promise.all(removePromises);
+      return pMap(filesForRemove, filePath => fs.remove(filePath), {
+         concurrency: 20
+      });
    }
 
    isFileChanged(filePath, fileMTime) {
@@ -134,8 +140,7 @@ class Cache {
       //2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
       const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
 
-      const isChanged = noCache || isModifiedFile ||
-         !this.lastStore.cachedFiles.hasOwnProperty(prettyPath); //новый файл
+      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath); //новый файл
 
       if (!isChanged) {
          this.currentStore.cachedFiles[prettyPath] = this.lastStore.cachedFiles[prettyPath];
