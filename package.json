@@ -13,13 +13,17 @@
       "Tasks/"
    ],
    "scripts": {
+      "build": "npm run verify && npm run build-only",
+      "verify": "npm run lint && npm test",
+      "build-only": "node copy-to-dest.js && cd dest && npm i --production --legacy-bundling=false",
       "test": "node ./node_modules/mocha/bin/mocha -R xunit --reporter-options output=xunit-result.xml > xunit.log",
-      "check-code": "node ./node_modules/eslint/bin/eslint -c=.eslintrc -f=junit . > check-code-result.xml",
-      "fix": "node ./node_modules/eslint/bin/eslint -c=.eslintrc --fix ."
+      "lint": "node ./node_modules/eslint/bin/eslint --no-color --no-eslintrc -c=.eslintrc -f=stylish .",
+      "fix": "node ./node_modules/eslint/bin/eslint --no-eslintrc -c=.eslintrc --fix ."
    },
    "dependencies": {
       "async": "^2.6.0",
       "autoprefixer": "^8.2.0",
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.300",
       "clean-css": "^4.1.11",
       "escodegen": "^1.8.1",
       "esprima": "^4.0.0",
@@ -47,9 +51,8 @@
       "through2": "^2.0.3",
       "uglify-js": "3.3.23",
       "vinyl": "^2.1.0",
-      "workerpool": "^2.3.0"
-
-   },
+      "workerpool": "^2.3.0",
+"ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.300"   },
    "devDependencies": {
       "chai": "^4.1.2",
       "chai-as-promised": "^7.1.1",
