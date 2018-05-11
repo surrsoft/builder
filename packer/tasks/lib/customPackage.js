@@ -71,7 +71,7 @@ function generateRegExp(modules) {
       return null;
    }
 
-   modules.forEach(function (module) {
+   modules.forEach(function(module) {
       if (typeof module !== 'string') {
          return;
       }
@@ -96,7 +96,7 @@ function findAllModules(dg, modules) {
    const nodes = dg.getNodes();
    const regexp = generateRegExp(modules);
 
-   return nodes.filter(function (node) {
+   return nodes.filter(function(node) {
       return regexp.test(node);
    });
 }
@@ -111,7 +111,7 @@ function findAllModules(dg, modules) {
 function getOrderQueue(dg, cfg, applicationRoot) {
    //если особый пакет(вебинары), то оставляем старый способ паковки
    if (!cfg.includeCore && cfg.modules) {
-      cfg.modules.forEach(function (expression) {
+      cfg.modules.forEach(function(expression) {
          if (!cfg.include.includes(expression)) {
             cfg.include.push(expression);
          }
@@ -125,13 +125,13 @@ function getOrderQueue(dg, cfg, applicationRoot) {
    const orderQueue = dg.getLoadOrder(modules);
 
    return commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot)
-      .filter(function (module) {
+      .filter(function(module) {
          return include ? include.test(module.fullName) : true;
       })
-      .filter(function (module) {
+      .filter(function(module) {
          return exclude ? !exclude.test(module.fullName) : true;
       })
-      .filter(function (module) {
+      .filter(function(module) {
          return excludeCoreReg ? !excludeCoreReg.test(module.fullName) : true;
       });
 }
@@ -161,7 +161,7 @@ function generateBundle(orderQueue) {
    const
       bundle = [];
 
-   orderQueue.forEach(function (node) {
+   orderQueue.forEach(function(node) {
       if (node.amd || node.plugin === 'css') {
          bundle.push(node.fullName);
       }
@@ -203,7 +203,7 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
       if (err) {
          done(err);
       } else {
-         commonPackage.limitingNativePackFiles(cfg.orderQueue, 10, root, function (err, result) {
+         commonPackage.limitingNativePackFiles(cfg.orderQueue, 10, root, function(err, result) {
             if (err) {
                //удаляем из бандлов конфигурацию, если пакет по итогу не смог собраться
                delete bundlesOptions.bundles[cfg.packagePath];
@@ -249,7 +249,7 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
    outputFile = getOutputFile(cfg, applicationRoot, dg, bundlesOptions);
    packagePath = getBundlePath(outputFile, applicationRoot, wsRoot);
 
-   orderQueue = orderQueue.filter(function (node) {
+   orderQueue = orderQueue.filter(function(node) {
       if (node.plugin === 'js') {
          return node.amd;
       }
@@ -302,7 +302,7 @@ function checkConfigForIncludeOption(config, cfgPath, applicationRoot, badConfig
  */
 function getConfigs(grunt, configsFiles, applicationRoot, badConfigs) {
    const configsArray = [];
-   configsFiles.forEach(function (cfgPath) {
+   configsFiles.forEach(function(cfgPath) {
       let cfgContent = grunt.file.readJSON(cfgPath),
          packageName = path.basename(cfgPath);
 
@@ -347,17 +347,17 @@ function createGruntPackage(grunt, configs, root, badConfigs, bundlesOptions, ta
    grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Обнаружено ' + configs.length + ' конфигураций кастомной паковки');
 
    const errors = {};
-   async.eachLimit(configs, 3, function (config, callback) {
+   async.eachLimit(configs, 3, function(config, callback) {
       const configNum = config.configNum ? 'конфигурация №' + config.configNum : '';
 
-      _createGruntPackage(grunt, config, root, bundlesOptions, function (err) {
+      _createGruntPackage(grunt, config, root, bundlesOptions, function(err) {
          if (err) {
             errors[config.packageName] = err;
 
             /**
              * Ошибка создания пакета. Удаляем все его упоминания из бандлов.
              */
-            Object.keys(bundlesOptions.modulesInBundles).forEach(function (moduleName) {
+            Object.keys(bundlesOptions.modulesInBundles).forEach(function(moduleName) {
                if (bundlesOptions.modulesInBundles[moduleName] === config.packagePath) {
                   delete bundlesOptions.modulesInBundles[moduleName];
                }
@@ -378,17 +378,17 @@ function createGruntPackage(grunt, configs, root, badConfigs, bundlesOptions, ta
           */
          callback();
       });
-   }, function (err, result) {
+   }, function(err, result) {
       taskDone(errors, result);
    });
 }
 
 function collectDepsAndIntersects(dg, configs, applicationRoot, wsRoot, bundlesOptions, collectDepsAndIntersectsDone) {
-   async.eachLimit(configs, 3, function (config, callback) {
-      _collectDepsAndIntersects(dg, config, applicationRoot, wsRoot, bundlesOptions, function (err) {
+   async.eachLimit(configs, 3, function(config, callback) {
+      _collectDepsAndIntersects(dg, config, applicationRoot, wsRoot, bundlesOptions, function(err) {
          callback(err);
       });
-   }, function () {
+   }, function() {
       collectDepsAndIntersectsDone(configs);
    });
 }
