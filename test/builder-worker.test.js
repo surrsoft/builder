@@ -44,7 +44,7 @@ describe('gulp/builder/worker.js', function() {
 
          const filePath = path.join(modulePath, 'Empty.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, [workspaceFolder]]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
@@ -78,12 +78,12 @@ describe('gulp/builder/worker.js', function() {
 
          const filePath = path.join(modulePath, 'Correct.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
+         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, [workspaceFolder]]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
          resultsBuildLess.text.should.equal(
-            '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+            ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );
       } finally {
          await clearWorkspace();
@@ -121,7 +121,7 @@ describe('gulp/builder/worker.js', function() {
             const errorMessage = error.message.replace(/\\/g, '/');
             return lib
                .trimLessError(errorMessage)
-               .should.equal(`Ошибка компиляции ${filePath} на строке 1: ` + "'notExist' wasn't found.");
+               .should.equal(`Ошибка компиляции ${filePath} на строке 1: 'notExist' wasn't found.`);
          });
       } finally {
          await clearWorkspace();
