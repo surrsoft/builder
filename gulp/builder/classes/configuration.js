@@ -59,11 +59,11 @@ class BuildConfiguration {
       }
 
       //localization может быть списком или false
-      const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && this.rawConfig.localization;
+      const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && !!this.rawConfig.localization;
 
       //default-localization может быть строкой или false
       const hasDefaultLocalization =
-         this.rawConfig.hasOwnProperty('default-localization') && this.rawConfig['default-localization'];
+         this.rawConfig.hasOwnProperty('default-localization') && !!this.rawConfig['default-localization'];
 
       if (hasDefaultLocalization !== hasLocalizations) {
          throw new Error(`${startErrorMessage} Список локализаций и дефолтная локализация не согласованы`);
