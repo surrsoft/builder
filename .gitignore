@@ -1,9 +1,11 @@
 node_modules
 .idea
 .vscode
+.nyc_output
 xunit-result.xml
 xunit.log
 package-lock.json
 check-code-result.xml
 dest
 test/workspace
+coverage/
