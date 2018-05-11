@@ -31,6 +31,12 @@ class BuildConfiguration {
 
       //локаль по умолчанию
       this.defaultLocalization = '';
+
+      //если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
+      this.multiService = false;
+
+      //относительный url текущего сервиса
+      this.urlServicePath = '';
    }
 
    loadSync(argv) {
@@ -102,6 +108,14 @@ class BuildConfiguration {
             }
          }
          this.modules.push(moduleInfo);
+      }
+
+      if (this.rawConfig.hasOwnProperty('multi-service')) {
+         this.multiService = this.rawConfig['multi-service'];
+      }
+
+      if (this.rawConfig.hasOwnProperty('url-service-path')) {
+         this.urlServicePath = this.rawConfig['url-service-path'];
       }
    }
 }

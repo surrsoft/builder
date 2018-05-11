@@ -93,6 +93,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.less',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -129,6 +130,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.less',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -172,6 +174,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Test1.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -223,6 +226,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Test1.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -284,6 +288,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -328,6 +333,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.module.js',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -390,6 +396,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.html',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -434,45 +441,45 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
       removeRSymbol(forChangeHtml.toString()).should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
          '<TITLE>ForChange_old</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
       removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
          '<TITLE>ForRename</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
       //изменим "исходники"
@@ -502,6 +509,7 @@ describe('gulp/builder/generate-workflow.js', function() {
          'Stable.html',
          'contents.js',
          'contents.json',
+         'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
@@ -544,15 +552,15 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
       //TODO: в следующей строке ошибка из-за кеширования результата в lib/generate-static-html-for-js.js. должно быть FOR_CHANGE_NEW
@@ -562,15 +570,15 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
       removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
@@ -578,15 +586,15 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
          '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>%{RESOURCE_ROOT}</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>%{WI.SBIS_ROOT}</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT>%{APPLICATION_ROOT}</APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>%{SERVICES_PATH}</SERVICES_PATH>\n' +
+         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
 
       await clearWorkspace();
