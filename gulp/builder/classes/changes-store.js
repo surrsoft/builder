@@ -3,7 +3,9 @@
 const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert'),
-   helpers = require('../../../lib/helpers'),
+   pMap = require('p-map');
+
+const helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
    packageJson = require('../../../package.json'),
    logger = require('../../../lib/logger').logger();
@@ -221,22 +223,26 @@ class ChangesStore {
    }
 
    isDependenciesChanged(filePath) {
-      return Promise.all(
-         this.getAllDependencies(filePath).map(async currentPath => {
+      return pMap(
+         this.getAllDependencies(filePath),
+         async currentPath => {
             if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
                return this.cacheLessChanges[currentPath];
             } else {
                let isChanged = false;
-               if (!await fs.pathExists(currentPath)) {
-                  isChanged = true;
-               } else {
+               if (await fs.pathExists(currentPath)) {
                   const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
                   isChanged = currentMTime > this.lastStore.startBuildTime;
+               } else {
+                  isChanged = true;
                }
                this.cacheLessChanges[currentPath] = isChanged;
                return isChanged;
             }
-         })
+         },
+         {
+            concurrency: 20
+         }
       );
    }
 
@@ -315,29 +321,34 @@ class ChangesStore {
          return !currentOutputSet.has(filePath);
       });
 
-      const promises = removeFiles.map(filePath => {
-         return (async() => {
+      const results = await pMap(
+         removeFiles,
+         async filePath => {
             let needRemove = false;
-
+            let stat = null;
             try {
                //fs.access и fs.pathExists не правильно работают с битым симлинками
                //поэтому сразу используем fs.lstat
-               const stat = await fs.lstat(filePath);
-
-               //если файл не менялся в текущей сборке, то его нужно удалить
-               //файл может менятся в случае если это, например, пакет из нескольких файлов
-               needRemove = stat.mtime.getTime() < this.currentStore.startBuildTime;
+               stat = await fs.lstat(filePath);
             } catch (e) {
                //ничего нелать не нужно
+            }
+
+            //если файл не менялся в текущей сборке, то его нужно удалить
+            //файл может менятся в случае если это, например, пакет из нескольких файлов
+            if (stat) {
+               needRemove = stat.mtime.getTime() < this.currentStore.startBuildTime;
             }
 
             return {
                filePath: filePath,
                needRemove: needRemove
             };
-         })();
-      });
-      const results = await Promise.all(promises);
+         },
+         {
+            concurrency: 20
+         }
+      );
       return results
          .map(obj => {
             if (obj.needRemove) {

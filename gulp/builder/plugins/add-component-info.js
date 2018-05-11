@@ -52,6 +52,9 @@ module.exports = function(changesStore, moduleInfo, pool) {
                const componentName = info.componentName.replace('js!', '');
                moduleInfo.contents.jsModules[componentName] = helpers.prettifyPath(transliterate(relativePath));
             }
+            if (info.hasOwnProperty('isNavigation') && info.isNavigation) {
+               moduleInfo.navigationModules.push(info.componentName);
+            }
          });
       } catch (error) {
          logger.error({

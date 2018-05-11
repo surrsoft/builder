@@ -25,6 +25,9 @@ class ModuleInfo extends BaseModuleInfo {
       //объект для записи static_templates.json
       //соответствие запроса html физическиому расположению файла
       this.staticTemplates = {};
+
+      //объект для записи navigation-modules.json
+      this.navigationModules = [];
    }
 }
 
