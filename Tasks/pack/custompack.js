@@ -1,3 +1,5 @@
+/* eslint-disable no-unlimited-disable*/
+/* eslint-disable */
 const
    customPackage = require('../../lib/pack/customPackage'),
    logger = require('../../lib/logger').logger();
