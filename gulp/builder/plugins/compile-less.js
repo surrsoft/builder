@@ -9,7 +9,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
+module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
    return through.obj(async function(file, encoding, callback) {
       try {
          if (!file.path.endsWith('.less')) {
@@ -42,13 +42,12 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
 
          let result;
          try {
-            //TODO: нужен pathsForImport как для grunt
             result = await pool.exec('buildLess', [
                file.history[0],
                file.contents.toString(),
                moduleInfo.path,
                sbis3ControlsPath,
-               []
+               pathsForImport
             ]);
          } catch (error) {
             logger.warning({
