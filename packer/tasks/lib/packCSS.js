@@ -37,6 +37,8 @@ module.exports = {
                     href.indexOf('http') !== 0 &&
                     href.indexOf('//') !== 0 &&
                     href.indexOf('.css') !== href.length - 3) {
+               //убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
+               href = href.replace(/\.v.+?(\.css)$/, '$1');
                files.push(href);
                elements.push(link);
                before = link.nextSibling;

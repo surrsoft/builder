@@ -59,16 +59,20 @@ class StoreInfo {
    }
 
    save(filePath) {
-      return fs.outputJson(filePath, {
-         runningParameters: this.runningParameters,
-         versionOfBuilder: this.versionOfBuilder,
-         startBuildTime: this.startBuildTime,
-         inputPaths: this.inputPaths,
-         dependencies: this.dependencies,
-         modulesCache: this.modulesCache
-      }, {
-         spaces: 1
-      });
+      return fs.outputJson(
+         filePath,
+         {
+            runningParameters: this.runningParameters,
+            versionOfBuilder: this.versionOfBuilder,
+            startBuildTime: this.startBuildTime,
+            inputPaths: this.inputPaths,
+            dependencies: this.dependencies,
+            modulesCache: this.modulesCache
+         },
+         {
+            spaces: 1
+         }
+      );
    }
 }
 
@@ -109,14 +113,14 @@ class ChangesStore {
       try {
          assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
       } catch (error) {
-         logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
+         logger.info("Параметры запуска builder'а поменялись. " + finishText);
          return true;
       }
 
       //новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
-         logger.info('Версия builder\'а не соответствует сохранённому значению в кеше. ' + finishText);
+         logger.info("Версия builder'а не соответствует сохранённому значению в кеше. " + finishText);
          return true;
       }
 
@@ -145,7 +149,6 @@ class ChangesStore {
                   removePromises.push(fs.remove(fullPath));
                }
             }
-
          }
          if (await fs.pathExists(this.config.outputPath)) {
             removePromises.push(fs.remove(this.config.outputPath));
@@ -218,21 +221,23 @@ class ChangesStore {
    }
 
    isDependenciesChanged(filePath) {
-      return Promise.all(this.getAllDependencies(filePath).map(async(currentPath) => {
-         if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
-            return this.cacheLessChanges[currentPath];
-         } else {
-            let isChanged = false;
-            if (!await fs.pathExists(currentPath)) {
-               isChanged = true;
+      return Promise.all(
+         this.getAllDependencies(filePath).map(async currentPath => {
+            if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
+               return this.cacheLessChanges[currentPath];
             } else {
-               const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
-               isChanged = currentMTime > this.lastStore.startBuildTime;
+               let isChanged = false;
+               if (!await fs.pathExists(currentPath)) {
+                  isChanged = true;
+               } else {
+                  const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
+                  isChanged = currentMTime > this.lastStore.startBuildTime;
+               }
+               this.cacheLessChanges[currentPath] = isChanged;
+               return isChanged;
             }
-            this.cacheLessChanges[currentPath] = isChanged;
-            return isChanged;
-         }
-      }));
+         })
+      );
    }
 
    getAllDependencies(filePath) {
@@ -299,7 +304,6 @@ class ChangesStore {
          for (const outputFilePath of inputPaths[filePath]) {
             resultSet.add(outputFilePath);
          }
-
       }
       return resultSet;
    }
@@ -314,13 +318,19 @@ class ChangesStore {
       const promises = removeFiles.map(filePath => {
          return (async() => {
             let needRemove = false;
-            if (await fs.pathExists(filePath)) {
+
+            try {
+               //fs.access и fs.pathExists не правильно работают с битым симлинками
+               //поэтому сразу используем fs.lstat
                const stat = await fs.lstat(filePath);
 
                //если файл не менялся в текущей сборке, то его нужно удалить
                //файл может менятся в случае если это, например, пакет из нескольких файлов
                needRemove = stat.mtime.getTime() < this.currentStore.startBuildTime;
+            } catch (e) {
+               //ничего нелать не нужно
             }
+
             return {
                filePath: filePath,
                needRemove: needRemove
@@ -328,12 +338,14 @@ class ChangesStore {
          })();
       });
       const results = await Promise.all(promises);
-      return results.map(obj => {
-         if (obj.needRemove) {
-            return obj.filePath;
-         }
-         return null;
-      }).filter(filePath => !!filePath);
+      return results
+         .map(obj => {
+            if (obj.needRemove) {
+               return obj.filePath;
+            }
+            return null;
+         })
+         .filter(filePath => !!filePath);
    }
 
    setDropCacheForMarkup() {

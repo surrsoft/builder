@@ -3,9 +3,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    helpers = require('../lib/helpers'),
-   convertHtmlTmpl = require('../lib/convert-html-tmpl'),
+   processingTmpl = require('../lib/processing-tmpl'),
    parseJsComponent = require('../lib/parse-js-component'),
-   wsPathCalculator = require('../lib/ws-path-calculator'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
@@ -40,94 +39,45 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
    helpers.recurse(
       resourcesRoot,
       async function(fullPath, callback) {
-         // фильтр по файлам .html.tmpl
-         if (!helpers.validateFile(fullPath, filePattern)) {
-            setImmediate(callback);
-            return;
-         }
-
-         let html, cfg, result, routeTmpl;
-
          try {
-            routeTmpl = global.requirejs('tmpl!Controls/Application/Route');
-            global.requirejs('Controls/Application');
-         } catch (e) {
-            logger.error({
-               message:
-                  'Task html-tmpl нашел *.html.tmpl файл, но не может его сконвертировать. Возможно вы забыли добавить модуль Controls в проект!'
-            });
-            setImmediate(callback.bind(null, e));
-            return;
-         }
+            // фильтр по файлам .html.tmpl
+            if (!helpers.validateFile(fullPath, filePattern)) {
+               setImmediate(callback);
+               return;
+            }
 
-         try {
-            html = await fs.readFile(fullPath);
-         } catch (error) {
-            logger.error(`Ошибка чтения файла ${fullPath}: ${error}`);
-            setImmediate(callback);
-            return;
-         }
-
-         const cfgPath = fullPath.replace(/\.html\.tmpl$/, '.html.cfg');
-         const isCfgExists = await fs.pathExists(cfgPath);
-         cfg = {};
-         if (isCfgExists) {
+            let tmplText;
             try {
-               cfg = await fs.readJson(cfgPath);
+               tmplText = await fs.readFile(fullPath);
             } catch (error) {
                logger.error({
-                  message: 'Ошибка при обработке конфигурации шаблона',
-                  error: error,
-                  filePath: cfgPath
+                  message: 'Ошибка чтения файла',
+                  filePath: fullPath,
+                  error: error
                });
-               cfg = {};
+               setImmediate(callback);
+               return;
             }
-         }
 
-         try {
-            result = await convertHtmlTmpl.generateFunction(html, fullPath, componentsProperties);
-         } catch (error) {
+            //relativePath должен начинаться с имени модуля
+            const relativePath = path.relative(resourcesRoot, fullPath);
+            const htmlText = await processingTmpl.buildHtmlTmpl(
+               tmplText,
+               fullPath,
+               relativePath,
+               componentsProperties,
+               splittedCore
+            );
+            const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
+            await handleResult(newFullPath, htmlText);
+         } catch (e) {
             logger.error({
-               message: 'Ошибка при обработке шаблона',
-               error: error,
+               message: 'Ошибка при генерации статической html',
+               error: e,
                filePath: fullPath
             });
-            setImmediate(callback);
-            return;
          }
-
-         const tmplFunc = result.tmplFunc.toString();
-         const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
-
-         const routeResult = routeTmpl({
-            application: 'Controls/Application',
-            wsRoot: wsPathCalculator.getWsRoot(splittedCore),
-            resourceRoot: wsPathCalculator.getResources(splittedCore),
-            _options: {
-               builder: tmplFunc,
-               builderCompatible: cfg.compatible,
-               dependencies: result.dependencies.map(v => `'${v}'`).toString()
-            }
-         });
-
-         if (typeof routeResult === 'string') {
-            await handleResult(newFullPath, routeResult);
-            callback();
-         } else {
-            routeResult
-               .addCallback(async function(res) {
-                  await handleResult(newFullPath, res);
-                  callback();
-               })
-               .addErrback(function(error) {
-                  logger.error({
-                     message: 'Ошибка при обработке шаблона',
-                     error: error,
-                     filePath: fullPath
-                  });
-                  setImmediate(callback);
-               });
-         }
+         callback();
       },
       cb
    );
@@ -152,7 +102,7 @@ module.exports = function(grunt) {
 
       convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
          if (err) {
-            logger.error({error: err});
+            logger.error({ error: err });
          }
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
@@ -170,7 +120,7 @@ module.exports = function(grunt) {
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
          patterns = this.data.src,
-         oldHtml = grunt.file.expand({cwd: applicationRoot}, this.data.html),
+         oldHtml = grunt.file.expand({ cwd: applicationRoot }, this.data.html),
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
@@ -220,7 +170,7 @@ module.exports = function(grunt) {
                fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
                logger.warning({
-                  message: 'Can\'t delete old html',
+                  message: "Can't delete old html",
                   filePath: filePath,
                   error: err
                });
@@ -269,8 +219,7 @@ module.exports = function(grunt) {
                         if (result) {
                            let outputPath;
                            if (splittedCore) {
-                              const
-                                 relativePath = path.relative(resourcesRoot, file),
+                              const relativePath = path.relative(resourcesRoot, file),
                                  moduleName = helpers.getFirstDirInRelativePath(relativePath),
                                  absoulteModulePath = path.join(resourcesRoot, moduleName);
                               outputPath = path.join(absoulteModulePath, result.outFileName);

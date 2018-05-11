@@ -30,8 +30,6 @@ const prepareTest = async function() {
 };
 
 describe('gulp/builder/worker.js', function() {
-   this.timeout(10000); //eslint-disable-line no-invalid-this
-
    it('тест с минимально допустимыми входными данными', async function() {
       const pool = workerPool.pool(workerPath);
 

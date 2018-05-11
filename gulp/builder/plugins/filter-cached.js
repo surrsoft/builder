@@ -7,10 +7,11 @@ module.exports = function() {
    return through.obj(function(file, encoding, callback) {
       try {
          if (!file.hasOwnProperty('cached') || !file.cached) {
-            this.push(file); //eslint-disable-line no-invalid-this
+            callback(null, file);
+            return;
          }
       } catch (error) {
-         logger.error({error: error});
+         logger.error({ error: error });
       }
       callback();
    });

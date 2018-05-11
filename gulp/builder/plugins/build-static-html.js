@@ -6,7 +6,6 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
    transliterate = require('../../../lib/transliterate'),
-   helpers = require('../../../lib/helpers'),
    generateStaticHtmlForJs = require('../../../lib/generate-static-html-for-js'),
    logger = require('../../../lib/logger').logger();
 
@@ -48,15 +47,6 @@ module.exports = function(changesStore, moduleInfo, modulesMap) {
                }));
             }
          }
-
-         //Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.
-         const file = new Vinyl({
-            path: 'static_templates.json',
-            contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
-            moduleInfo: moduleInfo
-         });
-         callback(null, file);
-         return;
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',

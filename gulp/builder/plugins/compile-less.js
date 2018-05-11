@@ -12,9 +12,8 @@ const through = require('through2'),
 module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
    return through.obj(async function(file, encoding, callback) {
       try {
-         this.push(file);
          if (!file.path.endsWith('.less')) {
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -23,7 +22,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
 
          if (file.cached) {
             changesStore.addOutputFile(file.history[0], outputPath);
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -37,7 +36,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
                filePath: cssInSources,
                moduleInfo: moduleInfo
             });
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -57,7 +56,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
                filePath: file.history[0],
                moduleInfo: moduleInfo
             });
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -82,6 +81,6 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath) {
             filePath: file.history[0]
          });
       }
-      callback();
+      callback(null, file);
    });
 };

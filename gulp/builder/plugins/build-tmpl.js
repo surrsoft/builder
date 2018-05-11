@@ -8,6 +8,8 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate');
 
 module.exports = function(config, changesStore, moduleInfo, pool) {
+   const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+
    return through.obj(async function(file, encoding, callback) {
       try {
          if (file.extname !== '.tmpl') {
@@ -26,8 +28,6 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             callback(null, file);
             return;
          }
-
-         const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
          //если tmpl не возможно скомпилировать, то запишем оригинал
          let newText = file.contents.toString();
