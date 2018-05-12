@@ -32,6 +32,14 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
       sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
    }
    const hasLocalization = config.localizations.length > 0;
+
+   const pathsForImportSet = new Set();
+   for (const modulePath of modulesMap.values()) {
+      pathsForImportSet.add(path.dirname(modulePath));
+   }
+   const pathsForImport = [...pathsForImportSet];
+
+
    return function buildModule() {
       return gulp
          .src(moduleInput, { dot: false, nodir: true })
@@ -48,7 +56,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             })
          )
          .pipe(changedInPlace(changesStore, moduleInfo))
-         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath))
+         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
