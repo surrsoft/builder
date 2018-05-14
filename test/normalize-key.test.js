@@ -9,7 +9,7 @@ const path = require('path'),
 const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/normalize-key');
 
-const languages = ['en-US', 'ru=RU'];
+const languages = ['en-US', 'ru-RU'];
 
 describe('lib/i18n/normalize-key.js', function() {
    before(async function() {

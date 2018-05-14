@@ -1,6 +1,7 @@
 /* eslint-disable no-sync */
 'use strict';
 
+const path = require('path');
 const ConfigurationReader = require('../../helpers/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
@@ -37,6 +38,9 @@ class BuildConfiguration {
 
       //относительный url текущего сервиса
       this.urlServicePath = '';
+
+      //относительный url текущего сервиса
+      this.version = '';
    }
 
    loadSync(argv) {
@@ -45,9 +49,26 @@ class BuildConfiguration {
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
-      this.outputPath = this.rawConfig.output;
-      if (!this.outputPath) {
+      //version есть только при сборке дистрибутива
+      if (this.rawConfig.hasOwnProperty('version') && typeof this.rawConfig.version === 'string') {
+         this.version = this.rawConfig.version;
+      }
+
+      this.cachePath = this.rawConfig.cache;
+      if (!this.cachePath) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
+      }
+
+      if (!this.rawConfig.output) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+      }
+
+      if (!this.version) {
+         this.outputPath = this.rawConfig.output;
+      } else {
+         // некоторые задачи для сборки дистрибутивак не совместимы с инкрементальной сборкой,
+         // потому собираем в папке кеша, а потом копируем в целевую директорию
+         this.outputPath = path.join(this.cachePath, 'incremental_build');
       }
 
       if (!this.rawConfig.hasOwnProperty('mode')) {
@@ -58,11 +79,6 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
       }
       this.isReleaseMode = mode === 'release';
-
-      this.cachePath = this.rawConfig.cache;
-      if (!this.cachePath) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
-      }
 
       //localization может быть списком или false
       const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && !!this.rawConfig.localization;
