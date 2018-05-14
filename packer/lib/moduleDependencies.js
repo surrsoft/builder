@@ -50,16 +50,19 @@ function getModuleDependenciesPath(applicationRoot) {
  * @param {String} applicationRoot
  * @return {DepGraph}
  */
-function getDependencyGraph(applicationRoot) {
+function getDependencyGraphSync(applicationRoot) {
    const dg = new DepGraph();
+   return dg.fromJSON(fs.readJsonSync(getModuleDependenciesPath(applicationRoot)));
+}
 
-   dg.fromJSON(JSON.parse(fs.readFileSync(getModuleDependenciesPath(applicationRoot))));
-
-   return dg;
+async function getDependencyGraph(applicationRoot) {
+   const dg = new DepGraph();
+   return dg.fromJSON(await fs.readJson(getModuleDependenciesPath(applicationRoot)));
 }
 
 module.exports = {
    checkModuleDependenciesSanity: checkModuleDependenciesSanity,
    getModuleDependenciesPath: getModuleDependenciesPath,
+   getDependencyGraphSync: getDependencyGraphSync,
    getDependencyGraph: getDependencyGraph
 };

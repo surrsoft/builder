@@ -77,7 +77,7 @@ function gruntPackModules(grunt) {
          return;
       }
 
-      dg = modDeps.getDependencyGraph(applicationRoot);
+      dg = modDeps.getDependencyGraphSync(applicationRoot);
 
       const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
       sourceFiles.forEach(function(pathToSource) {
@@ -116,7 +116,7 @@ function gruntPackOwnDependencies(grunt) {
          return;
       }
 
-      dg = modDeps.getDependencyGraph(applicationRoot);
+      dg = modDeps.getDependencyGraphSync(applicationRoot);
 
       // Передаем root, чтобы относительно него изменялись исходники в loaders
       packOwnDeps(dryRun, dg, root, applicationRoot, this.data.splittedCore, taskDone);

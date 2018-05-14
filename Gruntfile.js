@@ -51,6 +51,7 @@ module.exports = function(grunt) {
       grunt.option('verbose', true);
       grunt.loadNpmTasks('grunt-text-replace'); //используется как задача "replace:что-то"
       grunt.loadTasks('Tasks');
+      grunt.loadTasks('Tasks/pack');
       grunt.loadTasks('packer/tasks');
 
       grunt.option('verbose', oldVerbose);
@@ -101,5 +102,5 @@ module.exports = function(grunt) {
 
 if (require.main === module) {
    //eslint-disable-next-line no-console
-   console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
+   console.log(require(path.join(__dirname, 'package.json')).version.split('-')[0]);
 }
