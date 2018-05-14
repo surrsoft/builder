@@ -32,6 +32,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
       try {
          componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]);
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка при обработке JS компонента',
             filePath: file.history[0],

@@ -63,7 +63,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
          .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
-         .pipe(gulpIf(hasLocalization, localizeXhtml(config, moduleInfo, pool)))
+         .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
          .pipe(gulpIf(config.isReleaseMode, uglify(changesStore, moduleInfo, pool)))

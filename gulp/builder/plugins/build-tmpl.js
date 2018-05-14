@@ -41,6 +41,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
                try {
                   newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
                } catch (error) {
+                  changesStore.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации скомпилированного TMPL',
                      error: error,
@@ -50,6 +51,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
                }
             }
          } catch (error) {
+            changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка компиляции TMPL',
                error: error,
@@ -71,6 +73,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             file.contents = Buffer.from(newText);
          }
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка builder\'а при компиляции TMPL',
             error: error,

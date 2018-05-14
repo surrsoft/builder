@@ -5,7 +5,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
 
-module.exports = function(config, moduleInfo, pool) {
+module.exports = function(config, changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       try {
          if (file.cached) {
@@ -20,6 +20,7 @@ module.exports = function(config, moduleInfo, pool) {
          const newText = await pool.exec('prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
          file.contents = Buffer.from(newText);
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка при локализации XHTML',
             error: error,

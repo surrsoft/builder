@@ -73,6 +73,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
              * но .min файл присутствовать должен во избежание 404х
              */
          } catch (error) {
+            changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка минификации файла',
                error: error,
@@ -90,6 +91,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
          );
          changesStore.addOutputFile(file.history[0], outputMinFile);
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при минификации",
             error: error,
