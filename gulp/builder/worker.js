@@ -13,7 +13,8 @@ const fs = require('fs-extra'),
    parseJsComponent = require('../../lib/parse-js-component'),
    processingRoutes = require('../../lib/processing-routes'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
-   buildXhtml = require('../../lib/processing-xhtml').buildXhtml;
+   buildXhtml = require('../../lib/processing-xhtml').buildXhtml,
+   uglifyJs = require('../../lib/run-uglify-js');
 
 let componentsProperties;
 
@@ -61,10 +62,6 @@ async function prepareXHTML(text, componentsPropertiesFilePath) {
    return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
-function uglify(text) {
-   return text;
-}
-
 workerPool.worker({
    parseJsComponent: parseJsComponent,
    parseRoutes: processingRoutes.parseRoutes,
@@ -73,5 +70,5 @@ workerPool.worker({
    buildHtmlTmpl: buildHtmlTmpl,
    prepareXHTML: prepareXHTML,
    buildXhtml: buildXhtml,
-   uglify: uglify
+   uglifyJs: uglifyJs
 });

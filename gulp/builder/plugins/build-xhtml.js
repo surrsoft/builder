@@ -25,17 +25,29 @@ module.exports = function(changesStore, moduleInfo, pool) {
 
          //если xhtml не возможно скомпилировать, то запишем оригинал
          let newText = file.contents.toString();
+         let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
+         relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
-            let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
-            relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
             newText = (await pool.exec('buildXhtml', [newText, relativeFilePath])).text;
+
+            //если xhtml не возможно минифицировать, то запишем оригинал
+            try {
+               newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
+            } catch (error) {
+               logger.error({
+                  message: 'Ошибка минификации скомпилированного XHTML',
+                  error: error,
+                  moduleInfo: moduleInfo,
+                  filePath: relativeFilePath.replace('.xhtml', '.min.xhtml')
+               });
+            }
          } catch (error) {
-            logger.warning({
+            logger.error({
                message: 'Ошибка компиляции XHTML',
                error: error,
                moduleInfo: moduleInfo,
-               filePath: file.path
+               filePath: relativeFilePath
             });
          }
 

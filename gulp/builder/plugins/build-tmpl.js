@@ -31,17 +31,30 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
 
          //если tmpl не возможно скомпилировать, то запишем оригинал
          let newText = file.contents.toString();
+         let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
+         relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
-            let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
-            relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
-
             newText = (await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath])).text;
+
+            if (config.isReleaseMode) {
+               //если tmpl не возможно минифицировать, то запишем оригинал
+               try {
+                  newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
+               } catch (error) {
+                  logger.error({
+                     message: 'Ошибка минификации скомпилированного TMPL',
+                     error: error,
+                     moduleInfo: moduleInfo,
+                     filePath: relativeFilePath.replace('.tmpl', '.min.tmpl')
+                  });
+               }
+            }
          } catch (error) {
-            logger.warning({
+            logger.error({
                message: 'Ошибка компиляции TMPL',
                error: error,
                moduleInfo: moduleInfo,
-               filePath: file.path
+               filePath: relativeFilePath
             });
          }
 
@@ -59,7 +72,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
          }
       } catch (error) {
          logger.error({
-            message: "Ошибка builder'а при компиляции TMPL",
+            message: 'Ошибка builder\'а при компиляции TMPL',
             error: error,
             moduleInfo: moduleInfo,
             filePath: file.path
