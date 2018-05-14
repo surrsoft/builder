@@ -198,8 +198,8 @@ module.exports = function gruntCustomPack(grunt) {
 
          configsArray = await gruntGetAllConfigs(applicationRoot, sourceFiles);
          /**
-          * данный функционал мы внедрим непосредственно в построение пакета, перед его построением будем чекать,
-          * хороший пакет или нет, и если нет, rejectить ошибку и выдавать предупреждение.
+          * TODO данный функционал мы внедрим непосредственно в построение пакета, перед его построением будем чекать,
+          * TODO хороший пакет или нет, и если нет, rejectить ошибку и выдавать предупреждение.
           */
          /*if (badConfigs && badConfigs.length > 0) {
             let errorMessage = '[ERROR] Опция "include" отсутствует или является пустым массивом!' +
