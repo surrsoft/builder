@@ -112,17 +112,29 @@ class ChangesStore {
          logger.info('Не удалось обнаружить валидный кеш от предыдущей сборки. ' + finishText);
          return true;
       }
+      const lastRunningParameters = Object.assign({}, this.lastStore.runningParameters);
+      const currentRunningParameters = Object.assign({}, this.currentStore.runningParameters);
+
+      //поле version всегда разное
+      if (lastRunningParameters.version !== '' || currentRunningParameters.version !== '') {
+         if (lastRunningParameters.version === '' || currentRunningParameters.version === '') {
+            logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
+            return true;
+         }
+         lastRunningParameters.version = '';
+         currentRunningParameters.version = '';
+      }
       try {
-         assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
+         assert.deepEqual(lastRunningParameters, currentRunningParameters);
       } catch (error) {
-         logger.info("Параметры запуска builder'а поменялись. " + finishText);
+         logger.info('Параметры запуска builder\'а поменялись. ' + finishText);
          return true;
       }
 
       //новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
-         logger.info("Версия builder'а не соответствует сохранённому значению в кеше. " + finishText);
+         logger.info('Версия builder\'а не соответствует сохранённому значению в кеше. ' + finishText);
          return true;
       }
 
@@ -157,6 +169,12 @@ class ChangesStore {
          }
       }
 
+      //если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
+      if (this.config.version) {
+         if (await fs.pathExists(this.config.rawConfig.output)) {
+            removePromises.push(fs.remove(this.config.rawConfig.output));
+         }
+      }
       return Promise.all(removePromises);
    }
 
