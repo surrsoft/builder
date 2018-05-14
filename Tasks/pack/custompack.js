@@ -214,6 +214,7 @@ module.exports = function gruntCustomPack(grunt) {
          /**
           * Для конкретного конфига генерим непосредственно пакет.
           * Общая функция для гальпа и гранта
+          * TODO доработать
           */
          await generatePackageJsonConfigs(configsArray, applicationRoot, bundlesOptions);
          logger.info('Задача создания кастомных пакетов завершена.');
