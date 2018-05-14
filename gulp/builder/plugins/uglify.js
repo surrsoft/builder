@@ -10,8 +10,6 @@ const through = require('through2'),
 module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       try {
-         callback(null, file);
-         return;
          if (!['.js', '.json', '.css'].includes(file.extname)) {
             callback(null, file);
             return;
