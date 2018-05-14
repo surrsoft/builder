@@ -12,14 +12,15 @@ const fs = require('fs-extra'),
    processingTmpl = require('../../lib/processing-tmpl'),
    parseJsComponent = require('../../lib/parse-js-component'),
    processingRoutes = require('../../lib/processing-routes'),
-   prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
+   prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
+   buildXhtml = require('../../lib/processing-xhtml').buildXhtml;
 
 let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
    //eslint-disable-next-line no-console
    console.log(
-      "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
+      '[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ',
       'Unhandled Rejection at:\n',
       p,
       '\nreason:\n',
@@ -60,11 +61,17 @@ async function prepareXHTML(text, componentsPropertiesFilePath) {
    return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
+function uglify(text) {
+   return text;
+}
+
 workerPool.worker({
    parseJsComponent: parseJsComponent,
    parseRoutes: processingRoutes.parseRoutes,
    buildLess: buildLess,
    buildTmpl: buildTmpl,
    buildHtmlTmpl: buildHtmlTmpl,
-   prepareXHTML: prepareXHTML
+   prepareXHTML: prepareXHTML,
+   buildXhtml: buildXhtml,
+   uglify: uglify
 });

@@ -48,7 +48,7 @@ function generateTaskForRemoveFiles(changesStore) {
 }
 
 function generateWorkflow(processArgv) {
-   //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
+   //загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
