@@ -438,7 +438,7 @@ function onlyForIE10AndAbove(f, modName) {
    let ifConditionThemes,
       ifCondition = 'if(typeof window !== "undefined" && window.atob){';
 
-   if (modName.startsWith('css!SBIS3.CONTROLS') || modName.startsWith('css!Controls')) {
+   if (modName.startsWith('css!SBIS3.CONTROLS') || modName.startsWith('css!Controls') || modName.startsWith('css!Deprecated/Controls')) {
       ifConditionThemes = 'var global=(function(){return this || (0,eval)(this);})();if(global.wsConfig && global.wsConfig.themeName){return;}';
    }
 
