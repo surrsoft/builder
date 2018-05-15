@@ -83,7 +83,7 @@ function generateRegExp(modules) {
       }
    });
 
-   return new RegExp(regexpStr);
+   return new RegExp(`^(.+?!)?${regexpStr}`);
 }
 
 /**
