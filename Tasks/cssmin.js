@@ -29,8 +29,8 @@ module.exports = function(grunt) {
 
          await pMap(
             self.files,
-            async filePath => {
-               const prettyFilePath = helpers.prettifyPath(filePath);
+            async value => {
+               const prettyFilePath = helpers.prettifyPath(value.dest);
                let outputFilePath = prettyFilePath;
                if (self.data.splittedCore) {
                   outputFilePath = outputFilePath.replace('.css', '.min.css');
