@@ -1,9 +1,10 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs-extra');
-
-const dblSlashes = /\\/g;
+const
+   path = require('path'),
+   fs = require('fs-extra'),
+   pMap = require('p-map'),
+   dblSlashes = /\\/g;
 
 /**
  * Возращает имя интерфейсного модуля.
@@ -177,70 +178,62 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
 }
 
 /**
- * Возращет список модулей для кастомной паковки, с дабавленными модулями локализации.
+ * Возращает список модулей для кастомной паковки, с дабавленными модулями локализации.
  * @param {Array} modules - массив модулей из кастомного пакета.
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Array}
  */
-function packCustomDict(modules, applicationRoot) {
-   let packeg = [];
+async function packCustomDict(modules, applicationRoot) {
+   let resultPackage = [];
 
-   /*
-   костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
-   когда словари сформируются и начнут записываться в module-dependencies параллельно и одновременно
-    */
-   if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
-      return packeg;
-   }
    try {
       let
          modulesI18n = {},
          _const = global.requirejs('Core/constants'),
-         modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
+         modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
          linkModules = modDepend.links,
          moduleName;
 
-      //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
-      modules.forEach(function(module) {
-         if (linkModules.hasOwnProperty(module.fullName)) {
-            linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
-            moduleName = getNameModule(module.fullPath);
-            if (modulesI18n.hasOwnProperty(moduleName)) {
-               linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-               module.addDeps = modulesI18n[moduleName].fullName;
-            } else {
-               /**
-                * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
-                * для него в пакете модуль локализации
-                */
-               if (fs.existsSync(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
-                  modulesI18n[moduleName] = createI18nModule(moduleName);
+      await pMap(
+         modules,
+         async module => {
+            if (linkModules.hasOwnProperty(module.fullName)) {
+               linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
+               moduleName = getNameModule(module.fullPath);
+               if (modulesI18n.hasOwnProperty(moduleName)) {
                   linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
                   module.addDeps = modulesI18n[moduleName].fullName;
+               } else {
+                  /**
+                   * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
+                   * для него в пакете модуль локализации
+                   */
+                  if (await fs.pathExists(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
+                     modulesI18n[moduleName] = createI18nModule(moduleName);
+                     linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
+                     module.addDeps = modulesI18n[moduleName].fullName;
+                  }
                }
             }
+         },
+         {
+            concurrency: 20
          }
-      });
+      );
 
       modDepend.links = linkModules;
-
-      /*
-        в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
-        fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(modDepend, null, 2));
-        */
 
       for (const name in modulesI18n) {
          if (!modulesI18n.hasOwnProperty(name)) {
             continue;
          }
          modulesI18n[name].availableDict = getAvailableLanguageModule(_const.availableLanguage, name, applicationRoot);
-         packeg.push(modulesI18n[name]);
+         resultPackage.push(modulesI18n[name]);
       }
 
-      packeg = packeg.concat(modules);
+      resultPackage = resultPackage.concat(modules);
    } finally {
-      //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
-      return packeg;
+      return resultPackage;
    }
 }
 

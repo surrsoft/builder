@@ -123,22 +123,6 @@ function gruntPackOwnDependencies(grunt) {
    };
 }
 
-function saveBundlesForEachModule(grunt, applicationRoot) {
-   Object.keys(bundlesOptions.bundles).forEach(function(currentBundle) {
-      let
-         bundlePath = path.normalize(path.join(applicationRoot, `${currentBundle.match(/^resources\/[^/]+/)}`, 'bundlesRoute.json')),
-         currentModules = bundlesOptions.bundles[currentBundle],
-         bundleRouteToWrite = grunt.file.exists(bundlePath) ? JSON.parse(grunt.file.read(bundlePath)) : {};
-
-      currentModules.forEach(function(node) {
-         if (node.indexOf('css!') === -1) {
-            bundleRouteToWrite[node] = currentBundle;
-         }
-      });
-      grunt.file.write(bundlePath, JSON.stringify(bundleRouteToWrite));
-   });
-}
-
 function getNameSpaces(intersects) {
    let
       namespaces = {},
