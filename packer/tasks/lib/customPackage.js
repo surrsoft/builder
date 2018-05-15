@@ -83,7 +83,7 @@ function generateRegExp(modules) {
       }
    });
 
-   return new RegExp(regexpStr);
+   return new RegExp(`^(.+?!)?${regexpStr}`);
 }
 
 /**
@@ -162,7 +162,7 @@ function generateBundle(orderQueue) {
       bundle = [];
 
    orderQueue.forEach(function(node) {
-      if (node.amd || node.plugin === 'css') {
+      if (node.amd || node.plugin === 'css' || node.plugin === 'text') {
          bundle.push(node.fullName);
       }
    });
