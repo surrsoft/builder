@@ -70,7 +70,8 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                new Vinyl({
                   base: moduleInfo.output,
                   path: outputPath,
-                  contents: Buffer.from(result.text)
+                  contents: Buffer.from(result.text),
+                  history: [...file.history]
                })
             );
          }

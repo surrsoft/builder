@@ -14,6 +14,7 @@ const fs = require('fs-extra'),
    processingRoutes = require('../../lib/processing-routes'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
    buildXhtml = require('../../lib/processing-xhtml').buildXhtml,
+   runMinifyCss = require('../../lib/run-minify-css'),
    uglifyJs = require('../../lib/run-uglify-js');
 
 let componentsProperties;
@@ -70,5 +71,6 @@ workerPool.worker({
    buildHtmlTmpl: buildHtmlTmpl,
    prepareXHTML: prepareXHTML,
    buildXhtml: buildXhtml,
+   minifyCss: runMinifyCss,
    uglifyJs: uglifyJs
 });

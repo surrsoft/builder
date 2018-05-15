@@ -22,6 +22,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    filterCached = require('../plugins/filter-cached'),
    buildXhtml = require('../plugins/build-xhtml'),
+   minifyCss = require('../plugins/minify-css'),
    uglify = require('../plugins/uglify');
 
 const logger = require('../../../lib/logger').logger(),
@@ -66,6 +67,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
+         .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
          .pipe(gulpIf(config.isReleaseMode, uglify(changesStore, moduleInfo, pool)))
          .pipe(
             gulpRename(file => {
