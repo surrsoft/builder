@@ -32,9 +32,11 @@ function getAllModules(dg, applicationRoot) {
 
          //не включаем несуществующие пути(например в WS.Core не копируется папка test)
          .filter(function excludeNotExistingModules(node) {
+            //eslint-disable-next-line no-sync
             return fs.existsSync(node.fullPath);
          })
          .filter(function excludePacked(node) {
+            //eslint-disable-next-line no-sync
             return !fs.existsSync(node.tempPath);
          })
          .map(function getDependencies(node) {
@@ -116,14 +118,13 @@ function getAllModules(dg, applicationRoot) {
 
 function promisifyLoader(loader, dep, root) {
    return new Promise((resolve, reject) => {
-      const done = err => {
+      loader(dep, root, err => {
          if (err) {
             reject(err);
          } else {
             resolve();
          }
-         loader(dep, root, done);
-      };
+      });
    });
 }
 
