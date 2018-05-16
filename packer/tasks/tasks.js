@@ -1,3 +1,4 @@
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const async = require('async');
@@ -95,36 +96,26 @@ function gruntPackModules(grunt) {
 
 /**
  * Паковка собственных зависимостей
- * @param grunt
- * @return {gruntPackOwnDependencies}
  */
-function gruntPackOwnDependencies(grunt) {
-   return function gruntPackOwnDependencies() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки собственных зависимостей.');
+function gruntPackOwnDependencies() {
+   return async function gruntPackOwnDependenciesTask() {
+      logger.debug('Запускается задача паковки собственных зависимостей.');
 
-      let root = this.data.root,
+      const root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
-         done = this.async(),
-         taskDone, dg;
+         done = this.async();
 
-      const dryRun = grunt.option('dry-run');
-      if (dryRun) {
-         grunt.log.writeln('Doing dry run!');
-      }
-
-      taskDone = function() {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки собственных зависимостей выполнена.');
-         done();
-      };
-
-      if (!modDeps.checkModuleDependenciesSanity(applicationRoot, taskDone)) {
+      if (!modDeps.checkModuleDependenciesSanity(applicationRoot, done)) {
          return;
       }
 
-      dg = modDeps.getDependencyGraph(applicationRoot);
+      const dg = modDeps.getDependencyGraph(applicationRoot);
 
       // Передаем root, чтобы относительно него изменялись исходники в loaders
-      packOwnDeps(dryRun, dg, root, applicationRoot, this.data.splittedCore, taskDone);
+      await packOwnDeps(dg, root, applicationRoot, this.data.splittedCore);
+
+      logger.debug('Задача паковки собственных зависимостей выполнена.');
+      done();
    };
 }
 
