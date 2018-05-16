@@ -17,8 +17,16 @@ const
  * начинает охватывать новые модули,
  */
 async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bundlesOptions) {
-   return new Promise((resolve) => {
-      async.eachLimit(configs, 3, async (config) => {
+   const results = {
+      bundles: [],
+      bundlesRoute: [],
+      oldBundles: [],
+      oldBundlesRoute: []
+   };
+
+   await pMap(
+      configs,
+      async config => {
          try {
             const configNum = config.configNum ? 'конфигурация №' + config.configNum : '';
             /**
@@ -28,7 +36,8 @@ async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bu
              * 3)oldBundles: для гальпа.
              * 4)oldBundlesRoute: для гальпа.
              */
-            const result = await generateCustomPackage(depsTree, config, applicationRoot, bundlesOptions.splittedCore);
+            const currentResult = await generateCustomPackage(depsTree, config, applicationRoot, bundlesOptions.splittedCore);
+            Object.keys(currentResult).forEach(key => results[key].push(currentResult[key]));
             logger.info(`Создан кастомный пакет по конфигурационному файлу ${config.packageName} - ${configNum}`);
          } catch (err) {
             logger.error({
@@ -36,62 +45,57 @@ async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bu
                error: err
             });
          }
-      }, function (err, result) {
-         resolve(result);
-      });
-   });
+      },
+      {
+         concurrency: 3
+      }
+   );
 }
 
-function generateCustomPackage(depsTree, applicationRoot, packageConfig, isSplittedCore) {
-   return new Promise(async(resolve, reject) => {
-      try {
-         const result = {
-            bundles: {},
-            bundlesRoute: {},
-            oldBundles: {},
-            oldBundlesRoute: {}
-         };
+async function generateCustomPackage(depsTree, applicationRoot, packageConfig, isSplittedCore) {
+   const result = {
+      bundles: {},
+      bundlesRoute: {},
+      oldBundles: {},
+      oldBundlesRoute: {}
+   };
 
-         let
-            orderQueue,
-            outputFile,
-            packagePath;
+   let
+      orderQueue,
+      outputFile,
+      packagePath;
 
-         if (packageConfig.isBadConfig) {
-            reject(new Error('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.'))
-         }
-         orderQueue = customPackage.getOrderQueue(depsTree, packageConfig, applicationRoot);
-         outputFile = customPackage.getOutputFile(packageConfig, applicationRoot, depsTree, isSplittedCore);
-         packagePath = customPackage.getBundlePath(outputFile, applicationRoot, wsRoot);
+   if (packageConfig.isBadConfig) {
+      reject(new Error('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.'))
+   }
+   orderQueue = customPackage.getOrderQueue(depsTree, packageConfig, applicationRoot);
+   outputFile = customPackage.getOutputFile(packageConfig, applicationRoot, depsTree, isSplittedCore);
+   packagePath = customPackage.getBundlePath(outputFile, applicationRoot, wsRoot);
 
-         orderQueue = orderQueue.filter(function (node) {
-            if (node.plugin === 'js') {
-               return node.amd;
-            }
-            return true;
-         });
-
-         if (packageConfig.platformPackage || !packageConfig.includeCore) {
-            result.bundles[packagePath] = customPackage.generateBundle(orderQueue);
-            result.bundlesRoute = customPackage.generateBundlesRouting(result.bundles[packagePath], packagePath);
-         }
-
-         orderQueue = packerDictionary.deleteModulesLocalization(orderQueue);
-         orderQueue = await packerDictionary.packerCustomDictionary(orderQueue, applicationRoot);
-
-         /**
-          * здесь будем вызывать ту часть пакера, отвечающую за сохранение пакета.
-          * TODO доделать
-          */
-
-         packageConfig.outputFile = outputFile;
-         packageConfig.packagePath = packagePath;
-         result.output = packageConfig.outputFile;
-         resolve(result);
-      } catch (err) {
-         reject(err);
+   orderQueue = orderQueue.filter(function (node) {
+      if (node.plugin === 'js') {
+         return node.amd;
       }
+      return true;
    });
+
+   if (packageConfig.platformPackage || !packageConfig.includeCore) {
+      result.bundles[packagePath] = customPackage.generateBundle(orderQueue);
+      result.bundlesRoute = customPackage.generateBundlesRouting(result.bundles[packagePath], packagePath);
+   }
+
+   orderQueue = packerDictionary.deleteModulesLocalization(orderQueue);
+   orderQueue = await packerDictionary.packerCustomDictionary(orderQueue, applicationRoot);
+
+   /**
+    * здесь будем вызывать ту часть пакера, отвечающую за сохранение пакета.
+    * TODO доделать
+    */
+
+   packageConfig.outputFile = outputFile;
+   packageConfig.packagePath = packagePath;
+   result.output = packageConfig.outputFile;
+   return result;
 }
 
 async function saveBundlesForEachModule(grunt, applicationRoot) {
