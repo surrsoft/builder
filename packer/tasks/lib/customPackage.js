@@ -182,6 +182,8 @@ function checkForIncludeInOrderQueue(module, orderQueue) {
 
 /**
  * проверяем, сгенерирован ли шаблон и стоит ли его включать в пакет.
+ * P.S. эта функция работает исключительно для анонимных шаблонов, которые
+ * любят глубоко в callback тянуть через require
  * @param templatePath
  */
 function checkTemplateForAMD(templatePath) {
