@@ -28,6 +28,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
 
          const cssInSources = file.history[0].replace(/\.less$/, '.css');
          if (await fs.pathExists(cssInSources)) {
+            changesStore.markFileAsFailed(file.history[0]);
             const message =
                `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                'Необходимо удалить лишний CSS-файл';
@@ -50,6 +51,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                pathsForImport
             ]);
          } catch (error) {
+            changesStore.markFileAsFailed(file.history[0]);
             logger.warning({
                error: error,
                filePath: file.history[0],
@@ -68,11 +70,13 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                new Vinyl({
                   base: moduleInfo.output,
                   path: outputPath,
-                  contents: Buffer.from(result.text)
+                  contents: Buffer.from(result.text),
+                  history: [...file.history]
                })
             );
          }
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при компиляции less",
             error: error,

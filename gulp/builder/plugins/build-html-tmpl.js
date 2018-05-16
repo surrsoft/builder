@@ -42,6 +42,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
 
          moduleInfo.staticTemplates[path.basename(outputPath)] = relativeTmplPathWithModuleName.replace('.tmpl', '');
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка при обработке html-tmpl шаблона',
             error: error,

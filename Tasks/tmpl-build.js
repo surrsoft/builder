@@ -7,53 +7,11 @@ const path = require('path'),
 
 const logger = require('../lib/logger').logger(),
    processingTmpl = require('../lib/processing-tmpl'),
+   processingXhtml = require('../lib/processing-xhtml'),
    runJsonGenerator = require('../lib/i18n/run-json-generator'),
    helpers = require('../lib/helpers');
 
-const DoT = global.requirejs('Core/js-template-doT');
-
 const extFile = /(\.tmpl|\.x?html)$/;
-const WSCoreReg = /(^ws\/)(deprecated)?/;
-const requirejsPaths = global.requirejs.s.contexts._.config.paths;
-
-function getModulenamesForPaths(mDeps, templateMask) {
-   const namesForPaths = {};
-   Object.keys(mDeps.nodes).forEach(function(node) {
-      if (node.includes(templateMask)) {
-         const prettyFilePath = helpers.prettifyPath(mDeps.nodes[node].path);
-         if (!namesForPaths[prettyFilePath]) {
-            namesForPaths[prettyFilePath] = [];
-         }
-         namesForPaths[prettyFilePath].push(node);
-      }
-   });
-   return namesForPaths;
-}
-
-function removeLastSymbolIfSlash(filePath) {
-   const lastSymbol = filePath[filePath.length - 1];
-
-   if (lastSymbol === '/' || lastSymbol === '\\') {
-      return filePath.slice(0, filePath.length - 1);
-   }
-   return filePath;
-}
-
-function checkPathForInterfaceModule(currentPath, application) {
-   let resultPath = '',
-      resultNode = '';
-
-   //Учитываем возможность наличия application
-   const prettyCurrentPath = helpers.removeLeadingSlash(helpers.prettifyPath(path.join(application, currentPath)));
-   Object.keys(requirejsPaths).forEach(function(node) {
-      const nodePath = helpers.prettifyPath(requirejsPaths[node]);
-      if (prettyCurrentPath.indexOf(nodePath) === 0 && nodePath.length > resultPath.length) {
-         resultPath = nodePath;
-         resultNode = node;
-      }
-   });
-   return helpers.prettifyPath(resultPath ? prettyCurrentPath.replace(resultPath, resultNode) : prettyCurrentPath);
-}
 
 async function writeTemplate(templateOptions, nodes, splittedCore) {
    /**
@@ -83,20 +41,6 @@ async function writeTemplate(templateOptions, nodes, splittedCore) {
 
 module.exports = function(grunt) {
    const splittedCore = grunt.option('splitted-core');
-
-   if (splittedCore) {
-      Object.keys(requirejsPaths).forEach(function(currentPath) {
-         const result = requirejsPaths[currentPath].match(WSCoreReg);
-         if (result && result[2]) {
-            requirejsPaths[currentPath] = removeLastSymbolIfSlash(
-               requirejsPaths[currentPath].replace(WSCoreReg, 'resources/WS.Deprecated/')
-            );
-         }
-         requirejsPaths[currentPath] = removeLastSymbolIfSlash(
-            requirejsPaths[currentPath].replace(WSCoreReg, 'resources/WS.Core/')
-         );
-      });
-   }
 
    grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
       //eslint-disable-next-line no-invalid-this
@@ -197,32 +141,17 @@ module.exports = function(grunt) {
          const root = self.data.root,
             application = self.data.application,
             applicationRoot = path.join(root, application),
+            resourcesRoot = path.join(root, application, 'resources'),
             mDeps = await fs.readJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
-            nodes = mDeps.nodes,
-            namesForPaths = getModulenamesForPaths(mDeps, 'html!');
+            nodes = mDeps.nodes;
 
          await pMap(
             self.files,
             async value => {
                const fullPath = helpers.prettifyPath(value.dest);
                try {
-                  const filename = helpers.removeLeadingSlash(
-                     fullPath.replace(helpers.prettifyPath(applicationRoot), '')
-                  );
-                  let currentNode = namesForPaths[filename] ? namesForPaths[filename][0] : null;
-
-                  /**
-                   * Если имени узла для шаблона в module-dependencies не определено, генерим его автоматически
-                   * с учётом путей до интерфейсных модулей, заданных в path в конфигурации для requirejs
-                   */
-                  if (!currentNode) {
-                     currentNode = `html!${checkPathForInterfaceModule(filename, application).replace(
-                        /(\.min)?\.xhtml$/g,
-                        ''
-                     )}`;
-                  }
-
-                  let html = await fs.readFile(fullPath, 'utf8');
+                  const html = stripBOM(await fs.readFile(fullPath, 'utf8'));
+                  const original = html;
 
                   if (splittedCore) {
                      /**
@@ -230,32 +159,22 @@ module.exports = function(grunt) {
                       * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
                       * когда шаблон будет генерироваться находу, как в дебаге.
                       */
-                     await fs.writeFile(fullPath.replace(extFile, '.min$1'), html);
-                  }
-                  const original = html;
-                  html = stripBOM(html);
-
-                  if (html.indexOf('define') === 0) {
-                     return;
+                     await fs.writeFile(fullPath.replace(extFile, '.min$1'), original);
                   }
 
-                  const config = DoT.getSettings();
+                  //relativePath должен начинаться с имени модуля
+                  let relativePath = path.relative(resourcesRoot, fullPath);
 
-                  if (module.encode) {
-                     config.encode = config.interpolate;
+                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  if (!splittedCore && relativePath.includes('..')) {
+                     relativePath = path.relative(applicationRoot, fullPath);
                   }
-                  const template = DoT.template(html, config);
-                  const contents =
-                     `define("${currentNode}",function(){` +
-                     `var f=${template.toString().replace(/[\n\r]/g, '')};` +
-                     'f.toJSON=function(){' +
-                     `return {$serialized$:"func", module:"${currentNode}"}` +
-                     '};return f;});';
+                  const xhtmlObj = processingXhtml.buildXhtml(html, relativePath);
                   const templateOptions = {
                      fullPath: fullPath,
-                     currentNode: currentNode,
+                     currentNode: xhtmlObj.nodeName,
                      original: original,
-                     data: contents
+                     data: xhtmlObj.text
                   };
 
                   await writeTemplate(templateOptions, nodes, splittedCore);

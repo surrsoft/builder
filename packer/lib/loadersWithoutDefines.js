@@ -212,10 +212,6 @@ function xhtmlLoader(module, base, packStorage, done) {
 
             config = doT.getSettings();
 
-            if (module.encode) {
-               config.encode = config.interpolate;
-            }
-
             template = doT.template(res, config);
             packStorage.addToResolvedNodes(defineName);
 
