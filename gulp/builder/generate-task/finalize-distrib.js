@@ -1,15 +1,34 @@
 'use strict';
 const gulp = require('gulp'),
-   path = require('path');
+   path = require('path'),
+   plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
-   normalizeKey = require('../../../lib/i18n/normalize-key');
+   normalizeKey = require('../../../lib/i18n/normalize-key'),
+   versionizeFinish = require('../plugins/versionize-finish');
 
 function generateTaskForCopyResources(config) {
-   const input = path.join(config.outputPath, '/**/*.*');
-   return function copyResources() {
-      return gulp.src(input, { dot: false, nodir: true }).pipe(gulp.dest(config.rawConfig.output));
-   };
+   const tasks = config.modules.map(moduleInfo => {
+      const input = path.join(moduleInfo.output, '/**/*.*');
+      const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
+      return function copyResources() {
+         return gulp.src(input, {dot: false, nodir: true})
+            .pipe(plumber({
+               errorHandler: function(err) {
+                  logger.error({
+                     message: 'Задача copyResources завершилась с ошибкой',
+                     error: err,
+                     moduleInfo: moduleInfo
+                  });
+                  this.emit('end');
+               }
+            }))
+            .pipe(versionizeFinish(config, moduleInfo))
+            .pipe(gulp.dest(moduleOutput));
+      };
+   });
+
+   return gulp.parallel(tasks);
 }
 
 function generateTaskForNormalizeKey(config) {
@@ -19,7 +38,7 @@ function generateTaskForNormalizeKey(config) {
          done();
       } catch (e) {
          logger.error({
-            message: "Ошибка Builder'а",
+            message: 'Ошибка Builder\'а',
             error: e
          });
       }

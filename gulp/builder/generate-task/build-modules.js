@@ -23,7 +23,8 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    filterCached = require('../plugins/filter-cached'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
-   uglify = require('../plugins/uglify');
+   uglify = require('../plugins/uglify'),
+   versionizeToStub = require('../plugins/versionize-to-stub');
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
@@ -63,6 +64,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
+         .pipe(gulpIf(!!config.version, versionizeToStub(config, changesStore, moduleInfo))) //зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
          .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
          .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
