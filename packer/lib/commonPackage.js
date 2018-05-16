@@ -9,7 +9,7 @@ const getMeta = require('./getDependencyMeta');
 const packCSS = require('./../tasks/lib/packCSS').packCSS;
 const packerDictionary = require('./../tasks/lib/packDictionary');
 const logger = require('../../lib/logger').logger();
-
+const pMap = require('p-map');
 const dblSlashes = /\\/g,
    CDN = /\/?cdn\//,
    replacedRequire = fs.readFileSync(path.join(__dirname, 'replaceRequirejs.res')),
@@ -92,6 +92,17 @@ PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
  */
 function getLoader(type, withoutDefine) {
    return withoutDefine ? loadersWithoutDefine[type] || loadersWithoutDefine.default : loaders[type] || loaders.default;
+}
+
+function promisedCopyFile(source, target) {
+   return new Promise((resolve, reject) => {
+      copyFile(source, target, (err, result) => {
+         if (err) {
+            return reject(err);
+         }
+         return resolve(result);
+      });
+   });
 }
 
 /**
@@ -343,6 +354,25 @@ function nativePackFiles(filesToPack, base, done, themeName) {
 }
 
 /**
+ * Тот же загрузчик модулей, что использует callback,
+ * но зато могёт с промисами
+ * @param loader
+ * @param module
+ * @param base
+ * @returns {Promise<any>}
+ */
+function promisifyLoader(loader, module, base) {
+   return new Promise((resolve, reject) => {
+      loader(module, base, (err, result) => {
+         if (err) {
+            return reject(err);
+         }
+         return resolve(result);
+      });
+   });
+}
+
+/**
  * @callback limitingNativePackFiles~callback
  * @param {Error} error
  * @param {String} [result]
@@ -355,40 +385,41 @@ function nativePackFiles(filesToPack, base, done, themeName) {
  * Относительно этой папки будут высчитаны новые пути в ссылках
  * @param {nativePackFiles~callback} done
  */
-function limitingNativePackFiles(filesToPack, limit, base, done) {
+async function limitingNativePackFiles(filesToPack, base) {
    if (filesToPack && filesToPack.length) {
-      async.mapLimit(filesToPack, limit, function(module, done) {
-         /**
-          * Для необычных расширений, получающихся в результате использования
-          * точек в именах модулей без явного указания плагина
-          * @type {RegExp}
-          */
-         const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`);
+      const
+         extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`),
+         result = [];
 
-         /**
-          * Учитываем возможность присутствия плагина is! в модуле. В таком случае
-          * путь будет храниться в подмодуле moduleYes, а в самом модуле fullPath будет undefined
-          */
-         const fullPath = module.fullPath ? module.fullPath
-            : module.moduleYes ? module.moduleYes.fullPath : null;
+      await pMap(
+         filesToPack,
+         async module => {
+            const fullPath = module.fullPath ? module.fullPath
+               : module.moduleYes ? module.moduleYes.fullPath : null;
 
-         /**
-          * Позорный костыль для модулей, в которых нету плагина js, но которые используют
-          * точки в конце имени модуля(например это .compatible)
-          */
-         if (fullPath && fullPath.match(extReg)) {
-            module.plugin = 'js';
+            /**
+             * Позорный костыль для модулей, в которых нету плагина js, но которые используют
+             * точки в конце имени модуля(например это .compatible)
+             */
+            if (fullPath && fullPath.match(extReg)) {
+               module.plugin = 'js';
+            }
+            try {
+               result.push(await promisifyLoader(getLoader(module.plugin), module, base));
+            } catch(err) {
+               logger.warning({
+                  message: 'Ошибка при чтении файла во время кастомной паковки',
+                  filePath: fullPath
+               });
+            }
+         },
+         {
+            concurrency: 10
          }
-         getLoader(module.plugin)(module, base, done);
-      }, function(err, result) {
-         if (err) {
-            done(err);
-         } else {
-            done(null, result);
-         }
-      });
+      );
+      return result;
    } else {
-      done(null, '');
+      return '';
    }
 }
 
@@ -536,5 +567,6 @@ module.exports = {
    limitingNativePackFiles: limitingNativePackFiles,
    getJsAndCssPackage: getJsAndCssPackage,
    getLoader: getLoader,
-   copyFile: copyFile
+   copyFile: copyFile,
+   promisedCopyFile: promisedCopyFile
 };

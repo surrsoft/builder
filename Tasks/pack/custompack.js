@@ -50,6 +50,36 @@ async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bu
          concurrency: 3
       }
    );
+
+   await saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore)
+};
+
+async function writeCustomPackage() {
+   // Не будем портить оригинальный файл.
+   if (await fs.pathExists(packageConfig.outputFile) && !(await fs.pathExists(originalPath(packageConfig.outputFile)))) {
+      await commonPackage.copyFile(cfg.outputFile, originalPath(cfg.outputFile), callBack);
+   } else {
+      callBack();
+   }
+
+   function callBack(err) {
+      if (err) {
+         done(err);
+      } else {
+         commonPackage.limitingNativePackFiles(cfg.orderQueue, 10, root, function(err, result) {
+            if (err) {
+               //удаляем из бандлов конфигурацию, если пакет по итогу не смог собраться
+               delete bundlesOptions.bundles[cfg.packagePath];
+               done(err);
+            } else {
+               grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
+                  return res + (res ? '\n' : '') + modContent;
+               }, '') : '');
+               done(null);
+            }
+         });
+      }
+   }
 }
 
 async function generateCustomPackage(depsTree, applicationRoot, packageConfig, isSplittedCore) {
@@ -66,7 +96,7 @@ async function generateCustomPackage(depsTree, applicationRoot, packageConfig, i
       packagePath;
 
    if (packageConfig.isBadConfig) {
-      reject(new Error('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.'))
+      throw new Error('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.');
    }
    orderQueue = customPackage.getOrderQueue(depsTree, packageConfig, applicationRoot);
    outputFile = customPackage.getOutputFile(packageConfig, applicationRoot, depsTree, isSplittedCore);
@@ -85,43 +115,49 @@ async function generateCustomPackage(depsTree, applicationRoot, packageConfig, i
    }
 
    orderQueue = packerDictionary.deleteModulesLocalization(orderQueue);
-   orderQueue = await packerDictionary.packerCustomDictionary(orderQueue, applicationRoot);
-
-   /**
-    * здесь будем вызывать ту часть пакера, отвечающую за сохранение пакета.
-    * TODO доделать
-    */
-
+   packageConfig.orderQueue = await packerDictionary.packerCustomDictionary(orderQueue, applicationRoot);
    packageConfig.outputFile = outputFile;
    packageConfig.packagePath = packagePath;
    result.output = packageConfig.outputFile;
+
+   await writeCustomPackage(packageConfig);
    return result;
 }
 
-async function saveBundlesForEachModule(grunt, applicationRoot) {
-   Object.keys(bundlesOptions.bundles).forEach(function(currentBundle) {
+/**
+ * Функция, которая сплитит результат работы таски custompack в секции bundles
+ * и ра
+ * @param applicationRoot
+ * @returns {Promise<void>}
+ */
+async function saveBundlesForEachModule(applicationRoot, result) {
+   Object.keys(result.bundles).forEach(async currentBundle => {
       let
          bundlePath = path.normalize(path.join(applicationRoot, `${currentBundle.match(/^resources\/[^/]+/)}`, 'bundlesRoute.json')),
-         currentModules = bundlesOptions.bundles[currentBundle],
-         bundleRouteToWrite = grunt.file.exists(bundlePath) ? JSON.parse(grunt.file.read(bundlePath)) : {};
+         currentModules = result.bundles[currentBundle],
+         bundleRouteToWrite = {};
+
+      if (await fs.pathExists(bundlePath)) {
+         bundleRouteToWrite = await fs.readJson(bundlePath)
+      }
 
       currentModules.forEach(function(node) {
          if (node.indexOf('css!') === -1) {
             bundleRouteToWrite[node] = currentBundle;
          }
       });
-      grunt.file.write(bundlePath, JSON.stringify(bundleRouteToWrite));
+      await fs.writeJson(bundlePath, bundleRouteToWrite);
    });
 }
 
 /**
- * TODO сделать общей для гранта и гальпа
- * практически готова, также реализовано сохранение бандлов для инкрементальной сборки.
+ * Сохраняем результаты работы кастомной паковки для всех секций.
+ * Могёт в инкрементальную сборку
  */
-async function saveCustomPackResults(result, wsRoot, applicationRoot) {
-
+async function saveCustomPackResults(result, applicationRoot, splittedCore) {
    const
       bundlesPath = 'ext/requirejs',
+      wsRoot = splittedCore ? 'resources/WS.Core' : 'ws',
       bundlesRoutePath = path.join(wsRoot, bundlesPath, 'bundlesRoute').replace(dblSlashes, '/'),
       pathsToSave = {
          bundles: path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js'),
@@ -130,7 +166,7 @@ async function saveCustomPackResults(result, wsRoot, applicationRoot) {
       };
 
    if (wsRoot !== 'ws') {
-      await saveBundlesForEachModule(applicationRoot);
+      await saveBundlesForEachModule(result, applicationRoot);
    }
 
    await pMap(
@@ -168,19 +204,18 @@ async function saveCustomPackResults(result, wsRoot, applicationRoot) {
             case 'bundles':
                await fs.writeFile(pathsToSave[key], `bundles=${JSON.stringify(json)};`);
                logger.debug(`Записали bundles.js по пути: ${pathsToSave[key]}`);
+               /**
+                * Таска минификации выполняется до кастомной паковки, поэтому мы должны для СП также
+                * сохранить .min бандл
+                */
+               if (splittedCore) {
+                  await fs.writeFile(pathsToSave[key].replace(/\.js$/, '.min$1'), `bundles=${JSON.stringify(json)};`);
+                  logger.debug(`Записали bundles.min.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js')}`);
+               }
                break;
          }
       }
    );
-
-   /**
-    * Таска минификации выполняется до кастомной паковки, поэтому мы должны для СП также
-    * сохранить .min бандл
-    */
-   if (bundlesOptions.splittedCore) {
-      grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js'), `bundles=${JSON.stringify(bundlesOptions.bundles)};`);
-      logger.debug(`Записали bundles.min.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js')}`);
-   }
 }
 
 module.exports = function gruntCustomPack(grunt) {
@@ -210,7 +245,7 @@ module.exports = function gruntCustomPack(grunt) {
             //wsRoot важен для обоих видов сборок, оставляем как в гранте, так и гальпе, выносить в отдельную функцию не вижу смысла
             wsRoot = await fs.pathExists(path.join(applicationRoot, 'resources/WS.Core')) ? 'resources/WS.Core' : 'ws',
             //
-            dg = await modDeps.getDependencyGraph(applicationRoot);
+            depsTree = await modDeps.getDependencyGraph(applicationRoot);
 
          let sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
 
@@ -232,18 +267,6 @@ module.exports = function gruntCustomPack(grunt) {
           */
 
          const configsArray = await gruntGetAllConfigs(applicationRoot, sourceFiles);
-         /**
-          * TODO данный функционал мы внедрим непосредственно в построение пакета, перед его построением будем чекать,
-          * TODO хороший пакет или нет, и если нет, rejectить ошибку и выдавать предупреждение.
-          */
-         /*if (badConfigs && badConfigs.length > 0) {
-            let errorMessage = '[ERROR] Опция "include" отсутствует или является пустым массивом!' +
-               ' Список конфигурационных файлов с данной ошибкой: ';
-            errorMessage += badConfigs.map(function(item) {
-               return '"' + item.path + '"';
-            }).join(', ');
-            logger.error(errorMessage);
-         }*/
 
          bundlesOptions.splittedCore = this.data.splittedCore;
          /**
@@ -251,7 +274,7 @@ module.exports = function gruntCustomPack(grunt) {
           * Общая функция для гальпа и гранта
           * TODO доработать
           */
-         await generatePackageJsonConfigs(configsArray, applicationRoot, bundlesOptions);
+         await generatePackageJsonConfigs(depsTree, configsArray, applicationRoot, bundlesOptions);
          logger.info('Задача создания кастомных пакетов завершена.');
          done();
       } catch (err) {
