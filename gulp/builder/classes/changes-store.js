@@ -39,6 +39,10 @@ class StoreInfo {
 
       //нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
       this.modulesCache = {};
+
+      //Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
+      //и подавать их при повторном запуске как изменённые
+      this.filesWithErrors = new Set();
    }
 
    async load(filePath) {
@@ -51,6 +55,7 @@ class StoreInfo {
             this.inputPaths = obj.inputPaths;
             this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
+            this.filesWithErrors = new Set(obj.filesWithErrors);
          }
       } catch (error) {
          logger.warning({
@@ -69,7 +74,8 @@ class StoreInfo {
             startBuildTime: this.startBuildTime,
             inputPaths: this.inputPaths,
             dependencies: this.dependencies,
-            modulesCache: this.modulesCache
+            modulesCache: this.modulesCache,
+            filesWithErrors: [...this.filesWithErrors]
          },
          {
             spaces: 1
@@ -112,8 +118,20 @@ class ChangesStore {
          logger.info('Не удалось обнаружить валидный кеш от предыдущей сборки. ' + finishText);
          return true;
       }
+      const lastRunningParameters = Object.assign({}, this.lastStore.runningParameters);
+      const currentRunningParameters = Object.assign({}, this.currentStore.runningParameters);
+
+      //поле version всегда разное
+      if (lastRunningParameters.version !== '' || currentRunningParameters.version !== '') {
+         if (lastRunningParameters.version === '' || currentRunningParameters.version === '') {
+            logger.info("Параметры запуска builder'а поменялись. " + finishText);
+            return true;
+         }
+         lastRunningParameters.version = '';
+         currentRunningParameters.version = '';
+      }
       try {
-         assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
+         assert.deepEqual(lastRunningParameters, currentRunningParameters);
       } catch (error) {
          logger.info("Параметры запуска builder'а поменялись. " + finishText);
          return true;
@@ -157,6 +175,12 @@ class ChangesStore {
          }
       }
 
+      //если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
+      if (this.config.version) {
+         if (await fs.pathExists(this.config.rawConfig.output)) {
+            removePromises.push(fs.remove(this.config.rawConfig.output));
+         }
+      }
       return Promise.all(removePromises);
    }
 
@@ -178,6 +202,11 @@ class ChangesStore {
 
       //новый файл
       if (!this.lastStore.inputPaths.hasOwnProperty(prettyPath)) {
+         return true;
+      }
+
+      //файл с ошибкой
+      if (this.lastStore.filesWithErrors.has(prettyPath)) {
          return true;
       }
 
@@ -215,6 +244,11 @@ class ChangesStore {
       const prettyPath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
       this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
+   }
+
+   markFileAsFailed(filePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      this.currentStore.filesWithErrors.add(prettyPath);
    }
 
    addDependencies(filePath, imports) {

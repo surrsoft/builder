@@ -20,7 +20,11 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    buildTmpl = require('../plugins/build-tmpl'),
    createContentsJson = require('../plugins/create-contents-json'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
-   filterCached = require('../plugins/filter-cached');
+   filterCached = require('../plugins/filter-cached'),
+   buildXhtml = require('../plugins/build-xhtml'),
+   minifyCss = require('../plugins/minify-css'),
+   uglify = require('../plugins/uglify'),
+   versionizeToStub = require('../plugins/versionize-to-stub');
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
@@ -32,9 +36,17 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
       sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
    }
    const hasLocalization = config.localizations.length > 0;
+
+   const pathsForImportSet = new Set();
+   for (const modulePath of modulesMap.values()) {
+      pathsForImportSet.add(path.dirname(modulePath));
+   }
+   const pathsForImport = [...pathsForImportSet];
+
+
    return function buildModule() {
       return gulp
-         .src(moduleInput, { dot: false, nodir: true })
+         .src(moduleInput, {dot: false, nodir: true})
          .pipe(
             plumber({
                errorHandler: function(err) {
@@ -48,19 +60,23 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             })
          )
          .pipe(changedInPlace(changesStore, moduleInfo))
-         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath))
+         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
          .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
          .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
+         .pipe(gulpIf(!!config.version, versionizeToStub(config, changesStore, moduleInfo))) //зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
+         .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
+         .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
+         .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
+         .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
+         .pipe(gulpIf(config.isReleaseMode, uglify(changesStore, moduleInfo, pool)))
          .pipe(
             gulpRename(file => {
                file.dirname = transliterate(file.dirname);
                file.basename = transliterate(file.basename);
             })
          )
-         .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
-         .pipe(gulpIf(hasLocalization, localizeXhtml(config, moduleInfo, pool)))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createNavigationModulesJson(moduleInfo))
          .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo

@@ -8,6 +8,7 @@ const path = require('path'),
    pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
+   generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
@@ -47,7 +48,7 @@ function generateTaskForRemoveFiles(changesStore) {
 }
 
 function generateWorkflow(processArgv) {
-   //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
+   //загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
@@ -72,6 +73,7 @@ function generateWorkflow(processArgv) {
          generateTaskForSaveChangesStore(changesStore),
          generateTaskForTerminatePool(pool)
       ),
+      generateTaskForFinalizeDistrib(config, localizationEnable),
       guardSingleProcess.generateTaskForUnlock() //после всего
    );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-invalid-this, no-sync */
 'use strict';
 
 const path = require('path'),
@@ -10,6 +11,34 @@ const path = require('path'),
    collectWords = require('../lib/i18n/collect-words'),
    runJsonGenerator = require('../lib/i18n/run-json-generator'),
    normalizeKeyDict = require('../lib/i18n/normalize-key');
+
+/**
+ * Получает список языков, которые будут доступны
+ * @param languagesStr
+ * @returns {Array}
+ */
+function getAvailableLang(languagesStr) {
+   const availableLang = [];
+   let lang, parts, local, country;
+
+   const languages = languagesStr.replace(/"/g, '').split(';');
+   for (let i = 0; i < languages.length; i++) {
+      lang = languages[i];
+      if (lang.length === 6 && lang[0] === '*') {
+         lang = lang.substring(1, 6);
+      }
+
+      if (lang.length === 5) {
+         parts = lang.split('-');
+         local = parts[0].toLowerCase();
+         country = parts[1].toUpperCase();
+         lang = local + '-' + country;
+         availableLang.push(lang);
+      }
+   }
+
+   return availableLang;
+}
 
 /**
  * Подготавливаем ресурсы к переводу
@@ -48,14 +77,14 @@ function runPrepareXHTML(root, componentsProperties, done) {
          },
          function(err) {
             if (err) {
-               logger.error({ error: err });
+               logger.error({error: err});
             }
             done();
          }
       );
       logger.info('Подготовка xhtml файлов для локализации выполнена.');
    } catch (err) {
-      logger.error({ error: err });
+      logger.error({error: err});
    }
 }
 
@@ -93,7 +122,7 @@ function runCreateResultDictForDir(words, dir, componentsProperties) {
          },
          function(err) {
             if (err) {
-               logger.error({ error: err });
+               logger.error({error: err});
             }
             resolve();
          }
@@ -136,7 +165,7 @@ function runCreateResultDict(modules, componentsProperties, out) {
             },
             function(err) {
                if (err) {
-                  logger.error({ error: err });
+                  logger.error({error: err});
                }
 
                // Записать в результирующий словарь
@@ -144,7 +173,7 @@ function runCreateResultDict(modules, componentsProperties, out) {
                   fs.writeFileSync(out, JSON.stringify(words, null, 2));
                } catch (error) {
                   logger.error({
-                     message: "Could't create output file ",
+                     message: 'Could\'t create output file ',
                      filePath: out,
                      error: error
                   });
@@ -205,7 +234,7 @@ module.exports = function(grunt) {
                await runCreateResultDict(optModules, componentsProperties, optOut);
                done();
             } catch (error) {
-               logger.error({ error: error });
+               logger.error({error: error});
             }
          }
 
@@ -215,7 +244,11 @@ module.exports = function(grunt) {
       }
 
       if (optIndexDict) {
-         normalizeKeyDict(this.data, optIndexDict); //Приводит повторяющиеся ключи в словарях к единому значению
+         const langs = getAvailableLang(optIndexDict),
+            applicationRoot = path.join(this.data.root, this.data.application),
+            resourceRoot = path.join(applicationRoot, 'resources');
+
+         await normalizeKeyDict(resourceRoot, langs); //Приводит повторяющиеся ключи в словарях к единому значению
          indexDict(grunt, optIndexDict, this.data, ++taskCount && done);
       }
 
@@ -225,7 +258,7 @@ module.exports = function(grunt) {
 
       function done(err) {
          if (err) {
-            logger.error({ error: err });
+            logger.error({error: err});
          }
 
          if (!isDone && --taskCount <= 0) {
