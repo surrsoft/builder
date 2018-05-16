@@ -406,7 +406,7 @@ async function limitingNativePackFiles(filesToPack, base) {
             }
             try {
                result.push(await promisifyLoader(getLoader(module.plugin), module, base));
-            } catch(err) {
+            } catch (err) {
                logger.warning({
                   message: 'Ошибка при чтении файла во время кастомной паковки',
                   filePath: fullPath
