@@ -7,6 +7,7 @@ const packerDictionary = require('./packDictionary');
 const commonPackage = require('./../../lib/commonPackage');
 const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
+const fs = require('fs-extra');
 
 /**
  * Путь до original файла
@@ -153,20 +154,104 @@ function getBundlePath(currentOutput, applicationRoot, wsRoot) {
 }
 
 /**
+ * Проверяет наличие стиля или шаблона в списке на запись
+ * @param module - Полное имя модуля(с плагинами)
+ * @param orderQueue - список модулей на запись
+ */
+function checkForIncludeInOrderQueue(module, orderQueue) {
+   const
+      moduleWithoutPlugin = module.split('!').pop(),
+      founded = {};
+
+   orderQueue.forEach(currentModule => {
+      const currentModuleParts = new Set(currentModule.fullName.split('!'));
+      if (currentModuleParts.has(moduleWithoutPlugin)) {
+         if (currentModuleParts.has('css')) {
+            founded.css = true;
+         }
+         if (currentModuleParts.has('tmpl')) {
+            founded.tmpl = true;
+         }
+         if (currentModuleParts.has('html')) {
+            founded.xhtml = true;
+         }
+      }
+   });
+   return founded;
+}
+
+/**
+ * проверяем, сгенерирован ли шаблон и стоит ли его включать в пакет.
+ * @param templatePath
+ */
+function checkTemplateForAMD(templatePath) {
+   const data = fs.readFileSync(templatePath, 'utf8');
+   return data.indexOf('define(') === 0;
+}
+
+/**
  * Генерирует кастомный пакет для requirejs конфигурации.
  * @param {Object} orderQueue - очередь модулей на запись в пакет.
  * @return {Array}
  */
-function generateBundle(orderQueue) {
+function generateBundle(orderQueue, splittedCore) {
    const
-      bundle = [];
+      bundle = [],
+      moduleExtReg = /(\.module)?(\.min)?(\.original)?\.js$/,
+      modulesToPushToOrderQueue = [];
 
    orderQueue.forEach(function(node) {
-      if (node.amd || node.plugin === 'css' || node.plugin === 'text') {
+      const
+         isJSModuleWithoutJSPlugin = node.fullName.indexOf('!') === -1 && node.plugin === 'js',
+         modulePath = node.fullPath ? node.fullPath : node.moduleYes.fullPath ? node.moduleYes.fullPath : node.moduleNo.fullPath,
+         moduleHaveTmpl = fs.existsSync(modulePath.replace(moduleExtReg, '.tmpl')),
+         moduleHaveXhtml = fs.existsSync(modulePath.replace(moduleExtReg, '.xhtml')),
+         moduleHaveCSS = fs.existsSync(modulePath.replace(moduleExtReg, '.css'));
+
+      if (node.amd) {
+         /**
+          * Если модуль без плагина js и у него есть шаблон или стиль, мы должны удостовериться,
+          * что они также попадут в бандлы и будут запакованы, иначе require будет вызывать
+          * кастомный пакет, но с соответствующим расширением
+          */
+         if (isJSModuleWithoutJSPlugin && (moduleHaveTmpl || moduleHaveXhtml || moduleHaveCSS)) {
+            const foundedElements = checkForIncludeInOrderQueue(node.fullName, orderQueue);
+            let config;
+            if (moduleHaveTmpl && !foundedElements.tmpl) {
+               config = {
+                  fullName: `tmpl!${node.fullName}`,
+                  fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.tmpl' : '.tmpl'),
+                  plugin: 'tmpl'
+               };
+               config.amd = checkTemplateForAMD(config.fullPath);
+               modulesToPushToOrderQueue.push(config);
+
+            }
+            if (moduleHaveXhtml && !foundedElements.xhtml) {
+               config = {
+                  fullName: `tmpl!${node.fullName}`,
+                  fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.xhtml' : '.xhtml'),
+                  plugin: 'html',
+                  amd: true
+               };
+               config.amd = checkTemplateForAMD(config.fullPath);
+               modulesToPushToOrderQueue.push(config);
+            }
+            if (moduleHaveCSS && !foundedElements.css) {
+               modulesToPushToOrderQueue.push({
+                  fullName: `css!${node.fullName}`,
+                  fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.css' : '.css'),
+                  plugin: 'css'
+               });
+            }
+         }
+         bundle.push(node.fullName);
+      } else if (node.plugin === 'css' || node.plugin === 'text') {
          bundle.push(node.fullName);
       }
    });
 
+   modulesToPushToOrderQueue.forEach(module => orderQueue.push(module));
    return bundle;
 }
 
@@ -250,14 +335,14 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
    packagePath = getBundlePath(outputFile, applicationRoot, wsRoot);
 
    orderQueue = orderQueue.filter(function(node) {
-      if (node.plugin === 'js') {
+      if (node.plugin === 'js' || node.plugin === 'tmpl' || node.plugin === 'html') {
          return node.amd;
       }
       return true;
    });
 
    if (cfg.platformPackage || !cfg.includeCore) {
-      bundlesOptions.bundles[packagePath] = generateBundle(orderQueue);
+      bundlesOptions.bundles[packagePath] = generateBundle(orderQueue, bundlesOptions.splittedCore);
       generateBundlesRouting(bundlesOptions.bundles[packagePath], packagePath, bundlesOptions.modulesInBundles);
    }
 
