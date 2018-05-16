@@ -118,11 +118,11 @@ function getAllModules(dg, applicationRoot) {
 
 function promisifyLoader(loader, dep, root) {
    return new Promise((resolve, reject) => {
-      loader(dep, root, err => {
+      loader(dep, root, (err, res) => {
          if (err) {
             reject(err);
          } else {
-            resolve();
+            resolve(res);
          }
       });
    });
