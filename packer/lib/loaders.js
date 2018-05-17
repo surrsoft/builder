@@ -173,7 +173,7 @@ function xhtmlLoader(module, base, done) {
              * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за xhtml кастомным пакетом
              * и упадёт.
              */
-            done(null, `define(${module.fullName}, '');`);
+            done(null, `define('${module.fullName}', '');`);
          }
       }
    }, 'xhtmlLoader'));
@@ -405,7 +405,7 @@ function tmplLoader(module, base, done) {
              * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за tmpl шаблоном
              * и упадёт.
              */
-            done(null, `define(${module.fullName}, '');`);
+            done(null, `define('${module.fullName}', '');`);
          }
       }
    }, 'tmplLoader'));
