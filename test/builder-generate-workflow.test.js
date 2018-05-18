@@ -145,7 +145,7 @@ describe('gulp/builder/generate-workflow.js', function() {
    });
 
 
-   it('проверка роутинга', async function() {
+   it('routes', async function() {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
       await prepareTest(fixtureFolder);
 
@@ -260,7 +260,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       await clearWorkspace();
    });
 
-   it('проверка jsModules в contents.json', async function() {
+   it('jsModules for contents.json', async function() {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/jsModules');
       await prepareTest(fixtureFolder);
 
@@ -361,7 +361,7 @@ describe('gulp/builder/generate-workflow.js', function() {
       await clearWorkspace();
    });
 
-   it('проверка генерации статических html', async function() {
+   it('static html', async function() {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/staticHtml');
       await prepareTest(fixtureFolder);
 
@@ -596,6 +596,70 @@ describe('gulp/builder/generate-workflow.js', function() {
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
+
+      await clearWorkspace();
+   });
+
+   it('create symlink or copy', async function() {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/symlink');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         'cache': cacheFolder,
+         'output': outputFolder,
+         'mode': 'debug',
+         'modules': [
+            {
+               'name': 'Модуль',
+               'path': path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      const isSymlink = async(filePath) => {
+         const fullPath = path.join(moduleOutputFolder, filePath);
+         if (!await fs.pathExists(fullPath)) {
+            return false;
+         }
+         const stat = await fs.lstat(fullPath);
+         return stat.isSymbolicLink();
+      };
+
+      const isRegularFile = async(filePath) => {
+         const fullPath = path.join(moduleOutputFolder, filePath);
+         if (!await fs.pathExists(fullPath)) {
+            return false;
+         }
+         const stat = await fs.lstat(fullPath);
+         return !stat.isSymbolicLink() && stat.isFile();
+      };
+
+      const check = async() => {
+         //запустим таску
+         await runWorkflow();
+
+         //файлы из исходников
+         (await isSymlink('template.html')).should.equal(true);
+         (await isSymlink('TestHtmlTmpl.html.tmpl')).should.equal(true);
+         (await isSymlink('TestLess.less')).should.equal(true);
+         (await isSymlink('TestStaticHtml.js')).should.equal(true);
+
+         //генерируемые файлы из исходников
+         (await isRegularFile('StaticHtml.html')).should.equal(true);
+         (await isRegularFile('TestHtmlTmpl.html')).should.equal(true);
+         (await isRegularFile('TestLess.css')).should.equal(true);
+
+         //генерируемые файлы на модуль
+         (await isRegularFile('contents.js')).should.equal(true);
+         (await isRegularFile('contents.json')).should.equal(true);
+         (await isRegularFile('navigation-modules.json')).should.equal(true);
+         (await isRegularFile('routes-info.json')).should.equal(true);
+         (await isRegularFile('static_templates.json')).should.equal(true);
+      };
+
+      await check();
+      await check(); //второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
 
       await clearWorkspace();
    });
