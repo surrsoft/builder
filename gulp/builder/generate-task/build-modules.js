@@ -102,9 +102,10 @@ function needSymlink(hasLocalization, config, moduleInfo) {
          return false;
       }
 
-      //нельзя использовать симлинки для файлов, которые мы сами генерируем
+      //нельзя использовать симлинки для файлов, которые мы сами генерируем.
+      //абсолютный путь в relativePath  может получиться только на windows, если не получилось построить относительный
       const relativePath = path.relative(moduleInfo.path, file.history[0]);
-      if (relativePath.includes('..')) {
+      if (relativePath.includes('..') || path.isAbsolute(relativePath)) {
          return false;
       }
 
