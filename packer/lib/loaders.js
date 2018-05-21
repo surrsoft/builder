@@ -54,10 +54,10 @@ const loaders = {
  * @param {Object} [module.moduleNo] - is plugin, module no
  * @param {String} [module.moduleFeature] - is plugin, module feature
  */
-function parseModule(module) {
+function parseModule(text, module) {
    let res;
    try {
-      res = esprima.parse(module);
+      res = esprima.parse(text);
    } catch (e) {
       e.message = 'While parsing ' + module.fullName + ' from ' + module.fullPath + ': ' + e.message;
       res = e;
@@ -86,7 +86,7 @@ function jsLoader(module, base, done) {
       } else if (amd && !module.addDeps) {
          done(null, res);
       } else {
-         const ast = parseModule(res);
+         const ast = parseModule(res, module);
          if (ast instanceof Error) {
             return done(ast);
          }
