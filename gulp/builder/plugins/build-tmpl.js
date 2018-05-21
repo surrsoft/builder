@@ -34,7 +34,9 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
-            newText = (await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath])).text;
+            const result = await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath]);
+            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
+            newText = result.text;
 
             if (config.isReleaseMode) {
                //если tmpl не возможно минифицировать, то запишем оригинал
@@ -65,7 +67,8 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
                new Vinyl({
                   base: moduleInfo.output,
                   path: outputMinFile,
-                  contents: Buffer.from(newText)
+                  contents: Buffer.from(newText),
+                  history: [...file.history]
                })
             );
             changesStore.addOutputFile(file.history[0], outputMinFile);

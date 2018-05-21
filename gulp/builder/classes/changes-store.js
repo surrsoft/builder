@@ -14,6 +14,7 @@ class ModuleCacheInfo {
    constructor() {
       this.componentsInfo = {};
       this.routesInfo = {};
+      this.markupCache = {};
    }
 }
 
@@ -224,6 +225,9 @@ class ChangesStore {
       if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
          currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
       }
+      if (lastModuleCache.markupCache.hasOwnProperty(prettyPath)) {
+         currentModuleCache.markupCache[prettyPath] = lastModuleCache.markupCache[prettyPath];
+      }
       if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
          currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
       }
@@ -315,6 +319,17 @@ class ChangesStore {
    getComponentsInfo(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.componentsInfo;
+   }
+
+   storeBuildedMarkup(filePath, moduleName, obj) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      currentModuleCache.markupCache[prettyPath] = obj;
+   }
+
+   getMarkupCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.markupCache;
    }
 
    storeRouteInfo(filePath, moduleName, routeInfo) {

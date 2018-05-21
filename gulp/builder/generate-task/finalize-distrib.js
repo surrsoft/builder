@@ -1,6 +1,7 @@
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
+   gulpIf = require('gulp-if'),
    plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
@@ -23,7 +24,7 @@ function generateTaskForCopyResources(config) {
                   this.emit('end');
                }
             }))
-            .pipe(versionizeFinish(config, moduleInfo))
+            .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
             .pipe(gulp.dest(moduleOutput));
       };
    });
@@ -46,7 +47,7 @@ function generateTaskForNormalizeKey(config) {
 }
 
 function generateTaskForFinalizeDistrib(config, localizationEnable) {
-   if (!config.version) {
+   if (!config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };

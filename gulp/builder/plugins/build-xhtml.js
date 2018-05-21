@@ -28,8 +28,9 @@ module.exports = function(changesStore, moduleInfo, pool) {
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
-
-            newText = (await pool.exec('buildXhtml', [newText, relativeFilePath])).text;
+            const result = await pool.exec('buildXhtml', [newText, relativeFilePath]);
+            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
+            newText = result.text;
 
             //если xhtml не возможно минифицировать, то запишем оригинал
             try {
@@ -57,14 +58,15 @@ module.exports = function(changesStore, moduleInfo, pool) {
             new Vinyl({
                base: moduleInfo.output,
                path: outputMinFile,
-               contents: Buffer.from(newText)
+               contents: Buffer.from(newText),
+               history: [...file.history]
             })
          );
          changesStore.addOutputFile(file.history[0], outputMinFile);
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при компиляции XHTML',
+            message: "Ошибка builder'а при компиляции XHTML",
             error: error,
             moduleInfo: moduleInfo,
             filePath: file.path
