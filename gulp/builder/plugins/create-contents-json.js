@@ -16,7 +16,7 @@ module.exports = function(config, moduleInfo) {
          //подготовим contents.json и contents.js
          moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
 
-         if(config.version){
+         if (config.version) {
             moduleInfo.contents.buildnumber = config.version;
          }
 
