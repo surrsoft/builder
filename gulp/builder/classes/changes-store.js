@@ -35,7 +35,9 @@ class StoreInfo {
       //2. удалить лишние файлы
       this.inputPaths = {};
 
-      //imports из less файлов для инкрементальной сборки
+      // для инкрементальной сборки нужно знать зависимости файлов:
+      // - imports из less файлов
+      // - зависимости js на файлы вёрстки для паковки собственных зависмостей
       this.dependencies = {};
 
       //нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
@@ -92,9 +94,10 @@ class ChangesStore {
       this.currentStore = new StoreInfo();
       this.dropCacheForMarkup = false;
 
-      //less файлы инвалидируются с зависимостями
-      //bp
-      this.cacheLessChanges = {};
+      //js и less файлы инвалидируются с зависимостями
+      // less - зависмости через import
+      // js - зависимости на xhtml и tmpl для кастомной паковки
+      this.cacheChanges = {};
    }
 
    load() {
@@ -213,8 +216,8 @@ class ChangesStore {
 
       //проверка modification time
       if (fileMTime.getTime() > this.lastStore.startBuildTime) {
-         if (prettyPath.endsWith('.less')) {
-            this.cacheLessChanges[prettyPath] = true;
+         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+            this.cacheChanges[prettyPath] = true;
          }
          return true;
       }
@@ -235,10 +238,10 @@ class ChangesStore {
          this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
       }
 
-      if (prettyPath.endsWith('.less')) {
+      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
          const dependenciesChanged = await this.isDependenciesChanged(prettyPath);
          const isChanged = dependenciesChanged.length > 0 && dependenciesChanged.some(changed => changed);
-         this.cacheLessChanges[prettyPath] = isChanged;
+         this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
       }
       return false;
@@ -264,8 +267,8 @@ class ChangesStore {
       return pMap(
          this.getAllDependencies(filePath),
          async currentPath => {
-            if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
-               return this.cacheLessChanges[currentPath];
+            if (this.cacheChanges.hasOwnProperty(currentPath)) {
+               return this.cacheChanges[currentPath];
             } else {
                let isChanged = false;
                if (await fs.pathExists(currentPath)) {
@@ -274,7 +277,7 @@ class ChangesStore {
                } else {
                   isChanged = true;
                }
-               this.cacheLessChanges[currentPath] = isChanged;
+               this.cacheChanges[currentPath] = isChanged;
                return isChanged;
             }
          },
