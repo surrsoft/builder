@@ -8,6 +8,8 @@ const packInOrder = require('./packInOrder');
 const domHelpers = require('./../../lib/domHelpers');
 const indexer = require('./../../lib/index-project');
 const logger = require('../../../lib/logger').logger();
+const esprima = require('esprima');
+const traverse = require('estraverse').traverse;
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
    const type2attr = {
@@ -165,6 +167,30 @@ function getKey(buildNumber, key) {
    return buildNumber ? `v${buildNumber}.${key}` : key;
 }
 
+/**
+ * Достаём тему из wsConfig и если она задана, значит паковать
+ * надо с учётом этой темы
+ */
+function getThemeFromWsConfig(wsConfig) {
+   const ast = esprima.parse(wsConfig.firstChild.data);
+   let themeName = null;
+
+   traverse(ast, {
+      enter: function(node) {
+         if (node.type === 'AssignmentExpression' && node.operator === '=') {
+            if (node.right && node.right.type === 'ObjectExpression' && node.right.properties) {
+               node.right.properties.forEach(option => {
+                  if (option.key.name === 'themeName') {
+                     themeName = option.value.value;
+                  }
+               });
+            }
+         }
+      }
+   });
+   return themeName;
+}
+
 function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
    logger.debug('Packing dependencies of ' + htmlFileset.length + ' files...');
    const
@@ -181,7 +207,14 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
             cssTarget = dom.getElementById('ws-include-css'),
             htmlPath = htmlFile.split(path.sep),
             htmlName = htmlPath[htmlPath.length - 1],
+            wsConfig = dom.getElementById('ws-config'),
             applicationRoot = path.join(root, application);
+
+         let themeName;
+
+         if (wsConfig) {
+            themeName = getThemeFromWsConfig(wsConfig);
+         }
 
          if (jsTarget || cssTarget) {
             const startNodes = getStartNodes(grunt, divs, application);
@@ -245,7 +278,7 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
                   grunt.file.write(htmlFile, domHelpers.stringify(dom));
                   done();
                }
-            }, null, htmlName);
+            }, themeName, htmlName);
          } else {
             logger.debug('No any packing target in \'' + htmlFile + '\'');
             done();
