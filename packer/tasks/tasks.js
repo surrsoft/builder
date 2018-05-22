@@ -259,7 +259,7 @@ function gruntCustomPack(grunt) {
          }
          bundlesRoutePath = path.join(wsRoot, bundlesPath, 'bundlesRoute').replace(dblSlashes, '/');
          grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.json'), `${JSON.stringify(bundlesOptions.bundles)}`);
-         logger.debug(`Записали bundles.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js')}`);
+         logger.debug(`Записали bundles.json по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js')}`);
          grunt.file.write(path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js'), `bundles=${JSON.stringify(bundlesOptions.bundles)};`);
          logger.debug(`Записали bundles.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js')}`);
 
