@@ -8,6 +8,7 @@ require('../helpers/node-ws').init();
 
 const fs = require('fs-extra'),
    workerPool = require('workerpool'),
+   helpers = require('../../lib/helpers'),
    buildLess = require('../../lib/build-less'),
    processingTmpl = require('../../lib/processing-tmpl'),
    parseJsComponent = require('../../lib/parse-js-component'),
@@ -72,5 +73,6 @@ workerPool.worker({
    prepareXHTML: prepareXHTML,
    buildXhtml: buildXhtml,
    minifyCss: runMinifyCss,
-   uglifyJs: uglifyJs
+   uglifyJs: uglifyJs,
+   gzip: helpers.gzip
 });
