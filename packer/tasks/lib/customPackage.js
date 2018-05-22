@@ -8,6 +8,7 @@ const commonPackage = require('./../../lib/commonPackage');
 const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
+const packCSS = require('./packCSS').packCSS;
 
 /**
  * Путь до original файла
@@ -300,16 +301,6 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
                   return res + (res ? '\n' : '') + modContent;
                }, '') : '');
 
-               /**
-                * временно генерим css-ную пустышку для ситуации, когда динамически
-                * просят css-ку, имя которой совпадает с компонентом и который присутствует
-                * в каком либо бандле.
-                * TODO Написать генерацию кастомного css-пакета наподобие rt-паковки
-                */
-               const pathToCustomCSS = cfg.outputFile.replace(/\.js$/, '.css');
-               if (!grunt.file.exists(pathToCustomCSS)) {
-                  grunt.file.write(pathToCustomCSS, '');
-               }
                done(null);
             }
          });
@@ -326,22 +317,44 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
 
 //собираем зависимости для конкретной конфигурации кастомной паковки
 function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOptions, done) {
+   const
+      outputFile = getOutputFile(cfg, applicationRoot, dg, bundlesOptions),
+      packagePath = getBundlePath(outputFile, applicationRoot, wsRoot),
+      pathToCustomCSS = outputFile.replace(/\.js$/, '.css');
+
    let
-      orderQueue,
+      orderQueue, cssModulesFromOrderQueue = [];
 
-      outputFile,
-      packagePath;
+   orderQueue = getOrderQueue(dg, cfg, applicationRoot)
+      .filter(function(node) {
+         if (node.plugin === 'js' || node.plugin === 'tmpl' || node.plugin === 'html') {
+            return node.amd;
+         }
+         if (node.fullName.includes('css!')) {
+            cssModulesFromOrderQueue.push(node);
+            /**
+             * пока оставляем и jsное обьявление для обратной совместимости с онлайном на rtpackage без VDOM.
+             * После необходимых правок со стороны СП мы уберём полностью css.
+             */
+            return true;
+         }
+         return true;
+      });
 
-   orderQueue = getOrderQueue(dg, cfg, applicationRoot);
-   outputFile = getOutputFile(cfg, applicationRoot, dg, bundlesOptions);
-   packagePath = getBundlePath(outputFile, applicationRoot, wsRoot);
-
-   orderQueue = orderQueue.filter(function(node) {
-      if (node.plugin === 'js' || node.plugin === 'tmpl' || node.plugin === 'html') {
-         return node.amd;
-      }
-      return true;
-   });
+   /**
+    * пишем все стили по пути кастомного пакета в css-файл.
+    */
+   cssModulesFromOrderQueue = commonPackage.prepareResultQueue(cssModulesFromOrderQueue, applicationRoot);
+   if (cssModulesFromOrderQueue.css.length > 0) {
+      packCSS(cssModulesFromOrderQueue.css.filter(function removeControls(module) {
+         if (cfg.themeName) {
+            return !module.fullName.startsWith('css!SBIS3.CONTROLS/') && !module.fullName.startsWith('css!Controls/');
+         }
+         return true;
+      }).map(function onlyPath(module) {
+         return module.fullPath;
+      }), applicationRoot, (err, result) => fs.writeFileSync(pathToCustomCSS, result));
+   }
 
    if (cfg.platformPackage || !cfg.includeCore) {
       bundlesOptions.bundles[packagePath] = generateBundle(orderQueue, bundlesOptions.splittedCore);
