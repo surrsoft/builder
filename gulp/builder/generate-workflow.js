@@ -71,9 +71,9 @@ function generateWorkflow(processArgv) {
          //завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore),
-         generateTaskForTerminatePool(pool)
       ),
-      generateTaskForFinalizeDistrib(config, localizationEnable),
+      generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      generateTaskForTerminatePool(pool),
       guardSingleProcess.generateTaskForUnlock() //после всего
    );
 }
