@@ -3,6 +3,7 @@
 'use strict';
 
 const through = require('through2'),
+   path = require('path'),
    logger = require('../../../lib/logger').logger();
 
 module.exports = function(changesStore, moduleInfo) {
@@ -23,11 +24,28 @@ module.exports = function(changesStore, moduleInfo) {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             const markupCache = changesStore.getMarkupCache(moduleInfo.name);
             const nodenameToMarkup = new Map();
-            for (const markupObj of Object.values(markupCache)) {
-               nodenameToMarkup.set(markupObj.nodeName, markupObj.text);
+            for (const filePath of Object.keys(markupCache)) {
+               const markupObj = markupCache[filePath];
+               nodenameToMarkup.set(markupObj.nodeName, {text: markupObj.text, filePath: filePath});
             }
+            const getFullPathInSource = (dep) => {
+               const moduleNameOutput = path.basename(moduleInfo.output);
+               let relativeFileName = '';
+               if (dep.startsWith('html!')) {
+                  relativeFileName = relativeFileName.replace('html!', '') + '.xhtml';
+               } else {
+                  relativeFileName = relativeFileName.replace('tmpl!', '') + '.tmpl';
+               }
+               if (relativeFileName.startsWith(moduleNameOutput)) {
+                  const relativeFileNameWoModule = relativeFileName.split('/').slice(1).join('/');
+                  return path.join(moduleInfo.path, relativeFileNameWoModule);
+               }
+               return '';
+            };
 
             for (const jsFile of jsFiles) {
+               //важно сохранить в зависимости для js все файлы, которые должны приводить к пересборке файла
+               const filesDepsForCache = new Set();
                const ownDeps = [];
                if (componentsInfo.hasOwnProperty(jsFile.history[0])) {
                   const componentInfo = componentsInfo[jsFile.history[0]];
@@ -35,6 +53,11 @@ module.exports = function(changesStore, moduleInfo) {
                      for (const dep of componentInfo.componentDep) {
                         if (dep.startsWith('html!') || dep.startsWith('tmpl!')) {
                            ownDeps.push(dep);
+                           const fullPath = getFullPathInSource(dep);
+                           if (fullPath) {
+                              filesDepsForCache.add(fullPath);
+                           }
+
                         }
                      }
                   }
@@ -43,7 +66,9 @@ module.exports = function(changesStore, moduleInfo) {
                   const modulepackContent = [];
                   for (const dep of ownDeps) {
                      if (nodenameToMarkup.has(dep)) {
-                        modulepackContent.push(nodenameToMarkup.get(dep));
+                        const markupObj = nodenameToMarkup.get(dep);
+                        filesDepsForCache.add(markupObj.filePath);
+                        modulepackContent.push(markupObj.text);
                      }
                   }
                   if (modulepackContent.length > 0) {
@@ -51,11 +76,14 @@ module.exports = function(changesStore, moduleInfo) {
                      jsFile.modulepack = modulepackContent.join('\n');
                   }
                }
+               if (filesDepsForCache.size > 0) {
+                  changesStore.addDependencies(jsFile.history[0], [...filesDepsForCache]);
+               }
                this.push(jsFile);
             }
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error: error,
                moduleInfo: moduleInfo
             });
