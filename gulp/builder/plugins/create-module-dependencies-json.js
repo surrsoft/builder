@@ -88,11 +88,11 @@ module.exports = function(changesStore, moduleInfo) {
                const markupObj = markupCache[filePath];
                if (markupObj.nodeName.startsWith('tmpl!')) {
                   json.links[markupObj.nodeName] = markupObj.dependencies || [];
-                  json.nodes[markupObj.nodeName] = {
-                     amd: true,
-                     path: filePathToRelativeInResources(filePath)
-                  };
                }
+               json.nodes[markupObj.nodeName] = {
+                  amd: true,
+                  path: filePathToRelativeInResources(filePath)
+               };
             }
 
             const cssFiles = changesStore
@@ -116,7 +116,7 @@ module.exports = function(changesStore, moduleInfo) {
             this.push(jsonFile);
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error: error,
                moduleInfo: moduleInfo
             });
