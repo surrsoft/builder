@@ -354,8 +354,8 @@ function getComponentForTmpl(grunt, graph, applicationRoot, mod) {
          // Можем не прочитать, так как подключили через optional
          const text = fs.readFileSync(mod.fullPath);
          if (text) {
-            const tmplstr = global.requirejs('Core/tmpl/tmplstr'),
-                  config = global.requirejs('View/config');
+            const tmplstr = global.requirejs('Core/tmpl/tmplstr');
+            const config = global.requirejs('View/config');
             const arr = tmplstr.getComponents(text, config).map(function(dp) {
                return {
                   type: 'Literal',
