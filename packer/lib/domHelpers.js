@@ -116,7 +116,9 @@ const helpers = {
                      return path.join(root, fl);
                   }).filter(function deleteControls(filename) {
                      if (ext === 'css') {
-                        return !~filename.indexOf('SBIS3.CONTROLS/components');
+                        filename = filename.replace(/\\/g, '/');
+                        return !(filename.includes('resources/Controls') ||
+                           (filename.includes('resources/SBIS3.CONTROLS') && !filename.includes('resources/SBIS3.CONTROLS/themes')));
                      } else {
                         return true;
                      }

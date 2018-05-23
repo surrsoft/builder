@@ -1,12 +1,11 @@
-/* eslint-disable no-unlimited-disable*/
-/* eslint-disable */
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const async = require('async');
 const path = require('path');
 const modDeps = require('./../lib/moduleDependencies');
 const packHTML = require('./lib/packHTML');
-const packOwnDeps = require('./lib/packOwnDeps');
+const packOwnDeps = require('./lib/pack-own-deps');
 const makeDependenciesGraph = require('./lib/collectDependencies');
 const packCSS = require('./lib/packCSS').gruntPackCSS;
 const packJS = require('./lib/packJS');
@@ -90,36 +89,26 @@ function gruntPackModules(grunt) {
 
 /**
  * Паковка собственных зависимостей
- * @param grunt
- * @return {gruntPackOwnDependencies}
  */
-function gruntPackOwnDependencies(grunt) {
-   return function gruntPackOwnDependencies() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки собственных зависимостей.');
+function gruntPackOwnDependencies() {
+   return async function gruntPackOwnDependenciesTask() {
+      logger.debug('Запускается задача паковки собственных зависимостей.');
 
-      let root = this.data.root,
+      const root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
-         done = this.async(),
-         taskDone, dg;
+         done = this.async();
 
-      const dryRun = grunt.option('dry-run');
-      if (dryRun) {
-         grunt.log.writeln('Doing dry run!');
-      }
-
-      taskDone = function() {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки собственных зависимостей выполнена.');
-         done();
-      };
-
-      if (!modDeps.checkModuleDependenciesSanity(applicationRoot, taskDone)) {
+      if (!modDeps.checkModuleDependenciesSanity(applicationRoot, done)) {
          return;
       }
 
-      dg = modDeps.getDependencyGraphSync(applicationRoot);
+      const dg = modDeps.getDependencyGraphSync(applicationRoot);
 
       // Передаем root, чтобы относительно него изменялись исходники в loaders
-      packOwnDeps(dryRun, dg, root, applicationRoot, this.data.splittedCore, taskDone);
+      await packOwnDeps(dg, root, applicationRoot, this.data.splittedCore);
+
+      logger.debug('Задача паковки собственных зависимостей выполнена.');
+      done();
    };
 }
 
@@ -143,9 +132,9 @@ function getNameSpaces(intersects) {
 
 function gruntPackCSS(grunt) {
    return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки css.');
+      logger.debug('Запускается задача паковки css.');
 
-      let root = this.data.root,
+      const root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
@@ -156,7 +145,7 @@ function gruntPackCSS(grunt) {
 
       packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки css выполнена.');
+      logger.debug('Задача паковки css выполнена.');
    };
 }
 

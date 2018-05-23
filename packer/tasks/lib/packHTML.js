@@ -1,28 +1,58 @@
 /*eslint-disable max-nested-callbacks*/
 'use strict';
 
-const fs = require('fs-extra');
 const path = require('path');
 const async = require('async');
-const packInOrder = require('./packInOrder');
-const domHelpers = require('./../../lib/domHelpers');
-const indexer = require('./../../lib/index-project');
+const esprima = require('esprima');
+const traverse = require('estraverse').traverse;
+
 const logger = require('../../../lib/logger').logger();
+
+const domHelpers = require('./../../lib/domHelpers');
+const commonPackage = require('./../../lib/commonPackage');
+
+/**
+ * @callback packInOrder~callback
+ * @param {Error} error
+ * @param {{js: string, css: string, dict: Object, cssForLocale: Object}} [result]
+ */
+/**
+ * Формирует объект с пакетами js, css и объект dict с пакетом для каждой локали
+ * @param {DepGraph} dg - граф зависимостей
+ * @param {Array} modArray - массив вершин
+ * @param {String} root - корень сервиса
+ * @param {String} applicationRoot - корень сервиса
+ * @param {packInOrder~callback} done - callback
+ * @param {String} themeName - имя темы
+ * @param {String} staticHtmlName - имя статической html странички
+ */
+function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName, done) {
+   let orderQueue;
+
+   orderQueue = dg.getLoadOrder(modArray);
+   orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
+   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
+
+   commonPackage.getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName, done);
+}
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
    const type2attr = {
-         'js': 'src',
-         'css': 'href'
-      }, type2node = {
-         'js': 'script',
-         'css': 'link'
-      }, type2type = {
-         'js': 'text/javascript',
-         'css': 'text/css'
-      }, options = {
-         'data-pack-name': 'ws-mods-' + type,
-         'type': type2type[type]
-      };
+      'js': 'src',
+      'css': 'href'
+   };
+   const type2node = {
+      'js': 'script',
+      'css': 'link'
+   };
+   const type2type = {
+      'js': 'text/javascript',
+      'css': 'text/css'
+   };
+   const options = {
+      'data-pack-name': 'ws-mods-' + type,
+      'type': type2type[type]
+   };
 
    if (insertAfter && filesToPack && filesToPack[type]) {
       filesToPack = filesToPack[type];
@@ -89,44 +119,7 @@ function generatePackage(extWithoutVersion, grunt, filesToPack, ext, packageTarg
    }
 }
 
-function getStartNodeByTemplate(templateName, application) {
-   let startNodes = [],
-      deps;
-
-   // Если шаблон - новый компонент, ...
-   if (templateName.indexOf('js!') === 0 || !templateName.includes('!')) {
-      // ... просто добавим его как стартовую ноду
-      startNodes.push(templateName);
-   } else {
-      // Иначе получим зависимости для данного шаблона
-      deps = indexer.getDeps(application, templateName);
-
-      // дополним ранее собранные
-      startNodes = startNodes.concat(deps
-         .map(function(dep) {
-            // старый или новый формат описания класса
-            const clsPos = dep.indexOf(':');
-            if (clsPos !== -1) {
-               // Control/Area:AreaAbstract например, возьмем указанное имя класса
-               return dep.substr(clsPos + 1);
-            } else {
-               // Control/Grid например, возьмем последний компонент пути
-               return dep.split('/').pop();
-            }
-         })
-         .map(function addNamespace(dep) {
-            if (dep.indexOf('.') === -1) {
-               return 'js!SBIS3.CORE.' + dep;
-            } else {
-               return 'js!' + dep;
-            }
-         }));
-   }
-
-   return startNodes;
-}
-
-function getStartNodes(grunt, divs, application) {
+function getStartNodes(grunt, divs) {
    let startNodes = [],
       div, tmplName;
 
@@ -136,7 +129,9 @@ function getStartNodes(grunt, divs, application) {
       if (divClass && divClass.indexOf('ws-root-template') > -1 && (tmplName = div.getAttribute('data-template-name'))) {
          logger.debug('Packing inner template \'' + tmplName + '\'');
 
-         startNodes = startNodes.concat(getStartNodeByTemplate(tmplName, application));
+         if (!tmplName.includes('!')) {
+            startNodes = [...startNodes, tmplName];
+         }
       }
 
       if (tmplName) {
@@ -165,10 +160,33 @@ function getKey(buildNumber, key) {
    return buildNumber ? `v${buildNumber}.${key}` : key;
 }
 
-function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
+/**
+ * Достаём тему из wsConfig и если она задана, значит паковать
+ * надо с учётом этой темы
+ */
+function getThemeFromWsConfig(wsConfig) {
+   const ast = esprima.parse(wsConfig.firstChild.data);
+   let themeName = null;
+
+   traverse(ast, {
+      enter: function(node) {
+         if (node.type === 'AssignmentExpression' && node.operator === '=') {
+            if (node.right && node.right.type === 'ObjectExpression' && node.right.properties) {
+               node.right.properties.forEach(option => {
+                  if (option.key.name === 'themeName') {
+                     themeName = option.value.value;
+                  }
+               });
+            }
+         }
+      }
+   });
+   return themeName;
+}
+
+function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
    logger.debug('Packing dependencies of ' + htmlFileset.length + ' files...');
    const
-      bundlesOptions = {},
       buildNumber = grunt.option('versionize');
 
    async.eachLimit(htmlFileset, 1, function(htmlFile, done) {
@@ -181,12 +199,19 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
             cssTarget = dom.getElementById('ws-include-css'),
             htmlPath = htmlFile.split(path.sep),
             htmlName = htmlPath[htmlPath.length - 1],
+            wsConfig = dom.getElementById('ws-config'),
             applicationRoot = path.join(root, application);
+
+         let themeName;
+
+         if (wsConfig) {
+            themeName = getThemeFromWsConfig(wsConfig);
+         }
 
          if (jsTarget || cssTarget) {
             const startNodes = getStartNodes(grunt, divs, application);
 
-            packInOrder(dg, startNodes, root, path.join(root, application), false, {}, function(err, filesToPack) {
+            packInOrder(dg, startNodes, root, path.join(root, application), themeName, htmlName, function(err, filesToPack) {
                if (err) {
                   logger.debug(err); //Имееет ли смысл?
                   done(err);
@@ -212,31 +237,8 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
                      } else { //"js": "..."
                         const generatedScript = generatePackage(key, grunt, filesToPack[key], getKey(buildNumber, key), packageHome, applicationRoot, root);
                         packages[key] = packages[key].concat(generatedScript);
-                        if (bundlesOptions.bundlesScripts) {
-                           try {
-                              /**
-                               * пишем по пути статического пакета log-файл для дальнейшей отладки пакетов
-                               * прикладниками, чтобы понимать из-за каких модулей на страницу подтянулся
-                               * их пакет
-                               */
-                              fs.writeFileSync(path.join(root, `${generatedScript[0].name.replace('%{RESOURCE_ROOT}', 'resources/')}.log`), JSON.stringify(bundlesOptions.logs, null, 3));
-                           } catch (e) {
-                              logger.error({
-                                 message: `Ошибка сохранения лога для статического пакета: ${generatedScript[0].name}`,
-                                 error: e
-                              });
-                           }
-                        }
                      }
                   });
-                  if (bundlesOptions.bundlesScripts) {
-                     Object.keys(bundlesOptions.bundlesScripts).forEach(function(script) {
-                        packages.js.push({
-                           name: script.replace(/\.js$/, `${buildNumber ? `.v${buildNumber}` : ''}.js`),
-                           skip: false
-                        });
-                     });
-                  }
 
                   // пропишем в HTML
                   insertAllDependenciesToDocument(packages, 'js', jsTarget);
@@ -245,7 +247,7 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
                   grunt.file.write(htmlFile, domHelpers.stringify(dom));
                   done();
                }
-            }, null, htmlName);
+            });
          } else {
             logger.debug('No any packing target in \'' + htmlFile + '\'');
             done();
@@ -267,19 +269,6 @@ function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskD
       } else {
          taskDone();
       }
-   });
-}
-
-function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
-   logger.debug('Indexing resources in ' + application);
-   indexer.index(root, application, grunt, dg).addCallbacks(function() {
-      packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone);
-   }, function(e) {
-      logger.error({
-         message: 'ERROR! Indexing failed!',
-         error: e
-      });
-      taskDone();
    });
 }
 

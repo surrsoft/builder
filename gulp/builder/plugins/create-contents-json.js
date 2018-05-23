@@ -8,13 +8,17 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(moduleInfo) {
+module.exports = function(config, moduleInfo) {
    return through.obj(function(file, encoding, callback) {
       callback(null, file);
    }, function(callback) {
       try {
          //подготовим contents.json и contents.js
          moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
+
+         if (config.version) {
+            moduleInfo.contents.buildnumber = config.version;
+         }
 
          const contentsJsFile = new Vinyl({
             path: 'contents.js',

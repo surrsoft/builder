@@ -17,7 +17,7 @@ const appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '
 const wsLogger = {
    error: function(tag, msg, err) {
       let stack = '';
-      if (err.hasOwnProperty('stack')) {
+      if (err && err.hasOwnProperty('stack')) {
          stack = ': ' + err.stack;
       }
       logger.info(`WS error: ${tag}::${msg}${stack}`);

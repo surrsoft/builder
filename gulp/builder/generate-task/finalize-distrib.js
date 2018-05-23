@@ -1,13 +1,15 @@
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
+   gulpIf = require('gulp-if'),
    plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
+   gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
 
-function generateTaskForCopyResources(config) {
+function generateTaskForCopyResources(config, pool) {
    const tasks = config.modules.map(moduleInfo => {
       const input = path.join(moduleInfo.output, '/**/*.*');
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
@@ -23,7 +25,8 @@ function generateTaskForCopyResources(config) {
                   this.emit('end');
                }
             }))
-            .pipe(versionizeFinish(config, moduleInfo))
+            .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
+            .pipe(gzip(moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
    });
@@ -45,14 +48,14 @@ function generateTaskForNormalizeKey(config) {
    };
 }
 
-function generateTaskForFinalizeDistrib(config, localizationEnable) {
-   if (!config.version) {
+function generateTaskForFinalizeDistrib(config, pool, localizationEnable) {
+   if (!config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(config)];
+   const tasks = [generateTaskForCopyResources(config, pool)];
    if (localizationEnable) {
       tasks.push(generateTaskForNormalizeKey(config));
    }

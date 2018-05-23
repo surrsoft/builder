@@ -23,7 +23,9 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    filterCached = require('../plugins/filter-cached'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
-   uglify = require('../plugins/uglify'),
+   minifyJs = require('../plugins/minify-js'),
+   minifyOther = require('../plugins/minify-other'),
+   packOwnDeps = require('../plugins/pack-own-deps'),
    versionizeToStub = require('../plugins/versionize-to-stub');
 
 const logger = require('../../../lib/logger').logger(),
@@ -46,19 +48,15 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
 
    return function buildModule() {
       return gulp
-         .src(moduleInput, {dot: false, nodir: true})
-         .pipe(
-            plumber({
-               errorHandler: function(err) {
-                  logger.error({
-                     message: 'Задача buildModule завершилась с ошибкой',
-                     error: err,
-                     moduleInfo: moduleInfo
-                  });
-                  this.emit('end');
-               }
-            })
-         )
+         .src(moduleInput, { dot: false, nodir: true })
+         .pipe(plumber({ errorHandler: function(err) {
+            logger.error({
+               message: 'Задача buildModule завершилась с ошибкой',
+               error: err,
+               moduleInfo: moduleInfo
+            });
+            this.emit('end');
+         } }))
          .pipe(changedInPlace(changesStore, moduleInfo))
          .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
          .pipe(addComponentInfo(changesStore, moduleInfo, pool))
@@ -69,32 +67,21 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
          .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
+         .pipe(gulpIf(config.isReleaseMode, packOwnDeps(changesStore, moduleInfo))) // зависит от buildTmpl и buildXhtml
          .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
-         .pipe(gulpIf(config.isReleaseMode, uglify(changesStore, moduleInfo, pool)))
-         .pipe(
-            gulpRename(file => {
-               file.dirname = transliterate(file.dirname);
-               file.basename = transliterate(file.basename);
-            })
-         )
+         .pipe(gulpIf(config.isReleaseMode, minifyJs(changesStore, moduleInfo, pool))) //зависит от packOwnDeps
+         .pipe(gulpIf(config.isReleaseMode, minifyOther(changesStore, moduleInfo)))
+         .pipe(gulpRename(file => {
+            file.dirname = transliterate(file.dirname);
+            file.basename = transliterate(file.basename);
+         }))
          .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
          .pipe(createNavigationModulesJson(moduleInfo))
-         .pipe(createContentsJson(moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
+         .pipe(createContentsJson(config, moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(createStaticTemplatesJson(moduleInfo)) //зависит от buildStaticHtml и gulpBuildHtmlTmpl
          .pipe(filterCached())
-         .pipe(
-            gulpChmod({
-               read: true,
-               write: true
-            })
-         )
-         .pipe(
-            gulpIf(
-               needSymlink(hasLocalization, config, moduleInfo),
-               gulp.symlink(moduleInfo.output),
-               gulp.dest(moduleInfo.output)
-            )
-         );
+         .pipe(gulpChmod({ read: true, write: true }))
+         .pipe(gulpIf(needSymlink(hasLocalization, config, moduleInfo), gulp.symlink(moduleInfo.output), gulp.dest(moduleInfo.output)));
    };
 }
 
@@ -110,9 +97,10 @@ function needSymlink(hasLocalization, config, moduleInfo) {
          return false;
       }
 
-      //нельзя использовать симлинки для файлов, которые мы сами генерируем
+      //нельзя использовать симлинки для файлов, которые мы сами генерируем.
+      //абсолютный путь в relativePath  может получиться только на windows, если не получилось построить относительный
       const relativePath = path.relative(moduleInfo.path, file.history[0]);
-      if (relativePath.includes('..')) {
+      if (relativePath.includes('..') || path.isAbsolute(relativePath)) {
          return false;
       }
 
