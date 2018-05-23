@@ -79,13 +79,13 @@ function generateRegExp(modules) {
       }
 
       if (module.indexOf('*') > -1) {
-         regexpStr += (regexpStr ? '|' : '') + '(' + escapeRegExpWithoutAsterisk(module) + ')';
+         regexpStr += (regexpStr ? '|' : '') + '^(.+?!)?(' + escapeRegExpWithoutAsterisk(module) + ')';
       } else {
-         regexpStr += (regexpStr ? '|' : '') + '(' + escapeRegExp(module) + '$)';
+         regexpStr += (regexpStr ? '|' : '') + '^(.+?!)?(' + escapeRegExp(module) + '$)';
       }
    });
 
-   return new RegExp(`^(.+?!)?${regexpStr}`);
+   return new RegExp(`${regexpStr}`);
 }
 
 /**
