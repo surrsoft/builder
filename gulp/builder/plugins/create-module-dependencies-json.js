@@ -21,9 +21,13 @@ const supportedPluginsForLinks = new Set([
    'browser',
    'optional',
    'i18n',
-   'tmpl'
+   'tmpl',
+   'cdn',
+   'preload',
+   'remote'
 ]);
 const excludeSystemModulesForLinks = new Set(['module', 'require', 'exports']);
+const pluginsOnlyDeps = new Set(['cdn', 'preload', 'remote']);
 
 const parsePlugins = dep => {
    return [
@@ -65,12 +69,16 @@ module.exports = function(changesStore, moduleInfo) {
                   const depsOfLink = new Set();
                   if (info.hasOwnProperty('componentDep')) {
                      for (const dep of info.componentDep) {
+                        let skipDep = false;
                         for (const plugin of parsePlugins(dep)) {
                            if (supportedPluginsForLinks.has(plugin)) {
                               depsOfLink.add(plugin);
                            }
+                           if (pluginsOnlyDeps.has(plugin)) {
+                              skipDep = true;
+                           }
                         }
-                        if (!excludeSystemModulesForLinks.has(dep)) {
+                        if (!excludeSystemModulesForLinks.has(dep) || skipDep) {
                            depsOfLink.add(dep);
                         }
                      }
@@ -116,7 +124,7 @@ module.exports = function(changesStore, moduleInfo) {
             this.push(jsonFile);
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error: error,
                moduleInfo: moduleInfo
             });
