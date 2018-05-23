@@ -354,7 +354,7 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
          return true;
       }).map(function onlyPath(module) {
          return module.fullPath;
-      }), applicationRoot, (err, result) => fs.writeFileSync(pathToCustomCSS, result));
+      }), applicationRoot, (err, result) => fs.outputFileSync(pathToCustomCSS, result));
    }
 
    if (cfg.platformPackage || !cfg.includeCore) {
