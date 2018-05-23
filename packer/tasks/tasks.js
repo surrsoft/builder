@@ -310,9 +310,9 @@ function gruntCustomPack(grunt) {
 
 function gruntPackCSS(grunt) {
    return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки css.');
+      logger.debug('Запускается задача паковки css.');
 
-      let root = this.data.root,
+      const root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
@@ -323,7 +323,7 @@ function gruntPackCSS(grunt) {
 
       packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки css выполнена.');
+      logger.debug('Задача паковки css выполнена.');
    };
 }
 
