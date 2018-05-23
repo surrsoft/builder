@@ -4,16 +4,14 @@ const path = require('path');
 const fs = require('fs-extra');
 const async = require('async');
 const loaders = require('./loaders');
-const loadersWithoutDefine = require('./loadersWithoutDefines');
 const getMeta = require('./getDependencyMeta');
 const packCSS = require('./../tasks/lib/packCSS').packCSS;
 const packerDictionary = require('./../tasks/lib/packDictionary');
 const logger = require('../../lib/logger').logger();
 
 const dblSlashes = /\\/g,
-   CDN = /\/?cdn\//,
-   replacedRequire = fs.readFileSync(path.join(__dirname, 'replaceRequirejs.res')),
-   checkModuleName = fs.readFileSync(path.join(__dirname, 'checkModuleName.res'));
+   CDN = /\/?cdn\//;
+
 const complexPlugins = /is!|browser!|browser\?|optional!/g;
 const specialPlugins = /preload!/;
 const langRe = /lang\/([a-z]{2}-[A-Z]{2})/;
@@ -35,7 +33,7 @@ function checkItIsOfflineClient(applicationRoot) {
    }
    const offlineClientModulePath = path.join(applicationRoot, `resources/${offlineModuleName}/`);
    try {
-      return !!fs.existsSync(offlineClientModulePath);
+      return fs.existsSync(offlineClientModulePath);
    } catch (err) {
       return false;
    }
@@ -87,11 +85,10 @@ PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
 /**
  * Get loader
  * @param {String} type - loader type
- * @param {Boolean} [withoutDefine]
  * @return {*|baseTextLoader}
  */
-function getLoader(type, withoutDefine) {
-   return withoutDefine ? loadersWithoutDefine[type] || loadersWithoutDefine.default : loaders[type] || loaders.default;
+function getLoader(type) {
+   return loaders[type] || loaders.default;
 }
 
 /**
@@ -393,38 +390,6 @@ function limitingNativePackFiles(filesToPack, limit, base, done) {
 }
 
 /**
- * Просто собирает указанные файлы в один большой кусок текста
- * @param {Array} filesToPack - модули для паковки
- * @param {String} base - полный путь до папки с пакетами
- * Относительно этой папки будут высчитаны новые пути в ссылках
- * @param {nativePackFiles~callback} done
- */
-function nativePackFilesWithoutDefine(filesToPack, base, done) {
-   if (filesToPack && filesToPack.length) {
-      const packStorage = new PackStorage();
-      async.series(filesToPack.map(function(module) {
-         return function(done) {
-            getLoader(module.plugin, true)(module, base, packStorage, done);
-         };
-      }), function(err, result) {
-         if (err) {
-            done(err);
-         } else {
-            let reduced;
-
-            reduced = result.reduce(function concat(res, modContent) {
-               return res + (res ? '\n' : '') + modContent;
-            }, '');
-
-            done(null, replacedRequire + reduced + checkModuleName);
-         }
-      });
-   } else {
-      done(null, '');
-   }
-}
-
-/**
  * @callback getJsAndCssPackage~callback
  * @param {Error} error
  * @param {{js: string, css: string, dict: Object}} [result]
@@ -437,16 +402,14 @@ function nativePackFilesWithoutDefine(filesToPack, base, done) {
  * @param {Array} orderQueue.dict
  * @param {Array} orderQueue.cssForLocale
  * @param {String} applicationRoot - полный путь до корня пакета
- * @param {Boolean} withoutDefine - паковать без define
  * @param {getJsAndCssPackage~callback} done - callback
  * @param {getJsAndCssPackage~callback} staticHtmlName - имя статической html странички
  */
-function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesOptions, done, themeName, staticHtmlName) {
-   const packer = withoutDefine ? nativePackFilesWithoutDefine : nativePackFiles;
+function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName, done) {
    isOfflineClient = checkItIsOfflineClient(applicationRoot);
 
    async.parallel({
-      js: packer.bind(null, orderQueue.js.filter(function(node) {
+      js: nativePackFiles.bind(null, orderQueue.js.filter(function(node) {
          /** TODO
           * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
           * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
@@ -456,17 +419,6 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
          const wsDatareg = /WS\.Data/;
          if (node.fullName && node.fullName.match(wsDatareg) || node.moduleYes && node.moduleYes.fullName.match(wsDatareg)) {
             return false;
-         }
-
-         /**
-          * если по пути оригинального модуля описан кастомный пакет, то грузим по тому же пути
-          * модуль с расширением .original.js. Сделано для того, чтобы мы не запаковали пакет в пакет,
-          * что может привести к дублированию дефайнов и увеличению размеров исходников для всех
-          * статических страничек.
-          */
-         const fullPath = node.fullPath || node.moduleYes && node.moduleYes.fullPath;
-         if (bundlesOptions.customPackagesOutputs && bundlesOptions.customPackagesOutputs[fullPath]) {
-            node.fullPath = node.fullPath.replace(/.js$/, '.original.js');
          }
 
          return node.amd;
@@ -486,7 +438,7 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
          // нужно вызвать packer для каждой локали
          const dictAsyncParallelArgs = {};
          Object.keys(orderQueue.dict).map(function(locale) {
-            dictAsyncParallelArgs[locale] = packer.bind(null, orderQueue.dict[locale], applicationRoot);
+            dictAsyncParallelArgs[locale] = nativePackFiles.bind(null, orderQueue.dict[locale], applicationRoot);
          });
          async.parallel(dictAsyncParallelArgs, function(err, result) {
             if (err) {
@@ -525,7 +477,7 @@ function getJsAndCssPackage(orderQueue, applicationRoot, withoutDefine, bundlesO
             }),
             dict: result.dict,
             cssForLocale: result.cssForLocale
-         }, bundlesOptions);
+         });
       }
    });
 }
