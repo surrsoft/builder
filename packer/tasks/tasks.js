@@ -110,24 +110,6 @@ function gruntPackOwnDependencies() {
    };
 }
 
-function getNameSpaces(intersects) {
-   let
-      namespaces = {},
-      currentNamespace,
-      nameWithoutSlash;
-   intersects.forEach(function(moduleName) {
-      nameWithoutSlash = moduleName.split(/\?|!/).pop().split('/')[0].split('.');
-      if (nameWithoutSlash.length > 2) {
-         currentNamespace = [nameWithoutSlash[0], nameWithoutSlash[1]].join('.');
-      } else {
-         currentNamespace = nameWithoutSlash.join('.');
-      }
-      namespaces[currentNamespace] = 1;
-   });
-   return Object.keys(namespaces);
-
-}
-
 function gruntPackCSS(grunt) {
    return function() {
       logger.debug('Запускается задача паковки css.');
