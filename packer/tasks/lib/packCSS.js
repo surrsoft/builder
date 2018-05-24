@@ -4,7 +4,7 @@ const helpers = require('./../../lib/domHelpers');
 const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs-extra');
 const async = require('async');
-
+const pMap = require('p-map');
 const dblSlashes = /\\/g;
 
 module.exports = {
@@ -103,5 +103,21 @@ module.exports = {
             callback(null, cssHelpers.splitIntoBatches(4000, res));
          }
       });
+   },
+   promisedPackCSS: async(files, applicationRoot) => {
+      const results = await pMap(
+         files,
+         async css => {
+            if (await fs.pathExists(css)) {
+               const content = await fs.readFile(css);
+               return cssHelpers.rebaseUrls(applicationRoot, css, content.toString());
+            }
+         },
+         {
+            concurrency: 10
+         }
+      );
+
+      return cssHelpers.bumpImportsUp(results.join('\n'));
    }
 };

@@ -10,7 +10,8 @@ const
    modDeps = require('../../packer/lib/moduleDependencies'),
    path = require('path'),
    fs = require('fs-extra'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   packCSS = require('../../packer/tasks/lib/packCSS').promisedPackCSS;
 
 /**
  * Создаём кастомные пакеты по .package.json конфигурации.
@@ -20,10 +21,8 @@ const
  */
 async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bundlesOptions) {
    const results = {
-      bundles: [],
-      bundlesRoute: [],
-      oldBundles: [],
-      oldBundlesRoute: []
+      bundles: {},
+      bundlesRoute: {}
    };
 
    await pMap(
@@ -37,8 +36,13 @@ async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bu
              * 1)bundles: в нём будут храниться подвергнутые изменениям бандлы.
              * 2)bundlesRoute: тоже самое что и выше, только для bundlesRoute.
              */
-            const currentResult = await generateCustomPackage(depsTree, config, applicationRoot, bundlesOptions.splittedCore);
-            Object.keys(currentResult).forEach(key => results[key].push(currentResult[key]));
+            const currentResult = await generateCustomPackage(depsTree, applicationRoot, config, bundlesOptions.splittedCore);
+            Object.keys(currentResult.bundles).forEach(key => {
+               results.bundles[key] = currentResult.bundles[key];
+            });
+            Object.keys(currentResult.bundlesRoute).forEach(key => {
+               results.bundlesRoute[key] = currentResult.bundlesRoute[key];
+            });
             logger.info(`Создан кастомный пакет по конфигурационному файлу ${config.packageName} - ${configNum}`);
          } catch (err) {
             logger.error({
@@ -51,7 +55,7 @@ async function generatePackageJsonConfigs(depsTree, configs, applicationRoot, bu
          concurrency: 3
       }
    );
-
+   results.bundlesJson = results.bundles;
    await saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore);
 }
 
@@ -72,28 +76,49 @@ async function generateCustomPackage(depsTree, applicationRoot, packageConfig, i
    const
       outputFile = customPackage.getOutputFile(packageConfig, applicationRoot, depsTree, isSplittedCore),
       packagePath = customPackage.getBundlePath(outputFile, applicationRoot, isSplittedCore ? 'resources/WS.Core' : 'ws'),
+      pathToCustomCSS = outputFile.replace(/\.js$/, '.css'),
       result = {
          bundles: {},
          bundlesRoute: {}
       };
 
    let
+      cssModulesFromOrderQueue = [],
       orderQueue;
 
    if (packageConfig.isBadConfig) {
       throw new Error('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.');
    }
-   orderQueue = customPackage.getOrderQueue(depsTree, packageConfig, applicationRoot);
+   orderQueue = customPackage.getOrderQueue(depsTree, packageConfig, applicationRoot)
+      .filter(function(node) {
+         if (node.plugin === 'js' || node.plugin === 'tmpl' || node.plugin === 'html') {
+            return node.amd;
+         }
+         if (node.fullName.includes('css!')) {
+            cssModulesFromOrderQueue.push(node);
+            return false;
+         }
+         return true;
+      });
 
-   orderQueue = orderQueue.filter(function(node) {
-      if (node.plugin === 'js') {
-         return node.amd;
-      }
-      return true;
-   });
+   /**
+    * пишем все стили по пути кастомного пакета в css-файл.
+    */
+   cssModulesFromOrderQueue = commonPackage.prepareResultQueue(cssModulesFromOrderQueue, applicationRoot);
+   if (cssModulesFromOrderQueue.css.length > 0) {
+      const cssRes = await packCSS(cssModulesFromOrderQueue.css.filter(function removeControls(module) {
+         if (packageConfig.themeName) {
+            return !module.fullName.startsWith('css!SBIS3.CONTROLS/') && !module.fullName.startsWith('css!Controls/');
+         }
+         return true;
+      }).map(function onlyPath(module) {
+         return module.fullPath;
+      }), applicationRoot);
+      await fs.outputFile(pathToCustomCSS, cssRes);
+   }
 
    if (packageConfig.platformPackage || !packageConfig.includeCore) {
-      result.bundles[packagePath] = customPackage.generateBundle(orderQueue);
+      result.bundles[packagePath] = await customPackage.generateBundle(orderQueue, isSplittedCore);
       result.bundlesRoute = customPackage.generateBundlesRouting(result.bundles[packagePath], packagePath);
    }
 
@@ -114,26 +139,39 @@ async function generateCustomPackage(depsTree, applicationRoot, packageConfig, i
  * @returns {Promise<void>}
  */
 async function saveBundlesForEachModule(applicationRoot, result) {
+   /**
+    * Сделаем список json на запись, нам надо защититься от параллельной перезаписи
+    */
+   const jsonToWrite = {};
    await pMap(
-      result.bundles,
+      Object.keys(result.bundles),
       async currentBundle => {
          const
             bundlePath = path.normalize(path.join(applicationRoot, `${currentBundle.match(/^resources\/[^/]+/)}`, 'bundlesRoute.json')),
             currentModules = result.bundles[currentBundle];
 
-         let bundleRouteToWrite = {};
 
          if (await fs.pathExists(bundlePath)) {
-            bundleRouteToWrite = await fs.readJson(bundlePath);
+            jsonToWrite[bundlePath] = await fs.readJson(bundlePath);
+         }
+
+         if (!jsonToWrite[bundlePath]) {
+            jsonToWrite[bundlePath] = {};
          }
 
          currentModules.forEach(function(node) {
             if (node.indexOf('css!') === -1) {
-               bundleRouteToWrite[node] = currentBundle;
+               jsonToWrite[bundlePath][node] = currentBundle;
             }
          });
-         await fs.writeJson(bundlePath, bundleRouteToWrite);
       },
+      {
+         concurrency: 10
+      }
+   );
+   await pMap(
+      Object.keys(jsonToWrite),
+      key => fs.writeJson(key, jsonToWrite[key]),
       {
          concurrency: 10
       }
@@ -151,12 +189,12 @@ async function saveCustomPackResults(result, applicationRoot, splittedCore) {
       bundlesRoutePath = path.join(wsRoot, bundlesPath, 'bundlesRoute').replace(/\\/g, '/'),
       pathsToSave = {
          bundles: path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.js'),
-         output: path.join(applicationRoot, wsRoot, bundlesPath, 'output.json'),
-         bundlesRouteJson: path.join(applicationRoot, `${bundlesRoutePath}.json`)
+         bundlesJson: path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.json'),
+         bundlesRoute: path.join(applicationRoot, `${bundlesRoutePath}.json`)
       };
 
    if (wsRoot !== 'ws') {
-      await saveBundlesForEachModule(result, applicationRoot);
+      await saveBundlesForEachModule(applicationRoot, result);
    }
 
    await pMap(
@@ -167,8 +205,8 @@ async function saveCustomPackResults(result, applicationRoot, splittedCore) {
          //нам надо проверить, что нужные файлы уже были сгенерены(инкрементальная сборка)
          if (await fs.pathExists(pathsToSave[key])) {
             switch (key) {
-               case 'bundlesRouteJson':
-               case 'output':
+               case 'bundlesRoute':
+               case 'bundlesJson':
                   json = await fs.readJson(pathsToSave[key]);
                   break;
                default://bundles
@@ -183,15 +221,17 @@ async function saveCustomPackResults(result, applicationRoot, splittedCore) {
             Object.keys(result[key]).forEach(option => {
                json[option] = result[key][option];
             });
+         } else {
+            json = result[key];
          }
          switch (key) {
-            case 'bundlesRouteJson':
+            case 'bundlesRoute':
                await fs.outputJson(pathsToSave[key], json);
                logger.debug(`Записали bundlesRoute.json по пути: ${pathsToSave[key]}`);
                break;
-            case 'output':
+            case 'bundlesJson':
                await fs.outputJson(pathsToSave[key], json);
-               logger.debug(`Записали output.json по пути: ${pathsToSave[key]}`);
+               logger.debug(`Записали bundles.json по пути: ${pathsToSave[key]}`);
                break;
             default://bundles
                await fs.writeFile(pathsToSave[key], `bundles=${JSON.stringify(json)};`);
@@ -202,7 +242,7 @@ async function saveCustomPackResults(result, applicationRoot, splittedCore) {
                 * сохранить .min бандл
                 */
                if (splittedCore) {
-                  await fs.writeFile(pathsToSave[key].replace(/\.js$/, '.min$1'), `bundles=${JSON.stringify(json)};`);
+                  await fs.writeFile(pathsToSave[key].replace(/\.js$/, '.min.js'), `bundles=${JSON.stringify(json)};`);
                   logger.debug(`Записали bundles.min.js по пути: ${path.join(applicationRoot, wsRoot, bundlesPath, 'bundles.min.js')}`);
                }
                break;
@@ -211,31 +251,41 @@ async function saveCustomPackResults(result, applicationRoot, splittedCore) {
    );
 }
 
-module.exports = function gruntCustomPack(grunt) {
-   const gruntGetAllConfigs = async(applicationRoot, files) => {
-      const promises = [];
-      files.forEach((file) => {
-         promises.push(customPackage.getConfigsFromPackageJson(path.join(applicationRoot, file)));
-      });
-      return (await Promise.all(promises)).reduce((previousValue, current) => previousValue.concat(current));
-   };
+async function getAllConfigs(files, applicationRoot) {
+   const configs = [];
+   await pMap(
+      files,
+      async file => {
+         const currentFileConfigs = await customPackage.getConfigsFromPackageJson(path.join(applicationRoot, file), applicationRoot);
+         configs.push(...currentFileConfigs);
+      },
+      {
+         concurrency: 10
+      }
+   );
+   return configs;
+}
 
+module.exports = function gruntCustomPack(grunt) {
    grunt.registerMultiTask('custompack', 'Задача кастомной паковки', async function() {
       logger.info('Запускается задача создания кастомных пакетов.');
+      let time = new Date();
+      logger.info(`Запущена задача в ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
       try {
          const
             self = this,
             bundlesOptions = {
                bundles: {},
                modulesInBundles: {},
-               outputs: {}
+               outputs: {},
+               splittedCore: self.data.splittedCore
             },
             applicationRoot = path.join(self.data.root, self.data.application),
             done = self.async(),
 
             //wsRoot важен для обоих видов сборок, оставляем как в гранте, так и гальпе, выносить в отдельную функцию не вижу смысла
             wsRoot = await fs.pathExists(path.join(applicationRoot, 'resources/WS.Core')) ? 'resources/WS.Core' : 'ws',
-            depsTree = await modDeps.getDependencyGraph(applicationRoot);
+            depsTree = await modDeps.getDependencyGraph(applicationRoot, bundlesOptions.splittedCore);
 
          let sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
 
@@ -243,11 +293,10 @@ module.exports = function gruntCustomPack(grunt) {
           * Не рассматриваем конфигурации, которые расположены в директории ws, если сборка
           * для Сервиса Представлений, поскольку конфигурации из ws являются дублями конфигураций
           * из WS.Core и один и тот же код парсится дважды.
-          * Будем чекать рассматриваемый конфиг функцией checkConfigPathForSplittedCore
           */
          if (wsRoot !== 'ws') {
             sourceFiles = sourceFiles.filter(function(pathToSource) {
-               return customPackage.checkConfigPathForSplittedCore(pathToSource);
+               return !/^ws/.test(pathToSource);
             });
          }
 
@@ -256,11 +305,14 @@ module.exports = function gruntCustomPack(grunt) {
           * getConfigsFromPackageJson для конкретного package.json в рамках инкрементальной сборки
           */
 
-         const configsArray = await gruntGetAllConfigs(applicationRoot, sourceFiles);
-
-         bundlesOptions.splittedCore = this.data.splittedCore;
+         const configsArray = await getAllConfigs(sourceFiles, applicationRoot);
+         if (configsArray.length === 0) {
+            logger.info('Конфигураций не обнаружено.');
+         }
          await generatePackageJsonConfigs(depsTree, configsArray, applicationRoot, bundlesOptions);
          logger.info('Задача создания кастомных пакетов завершена.');
+         time = new Date();
+         logger.info(`Запущена задача в ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
          done();
       } catch (err) {
          logger.error({
