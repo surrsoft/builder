@@ -1,7 +1,6 @@
 /* eslint-disable no-invalid-this */
 'use strict';
 
-const async = require('async');
 const path = require('path');
 const modDeps = require('./../lib/moduleDependencies');
 const packHTML = require('./lib/packHTML');
@@ -12,7 +11,6 @@ const packJS = require('./lib/packJS');
 const logger = require('../../lib/logger').logger();
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
-const badConfigs = [];
 
 /**
  * Сбор зависимостей модулей
