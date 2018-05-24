@@ -16,7 +16,7 @@ module.exports = function(config, moduleInfo) {
          }
 
          let version = '';
-         if (file.path.match(/\.min\.[^.\\/]+$/)) {
+         if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
             version = '.v' + config.version;
          }
          const text = file.contents.toString();
