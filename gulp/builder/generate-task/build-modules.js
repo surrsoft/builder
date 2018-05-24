@@ -20,6 +20,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    buildTmpl = require('../plugins/build-tmpl'),
    createContentsJson = require('../plugins/create-contents-json'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
+   createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
    filterCached = require('../plugins/filter-cached'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
@@ -79,6 +80,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
          .pipe(createNavigationModulesJson(moduleInfo))
          .pipe(createContentsJson(config, moduleInfo)) //зависит от buildStaticHtml и addComponentInfo
          .pipe(createStaticTemplatesJson(moduleInfo)) //зависит от buildStaticHtml и gulpBuildHtmlTmpl
+         .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
          .pipe(filterCached())
          .pipe(gulpChmod({ read: true, write: true }))
          .pipe(gulpIf(needSymlink(hasLocalization, config, moduleInfo), gulp.symlink(moduleInfo.output), gulp.dest(moduleInfo.output)));
