@@ -26,7 +26,11 @@ const supportedPluginsForLinks = new Set([
    'preload',
    'remote'
 ]);
+
+//стандартные модули, которые и так всегда есть
 const excludeSystemModulesForLinks = new Set(['module', 'require', 'exports']);
+
+//нужно добавить эти плагины, но сами зависимости добавлять в links не нужно
 const pluginsOnlyDeps = new Set(['cdn', 'preload', 'remote']);
 
 const parsePlugins = dep => {
@@ -78,7 +82,7 @@ module.exports = function(changesStore, moduleInfo) {
                               skipDep = true;
                            }
                         }
-                        if (!excludeSystemModulesForLinks.has(dep) || skipDep) {
+                        if (!excludeSystemModulesForLinks.has(dep) && !skipDep) {
                            depsOfLink.add(dep);
                         }
                      }
