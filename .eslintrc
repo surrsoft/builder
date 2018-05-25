@@ -1,17 +1,8 @@
 {
    "extends": ["@tensor-corp/eslint-config/node"],
-   "plugins": [
-      "filenames",
-      "node",
-      "promise",
-      "eslint-comments"
-   ],
+   "plugins": ["filenames", "node", "promise", "eslint-comments"],
    "rules": {
-      "filenames/match-regex": [
-         "warn",
-         "^[0-9a-z\\-.]+$",
-         true
-      ],
+      "filenames/match-regex": ["warn", "^[0-9a-z\\-.]+$", true],
       "node/no-extraneous-require": "error",
       "node/no-extraneous-import": "error",
       "node/no-missing-require": "error",
@@ -101,7 +92,7 @@
       "indent": "error",
       "key-spacing": "error",
       "keyword-spacing": "error",
-      "line-comment-position":"error",
+      "line-comment-position": "error",
       "lines-around-comment": "error",
       "lines-between-class-members": "error",
       "new-cap": "error",
@@ -118,7 +109,7 @@
       "no-new-object": "error",
       "no-tabs": "error",
       "no-trailing-spaces": "error",
-      "no-underscore-dangle":"error",
+      "no-underscore-dangle": "error",
       "no-unneeded-ternary": "error",
       "no-whitespace-before-property": "error",
       "object-curly-spacing": "error",
