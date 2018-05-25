@@ -308,7 +308,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
          modules: {
-            Модуль: 'Modul'
+            'Модуль': 'Modul'
          },
          requirejsPaths: {},
          xmlContents: {}
@@ -360,7 +360,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
          modules: {
-            Модуль: 'Modul'
+            'Модуль': 'Modul'
          },
          requirejsPaths: {},
          xmlContents: {}
@@ -423,7 +423,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
          modules: {
-            Модуль: 'Modul'
+            'Модуль': 'Modul'
          },
          requirejsPaths: {},
          xmlContents: {}
@@ -559,7 +559,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
          modules: {
-            Модуль: 'Modul'
+            'Модуль': 'Modul'
          },
          requirejsPaths: {},
          xmlContents: {}

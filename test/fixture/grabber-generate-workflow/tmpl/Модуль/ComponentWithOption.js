@@ -8,6 +8,7 @@ define('Modul/ComponentWithOption', ['js!SBIS3.CORE.Contorol'], function(Contoro
       /** @lends Modul/ComponentWithOption.prototype */ {
          $protected: {
             _options: {
+
                /**
                 * @cfg {String}
                 * @translatable
