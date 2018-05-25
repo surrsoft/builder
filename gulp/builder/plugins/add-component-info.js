@@ -46,7 +46,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          changesStore.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
          callback(null, file);
       },
-      function(callback) {
+      (callback) => {
          try {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {

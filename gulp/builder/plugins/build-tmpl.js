@@ -5,7 +5,7 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   {minifyTmpl} = require('../../../lib/processing-tmpl'),
+   { minifyTmpl } = require('../../../lib/processing-tmpl'),
    transliterate = require('../../../lib/transliterate');
 
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {

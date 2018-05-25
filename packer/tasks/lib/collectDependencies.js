@@ -426,14 +426,14 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
                .replace(isWS, 'WS')}`;
 
             if (fs.existsSync(cssPath)) {
-               deps.push({plugin: 'native-css', fullPath: cssPath, fullName: cssModule});
+               deps.push({ plugin: 'native-css', fullPath: cssPath, fullName: cssModule });
             }
             if (fs.existsSync(countryPath)) {
-               deps.push({plugin: 'native-css', fullPath: countryPath, fullName: countryModule});
+               deps.push({ plugin: 'native-css', fullPath: countryPath, fullName: countryModule });
             }
 
             if (fs.existsSync(dictPath)) {
-               deps.push({plugin: 'js', fullPath: dictPath, fullName: dictModule});
+               deps.push({ plugin: 'js', fullPath: dictPath, fullName: dictModule });
             }
          });
 
