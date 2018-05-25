@@ -112,6 +112,7 @@ module.exports = {
                const content = await fs.readFile(css);
                return cssHelpers.rebaseUrls(applicationRoot, css, content.toString());
             }
+            return '';
          },
          {
             concurrency: 10
