@@ -8,8 +8,8 @@ const logger = require('../../lib/logger').logger(),
    fs = require('fs-extra'),
    customPacker = require('../../lib/pack/custom-packer');
 
-module.exports = function gruntCustomPack(grunt) {
-   grunt.registerMultiTask('custompack', 'Задача кастомной паковки', async function() {
+module.exports = function register(grunt) {
+   grunt.registerMultiTask('custompack', 'Задача кастомной паковки', async function custompackTask() {
       let time = new Date();
       logger.info(
          `Запускается задача создания кастомных пакетов. time: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`

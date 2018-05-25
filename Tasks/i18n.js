@@ -189,8 +189,8 @@ function runCreateResultDict(modules, componentsProperties, out) {
    });
 }
 
-module.exports = function(grunt) {
-   grunt.registerMultiTask('i18n', 'Translate static', async function() {
+module.exports = function register(grunt) {
+   grunt.registerMultiTask('i18n', 'Translate static', async function i18nTask() {
       logger.info(`${grunt.template.today('hh:MM:ss')}: Запускается задача i18n.`);
 
       const taskDone = this.async();
@@ -248,7 +248,8 @@ module.exports = function(grunt) {
             applicationRoot = path.join(this.data.root, this.data.application),
             resourceRoot = path.join(applicationRoot, 'resources');
 
-         await normalizeKeyDict(resourceRoot, langs); // Приводит повторяющиеся ключи в словарях к единому значению
+         // Приводит повторяющиеся ключи в словарях к единому значению
+         await normalizeKeyDict(resourceRoot, langs);
          indexDict(grunt, optIndexDict, this.data, ++taskCount && done);
       }
 

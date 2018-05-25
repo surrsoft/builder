@@ -113,8 +113,8 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function getOptionHtmlNames(data, splitData) {
-      let result = splitData,
-         nameModule;
+      const result = splitData;
+      let nameModule;
 
       Object.keys(data.htmlNames).forEach((key) => {
          nameModule = key.replace('js!', '');
@@ -155,8 +155,7 @@ module.exports = function splitResourcesTask(grunt) {
    function splitRoutes() {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
 
-      const
-         splittedRoutes = {},
+      const splittedRoutes = {},
          fullRoutes = JSON.parse(fs.readFileSync(getPath('routes-info.json', undefined, true)));
       let nameModule;
 
@@ -239,13 +238,12 @@ module.exports = function splitResourcesTask(grunt) {
 
    // TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
    function replaceWsInModDepend(modDepends) {
-      let pathModule,
-         exception = [],
+      const exception = [],
          fullModuleDep = {
             nodes: {},
             links: {}
          };
-
+      let pathModule;
       Object.keys(modDepends.nodes).forEach((name) => {
          pathModule = modDepends.nodes[name].path;
 
@@ -273,9 +271,9 @@ module.exports = function splitResourcesTask(grunt) {
    function splitModuleDependencies() {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения module-dependencies.json`);
 
+      const splitModuleDep = {};
       let existFile,
          nameModule = '',
-         splitModuleDep = {},
          fullModuleDep = JSON.parse(fs.readFileSync(getPath('module-dependencies.json', undefined, true)));
 
       fullModuleDep = replaceWsInModDepend(fullModuleDep);
@@ -348,7 +346,7 @@ module.exports = function splitResourcesTask(grunt) {
             matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
 
             if (matchs && matchs[2]) {
-               matchs = matchs[2];
+               [,, matchs] = matchs;
             } else {
                return;
             }

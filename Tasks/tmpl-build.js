@@ -17,32 +17,31 @@ async function writeTemplate(templateOptions, nodes, splittedCore) {
    /**
     * Позорный костыль для обратной поддержки препроцессора
     */
-   const fullPath = templateOptions.fullPath,
-      nameModule = templateOptions.currentNode,
-      original = templateOptions.original,
-      data = templateOptions.data;
+   const {
+      fullPath, original, data, currentNode
+   } = templateOptions;
 
    if (splittedCore) {
       await fs.writeFile(fullPath.replace(extFile, '.min$1'), data);
-      if (nodes.hasOwnProperty(nameModule)) {
-         nodes[nameModule].amd = true;
-         nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
+      if (nodes.hasOwnProperty(currentNode)) {
+         nodes[currentNode].amd = true;
+         nodes[currentNode].path = nodes[currentNode].path.replace(extFile, '.min$1');
       }
    } else {
       await Promise.all([
          fs.writeFile(fullPath.replace(extFile, '.original$1'), original),
          fs.writeFile(fullPath, data)
       ]);
-      if (nodes.hasOwnProperty(nameModule)) {
-         nodes[nameModule].amd = true;
+      if (nodes.hasOwnProperty(currentNode)) {
+         nodes[currentNode].amd = true;
       }
    }
 }
 
-module.exports = function(grunt) {
+module.exports = function register(grunt) {
    const splittedCore = grunt.option('splitted-core');
 
-   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
+   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function tmplBuildTask() {
       // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
@@ -50,12 +49,11 @@ module.exports = function(grunt) {
       try {
          logger.debug('Запускается задача tmpl-build.');
          const start = Date.now(),
-            root = self.data.root,
-            application = self.data.application,
+            { root, application } = self.data,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(root, application, 'resources'),
             mDeps = await fs.readJSON(path.join(resourcesRoot, 'module-dependencies.json')),
-            nodes = mDeps.nodes;
+            { nodes } = mDeps;
 
          let componentsProperties = {};
 
@@ -132,19 +130,18 @@ module.exports = function(grunt) {
       done();
    });
 
-   grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', async function() {
+   grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', async function xhtmlBuildTask() {
       // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
       try {
          logger.debug('Запускается задача xhtml-build.');
          const start = Date.now();
-         const root = self.data.root,
-            application = self.data.application,
+         const { root, application } = self.data,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(root, application, 'resources'),
             mDeps = await fs.readJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
-            nodes = mDeps.nodes;
+            { nodes } = mDeps;
 
          await pMap(
             self.files,

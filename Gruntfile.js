@@ -1,10 +1,10 @@
-/* eslint-disable filenames/match-regex */
+/* eslint-disable filenames/match-regex, global-require */
 'use strict';
 
 const path = require('path');
 const dblSlashes = /\\/g;
 
-module.exports = function(grunt) {
+module.exports = function gruntMain(grunt) {
    try {
       const ver = process.versions.node;
 
@@ -49,7 +49,9 @@ module.exports = function(grunt) {
       // для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
       const oldVerbose = grunt.option('verbose');
       grunt.option('verbose', true);
-      grunt.loadNpmTasks('grunt-text-replace'); // используется как задача "replace:что-то"
+
+      // используется как задача "replace:что-то"
+      grunt.loadNpmTasks('grunt-text-replace');
       grunt.loadTasks('Tasks');
       grunt.loadTasks('Tasks/pack');
       grunt.loadTasks('packer/tasks');

@@ -1,6 +1,5 @@
+/* eslint-disable global-require */
 'use strict';
-
-// const process = require('process'); //только одна зависимость вне try/catch, т.к. она используется в catch
 
 try {
    // В самом начале проверим версию node. используем минимум возможностей node.js и ES6

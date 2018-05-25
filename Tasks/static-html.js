@@ -84,190 +84,193 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
    );
 }
 
-module.exports = function(grunt) {
+module.exports = function register(grunt) {
    const servicesPath = (grunt.option('services_path') || '').replace(/["']/g, '');
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
    const splittedCore = grunt.option('splitted-core');
 
-   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files', function() {
-      logger.debug('Запускается задача html-tmpl.');
-      const start = Date.now(),
-         done = this.async(),
-         root = this.data.root,
-         application = this.data.application,
-         applicationRoot = path.join(root, application),
-         resourcesRoot = path.join(applicationRoot, 'resources'),
-         filePattern = this.data.filePattern,
-         componentsProperties = {}; // TODO
+   grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files',
 
-      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, (err) => {
-         if (err) {
-            logger.error({ error: err });
-         }
+      /** @this grunt */
+      function htmlTmplTask() {
+         logger.debug('Запускается задача html-tmpl.');
+         const start = Date.now(),
+            done = this.async(),
+            { root, application, filePattern } = this.data,
+            applicationRoot = path.join(root, application),
+            resourcesRoot = path.join(applicationRoot, 'resources'),
+            componentsProperties = {};
 
-         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
-         logger.correctExitCode();
-         done();
+         convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, (err) => {
+            if (err) {
+               logger.error({ error: err });
+            }
+
+            logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
+            logger.correctExitCode();
+            done();
+         });
       });
-   });
 
-   grunt.registerMultiTask('static-html', 'Generate static html from modules', function() {
-      logger.debug('Запускается задача static-html.');
-      const start = Date.now(),
-         doneAsync = this.async(),
-         root = this.data.root,
-         application = this.data.application,
-         applicationRoot = path.join(root, application),
-         resourcesRoot = path.join(applicationRoot, 'resources'),
-         patterns = this.data.src,
-         oldHtml = grunt.file.expand({ cwd: applicationRoot }, this.data.html),
-         modulesOption = (grunt.option('modules') || '').replace('"', ''),
+   grunt.registerMultiTask('static-html', 'Generate static html from modules',
 
-         /*
+      /** @this grunt */
+      function staticHtmlTask() {
+         logger.debug('Запускается задача static-html.');
+         const start = Date.now(),
+            doneAsync = this.async(),
+            { root, application } = this.data,
+            applicationRoot = path.join(root, application),
+            resourcesRoot = path.join(applicationRoot, 'resources'),
+            patterns = this.data.src,
+            oldHtml = grunt.file.expand({ cwd: applicationRoot }, this.data.html),
+            modulesOption = (grunt.option('modules') || '').replace('"', ''),
+
+            /*
           Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH},
           на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-         replacePath = !(splittedCore && grunt.option('multi-service'));
+            replacePath = !(splittedCore && grunt.option('multi-service'));
 
-      const done = () => {
-         logger.correctExitCode();
-         doneAsync();
-      };
+         const done = () => {
+            logger.correctExitCode();
+            doneAsync();
+         };
 
-      if (!modulesOption) {
-         logger.error('Parameter "modules" not found');
-         done();
-         return;
-      }
-      const pathsModules = grunt.file.readJSON(modulesOption);
-      if (!Array.isArray(pathsModules)) {
-         logger.error('Parameter "modules" incorrect');
-         done();
-         return;
-      }
-      const modules = new Map();
-      for (const pathModule of pathsModules) {
-         modules.set(path.basename(pathModule), pathModule);
-      }
+         if (!modulesOption) {
+            logger.error('Parameter "modules" not found');
+            done();
+            return;
+         }
+         const pathsModules = grunt.file.readJSON(modulesOption);
+         if (!Array.isArray(pathsModules)) {
+            logger.error('Parameter "modules" incorrect');
+            done();
+            return;
+         }
+         const modules = new Map();
+         for (const pathModule of pathsModules) {
+            modules.set(path.basename(pathModule), pathModule);
+         }
 
-      let contents = {};
-      try {
-         contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
-      } catch (err) {
-         logger.warning({
-            message: 'Error while requiring contents.json',
-            error: err
-         });
-      }
+         let contents = {};
+         try {
+            contents = grunt.file.readJSON(path.join(resourcesRoot, 'contents.json'));
+         } catch (err) {
+            logger.warning({
+               message: 'Error while requiring contents.json',
+               error: err
+            });
+         }
 
-      if (oldHtml && oldHtml.length) {
-         const startRemove = Date.now();
-         oldHtml.forEach((file) => {
-            const filePath = path.join(applicationRoot, file);
-            try {
-               fs.unlinkSync(path.join(applicationRoot, file));
-            } catch (err) {
-               logger.warning({
-                  message: "Can't delete old html",
-                  filePath,
-                  error: err
-               });
-            }
-         });
-         logger.debug(`Удаление ресурсов завершено(${(Date.now() - startRemove) / 1000} sec)`);
-      }
+         if (oldHtml && oldHtml.length) {
+            const startRemove = Date.now();
+            oldHtml.forEach((file) => {
+               const filePath = path.join(applicationRoot, file);
+               try {
+                  fs.unlinkSync(path.join(applicationRoot, file));
+               } catch (err) {
+                  logger.warning({
+                     message: "Can't delete old html",
+                     filePath,
+                     error: err
+                  });
+               }
+            });
+            logger.debug(`Удаление ресурсов завершено(${(Date.now() - startRemove) / 1000} sec)`);
+         }
 
-      const config = {
-         root,
-         application,
-         servicesPath,
-         userParams,
-         globalParams,
-         urlServicePath: grunt.option('url-service-path') ? grunt.option('url-service-path') : application,
-         wsPath: splittedCore ? 'resources/WS.Core/' : 'ws/'
-      };
+         const config = {
+            root,
+            application,
+            servicesPath,
+            userParams,
+            globalParams,
+            urlServicePath: grunt.option('url-service-path') ? grunt.option('url-service-path') : application,
+            wsPath: splittedCore ? 'resources/WS.Core/' : 'ws/'
+         };
 
-      helpers.recurse(
-         applicationRoot,
-         (file, callback) => {
-            if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
-               fs.readFile(file, (err, text) => {
-                  if (err) {
-                     logger.error({
-                        error: err
-                     });
-                     callback();
-                     return;
-                  }
-                  let componentInfo = {};
-                  try {
-                     componentInfo = parseJsComponent(text.toString());
-                  } catch (error) {
-                     logger.error({
-                        message: 'Возникла ошибка при парсинге файла',
-                        filePath: file,
-                        error
-                     });
-                     callback();
-                     return;
-                  }
-
-                  generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
-                     (result) => {
-                        if (result) {
-                           let outputPath;
-                           if (splittedCore) {
-                              const relativePath = path.relative(resourcesRoot, file),
-                                 moduleName = helpers.getFirstDirInRelativePath(relativePath),
-                                 absoulteModulePath = path.join(resourcesRoot, moduleName);
-                              outputPath = path.join(absoulteModulePath, result.outFileName);
-                           } else {
-                              outputPath = path.join(applicationRoot, result.outFileName);
-                           }
-
-                           helpers.writeFile(outputPath, result.text, callback);
-                        } else {
-                           callback();
-                        }
-                     },
-                     (error) => {
+         helpers.recurse(
+            applicationRoot,
+            (file, callback) => {
+               if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+                  fs.readFile(file, (err, text) => {
+                     if (err) {
                         logger.error({
-                           message: 'Ошибка при генерации статической html для JS',
+                           error: err
+                        });
+                        callback();
+                        return;
+                     }
+                     let componentInfo = {};
+                     try {
+                        componentInfo = parseJsComponent(text.toString());
+                     } catch (error) {
+                        logger.error({
+                           message: 'Возникла ошибка при парсинге файла',
                            filePath: file,
                            error
                         });
                         callback();
+                        return;
                      }
-                  );
-               });
-            } else {
-               callback();
-            }
-         },
-         (err) => {
-            if (err) {
-               logger.error({
-                  error: err
-               });
-            }
 
-            try {
-               const sorted = helpers.sortObject(contents);
+                     generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
+                        (result) => {
+                           if (result) {
+                              let outputPath;
+                              if (splittedCore) {
+                                 const relativePath = path.relative(resourcesRoot, file),
+                                    moduleName = helpers.getFirstDirInRelativePath(relativePath),
+                                    absoulteModulePath = path.join(resourcesRoot, moduleName);
+                                 outputPath = path.join(absoulteModulePath, result.outFileName);
+                              } else {
+                                 outputPath = path.join(applicationRoot, result.outFileName);
+                              }
 
-               grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
-               grunt.file.write(path.join(resourcesRoot, 'contents.js'), `contents=${JSON.stringify(sorted)}`);
-            } catch (error) {
-               logger.error({
-                  error
-               });
+                              helpers.writeFile(outputPath, result.text, callback);
+                           } else {
+                              callback();
+                           }
+                        },
+                        (error) => {
+                           logger.error({
+                              message: 'Ошибка при генерации статической html для JS',
+                              filePath: file,
+                              error
+                           });
+                           callback();
+                        }
+                     );
+                  });
+               } else {
+                  callback();
+               }
+            },
+            (err) => {
+               if (err) {
+                  logger.error({
+                     error: err
+                  });
+               }
+
+               try {
+                  const sorted = helpers.sortObject(contents);
+
+                  grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
+                  grunt.file.write(path.join(resourcesRoot, 'contents.js'), `contents=${JSON.stringify(sorted)}`);
+               } catch (error) {
+                  logger.error({
+                     error
+                  });
+               }
+
+               logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
+               done();
             }
-
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
-            done();
-         }
-      );
-   });
+         );
+      });
 };
