@@ -355,7 +355,8 @@ function getComponentForTmpl(grunt, graph, applicationRoot, mod) {
          const text = fs.readFileSync(mod.fullPath);
          if (text) {
             const tmplstr = global.requirejs('Core/tmpl/tmplstr');
-            const arr = tmplstr.getComponents(text).map(function(dp) {
+            const config = global.requirejs('View/config');
+            const arr = tmplstr.getComponents(text, config).map(function(dp) {
                return {
                   type: 'Literal',
                   value: dp

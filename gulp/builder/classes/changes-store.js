@@ -253,6 +253,10 @@ class ChangesStore {
       this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
    }
 
+   getInputPathsByFolder(modulePath) {
+      return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(modulePath));
+   }
+
    markFileAsFailed(filePath) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.filesWithErrors.add(prettyPath);
