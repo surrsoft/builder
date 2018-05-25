@@ -687,7 +687,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
 
       await check();
-      await check(); // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
+
+      // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
+      await check();
 
       await clearWorkspace();
    });

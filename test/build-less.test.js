@@ -10,7 +10,7 @@ const chai = require('chai'),
    helpers = require('../lib/helpers'),
    buildLess = require('../lib/build-less');
 
-const expect = chai.expect;
+const { expect } = chai;
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),

@@ -24,7 +24,9 @@ describe('collect words', () => {
          "//var testVar3 = rk('Test3', 'TestContext3');\n" +
          "/ var testVar3 = rk('Test3', 'TestContext3'); /\n";
       const words = await collectWords(moduleDir, filePath, text, []);
-      words.length.should.equal(4); // TODO: очевидно, тут ошибка. должно быть 2
+
+      // TODO: очевидно, тут ошибка. должно быть 2
+      words.length.should.equal(4);
 
       words[0].ui.should.equal(moduleDir);
       words[0].module.should.equal(filePath);
@@ -216,7 +218,8 @@ describe('collect words', () => {
 
       const words = await collectWords(moduleDir, filePath, text, componentsProperties);
 
-      words.length.should.equal(0); // TODO: тут ошибка
+      // TODO: тут ошибка
+      words.length.should.equal(0);
 
       // words[0].key.should.equal('Текст');
       // words[0].context.should.equal('Контекст');
@@ -253,24 +256,45 @@ describe('collect words', () => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.tmpl');
       const text =
-         '<Test.Component test1="Текст1"/>' + // компонент. упрощеннённый способ конфигурации. переводимая опция
-         '<Test.Component test1="Контекст@@Текст2"/>' + // компонент. упрощеннённый способ конфигурации. переводимая опция с контекстом
-         '<Test.Component translatable_wo_description="{[Текст3]}"/>' + // ручная расстановка скобок
-         '<Test.Component>' + // компонент. расширенный способ конфигурации. переводимая опция
+
+         // компонент. упрощеннённый способ конфигурации. переводимая опция
+         '<Test.Component test1="Текст1"/>' +
+
+         // компонент. упрощеннённый способ конфигурации. переводимая опция с контекстом
+         '<Test.Component test1="Контекст@@Текст2"/>' +
+
+         // ручная расстановка скобок
+         '<Test.Component translatable_wo_description="{[Текст3]}"/>' +
+
+         // компонент. расширенный способ конфигурации. переводимая опция
+         '<Test.Component>' +
          '  <ws:test1>' +
          '     <ws:string>Текст4</ws:string>' +
          '  </ws:test1>' +
          '</Test.Component>' +
-         '<ws:partial template="Test/Component" test1="Текст5"/>' + // встроенный шаблон. переводимая опция
-         '<ws:partial template="optional!Test/Component" test1="Текст6"/>' + // встроенный шаблон с плагином optional. переводимая опция
-         '<Test.Component test1="{{ \'not_translatable\'|bind:not_translatableValue, direction}}"/>' + // привязка к полям контекста
-         '<Test.Component not_translatable="not_translatable"/>' + // упрощеннённый способ конфигурации. непереводимая опция
-         '<Test.Component>' + // расширенный способ конфигурации. непереводимая опция
+
+         // встроенный шаблон. переводимая опция
+         '<ws:partial template="Test/Component" test1="Текст5"/>' +
+
+         // встроенный шаблон с плагином optional. переводимая опция
+         '<ws:partial template="optional!Test/Component" test1="Текст6"/>' +
+
+         // привязка к полям контекста
+         '<Test.Component test1="{{ \'not_translatable\'|bind:not_translatableValue, direction}}"/>' +
+
+         // упрощеннённый способ конфигурации. непереводимая опция
+         '<Test.Component not_translatable="not_translatable"/>' +
+
+         // расширенный способ конфигурации. непереводимая опция
+         '<Test.Component>' +
          '  <ws:not_translatable>' +
          '     <ws:string>not_translatable</ws:string>' +
          '  </ws:not_translatable>' +
          '</Test.Component>' +
-         '<ws:partial template="Test/Component" not_translatable="not_translatable"/>'; // встроенный шаблон. непереводимая опция
+
+         // встроенный шаблон. непереводимая опция
+         '<ws:partial template="Test/Component" not_translatable="not_translatable"/>';
+
       const componentsProperties = {
          'Test/Component': {
             properties: {

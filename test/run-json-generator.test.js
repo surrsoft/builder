@@ -16,7 +16,7 @@ function clear() {
 // просто проверяем, что run-json-generator нормально вызывается.
 describe('run json-generator', () => {
    it('tests', async() => {
-      let options, modules, result;
+      let testedOptions, modules, result;
 
       // пустой список модулей
       await clear();
@@ -34,14 +34,14 @@ describe('run json-generator', () => {
       Object.keys(resultIndex).length.should.equal(2);
 
       resultIndex.hasOwnProperty('TestModuleWithoutModuleJs/MyComponent').should.equal(true);
-      options = resultIndex['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
-      options.caption.translatable.should.equal(true);
-      options.icon.hasOwnProperty('translatable').should.equal(false);
+      testedOptions = resultIndex['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
+      testedOptions.caption.translatable.should.equal(true);
+      testedOptions.icon.hasOwnProperty('translatable').should.equal(false);
 
       resultIndex.hasOwnProperty('My.Component').should.equal(true);
-      options = resultIndex['My.Component'].properties['ws-config'].options;
-      options.caption.translatable.should.equal(true);
-      options.icon.hasOwnProperty('translatable').should.equal(false);
+      testedOptions = resultIndex['My.Component'].properties['ws-config'].options;
+      testedOptions.caption.translatable.should.equal(true);
+      testedOptions.icon.hasOwnProperty('translatable').should.equal(false);
 
       await clear();
    });

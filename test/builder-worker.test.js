@@ -11,7 +11,7 @@ const chai = require('chai'),
    helpers = require('../lib/helpers'),
    workerPool = require('workerpool');
 
-const expect = chai.expect;
+const { expect } = chai;
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
