@@ -9,8 +9,11 @@ const re = /encode=([\S]+)\?/;
  * @return {{feature: string, yes: string, no: string}}
  */
 function isParser(dep) {
-   let yesModuleId = null, noModuleId = null,
-      f, feature, actions;
+   let yesModuleId = null,
+      noModuleId = null,
+      f,
+      feature,
+      actions;
 
    if (dep.indexOf('is!') > -1) {
       f = dep.replace('is!', '');

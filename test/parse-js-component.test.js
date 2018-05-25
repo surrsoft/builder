@@ -28,15 +28,17 @@ describe('parse js component', () => {
       result.hasOwnProperty('isNavigation').should.equal(false);
    });
    it('declare object webpage', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {' +
-         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   title: "TestTitle",' +
-         '   outFileName: "ca_stub",' +
-         '   trash:"trash"' +
-         '};' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {' +
+            '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+            '   title: "TestTitle",' +
+            '   outFileName: "ca_stub",' +
+            '   trash:"trash"' +
+            '};' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
@@ -47,15 +49,17 @@ describe('parse js component', () => {
    });
 
    it('declare title and web page', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {' +
-         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   outFileName: "ca_stub",' +
-         '   trash:"trash"' +
-         '};' +
-         'module.title = "TestTitle";' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {' +
+            '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+            '   outFileName: "ca_stub",' +
+            '   trash:"trash"' +
+            '};' +
+            'module.title = "TestTitle";' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
@@ -67,13 +71,15 @@ describe('parse js component', () => {
    });
 
    it('declare tricky web page', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {};' +
-         'module.webPage.htmlTemplate = "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html";' +
-         'module.webPage.title = "Пожалуйста, подождите...";' +
-         'module.webPage.outFileName = "ca_stub";' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {};' +
+            'module.webPage.htmlTemplate = "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html";' +
+            'module.webPage.title = "Пожалуйста, подождите...";' +
+            'module.webPage.outFileName = "ca_stub";' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
@@ -121,7 +127,9 @@ describe('parse js component', () => {
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
 
-      result = parseJsComponent('define("My.Module/Name", ["optional!Navigation/NavigationController"], function(){});');
+      result = parseJsComponent(
+         'define("My.Module/Name", ["optional!Navigation/NavigationController"], function(){});'
+      );
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
    });

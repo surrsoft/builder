@@ -26,7 +26,9 @@ describe('helpers', () => {
       helpers.prettifyPath('/simple/').should.equal('/simple/');
 
       // на windows пути, которые начинаются с \\, являются сетевыми и требуют особой обработки
-      helpers.prettifyPath('\\\\simple\\\\file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
+      helpers
+         .prettifyPath('\\\\simple\\\\file.less')
+         .should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
       helpers.prettifyPath('\\\\simple/file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
 
       // jinnee-utility может передавать не правильно сетевые пути до файлов. нужно обработать

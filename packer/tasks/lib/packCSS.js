@@ -13,8 +13,7 @@ module.exports = {
          const links = dom.getElementsByTagName('link'),
             files = [],
             elements = [];
-         let
-            before, link, href, packName, rel, media;
+         let before, link, href, packName, rel, media;
          for (let i = 0, l = links.length; i < l; i++) {
             link = links[i];
             packName = link.getAttribute('data-pack-name');
@@ -29,10 +28,14 @@ module.exports = {
             media = links[i].getAttribute('media') || 'screen';
 
             // stylesheet, has href ends with .css and not starts with http or //, media is screen
-            if (href && rel === 'stylesheet' && media === 'screen' &&
+            if (
+               href &&
+               rel === 'stylesheet' &&
+               media === 'screen' &&
                href.indexOf('http') !== 0 &&
                href.indexOf('//') !== 0 &&
-               href.indexOf('.css') !== href.length - 3) {
+               href.indexOf('.css') !== href.length - 3
+            ) {
                // убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
                href = href.replace(/\.v.+?(\.css)$/, '$1');
                files.push(href);
@@ -41,15 +44,22 @@ module.exports = {
             }
          }
 
-         return [{
-            files,
-            nodes: elements,
-            before
-         }];
+         return [
+            {
+               files,
+               nodes: elements,
+               before
+            }
+         ];
       }
 
-      function packer(files, root) {
-         return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(css => cssHelpers.rebaseUrls(root, css, fs.readFileSync(css))).join('\n')));
+      function packer(files, currentRoot) {
+         return cssHelpers.splitIntoBatches(
+            4000,
+            cssHelpers.bumpImportsUp(
+               files.map(css => cssHelpers.rebaseUrls(currentRoot, css, fs.readFileSync(css))).join('\n')
+            )
+         );
       }
 
       function getTargetNode(dom, path) {
@@ -84,23 +94,22 @@ module.exports = {
          });
       }
 
-      files = files.filter((file) => {
-         if (!fs.existsSync(file)) {
-            return false;
+      const filesToRead = files.filter(file => fs.existsSync(file));
+      async.map(
+         filesToRead,
+         (css, cb) => {
+            _read(css, cb);
+         },
+         (err, results) => {
+            if (err) {
+               callback(err);
+            } else {
+               let res = results.join('\n');
+               res = cssHelpers.bumpImportsUp(res);
+               callback(null, cssHelpers.splitIntoBatches(4000, res));
+            }
          }
-         return true;
-      });
-      async.map(files, (css, cb) => {
-         _read(css, cb);
-      }, (err, results) => {
-         if (err) {
-            callback(err);
-         } else {
-            let res = results.join('\n');
-            res = cssHelpers.bumpImportsUp(res);
-            callback(null, cssHelpers.splitIntoBatches(4000, res));
-         }
-      });
+      );
    },
    promisedPackCSS: async(files, applicationRoot) => {
       const results = await pMap(

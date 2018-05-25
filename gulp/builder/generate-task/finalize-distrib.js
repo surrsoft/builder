@@ -15,17 +15,20 @@ function generateTaskForCopyResources(config, pool) {
       const input = path.join(moduleInfo.output, '/**/*.*');
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
-         return gulp.src(input, { dot: false, nodir: true })
-            .pipe(plumber({
-               errorHandler(err) {
-                  logger.error({
-                     message: 'Задача copyResources завершилась с ошибкой',
-                     error: err,
-                     moduleInfo
-                  });
-                  this.emit('end');
-               }
-            }))
+         return gulp
+            .src(input, { dot: false, nodir: true })
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача copyResources завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            )
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
             .pipe(packHtml(moduleInfo, pool))
             .pipe(gzip(moduleInfo, pool))
@@ -43,7 +46,7 @@ function generateTaskForNormalizeKey(config) {
          done();
       } catch (e) {
          logger.error({
-            message: 'Ошибка Builder\'а',
+            message: "Ошибка Builder'а",
             error: e
          });
       }

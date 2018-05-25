@@ -10,11 +10,13 @@ const helpers = require('../../../lib/helpers'),
 
 class StoreInfo {
    constructor() {
-      // в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
+      // в случае изменений параметров запуска проще кеш сбросить,
+      // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
 
       // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      this.versionOfBuilder = 'unknown'; // unknown используется далее
+      // unknown используется далее
+      this.versionOfBuilder = 'unknown';
 
       // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
       // для сравнения с mtime у файлов
@@ -140,7 +142,8 @@ class Cache {
       // 2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
       const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
 
-      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath); // новый файл
+      // новый файл
+      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath);
 
       if (!isChanged) {
          this.currentStore.cachedFiles[prettyPath] = this.lastStore.cachedFiles[prettyPath];

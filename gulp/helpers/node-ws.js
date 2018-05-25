@@ -76,15 +76,15 @@ function _init() {
    global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
-      'jsModules': {},
-      'modules': {
-         'View': 'sbis3-ws/View',
-         'Controls': 'sbis3-controls/Controls',
+      jsModules: {},
+      modules: {
+         View: 'sbis3-ws/View',
+         Controls: 'sbis3-controls/Controls',
          'WS.Data': 'ws-data/WS.Data'
       },
-      'requirejsPaths': {
-         'View': 'sbis3-ws/View',
-         'Controls': 'sbis3-controls/Controls',
+      requirejsPaths: {
+         View: 'sbis3-ws/View',
+         Controls: 'sbis3-controls/Controls',
          'WS.Data': 'ws-data/WS.Data'
       }
    };

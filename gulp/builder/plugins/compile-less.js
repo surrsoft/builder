@@ -9,7 +9,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
+module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
    return through.obj(async function(file, encoding, callback) {
       try {
          if (!file.path.endsWith('.less')) {
@@ -78,7 +78,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: "Ошибка builder'а при компиляции less",
+            message: 'Ошибка builder\'а при компиляции less',
             error,
             moduleInfo,
             filePath: file.history[0]

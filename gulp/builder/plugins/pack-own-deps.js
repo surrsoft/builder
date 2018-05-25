@@ -37,7 +37,10 @@ module.exports = function(changesStore, moduleInfo) {
                   relativeFileName = `${relativeFileName.replace('tmpl!', '')}.tmpl`;
                }
                if (relativeFileName.startsWith(moduleNameOutput)) {
-                  const relativeFileNameWoModule = relativeFileName.split('/').slice(1).join('/');
+                  const relativeFileNameWoModule = relativeFileName
+                     .split('/')
+                     .slice(1)
+                     .join('/');
                   return path.join(moduleInfo.path, relativeFileNameWoModule);
                }
                return '';
@@ -82,7 +85,7 @@ module.exports = function(changesStore, moduleInfo) {
             }
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

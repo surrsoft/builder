@@ -1,10 +1,10 @@
 'use strict';
 
-const
-   path = require('path'),
+const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
-   dblSlashes = /\\/g;
+   logger = require('../../../lib/logger').logger();
+const dblSlashes = /\\/g;
 
 /**
  * Возращает имя интерфейсного модуля.
@@ -13,9 +13,8 @@ const
  */
 
 function getNameModule(pathModule) {
-   let
-      splitPath = pathModule.split('/'),
-      nameModule = '';
+   const splitPath = pathModule.split('/');
+   let nameModule = '';
 
    splitPath.some((name, index) => {
       if (name === 'ws') {
@@ -27,9 +26,10 @@ function getNameModule(pathModule) {
          return true;
       }
       if (index === splitPath.length - 1) {
-         nameModule = splitPath[0];
+         [nameModule] = splitPath;
          return true;
       }
+      return false;
    });
 
    return nameModule;
@@ -43,14 +43,16 @@ function getNameModule(pathModule) {
  * @returns {String} - путь до словаря.
  */
 function getPathDict(name, lang, applicationRoot) {
+   let realName = name;
+
    // Когда ws станет интерфейсным модулем можно удалить.
-   if (name === 'WS') {
-      name = 'ws';
+   if (realName === 'WS') {
+      realName = 'ws';
    } else {
-      name = `resources/${name}`;
+      realName = `resources/${realName}`;
    }
 
-   return path.normalize(path.join(applicationRoot, name, 'lang', lang, `${lang}.js`));
+   return path.normalize(path.join(applicationRoot, realName, 'lang', lang, `${lang}.js`));
 }
 
 /**
@@ -61,10 +63,7 @@ function getPathDict(name, lang, applicationRoot) {
  * @returns {boolean} true - если словарь надо пакетировать, false - если словарь не надо пакетировать.
  */
 function needPushDict(name, lang, isPackedDict) {
-   if (isPackedDict[name] && isPackedDict[name][lang]) {
-      return false;
-   }
-   return true;
+   return !(isPackedDict[name] && isPackedDict[name][lang]);
 }
 
 /**
@@ -97,7 +96,8 @@ function creatTextInModDeps(modDeps, module) {
 /**
  * Создаёт модуль с плагином text!.
  * @param {Object} modulejs - мета данные js-ого модуля словаря.
- * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}} - мета данные json модуля.
+ * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}}
+ *          - мета данные json модуля.
  */
 function createTextModule(modulejs) {
    return {
@@ -115,7 +115,8 @@ function createTextModule(modulejs) {
  * @param {String} nameModule - имя интерфейсного модуля.
  * @param {String} fullPath - полный путь до модуля.
  * @param {String} lang - обробатываем язык.
- * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}} - мета данные js модуля.
+ * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}}
+ *          - мета данные js модуля.
  */
 function createJsModule(nameModule, fullPath, lang) {
    return {
@@ -186,12 +187,11 @@ async function packCustomDict(modules, applicationRoot) {
    let resultPackage = [];
 
    try {
-      let
-         modulesI18n = {},
-         _const = global.requirejs('Core/constants'),
+      const modulesI18n = {},
+         coreConstants = global.requirejs('Core/constants'),
          modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
-         linkModules = modDepend.links,
-         moduleName;
+         linkModules = modDepend.links;
+      let moduleName;
 
       await pMap(
          modules,
@@ -202,16 +202,14 @@ async function packCustomDict(modules, applicationRoot) {
                if (modulesI18n.hasOwnProperty(moduleName)) {
                   linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
                   module.addDeps = modulesI18n[moduleName].fullName;
-               } else {
+               } else if (await fs.pathExists(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
                   /**
                    * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
                    * для него в пакете модуль локализации
                    */
-                  if (await fs.pathExists(path.join(applicationRoot, 'resources', moduleName, 'lang'))) {
-                     modulesI18n[moduleName] = createI18nModule(moduleName);
-                     linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                     module.addDeps = modulesI18n[moduleName].fullName;
-                  }
+                  modulesI18n[moduleName] = createI18nModule(moduleName);
+                  linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
+                  module.addDeps = modulesI18n[moduleName].fullName;
                }
             }
          },
@@ -226,14 +224,21 @@ async function packCustomDict(modules, applicationRoot) {
          if (!modulesI18n.hasOwnProperty(name)) {
             continue;
          }
-         modulesI18n[name].availableDict = getAvailableLanguageModule(_const.availableLanguage, name, applicationRoot);
+         modulesI18n[name].availableDict = getAvailableLanguageModule(
+            coreConstants.availableLanguage,
+            name,
+            applicationRoot
+         );
          resultPackage.push(modulesI18n[name]);
       }
 
       resultPackage = resultPackage.concat(modules);
-   } finally {
-      return resultPackage;
+   } catch (error) {
+      logger.error({
+         error
+      });
    }
+   return resultPackage;
 }
 
 /**
@@ -253,16 +258,15 @@ function packDictClassic(modules, applicationRoot) {
       return dictPack;
    }
    try {
-      let
-         modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         _const = global.requirejs('Core/constants'),
-         isPackedDict = {},
+      const coreConstants = global.requirejs('Core/constants'),
+         isPackedDict = {};
+
+      let modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
          dictJsModule,
          dictTextModule,
          nameModule;
 
-      // fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
-      Object.keys(_const.availableLanguage).forEach((lang) => {
+      Object.keys(coreConstants.availableLanguage).forEach((lang) => {
          dictPack[lang] = [];
       });
 
@@ -291,12 +295,15 @@ function packDictClassic(modules, applicationRoot) {
 
       /*
         в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
-        fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(modDepend, null, 2));
+        fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'),
+        JSON.stringify(modDepend, null, 2));
         */
-   } finally {
-      // fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
-      return dictPack;
+   } catch (error) {
+      logger.error({
+         error
+      });
    }
+   return dictPack;
 }
 
 /**
@@ -309,10 +316,7 @@ function deleteOldModulesLocalization(modules) {
       if (module.plugin && module.plugin === 'i18n') {
          return false;
       }
-      if (module.fullName && /\/lang\/[\w\-]+\/[\w\-]+/.test(module.fullName)) {
-         return false;
-      }
-      return true;
+      return !(module.fullName && /\/lang\/[\w-]+\/[\w-]+/.test(module.fullName));
    });
 }
 

@@ -1,4 +1,5 @@
-'use script';
+'use strict';
+
 const crypto = require('crypto');
 const xmldom = require('tensor-xmldom');
 const fs = require('fs-extra');
@@ -62,24 +63,25 @@ function mkCommentNode(document, data) {
 
 function removeDomCollection(col, filter) {
    const deadlist = [];
-   for (var i = 0, l = col.length; i < l; i++) {
+   for (let i = 0, l = col.length; i < l; i++) {
       if (!filter || filter(col[i])) {
          deadlist.push(col[i]);
       }
    }
-   for (i = 0, l = deadlist.length; i < l; i++) {
+   for (let i = 0, l = deadlist.length; i < l; i++) {
       deadlist[i].parentNode.removeChild(deadlist[i]);
    }
 }
 
 function checkFiles(root, sourceFile, result) {
-   let isSane = true, errors = [];
+   let isSane = true;
+   const errors = [];
    result.files.forEach((packItem, i) => {
       const fullPath = path.join(root, packItem);
       if (!fs.existsSync(fullPath)) {
-         let l = result.nodes[i].lineNumber,
+         const l = result.nodes[i].lineNumber,
             c = result.nodes[i].columnNumber;
-         errors.push(`line ${l} col ${c}: file not found` + ` ${packItem}`);
+         errors.push(`line ${l} col ${c}: file not found ${packItem}`);
          isSane = false;
       }
    });
@@ -98,23 +100,30 @@ const helpers = {
    mkCommentNode,
 
    package(fileset, root, packageHome, collector, packer, nodeProducer, ext) {
-      fileset.map((f) => {
-         let dom = domify(fs.readFileSync(f, 'utf-8')),
+      fileset.forEach((f) => {
+         const dom = domify(fs.readFileSync(f, 'utf-8')),
             results = collector(dom);
 
          results.forEach((result) => {
-            let packedContent, packedFiles = [];
+            let packedContent;
+            const packedFiles = [];
 
             if (result.files.length > 1) {
                if (checkFiles(root, f, result)) {
-                  packedContent = packer(result.files.map(fl => path.join(root, fl)).filter(function deleteControls(filename) {
-                     if (ext === 'css') {
-                        filename = filename.replace(/\\/g, '/');
-                        return !(filename.includes('resources/Controls') ||
-                           (filename.includes('resources/SBIS3.CONTROLS') && !filename.includes('resources/SBIS3.CONTROLS/themes')));
-                     }
-                     return true;
-                  }), root);
+                  packedContent = packer(
+                     result.files.map(fl => path.join(root, fl)).filter(function deleteControls(filename) {
+                        if (ext === 'css') {
+                           const prettyFilename = filename.replace(/\\/g, '/');
+                           return !(
+                              prettyFilename.includes('resources/Controls') ||
+                              (prettyFilename.includes('resources/SBIS3.CONTROLS') &&
+                                 !prettyFilename.includes('resources/SBIS3.CONTROLS/themes'))
+                           );
+                        }
+                        return true;
+                     }),
+                     root
+                  );
 
                   // For each result content item create uniq filename and write item to it
                   packedContent.forEach((aSinglePackedFileContent, idx) => {

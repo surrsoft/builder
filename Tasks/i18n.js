@@ -89,7 +89,7 @@ function runPrepareXHTML(root, componentsProperties, done) {
 }
 
 function runCreateResultDictForDir(words, dir, componentsProperties) {
-   return new Promise(((resolve) => {
+   return new Promise((resolve) => {
       helpers.recurse(
          dir,
          (filePath, fileDone) => {
@@ -127,11 +127,11 @@ function runCreateResultDictForDir(words, dir, componentsProperties) {
             resolve();
          }
       );
-   }));
+   });
 }
 
 function runCreateResultDict(modules, componentsProperties, out) {
-   return new Promise(((resolve, reject) => {
+   return new Promise((resolve, reject) => {
       try {
          logger.info('Запускается построение результирующего словаря.');
 
@@ -173,7 +173,7 @@ function runCreateResultDict(modules, componentsProperties, out) {
                   fs.writeFileSync(out, JSON.stringify(words, null, 2));
                } catch (error) {
                   logger.error({
-                     message: 'Could\'t create output file ',
+                     message: "Could't create output file ",
                      filePath: out,
                      error
                   });
@@ -186,7 +186,7 @@ function runCreateResultDict(modules, componentsProperties, out) {
       } catch (error) {
          reject(error);
       }
-   }));
+   });
 }
 
 module.exports = function(grunt) {

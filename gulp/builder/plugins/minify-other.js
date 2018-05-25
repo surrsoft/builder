@@ -37,7 +37,6 @@ module.exports = function(changesStore, moduleInfo) {
             return;
          }
 
-
          /**
           * если json файл не возможно минифицировать, то запишем оригинал.
           * jstpl копируем напрямую, их минифицировать никак нельзя,
@@ -70,7 +69,7 @@ module.exports = function(changesStore, moduleInfo) {
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при минификации',
+            message: "Ошибка builder'а при минификации",
             error,
             moduleInfo,
             filePath: file.path

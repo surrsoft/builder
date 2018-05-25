@@ -28,40 +28,40 @@ describe('build less', () => {
    });
    it('less with default theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
-      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
+      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal(
-         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
    });
    it('less from retail', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
-      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
+      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal(
-         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is carry';\n}\n"
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n"
       );
    });
    it('less from retail with presto theme', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/test.less');
-      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
+      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal(
-         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is presto';\n}\n"
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
       );
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
-      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
+      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal(
-         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n}\n"
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
    });
 
@@ -126,11 +126,11 @@ describe('build less', () => {
 
    it('less from ws', async() => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
-      const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
+      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath, pathsForImport);
       result.imports.length.should.equal(2);
       result.text.should.equal(
-         '.test-selector {\n' + "  test-mixin: 'mixin there';\n" + "  test-var: 'it is online';\n" + '}\n'
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
    });
 });

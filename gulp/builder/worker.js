@@ -24,7 +24,7 @@ let componentsProperties;
 process.on('unhandledRejection', (reason, p) => {
    // eslint-disable-next-line no-console
    console.log(
-      '[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ',
+      "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
       'Unhandled Rejection at:\n',
       p,
       '\nreason:\n',

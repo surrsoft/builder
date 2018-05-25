@@ -12,11 +12,11 @@ class ModuleInfo extends BaseModuleInfo {
       // объект для записи contents.json
       // availableLanguage, defaultLanguage и dictionary добавляются только при локализации
       this.contents = {
-         'htmlNames': {},
-         'jsModules': {},
-         'modules': {},
-         'requirejsPaths': {}, // TODO: Удалить
-         'xmlContents': {} // TODO: Удалить
+         htmlNames: {},
+         jsModules: {},
+         modules: {},
+         requirejsPaths: {}, // TODO: Удалить
+         xmlContents: {} // TODO: Удалить
       };
 
       // объект для записи routes-info.json

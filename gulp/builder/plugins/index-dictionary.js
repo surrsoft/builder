@@ -7,16 +7,17 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    DictionaryIndexer = require('../../../lib/i18n/dictionary-indexer');
 
-// если есть ресурсы локализации, то нужно записать <локаль>.js файл в папку "lang/<локаль>" и занести данные в contents.json
+// если есть ресурсы локализации, то нужно записать <локаль>.js файл
+// в папку "lang/<локаль>" и занести данные в contents.json
 // + css локализации нужно объединить
-module.exports = function(config, moduleInfo) {
+module.exports = (config, moduleInfo) => {
    const indexer = new DictionaryIndexer(config.localizations);
    return through.obj(
       (file, encoding, callback) => {
          try {
             // нам нужны только css и json локализации
             const locale = file.stem;
-            if (file.extname !== '.json' && file.extname !== '.css' || !config.localizations.includes(locale)) {
+            if ((file.extname !== '.json' && file.extname !== '.css') || !config.localizations.includes(locale)) {
                callback(null, file);
                return;
             }
@@ -27,7 +28,7 @@ module.exports = function(config, moduleInfo) {
             }
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error,
                moduleInfo,
                filePath: file.path
@@ -35,7 +36,7 @@ module.exports = function(config, moduleInfo) {
          }
          callback(null, file);
       },
-      function(callback) {
+      (callback) => {
          try {
             for (const locale of config.localizations) {
                const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, locale);
@@ -65,7 +66,7 @@ module.exports = function(config, moduleInfo) {
             moduleInfo.contents.dictionary = indexer.getDictionaryForContents();
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error,
                moduleInfo
             });

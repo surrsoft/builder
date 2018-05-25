@@ -4,7 +4,6 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger();
 
-
 module.exports = function(config, changesStore, moduleInfo, pool) {
    return through.obj(async(file, encoding, callback) => {
       try {

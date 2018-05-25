@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const async = require('async');
 const esprima = require('esprima');
-const traverse = require('estraverse').traverse;
+const { traverse } = require('estraverse');
 
 const logger = require('../../../lib/logger').logger();
 
@@ -39,61 +39,72 @@ function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlN
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
    const type2attr = {
-      'js': 'src',
-      'css': 'href'
+      js: 'src',
+      css: 'href'
    };
    const type2node = {
-      'js': 'script',
-      'css': 'link'
+      js: 'script',
+      css: 'link'
    };
    const type2type = {
-      'js': 'text/javascript',
-      'css': 'text/css'
+      js: 'text/javascript',
+      css: 'text/css'
    };
    const options = {
       'data-pack-name': `ws-mods-${type}`,
-      'type': type2type[type]
+      type: type2type[type]
    };
 
    if (insertAfter && filesToPack && filesToPack[type]) {
-      filesToPack = filesToPack[type];
+      const curFilesToPack = filesToPack[type];
 
-      if (filesToPack.length && type in type2attr) {
+      if (curFilesToPack.length && type in type2attr) {
          if (type === 'css') {
             options.rel = 'stylesheet';
          }
          let newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[/packedScripts]');
          insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
-         filesToPack.reverse().filter(file => file.name).forEach((file) => {
-            options['data-pack-name'] = file.skip ? 'skip' : `ws-mods-${type}`;
+         curFilesToPack
+            .reverse()
+            .filter(file => file.name)
+            .forEach((file) => {
+               options['data-pack-name'] = file.skip ? 'skip' : `ws-mods-${type}`;
 
-            options[type2attr[type]] = file.name.replace(/\\/g, '/');
-            newTarget = domHelpers.mkDomNode(insertAfter.ownerDocument, type2node[type], options);
-            insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
-         });
+               options[type2attr[type]] = file.name.replace(/\\/g, '/');
+               newTarget = domHelpers.mkDomNode(insertAfter.ownerDocument, type2node[type], options);
+               insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
+            });
          newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[packedScripts]');
          insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
       }
    }
 }
 
-function generatePackage(extWithoutVersion, grunt, filesToPack, ext, packageTarget, applicationRoot, siteRoot, namePrefix) {
-   if (namePrefix === undefined) {
-      namePrefix = '';
-   }
-
+function generatePackage(
+   extWithoutVersion,
+   grunt,
+   filesToPack,
+   ext,
+   packageTarget,
+   applicationRoot,
+   siteRoot,
+   namePrefix = ''
+) {
    if (filesToPack) {
-      if (typeof filesToPack === 'string') {
-         filesToPack = [filesToPack];
+      let filesToPackList = filesToPack;
+      if (typeof filesToPackList === 'string') {
+         filesToPackList = [filesToPackList];
       }
 
-      return filesToPack.map((file) => {
-         const
-            urlServicePath = grunt.option('url-service-path') ? path.join(siteRoot, grunt.option('url-service-path')) : applicationRoot,
+      return filesToPackList.map((file) => {
+         const urlServicePath = grunt.option('url-service-path')
+               ? path.join(siteRoot, grunt.option('url-service-path'))
+               : applicationRoot,
             packageName = namePrefix + domHelpers.uniqname(file, ext),
             packedFileName = path.join(packageTarget, packageName);
 
-         // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с констркуией %{RESOURCE_ROOT} или абсолютный путь.
+         // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с конструкцией
+         // %{RESOURCE_ROOT} или абсолютный путь.
          // false - если у нас разделённое ядро и несколько сервисов.
          // true - если у нас монолитное ядро или один сервис.
          const replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
@@ -104,11 +115,11 @@ function generatePackage(extWithoutVersion, grunt, filesToPack, ext, packageTarg
          packedFilePath = path.normalize(path.join(urlServicePath, packedFileName));
 
          if (replacePath) {
-            return { 'name': `/${path.relative(siteRoot, packedFilePath)}`, 'skip': !!namePrefix };
+            return { name: `/${path.relative(siteRoot, packedFilePath)}`, skip: !!namePrefix };
          }
          return {
-            'name': `%{RESOURCE_ROOT}${packedFileName.replace(/resources(?:\/|\\)/, '')}`,
-            'skip': !!namePrefix
+            name: `%{RESOURCE_ROOT}${packedFileName.replace(/resources(?:\/|\\)/, '')}`,
+            skip: !!namePrefix
          };
       });
    }
@@ -117,20 +128,20 @@ function generatePackage(extWithoutVersion, grunt, filesToPack, ext, packageTarg
 
 function getStartNodes(grunt, divs) {
    let startNodes = [],
-      div, tmplName;
+      div,
+      tmplName;
 
    for (let i = 0, l = divs.length; i < l; i++) {
       div = divs[i];
       const divClass = div.getAttribute('class');
-      if (divClass && divClass.indexOf('ws-root-template') > -1 && (tmplName = div.getAttribute('data-template-name'))) {
+      tmplName = div.getAttribute('data-template-name');
+      if (divClass && divClass.indexOf('ws-root-template') > -1 && tmplName) {
          logger.debug(`Packing inner template '${tmplName}'`);
 
          if (!tmplName.includes('!')) {
             startNodes = [...startNodes, tmplName];
          }
-      }
 
-      if (tmplName) {
          if (startNodes.length === 0) {
             logger.debug(`No any dependencies collected for '${tmplName}'`);
          } else {
@@ -180,90 +191,137 @@ function getThemeFromWsConfig(wsConfig) {
 
 function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
    logger.debug(`Packing dependencies of ${htmlFileset.length} files...`);
-   const
-      buildNumber = grunt.option('versionize');
+   const buildNumber = grunt.option('versionize');
 
-   async.eachLimit(htmlFileset, 1, (htmlFile, done) => {
-      try {
-         logger.debug(htmlFile);
+   async.eachLimit(
+      htmlFileset,
+      1,
+      (htmlFile, done) => {
+         try {
+            logger.debug(htmlFile);
 
-         const dom = domHelpers.domify(fs.readFileSync(htmlFile, 'utf-8')),
-            divs = dom.getElementsByTagName('div'),
-            jsTarget = dom.getElementById('ws-include-components'),
-            cssTarget = dom.getElementById('ws-include-css'),
-            htmlPath = htmlFile.split(path.sep),
-            htmlName = htmlPath[htmlPath.length - 1],
-            wsConfig = dom.getElementById('ws-config'),
-            applicationRoot = path.join(root, application);
+            const dom = domHelpers.domify(fs.readFileSync(htmlFile, 'utf-8')),
+               divs = dom.getElementsByTagName('div'),
+               jsTarget = dom.getElementById('ws-include-components'),
+               cssTarget = dom.getElementById('ws-include-css'),
+               htmlPath = htmlFile.split(path.sep),
+               htmlName = htmlPath[htmlPath.length - 1],
+               wsConfig = dom.getElementById('ws-config'),
+               applicationRoot = path.join(root, application);
 
-         let themeName;
+            let themeName;
 
-         if (wsConfig) {
-            themeName = getThemeFromWsConfig(wsConfig);
-         }
+            if (wsConfig) {
+               themeName = getThemeFromWsConfig(wsConfig);
+            }
 
-         if (jsTarget || cssTarget) {
-            const startNodes = getStartNodes(grunt, divs, application);
+            if (jsTarget || cssTarget) {
+               const startNodes = getStartNodes(grunt, divs, application);
 
-            packInOrder(dg, startNodes, root, path.join(root, application), themeName, htmlName, (err, filesToPack) => {
-               if (err) {
-                  logger.debug(err); // Имееет ли смысл?
-                  done(err);
-               } else {
-                  // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты + пакеты для каждой локали).
+               packInOrder(
+                  dg,
+                  startNodes,
+                  root,
+                  path.join(root, application),
+                  themeName,
+                  htmlName,
+                  (err, filesToPack) => {
+                     if (err) {
+                        logger.debug(err);
+                        done(err);
+                     } else {
+                        // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
+                        // пакеты для каждой локали).
+                        // filesToPack = { "css": [], "js": "...", "dict": {"en-US": "", "ru-RU": ""},
+                        // "cssForLocale": {"en-US": []}};
+                        const attr2ext = { cssForLocale: 'css', dict: 'js' },
+                           packages = { css: [], js: [] };
 
-                  // filesToPack = {"css": [], "js": "...", "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []}};
-                  const attr2ext = { 'cssForLocale': 'css', 'dict': 'js' },
-                     packages = { 'css': [], 'js': [] };
+                        Object.keys(filesToPack).forEach((key) => {
+                           if (filesToPack[key] !== null && typeof filesToPack[key] === 'object') {
+                              if (Array.isArray(filesToPack[key])) {
+                                 // "css": []
+                                 filesToPack[key].forEach((content) => {
+                                    packages[key] = packages[key].concat(
+                                       generatePackage(
+                                          key,
+                                          grunt,
+                                          content,
+                                          getKey(buildNumber, key),
+                                          packageHome,
+                                          applicationRoot,
+                                          root
+                                       )
+                                    );
+                                 });
+                              } else {
+                                 // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
+                                 // пакеты для локалей запакуем с data-pack = "skip"
+                                 // чтобы потом на ПП вырезать ненужные из html
+                                 Object.keys(filesToPack[key]).forEach((locale) => {
+                                    packages[attr2ext[key]] = packages[attr2ext[key]].concat(
+                                       generatePackage(
+                                          attr2ext[key],
+                                          grunt,
+                                          filesToPack[key][locale],
+                                          getKey(buildNumber, attr2ext[key]),
+                                          packageHome,
+                                          applicationRoot,
+                                          root,
+                                          locale
+                                       )
+                                    );
+                                 });
+                              }
+                           } else {
+                              // "js": "..."
+                              const generatedScript = generatePackage(
+                                 key,
+                                 grunt,
+                                 filesToPack[key],
+                                 getKey(buildNumber, key),
+                                 packageHome,
+                                 applicationRoot,
+                                 root
+                              );
+                              packages[key] = packages[key].concat(generatedScript);
+                           }
+                        });
 
-                  Object.keys(filesToPack).forEach((key) => {
-                     if (filesToPack[key] !== null && typeof filesToPack[key] === 'object') {
-                        if (Array.isArray(filesToPack[key])) { // "css": []
-                           filesToPack[key].map((content) => {
-                              packages[key] = packages[key].concat(generatePackage(key, grunt, content, getKey(buildNumber, key), packageHome, applicationRoot, root));
-                           });
-                        } else { // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
-                           // пакеты для локалей запакуем с data-pack = "skip" чтобы потом на ПП вырезать ненужные из html
-                           Object.keys(filesToPack[key]).forEach((locale) => {
-                              packages[attr2ext[key]] = packages[attr2ext[key]].concat(generatePackage(attr2ext[key], grunt, filesToPack[key][locale], getKey(buildNumber, attr2ext[key]), packageHome, applicationRoot, root, locale));
-                           });
-                        }
-                     } else { // "js": "..."
-                        const generatedScript = generatePackage(key, grunt, filesToPack[key], getKey(buildNumber, key), packageHome, applicationRoot, root);
-                        packages[key] = packages[key].concat(generatedScript);
+                        // пропишем в HTML
+                        insertAllDependenciesToDocument(packages, 'js', jsTarget);
+                        insertAllDependenciesToDocument(packages, 'css', cssTarget);
+
+                        grunt.file.write(htmlFile, domHelpers.stringify(dom));
+                        done();
                      }
-                  });
-
-                  // пропишем в HTML
-                  insertAllDependenciesToDocument(packages, 'js', jsTarget);
-                  insertAllDependenciesToDocument(packages, 'css', cssTarget);
-
-                  grunt.file.write(htmlFile, domHelpers.stringify(dom));
-                  done();
-               }
+                  }
+               );
+            } else {
+               logger.debug(`No any packing target in '${htmlFile}'`);
+               done();
+            }
+         } catch (err) {
+            let newError = err;
+            if (typeof newError === 'string') {
+               newError = new Error(newError);
+            }
+            logger.warning({
+               message: 'ERROR! Failed to process HTML',
+               filePath: htmlFile,
+               error: newError
             });
+            done(newError);
+         }
+      },
+      (err) => {
+         if (err) {
+            taskDone(err);
          } else {
-            logger.debug(`No any packing target in '${htmlFile}'`);
-            done();
+            taskDone();
          }
-      } catch (err) {
-         if (typeof err === 'string') {
-            err = new Error(err);
-         }
-         logger.warning({
-            message: 'ERROR! Failed to process HTML',
-            filePath: htmlFile,
-            error: err
-         });
-         done(err);
       }
-   }, (err) => {
-      if (err) {
-         taskDone(err);
-      } else {
-         taskDone();
-      }
-   });
+   );
 }
 
 module.exports = packHTML;

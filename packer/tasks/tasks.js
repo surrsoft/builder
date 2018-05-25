@@ -63,7 +63,8 @@ function gruntPackModules(grunt) {
          applicationRoot = path.join(root, application),
          done = this.async(),
          htmlFiles = [],
-         taskDone, dg;
+         taskDone,
+         dg;
 
       taskDone = function() {
          grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки зависимостей выполнена.`);

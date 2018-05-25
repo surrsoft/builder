@@ -6,7 +6,7 @@ const chai = require('chai'),
    path = require('path'),
    helpers = require('../lib/helpers');
 
-const expect = chai.expect;
+const { expect } = chai;
 
 const generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
@@ -22,7 +22,10 @@ const config = {
 
 const modules = new Map([
    ['Модуль', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Модуль'))],
-   ['Тема Скрепка', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Тема Скрепка'))],
+   [
+      'Тема Скрепка',
+      helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Тема Скрепка'))
+   ],
    ['Ошибки', helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js/Modules/Ошибки'))]
 ]);
 
@@ -58,18 +61,21 @@ describe('generate static html for js', () => {
                }
             };
             const contents = {};
-            const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, replacePath);
+            const result = await generateStaticHtmlForJs(
+               'virtualFile',
+               componentInfo,
+               contents,
+               config,
+               modules,
+               replacePath
+            );
             contents.htmlNames.MyModule.should.equal('testOutFileName.html');
             result.outFileName.should.equal('testOutFileName.html');
             removeRSymbol(result.text).should.equal(expected);
          };
 
-         await test(true, 'true\n' +
-            'false\n' +
-            'false\n');
-         await test(false, '%{CONFIG.USER_PARAMS}\n' +
-            '%{CONFIG.GLOBAL_PARAMS}\n' +
-            'false\n');
+         await test(true, 'true\nfalse\nfalse\n');
+         await test(false, '%{CONFIG.USER_PARAMS}\n%{CONFIG.GLOBAL_PARAMS}\nfalse\n');
       });
       it('includes', async() => {
          const componentInfo = {
@@ -84,9 +90,7 @@ describe('generate static html for js', () => {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         removeRSymbol(result.text).should.equal('<INCLUDE1/>\n\n' +
-            '<INCLUDE2/>\n' +
-            '<INCLUDE1/>\n\n\n');
+         removeRSymbol(result.text).should.equal('<INCLUDE1/>\n\n<INCLUDE2/>\n<INCLUDE1/>\n\n\n');
       });
       it('paths', async() => {
          const componentInfo = {
@@ -101,10 +105,9 @@ describe('generate static html for js', () => {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         removeRSymbol(result.text).should.equal('RESOURCE_ROOT:/resources/\n' +
-            'WI.SBIS_ROOT:/ws/\n' +
-            'APPLICATION_ROOT:/\n' +
-            'SERVICES_PATH:/service/\n');
+         removeRSymbol(result.text).should.equal(
+            'RESOURCE_ROOT:/resources/\nWI.SBIS_ROOT:/ws/\nAPPLICATION_ROOT:/\nSERVICES_PATH:/service/\n'
+         );
       });
       it('title', async() => {
          const componentInfo = {
@@ -119,8 +122,7 @@ describe('generate static html for js', () => {
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
-         removeRSymbol(result.text).should.equal('TITLE:testTitle\n' +
-            'START_DIALOG:MyModule\n');
+         removeRSymbol(result.text).should.equal('TITLE:testTitle\nSTART_DIALOG:MyModule\n');
       });
       it('component without web page', async() => {
          const componentInfo = {
@@ -139,7 +141,14 @@ describe('generate static html for js', () => {
             }
          };
          const contents = {};
-         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true).should.be.rejectedWith('Не указано имя компонента');
+         return generateStaticHtmlForJs(
+            'virtualFile',
+            componentInfo,
+            contents,
+            config,
+            modules,
+            true
+         ).should.be.rejectedWith('Не указано имя компонента');
       });
       it('module not exist', () => {
          const componentInfo = {
@@ -150,8 +159,14 @@ describe('generate static html for js', () => {
             }
          };
          const contents = {};
-         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true)
-            .should.be.rejectedWith('Не указано имя компонента');
+         return generateStaticHtmlForJs(
+            'virtualFile',
+            componentInfo,
+            contents,
+            config,
+            modules,
+            true
+         ).should.be.rejectedWith('Не указано имя компонента');
       });
       it('recursive includes error', () => {
          const componentInfo = {
@@ -164,13 +179,19 @@ describe('generate static html for js', () => {
          };
          const contents = {};
          const root = helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js'));
-         return generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true)
-            .should.be.rejectedWith(
-               `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
-               `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +
-               `Ошибка при обработке файла ${root}/Modules/Ошибки/include2.html: ` +
-               `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`
-            );
+         return generateStaticHtmlForJs(
+            'virtualFile',
+            componentInfo,
+            contents,
+            config,
+            modules,
+            true
+         ).should.be.rejectedWith(
+            `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
+            `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +
+            `Ошибка при обработке файла ${root}/Modules/Ошибки/include2.html: ` +
+            `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`
+         );
       });
    });
 });

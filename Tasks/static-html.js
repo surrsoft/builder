@@ -22,8 +22,9 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
       const isStaticTemplateExists = fs.pathExistsSync(absoluteStaticTemplate);
       if (isStaticTemplateExists) {
-         // здесь специально синхронные readFileSync и writeFileSync, потому что все это гоняется в helpers.recurse в несколько потоков,
-         // и если будет асихронно - есть вероятность что будет последовательность "прочитать файл", "прочитать файл", "записать файл", "записать файл"
+         // здесь специально синхронные readFileSync и writeFileSync, потому что все это гоняется в
+         // helpers.recurse в несколько потоков,и если будет асихронно - есть вероятность что будет
+         // последовательность "прочитать файл", "прочитать файл", "записать файл", "записать файл"
          // а так точно за считыванием файла последует запись в него, и файл всегда будет актуален
          staticTemplates = fs.readFileSync(absoluteStaticTemplate);
          staticTemplates = JSON.parse(staticTemplates);
@@ -124,11 +125,11 @@ module.exports = function(grunt) {
          modulesOption = (grunt.option('modules') || '').replace('"', ''),
 
          /*
-          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH}, на абсолютные пути.
+          Даннный флаг определяет надо ли заменить в статических страничках конструкции типа %{FOO_PATH},
+          на абсолютные пути.
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-         splittedCore = grunt.option('splitted-core'),
          replacePath = !(splittedCore && grunt.option('multi-service'));
 
       const done = () => {
@@ -163,7 +164,7 @@ module.exports = function(grunt) {
       }
 
       if (oldHtml && oldHtml.length) {
-         const start = Date.now();
+         const startRemove = Date.now();
          oldHtml.forEach((file) => {
             const filePath = path.join(applicationRoot, file);
             try {
@@ -176,7 +177,7 @@ module.exports = function(grunt) {
                });
             }
          });
-         logger.debug(`Удаление ресурсов завершено(${(Date.now() - start) / 1000} sec)`);
+         logger.debug(`Удаление ресурсов завершено(${(Date.now() - startRemove) / 1000} sec)`);
       }
 
       const config = {

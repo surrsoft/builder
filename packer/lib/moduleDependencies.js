@@ -60,8 +60,7 @@ function getDependencyGraphSync(applicationRoot) {
  * чтения помодульных module-dependencies
  */
 async function getDirectoriesList(source) {
-   const
-      directories = [],
+   const directories = [],
       sourceList = await fs.readdir(source);
 
    await pMap(
@@ -84,37 +83,32 @@ async function getDirectoriesList(source) {
  * и сохраняем его.
  */
 async function createModuleDepsFromParts(resourcePath) {
-   const
-      interfaceModules = await getDirectoriesList(resourcePath),
+   const interfaceModules = await getDirectoriesList(resourcePath),
       mDeps = {
          nodes: {},
          links: {}
       };
 
-   await pMap(
-      interfaceModules,
-      async(currentDir) => {
-         const moduleMDepsPath = path.join(resourcePath, currentDir, 'module-dependencies.json');
-         let moduleMDeps;
-         if (await fs.pathExists(moduleMDepsPath)) {
-            moduleMDeps = await fs.readJson(moduleMDepsPath);
-            Object.keys(moduleMDeps.nodes).forEach((node) => {
-               mDeps.nodes[node] = moduleMDeps.nodes[node];
-            });
-            Object.keys(moduleMDeps.links).forEach((node) => {
-               mDeps.links[node] = moduleMDeps.links[node];
-            });
-         }
+   await pMap(interfaceModules, async(currentDir) => {
+      const moduleMDepsPath = path.join(resourcePath, currentDir, 'module-dependencies.json');
+      let moduleMDeps;
+      if (await fs.pathExists(moduleMDepsPath)) {
+         moduleMDeps = await fs.readJson(moduleMDepsPath);
+         Object.keys(moduleMDeps.nodes).forEach((node) => {
+            mDeps.nodes[node] = moduleMDeps.nodes[node];
+         });
+         Object.keys(moduleMDeps.links).forEach((node) => {
+            mDeps.links[node] = moduleMDeps.links[node];
+         });
       }
-   );
+   });
 
    await fs.writeJson(path.join(resourcePath, 'module-dependencies.json'), mDeps);
    return mDeps;
 }
 
 async function getDependencyGraph(applicationRoot, splittedCore) {
-   const
-      dg = new DepGraph(),
+   const dg = new DepGraph(),
       depsTreePath = getModuleDependenciesPath(applicationRoot);
 
    if (!(await fs.pathExists(depsTreePath)) && splittedCore) {

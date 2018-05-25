@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
@@ -46,7 +44,7 @@ const parsePlugins = dep => [
          })
    )
 ];
-module.exports = function(changesStore, moduleInfo) {
+module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
       (file, encoding, callback) => {
          callback(null, file);
@@ -126,7 +124,7 @@ module.exports = function(changesStore, moduleInfo) {
             this.push(jsonFile);
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error,
                moduleInfo
             });

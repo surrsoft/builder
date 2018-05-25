@@ -18,7 +18,10 @@ describe('promise with timeout', () => {
    it('should return result if resolved successfully', async() => {
       const testResult = 'some value';
       try {
-         result = await promiseTimeout.promiseWithTimeout(new Promise(resolve => setTimeout(() => resolve(testResult), 10)), 100);
+         result = await promiseTimeout.promiseWithTimeout(
+            new Promise(resolve => setTimeout(() => resolve(testResult), 10)),
+            100
+         );
       } catch (err) {
          result = err;
       }
@@ -28,7 +31,10 @@ describe('promise with timeout', () => {
    it('should return correct exception if promise rejected with Error', async() => {
       const testError = new Error('some Error rejected');
       try {
-         result = await promiseTimeout.promiseWithTimeout(new Promise((resolve, reject) => setTimeout(() => reject(testError), 10)), 100);
+         result = await promiseTimeout.promiseWithTimeout(
+            new Promise((resolve, reject) => setTimeout(() => reject(testError), 10)),
+            100
+         );
       } catch (err) {
          result = err;
       }

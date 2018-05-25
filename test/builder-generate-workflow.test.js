@@ -62,17 +62,17 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
 
       const config = {
-         'cache': cacheFolder,
-         'output': outputFolder,
-         'mode': 'debug',
-         'modules': [
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
             {
-               'name': 'SBIS3.CONTROLS',
-               'path': path.join(sourceFolder, 'SBIS3.CONTROLS')
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
             }
          ]
       };
@@ -110,7 +110,10 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // изменим "исходники"
       await timeoutForMacOS();
-      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), path.join(moduleSourceFolder, 'ForRename_new.less'));
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_old.less'),
+         path.join(moduleSourceFolder, 'ForRename_new.less')
+      );
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
       const data = await fs.readFile(filePathForChange);
       await fs.writeFile(filePathForChange, `${data.toString()}\n.test-selector2 {}`);
@@ -144,19 +147,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
-
    it('routes', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
       await prepareTest(fixtureFolder);
 
       const config = {
-         'cache': cacheFolder,
-         'output': outputFolder,
-         'mode': 'debug',
-         'modules': [
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
             {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
             }
          ]
       };
@@ -183,20 +185,20 @@ describe('gulp/builder/generate-workflow.js', () => {
       await routesInfo.should.deep.equal({
          'resources/Modul/ForChange.routes.js': {
             '/ForChange_old.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          },
          'resources/Modul/ForRename_old.routes.js': {
             '/ForRename.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          },
          'resources/Modul/Stable.routes.js': {
             '/Stable.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          }
       });
@@ -209,7 +211,10 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // изменим "исходники"
       await timeoutForMacOS();
-      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.routes.js'), path.join(moduleSourceFolder, 'ForRename_new.routes.js'));
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_old.routes.js'),
+         path.join(moduleSourceFolder, 'ForRename_new.routes.js')
+      );
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.routes.js');
       const data = await fs.readFile(filePathForChange);
       await fs.writeFile(filePathForChange, data.toString().replace(/\/ForChange_old.html/g, '/ForChange_new.html'));
@@ -239,20 +244,20 @@ describe('gulp/builder/generate-workflow.js', () => {
       await routesInfo.should.deep.equal({
          'resources/Modul/ForChange.routes.js': {
             '/ForChange_new.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          },
          'resources/Modul/ForRename_new.routes.js': {
             '/ForRename.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          },
          'resources/Modul/Stable.routes.js': {
             '/Stable.html': {
-               'controller': 'js!SBIS3.Test1',
-               'isMasterPage': true
+               controller: 'js!SBIS3.Test1',
+               isMasterPage: true
             }
          }
       });
@@ -265,13 +270,13 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
 
       const config = {
-         'cache': cacheFolder,
-         'output': outputFolder,
-         'mode': 'debug',
-         'modules': [
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
             {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
             }
          ]
       };
@@ -295,18 +300,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {},
-         'jsModules': {
+         buildMode: 'debug',
+         htmlNames: {},
+         jsModules: {
             'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
             'SBIS3.ForRename': 'Modul/ForRename_old.module.js',
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
-         'modules': {
-            'Модуль': 'Modul'
+         modules: {
+            Модуль: 'Modul'
          },
-         'requirejsPaths': {},
-         'xmlContents': {}
+         requirejsPaths: {},
+         xmlContents: {}
       });
 
       // запомним время модификации незменяемого файла и изменяемого в "стенде"
@@ -317,7 +322,10 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // изменим "исходники"
       await timeoutForMacOS();
-      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_old.module.js'),
+         path.join(moduleSourceFolder, 'ForRename_new.module.js')
+      );
       const filePathForChange = path.join(moduleSourceFolder, 'ForChange.module.js');
       const data = await fs.readFile(filePathForChange);
       await fs.writeFile(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
@@ -344,18 +352,18 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {},
-         'jsModules': {
+         buildMode: 'debug',
+         htmlNames: {},
+         jsModules: {
             'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
             'SBIS3.ForRename': 'Modul/ForRename_new.module.js',
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
-         'modules': {
-            'Модуль': 'Modul'
+         modules: {
+            Модуль: 'Modul'
          },
-         'requirejsPaths': {},
-         'xmlContents': {}
+         requirejsPaths: {},
+         xmlContents: {}
       });
 
       await clearWorkspace();
@@ -366,17 +374,17 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
 
       const config = {
-         'cache': cacheFolder,
-         'output': outputFolder,
-         'mode': 'debug',
-         'modules': [
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
             {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
             },
             {
-               'name': 'Тема Скрепка',
-               'path': path.join(sourceFolder, 'Тема Скрепка')
+               name: 'Тема Скрепка',
+               path: path.join(sourceFolder, 'Тема Скрепка')
             }
          ]
       };
@@ -403,22 +411,22 @@ describe('gulp/builder/generate-workflow.js', () => {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {
+         buildMode: 'debug',
+         htmlNames: {
             'js!SBIS3.ForChange_old': 'ForChange_old.html',
             'js!SBIS3.ForRename': 'ForRename.html',
             'js!SBIS3.Stable': 'Stable.html'
          },
-         'jsModules': {
+         jsModules: {
             'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
             'SBIS3.ForRename': 'Modul/ForRename_old.module.js',
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
-         'modules': {
-            'Модуль': 'Modul'
+         modules: {
+            Модуль: 'Modul'
          },
-         'requirejsPaths': {},
-         'xmlContents': {}
+         requirejsPaths: {},
+         xmlContents: {}
       });
 
       // запомним время модификации незменяемого файла и изменяемого в "стенде"
@@ -436,7 +444,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       let forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       const forRenameHtmlOutputPath = path.join(moduleOutputFolder, 'ForRename.html');
       let forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
-      removeRSymbol(stableHtml.toString()).should.equal('<STABLE></STABLE>\n' +
+      removeRSymbol(stableHtml.toString()).should.equal(
+         '<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -450,8 +459,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
-      removeRSymbol(forChangeHtml.toString()).should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
+      removeRSymbol(forChangeHtml.toString()).should.equal(
+         '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
          '<TITLE>ForChange_old</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -465,8 +476,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
-      removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
+      removeRSymbol(forRenameHtml.toString()).should.equal(
+         '<FOR_RENAME></FOR_RENAME>\n' +
          '<TITLE>ForRename</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -480,12 +493,19 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
 
       // изменим "исходники"
       await timeoutForMacOS();
-      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.module.js'), path.join(moduleSourceFolder, 'ForRename_new.module.js'));
-      await fs.rename(path.join(themesSourceFolder, 'ForRename_old.html'), path.join(themesSourceFolder, 'ForRename_new.html'));
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_old.module.js'),
+         path.join(moduleSourceFolder, 'ForRename_new.module.js')
+      );
+      await fs.rename(
+         path.join(themesSourceFolder, 'ForRename_old.html'),
+         path.join(themesSourceFolder, 'ForRename_new.html')
+      );
 
       const filePathForChangeJs = path.join(moduleSourceFolder, 'ForChange.module.js');
       const dataJs = await fs.readFile(filePathForChangeJs);
@@ -519,35 +539,38 @@ describe('gulp/builder/generate-workflow.js', () => {
       // а весь процесс длится меньше 2 секунд.
       forChangeHtmlOutputPath = path.join(moduleOutputFolder, 'ForChange_new.html');
       (await getMTime(stableJsOutputPath)).should.equal(mTimeStableJs);
-      (await getMTime(stableHtmlOutputPath)).should.not.equal(mTimeStableHtml); // Отличается от остальных тестов и это норма
+
+      // следующая проверка отличается от остальных и это норма
+      (await getMTime(stableHtmlOutputPath)).should.not.equal(mTimeStableHtml);
       (await getMTime(forChangeJsOutputPath)).should.not.equal(mTimeForChangeJs);
       (await getMTime(forChangeHtmlOutputPath)).should.not.equal(mTimeForChangeHtml);
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {
+         buildMode: 'debug',
+         htmlNames: {
             'js!SBIS3.ForChange_new': 'ForChange_new.html',
             'js!SBIS3.ForRename': 'ForRename.html',
             'js!SBIS3.Stable': 'Stable.html'
          },
-         'jsModules': {
+         jsModules: {
             'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
             'SBIS3.ForRename': 'Modul/ForRename_new.module.js',
             'SBIS3.Stable': 'Modul/Stable.module.js'
          },
-         'modules': {
-            'Модуль': 'Modul'
+         modules: {
+            Модуль: 'Modul'
          },
-         'requirejsPaths': {},
-         'xmlContents': {}
+         requirejsPaths: {},
+         xmlContents: {}
       });
 
       // проверим сами html
       stableHtml = await fs.readFile(stableHtmlOutputPath);
       forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
-      removeRSymbol(stableHtml.toString()).should.equal('<STABLE></STABLE>\n' +
+      removeRSymbol(stableHtml.toString()).should.equal(
+         '<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -561,11 +584,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
 
-      // TODO: в следующей строке ошибка из-за кеширования результата в lib/generate-static-html-for-js.js. должно быть FOR_CHANGE_NEW
-      // пока этим можно пренебречь
-      removeRSymbol(forChangeHtml.toString()).should.equal('<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
+      // TODO: в следующей строке ошибка из-за кеширования результата в lib/generate-static-html-for-js.js.
+      // должно быть FOR_CHANGE_NEW. пока этим можно пренебречь
+      removeRSymbol(forChangeHtml.toString()).should.equal(
+         '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
          '<TITLE>ForChange_new</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -579,9 +604,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
 
-      removeRSymbol(forRenameHtml.toString()).should.equal('<FOR_RENAME></FOR_RENAME>\n' +
+      removeRSymbol(forRenameHtml.toString()).should.equal(
+         '<FOR_RENAME></FOR_RENAME>\n' +
          '<TITLE>ForRename</TITLE>\n' +
          '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
          '<INCLUDE><INCLUDE1/>\n' +
@@ -595,7 +622,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<ACCESS_LIST></ACCESS_LIST>\n' +
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n');
+         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
 
       await clearWorkspace();
    });
@@ -605,13 +633,13 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
 
       const config = {
-         'cache': cacheFolder,
-         'output': outputFolder,
-         'mode': 'debug',
-         'modules': [
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
             {
-               'name': 'Модуль',
-               'path': path.join(sourceFolder, 'Модуль')
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
             }
          ]
       };
@@ -619,7 +647,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       const isSymlink = async(filePath) => {
          const fullPath = path.join(moduleOutputFolder, filePath);
-         if (!await fs.pathExists(fullPath)) {
+         if (!(await fs.pathExists(fullPath))) {
             return false;
          }
          const stat = await fs.lstat(fullPath);
@@ -628,7 +656,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       const isRegularFile = async(filePath) => {
          const fullPath = path.join(moduleOutputFolder, filePath);
-         if (!await fs.pathExists(fullPath)) {
+         if (!(await fs.pathExists(fullPath))) {
             return false;
          }
          const stat = await fs.lstat(fullPath);

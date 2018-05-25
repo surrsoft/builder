@@ -2,8 +2,7 @@
 /* eslint-disable no-restricted-properties */
 'use strict';
 
-const
-   logger = require('../../lib/logger').logger(),
+const logger = require('../../lib/logger').logger(),
    modDeps = require('../../packer/lib/moduleDependencies'),
    path = require('path'),
    fs = require('fs-extra'),
@@ -12,10 +11,11 @@ const
 module.exports = function gruntCustomPack(grunt) {
    grunt.registerMultiTask('custompack', 'Задача кастомной паковки', async function() {
       let time = new Date();
-      logger.info(`Запускается задача создания кастомных пакетов. time: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
+      logger.info(
+         `Запускается задача создания кастомных пакетов. time: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
+      );
       try {
-         const
-            self = this,
+         const self = this,
             bundlesOptions = {
                bundles: {},
                modulesInBundles: {},
@@ -24,7 +24,9 @@ module.exports = function gruntCustomPack(grunt) {
             },
             applicationRoot = path.join(self.data.root, self.data.application),
             done = self.async(),
-            wsRoot = await fs.pathExists(path.join(applicationRoot, 'resources/WS.Core')) ? 'resources/WS.Core' : 'ws',
+            wsRoot = (await fs.pathExists(path.join(applicationRoot, 'resources/WS.Core')))
+               ? 'resources/WS.Core'
+               : 'ws',
             depsTree = await modDeps.getDependencyGraph(applicationRoot, bundlesOptions.splittedCore);
 
          let sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
@@ -44,7 +46,9 @@ module.exports = function gruntCustomPack(grunt) {
          }
          await customPacker.generatePackageJsonConfigs(depsTree, configsArray, applicationRoot, bundlesOptions);
          time = new Date();
-         logger.info(`Задача создания кастомных пакетов завершена. ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
+         logger.info(
+            `Задача создания кастомных пакетов завершена. ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
+         );
          done();
       } catch (err) {
          logger.error({

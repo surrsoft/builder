@@ -16,9 +16,7 @@ function clear() {
 // просто проверяем, что run-json-generator нормально вызывается.
 describe('run json-generator', () => {
    it('tests', async() => {
-      let options,
-         modules,
-         result;
+      let options, modules, result;
 
       // пустой список модулей
       await clear();
@@ -29,10 +27,7 @@ describe('run json-generator', () => {
 
       // простой тест
       await clear();
-      modules = [
-         path.join(testDirname, 'TestModuleWithModuleJs'),
-         path.join(testDirname, 'TestModuleWithoutModuleJs')
-      ];
+      modules = [path.join(testDirname, 'TestModuleWithModuleJs'), path.join(testDirname, 'TestModuleWithoutModuleJs')];
       result = await runJsonGenerator(modules, outputPath);
       result.errors.length.should.equal(0);
       const resultIndex = result.index;

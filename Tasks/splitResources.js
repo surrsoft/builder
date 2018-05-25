@@ -9,39 +9,35 @@ const fs = require('fs-extra'),
 
 function isNeededValue(key, value) {
    const matchs = value.match(key);
-
-   if (matchs && matchs[1]) {
-      return true;
-   }
-   return false;
+   return !!(matchs && matchs[1]);
 }
 
-function getName(path, isResources, isRootApp, sep) {
-   let splitPath;
+function getName(filePath, isResources, isRootApp, sep) {
+   let splittedPath;
 
    if (sep) {
-      splitPath = path.split(sep);
+      splittedPath = filePath.split(sep);
    } else {
-      splitPath = path.split('/');
+      splittedPath = filePath.split('/');
    }
 
-   if (splitPath.indexOf('ws') > -1) {
+   if (splittedPath.indexOf('ws') > -1) {
       return '';
    }
 
    if (isRootApp) {
-      return splitPath[splitPath.length - 1];
+      return splittedPath[splittedPath.length - 1];
    }
 
    if (isResources) {
-      const index = splitPath.indexOf(resources);
+      const index = splittedPath.indexOf(resources);
       if (index === -1) {
          return '';
       }
-      return splitPath[index + 1];
+      return splittedPath[index + 1];
    }
 
-   return splitPath[0];
+   return splittedPath[0];
 }
 
 module.exports = function splitResourcesTask(grunt) {
@@ -101,7 +97,6 @@ module.exports = function splitResourcesTask(grunt) {
             return;
          }
 
-
          try {
             result[nameModule][option][key] = data[option][key];
          } catch (err) {
@@ -141,11 +136,11 @@ module.exports = function splitResourcesTask(grunt) {
    }
 
    function getOptionDictionary(data, name) {
-      let regExp = new RegExp(`(${name})(\\.)`),
+      const regExp = new RegExp(`(${name})(\\.)`),
          result = {};
 
       if (name === 'ws') {
-         return;
+         return result;
       }
 
       Object.keys(data).forEach((dist) => {
@@ -160,9 +155,10 @@ module.exports = function splitResourcesTask(grunt) {
    function splitRoutes() {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения routes-info.json`);
 
-      let nameModule,
-         splitRoutes = {},
+      const
+         splittedRoutes = {},
          fullRoutes = JSON.parse(fs.readFileSync(getPath('routes-info.json', undefined, true)));
+      let nameModule;
 
       try {
          Object.keys(fullRoutes).forEach((routes) => {
@@ -172,11 +168,11 @@ module.exports = function splitResourcesTask(grunt) {
                return;
             }
 
-            if (!splitRoutes[nameModule]) {
-               splitRoutes[nameModule] = {};
+            if (!splittedRoutes[nameModule]) {
+               splittedRoutes[nameModule] = {};
             }
 
-            splitRoutes[nameModule][routes] = fullRoutes[routes];
+            splittedRoutes[nameModule][routes] = fullRoutes[routes];
          });
       } catch (err) {
          logger.error({
@@ -185,14 +181,14 @@ module.exports = function splitResourcesTask(grunt) {
          });
       }
 
-      return splitRoutes;
+      return splittedRoutes;
    }
 
    function splitContents(fullContents) {
       logger.debug(`${humanize.date('H:i:s')} : Запускается подзадача разбиения contents.json`);
 
       let nameModule,
-         splitContents = {};
+         splittedContents = {};
 
       try {
          Object.keys(fullContents.modules).forEach((module) => {
@@ -202,7 +198,7 @@ module.exports = function splitResourcesTask(grunt) {
                return;
             }
 
-            splitContents[nameModule] = {
+            splittedContents[nameModule] = {
                buildMode: fullContents.buildMode,
                htmlNames: {},
                jsModules: {},
@@ -212,24 +208,24 @@ module.exports = function splitResourcesTask(grunt) {
                xmlContents: fullContents.xmlContents
             };
 
-            splitContents[nameModule].modules[module] = nameModule;
+            splittedContents[nameModule].modules[module] = nameModule;
             if (fullContents.dictionary) {
-               splitContents[nameModule].availableLanguage = fullContents.availableLanguage;
-               splitContents[nameModule].defaultLanguage = fullContents.defaultLanguage;
-               splitContents[nameModule].dictionary = getOptionDictionary(fullContents.dictionary, nameModule);
+               splittedContents[nameModule].availableLanguage = fullContents.availableLanguage;
+               splittedContents[nameModule].defaultLanguage = fullContents.defaultLanguage;
+               splittedContents[nameModule].dictionary = getOptionDictionary(fullContents.dictionary, nameModule);
             }
             if (fullContents.buildnumber) {
-               splitContents[nameModule].buildnumber = fullContents.buildnumber;
+               splittedContents[nameModule].buildnumber = fullContents.buildnumber;
             }
          });
 
          nameModule = null;
-         splitContents = getOptionModule(fullContents, splitContents, 'jsModules');
+         splittedContents = getOptionModule(fullContents, splittedContents, 'jsModules');
 
          // Почему-то не работает, но я узнаю почему!!!Или нет(
-         // splitContents = getOptionModule(fullContents, splitContents, 'requirejsPaths');
+         // splittedContents = getOptionModule(fullContents, splittedContents, 'requirejsPaths');
          if (fullContents.htmlNames) {
-            splitContents = getOptionHtmlNames(fullContents, splitContents);
+            splittedContents = getOptionHtmlNames(fullContents, splittedContents);
          }
       } catch (err) {
          logger.error({
@@ -238,7 +234,7 @@ module.exports = function splitResourcesTask(grunt) {
          });
       }
 
-      return splitContents;
+      return splittedContents;
    }
 
    // TODO Костыль для того что бы на сервисе-представлений модули из ws ссылались на WS.Core и WS.Deprecated
@@ -346,6 +342,7 @@ module.exports = function splitResourcesTask(grunt) {
                   modulePreload = fs.readFileSync(getPath(file, nameModules), { encoding: 'utf8' }).replace(/\s/g, '');
                   return true;
                }
+               return false;
             });
 
             matchs = modulePreload.match(/(<preload>)([\s\S]*)(<\/preload>)/);
@@ -356,7 +353,7 @@ module.exports = function splitResourcesTask(grunt) {
                return;
             }
 
-            preload = matchs.match(/[\"|\'][\w\?\=\.\#\/\-\&А-я]*[\"|\']/g);
+            preload = matchs.match(/["|'][\w?=.#/\-&А-я]*["|']/g);
             preloadUrls[nameModules] = [];
 
             preload.forEach((value) => {

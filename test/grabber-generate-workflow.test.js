@@ -15,12 +15,12 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
 const config = {
-   'cache': cacheFolder,
-   'output': outputJson,
-   'modules': [
+   cache: cacheFolder,
+   output: outputJson,
+   modules: [
       {
-         'name': 'Модуль',
-         'path': path.join(sourceFolder, 'Модуль')
+         name: 'Модуль',
+         path: path.join(sourceFolder, 'Модуль')
       }
    ]
 };

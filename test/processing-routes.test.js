@@ -19,12 +19,14 @@ describe('processing routes.js', () => {
          }).to.throw('Line 1: Unexpected end of input');
       });
       it('route to component', () => {
-         const result = processingRoutes.parseRoutes('module.exports = function() {\n' +
-            '   return {\n' +
-            '      \'/test_1.html\': \'js!SBIS3.Test1\',\n' +
-            '      \'/test_2.html\': \'js!SBIS3.Test2\'\n' +
-            '   };\n' +
-            '};\n');
+         const result = processingRoutes.parseRoutes(
+            'module.exports = function() {\n' +
+               '   return {\n' +
+               "      '/test_1.html': 'js!SBIS3.Test1',\n" +
+               "      '/test_2.html': 'js!SBIS3.Test2'\n" +
+               '   };\n' +
+               '};\n'
+         );
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1.html']).length.should.equal(1);
          result['/test_1.html'].controller.should.equal('js!SBIS3.Test1');
@@ -32,14 +34,16 @@ describe('processing routes.js', () => {
          result['/test_2.html'].controller.should.equal('js!SBIS3.Test2');
       });
       it('route to function', () => {
-         const result = processingRoutes.parseRoutes('module.exports = function (Component, Service) {\n' +
-            '   return {\n' +
-            '      \'/test_1/\': function (req, res) {\n' +
-            '      },\n' +
-            '      \'/test_2/\': function (req, res) {\n' +
-            '      }\n' +
-            '   }\n' +
-            '};');
+         const result = processingRoutes.parseRoutes(
+            'module.exports = function (Component, Service) {\n' +
+               '   return {\n' +
+               "      '/test_1/': function (req, res) {\n" +
+               '      },\n' +
+               "      '/test_2/': function (req, res) {\n" +
+               '      }\n' +
+               '   }\n' +
+               '};'
+         );
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1/']).length.should.equal(1);
          expect(result['/test_1/'].controller).to.be.null; // eslint-disable-line no-unused-expressions
@@ -50,7 +54,8 @@ describe('processing routes.js', () => {
          // примеры не корретного роутинга:
          // - ключ роутинга не начинаться с слеша
          // - значение роутинго - объект
-         const text = 'module.exports = function (Component, Service) {\n' +
+         const text =
+            'module.exports = function (Component, Service) {\n' +
             '   return {\n' +
             '      "test_1": "TEST",\n' +
             '      "/test_2/": {}\n' +
@@ -81,7 +86,7 @@ describe('processing routes.js', () => {
          const routesInfo = {
             'resources/Test.routes.js': {
                '/test.html': {
-                  'controller': 'js!SBIS3.Test'
+                  controller: 'js!SBIS3.Test'
                }
             }
          };
@@ -93,7 +98,7 @@ describe('processing routes.js', () => {
          const routesInfo = {
             'resources/Test.routes.js': {
                '/test.html': {
-                  'controller': 'js!SBIS3.Test'
+                  controller: 'js!SBIS3.Test'
                }
             }
          };

@@ -23,20 +23,20 @@ describe('lib/i18n/normalize-key.js', () => {
       await normalizeKey(workspaceFolder, languages);
       const dictModule1 = await fs.readJSON(path.join(workspaceFolder, 'Module1/lang/en-US/en-US.json'));
       dictModule1.should.deep.equal({
-         'test': 'Значение, которое должно перезатереть всех',
-         'simple1': 'simple1'
+         test: 'Значение, которое должно перезатереть всех',
+         simple1: 'simple1'
       });
 
       const dictModule2 = await fs.readJSON(path.join(workspaceFolder, 'Module2/lang/en-US/en-US.json'));
       dictModule2.should.deep.equal({
-         'test': 'Значение, которое должно перезатереть всех',
-         'simple2': 'simple2'
+         test: 'Значение, которое должно перезатереть всех',
+         simple2: 'simple2'
       });
 
       const dictModule3 = await fs.readJSON(path.join(workspaceFolder, 'Module3/lang/en-US/en-US.json'));
       dictModule3.should.deep.equal({
-         'test': 'Значение, которое должно перезатереть всех',
-         'simple3': 'simple3'
+         test: 'Значение, которое должно перезатереть всех',
+         simple3: 'simple3'
       });
    });
 });

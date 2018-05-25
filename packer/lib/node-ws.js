@@ -4,7 +4,6 @@
 // данная версия загружает модули платформы из развернутого стенда
 // есть ещё версия для gulp
 
-
 // /////////////////////////
 // Это здесь нужно, потому что внутри они переопределяют require, и портят наш requirejs
 // Surprise MF
@@ -35,14 +34,15 @@ const resourceRoot = existWsCore ? '.' : path.join(appRoot, 'resources', path.se
 const requireJS = require('requirejs');
 const logger = require('./../../lib/logger').logger();
 
-function removeLeadingSlash(path) {
-   if (path) {
-      const head = path.charAt(0);
+function removeLeadingSlash(filePath) {
+   let newFilePath = filePath;
+   if (newFilePath) {
+      const head = newFilePath.charAt(0);
       if (head === '/' || head === '\\') {
-         path = path.substr(1);
+         newFilePath = newFilePath.substr(1);
       }
    }
-   return path;
+   return newFilePath;
 }
 
 const wsLogger = {
@@ -77,19 +77,22 @@ module.exports = function() {
          }
       };
       global.rk = function(key) {
-         const index = key.indexOf('@@');
+         let newKey = key;
+         const index = newKey.indexOf('@@');
          if (index > -1) {
-            key = key.substr(index + '@@'.length);
+            newKey = newKey.substr(index + '@@'.length);
          }
-         return key;
+         return newKey;
       };
       global.requirejs = requireJS;
       global.define = requireJS.define;
       const requirejsConfig = require(path.join(root, wsRoot, 'ext/requirejs/config.js'));
-      const requirejs = requireJS.config(requirejsConfig(root, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
-         waitSeconds: 20,
-         nodeRequire: require
-      }));
+      const requirejs = requireJS.config(
+         requirejsConfig(root, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+            waitSeconds: 20,
+            nodeRequire: require
+         })
+      );
       requirejs(path.join(root, wsRoot, 'lib/core.js'));
       const ws = requirejs('Core/core');
       const loadContents = requirejs('Core/load-contents');

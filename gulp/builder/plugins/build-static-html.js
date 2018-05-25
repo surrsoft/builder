@@ -10,7 +10,7 @@ const transliterate = require('../../../lib/transliterate'),
    generateStaticHtmlForJs = require('../../../lib/generate-static-html-for-js'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(config, changesStore, moduleInfo, modulesMap) {
+module.exports = function declarePlugin(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(
       (file, encoding, callback) => {
          callback(null, file);
@@ -70,7 +70,7 @@ module.exports = function(config, changesStore, moduleInfo, modulesMap) {
             }
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Ошибка Builder\'а',
                error,
                moduleInfo
             });

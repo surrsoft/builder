@@ -24,11 +24,7 @@ class GrabberConfiguration {
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
 
       for (const module of this.rawConfig.modules) {
-         this.modules.push(new ModuleInfo(
-            module.name,
-            module.responsible,
-            module.path
-         ));
+         this.modules.push(new ModuleInfo(module.name, module.responsible, module.path));
       }
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;

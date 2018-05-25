@@ -16,12 +16,13 @@ describe('collect words', () => {
       // TODO: Добавить plural
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.js');
-      const text = 'function name (){\n' +
-         '   return rk(\'Test1\');\n' +
+      const text =
+         'function name (){\n' +
+         "   return rk('Test1');\n" +
          '}\n' +
-         'var testVar = rk(\'Test2\', \'TestContext2\');\n' +
-         '//var testVar3 = rk(\'Test3\', \'TestContext3\');\n' +
-         '/ var testVar3 = rk(\'Test3\', \'TestContext3\'); /\n';
+         "var testVar = rk('Test2', 'TestContext2');\n" +
+         "//var testVar3 = rk('Test3', 'TestContext3');\n" +
+         "/ var testVar3 = rk('Test3', 'TestContext3'); /\n";
       const words = await collectWords(moduleDir, filePath, text, []);
       words.length.should.equal(4); // TODO: очевидно, тут ошибка. должно быть 2
 
@@ -35,7 +36,6 @@ describe('collect words', () => {
       words[1].key.should.equal('Test2');
       words[1].context.should.equal('TestContext2');
    });
-
 
    it('empty xhtml and tmpl', async() => {
       const test = async(ext) => {
@@ -96,7 +96,8 @@ describe('collect words', () => {
    it('collect words in xhtml. simple component option', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
-      const text = '<component data-component="Test.Component">\n' +
+      const text =
+         '<component data-component="Test.Component">\n' +
          '   <option name="test1">Контекст@@Текст1</option>\n' +
          '   <option name="test2" value="Контекст@@Текст2"></option>\n' +
          '   <opt name="test3">Контекст@@Текст3</opt>\n' +
@@ -106,20 +107,20 @@ describe('collect words', () => {
          '</component>';
       const componentsProperties = {
          'Test.Component': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'test1': {
-                        'translatable': true
+                  options: {
+                     test1: {
+                        translatable: true
                      },
-                     'test2': {
-                        'translatable': true
+                     test2: {
+                        translatable: true
                      },
-                     'test3': {
-                        'translatable': true
+                     test3: {
+                        translatable: true
                      },
-                     'test4': {
-                        'translatable': true
+                     test4: {
+                        translatable: true
                      }
                   }
                }
@@ -148,17 +149,18 @@ describe('collect words', () => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
 
-      const text = '<component data-component="Test.Component">\n' +
+      const text =
+         '<component data-component="Test.Component">\n' +
          '   <option name="contentOpt"><div>Контекст@@Текст</div></option>\n' +
          '</component>';
       const componentsProperties = {
          'Test.Component': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'contentOpt': {
-                        'translatable': true,
-                        'type': 'Content'
+                  options: {
+                     contentOpt: {
+                        translatable: true,
+                        type: 'Content'
                      }
                   }
                }
@@ -178,7 +180,8 @@ describe('collect words', () => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
 
-      const text = '<component data-component="Test.Component">\n' +
+      const text =
+         '<component data-component="Test.Component">\n' +
          '   <options name="arrayOpt" type="array">' +
          '      <options>' +
          '         <option name="test">Контекст@@Текст</option>' +
@@ -187,23 +190,23 @@ describe('collect words', () => {
          '</component>';
       const componentsProperties = {
          'Test.Component': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'arrayOpt': {
-                        'itemType': 'Items.typedef',
-                        'type': 'array'
+                  options: {
+                     arrayOpt: {
+                        itemType: 'Items.typedef',
+                        type: 'array'
                      }
                   }
                }
             }
          },
          'Items.typedef': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'test': {
-                        'translatable': true
+                  options: {
+                     test: {
+                        translatable: true
                      }
                   }
                }
@@ -224,7 +227,8 @@ describe('collect words', () => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.xhtml');
 
-      const text = '<div><!--WS-EXPERT' +
+      const text =
+         '<div><!--WS-EXPERT' +
          '<component data-component="Test.Component">\n' +
          '   <options name="arrayOpt" type="array">' +
          '      <options>' +
@@ -248,7 +252,8 @@ describe('collect words', () => {
    it('collect words in tmpl. simple component option', async() => {
       const moduleDir = 'long/path/moduleName';
       const filePath = path.join(moduleDir, 'file.tmpl');
-      const text = '<Test.Component test1="Текст1"/>' + // компонент. упрощеннённый способ конфигурации. переводимая опция
+      const text =
+         '<Test.Component test1="Текст1"/>' + // компонент. упрощеннённый способ конфигурации. переводимая опция
          '<Test.Component test1="Контекст@@Текст2"/>' + // компонент. упрощеннённый способ конфигурации. переводимая опция с контекстом
          '<Test.Component translatable_wo_description="{[Текст3]}"/>' + // ручная расстановка скобок
          '<Test.Component>' + // компонент. расширенный способ конфигурации. переводимая опция
@@ -265,14 +270,14 @@ describe('collect words', () => {
          '     <ws:string>not_translatable</ws:string>' +
          '  </ws:not_translatable>' +
          '</Test.Component>' +
-         '<ws:partial template="Test/Component" not_translatable="not_translatable"/>';// встроенный шаблон. непереводимая опция
+         '<ws:partial template="Test/Component" not_translatable="not_translatable"/>'; // встроенный шаблон. непереводимая опция
       const componentsProperties = {
          'Test/Component': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'test1': {
-                        'translatable': true
+                  options: {
+                     test1: {
+                        translatable: true
                      }
                   }
                }
@@ -324,26 +329,26 @@ describe('collect words', () => {
          '</Test.Component>';
       const componentsProperties = {
          'Test/Component': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'arrayOpt': {
-                        'itemType': 'Items.typedef',
-                        'type': 'array'
+                  options: {
+                     arrayOpt: {
+                        itemType: 'Items.typedef',
+                        type: 'array'
                      }
                   }
                }
             }
          },
          'Items.typedef': {
-            'properties': {
+            properties: {
                'ws-config': {
-                  'options': {
-                     'test': {
-                        'translatable': true
+                  options: {
+                     test: {
+                        translatable: true
                      },
-                     'not_translatable': {
-                        'translatable': false
+                     not_translatable: {
+                        translatable: false
                      }
                   }
                }

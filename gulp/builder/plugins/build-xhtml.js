@@ -1,4 +1,3 @@
-/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
@@ -7,7 +6,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
       try {
          if (file.extname !== '.xhtml') {
@@ -68,7 +67,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: "Ошибка builder'а при компиляции XHTML",
+            message: 'Ошибка builder\'а при компиляции XHTML',
             error,
             moduleInfo,
             filePath: file.path

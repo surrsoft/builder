@@ -1,11 +1,9 @@
 'use strict';
-const
-   path = require('path'),
+const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert');
 
-const
-   runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
+const runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
    logger = require('../../../lib/logger').logger();
 
 // cache и config для builder'а и grubber'а - разные классы!
@@ -60,7 +58,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
          }
       } catch (error) {
          logger.error({
-            message: 'Ошибка Builder\'а. Задача generateJson',
+            message: "Ошибка Builder'а. Задача generateJson",
             error
          });
       }

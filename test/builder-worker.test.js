@@ -44,7 +44,13 @@ describe('gulp/builder/worker.js', () => {
 
          const filePath = path.join(modulePath, 'Empty.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, [workspaceFolder]]);
+         const resultsBuildLess = await pool.exec('buildLess', [
+            filePath,
+            text,
+            modulePath,
+            sbis3ControlsPath,
+            [workspaceFolder]
+         ]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
@@ -78,7 +84,13 @@ describe('gulp/builder/worker.js', () => {
 
          const filePath = path.join(modulePath, 'Correct.less');
          const text = (await fs.readFile(filePath)).toString();
-         const resultsBuildLess = await pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, [workspaceFolder]]);
+         const resultsBuildLess = await pool.exec('buildLess', [
+            filePath,
+            text,
+            modulePath,
+            sbis3ControlsPath,
+            [workspaceFolder]
+         ]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
          resultsBuildLess.imports.length.should.equal(2);
@@ -97,16 +109,10 @@ describe('gulp/builder/worker.js', () => {
          await prepareTest();
 
          const promiseParseJsComponent = pool.exec('parseJsComponent', ['define(']);
-         await expect(promiseParseJsComponent).to.be.rejected.then(error => expect(error).to.have.property(
-            'message',
-            'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
-         ));
+         await expect(promiseParseJsComponent).to.be.rejected.then(error => expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input'));
 
          const promiseParseRoutes = pool.exec('parseRoutes', ['define(']);
-         await expect(promiseParseRoutes).to.be.rejected.then(error => expect(error).to.have.property(
-            'message',
-            'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
-         ));
+         await expect(promiseParseRoutes).to.be.rejected.then(error => expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input'));
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();

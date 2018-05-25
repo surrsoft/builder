@@ -1,20 +1,16 @@
 /* eslint-disable */
-define('TestModuleWithoutModuleJs/MyComponent',
-   [
-      'CompoundControl'
-   ],
-   function(CompoundControl) {
-      'use strict';
+define('TestModuleWithoutModuleJs/MyComponent', ['CompoundControl'], function(CompoundControl) {
+   'use strict';
 
-      /**
-       * Класс контрола "Кнопка "Назад".
-       * @class TestModuleWithoutModuleJs/MyComponent
-       * @extends Lib/Control/CompoundControl/CompoundControl
-       */
-      var Component = CompoundControl.extend(/** @lends TestModuleWithoutModuleJs/MyComponent.prototype */ {
+   /**
+    * Класс контрола "Кнопка "Назад".
+    * @class TestModuleWithoutModuleJs/MyComponent
+    * @extends Lib/Control/CompoundControl/CompoundControl
+    */
+   var Component = CompoundControl.extend(
+      /** @lends TestModuleWithoutModuleJs/MyComponent.prototype */ {
          $protected: {
             _options: {
-
                /**
                 * @cfg {String} Устанавливает надпись на кнопке.
                 * @translatable
@@ -27,6 +23,7 @@ define('TestModuleWithoutModuleJs/MyComponent',
                icon: ''
             }
          }
-      });
-      return Component;
-   });
+      }
+   );
+   return Component;
+});

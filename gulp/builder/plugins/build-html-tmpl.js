@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
@@ -9,7 +7,7 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(config, changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
    return through.obj(async function(file, encoding, callback) {

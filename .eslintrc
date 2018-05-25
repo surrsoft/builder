@@ -8,36 +8,36 @@
    ],
    "rules": {
       "filenames/match-regex": [
-         1,
+         "warn",
          "^[0-9a-z\\-.]+$",
          true
       ],
-      "node/no-extraneous-require": 2,
-      "node/no-extraneous-import": 2,
-      "node/no-missing-require": 2,
-      "node/no-unsupported-features": 2,
-      "node/no-deprecated-api": 1,
-      "node/no-unpublished-require": 2,
-      "node/no-unpublished-import": 2,
-      "promise/catch-or-return": 1,
-      "promise/always-return": 1,
-      "promise/param-names": 1,
-      "promise/no-return-wrap": 1,
-      "promise/no-return-in-finally": 1,
-      "promise/prefer-await-to-then": 1,
+      "node/no-extraneous-require": "error",
+      "node/no-extraneous-import": "error",
+      "node/no-missing-require": "error",
+      "node/no-unsupported-features": "error",
+      "node/no-deprecated-api": "warn",
+      "node/no-unpublished-require": "error",
+      "node/no-unpublished-import": "error",
+      "promise/catch-or-return": "warn",
+      "promise/always-return": "warn",
+      "promise/param-names": "warn",
+      "promise/no-return-wrap": "warn",
+      "promise/no-return-in-finally": "warn",
+      "promise/prefer-await-to-then": "warn",
       "eslint-comments/disable-enable-pair": [
-         2,
+         "error",
          {
             "allowWholeFile": true
          }
       ],
-      "eslint-comments/no-aggregating-enable": 1,
-      "eslint-comments/no-duplicate-disable": 1,
-      "eslint-comments/no-unlimited-disable": 1,
-      "eslint-comments/no-unused-disable": 1,
-      "eslint-comments/no-unused-enable": 1,
+      "eslint-comments/no-aggregating-enable": "warn",
+      "eslint-comments/no-duplicate-disable": "warn",
+      "eslint-comments/no-unlimited-disable": "warn",
+      "eslint-comments/no-unused-disable": "warn",
+      "eslint-comments/no-unused-enable": "warn",
       "no-restricted-properties": [
-         1,
+         "warn",
          {
             "object": "_grunt",
             "property": "file"
@@ -72,11 +72,21 @@
          }
       ],
       "no-restricted-modules": [
-         1,
+         "warn",
          {
             "name": "fs",
             "message": "Please use fs-extra instead."
          }
-      ]
+      ],
+      "no-prototype-builtins": "off",
+      "no-underscore-dangle": [
+         "warn",
+         {
+            "allow": [],
+            "allowAfterThis": true,
+            "allowAfterSuper": true,
+            "enforceInMethodNames": true
+         }
+      ],
    }
 }

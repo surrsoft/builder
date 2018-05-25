@@ -5,10 +5,10 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   minifyTmpl = require('../../../lib/processing-tmpl').minifyTmpl,
+   {minifyTmpl} = require('../../../lib/processing-tmpl'),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(config, changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
    return through.obj(async function(file, encoding, callback) {

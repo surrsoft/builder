@@ -20,11 +20,13 @@ class ModuleCacheInfo {
 
 class StoreInfo {
    constructor() {
-      // в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
+      // в случае изменений параметров запуска проще кеш сбросить,
+      // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
 
       // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      this.versionOfBuilder = 'unknown'; // unknown используется далее
+      // unknown используется далее
+      this.versionOfBuilder = 'unknown';
 
       // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
       // для сравнения с mtime у файлов
@@ -312,7 +314,8 @@ class ChangesStore {
    storeComponentInfo(filePath, moduleName, componentInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!componentInfo) {
-         // если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
+         // чтобы ошибка повторилась при повторном запуске
          if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
             delete this.currentStore.inputPaths[prettyPath];
          }
@@ -341,7 +344,8 @@ class ChangesStore {
    storeRouteInfo(filePath, moduleName, routeInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!routeInfo) {
-         // если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
+         // чтобы ошибка повторилась при повторном запуске
          if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
             delete this.currentStore.inputPaths[prettyPath];
          }

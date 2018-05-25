@@ -46,46 +46,67 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
    }
    const pathsForImport = [...pathsForImportSet];
 
-
    return function buildModule() {
-      return gulp
-         .src(moduleInput, { dot: false, nodir: true })
-         .pipe(plumber({
-            errorHandler(err) {
-               logger.error({
-                  message: 'Задача buildModule завершилась с ошибкой',
-                  error: err,
-                  moduleInfo
-               });
-               this.emit('end');
-            }
-         }))
-         .pipe(changedInPlace(changesStore, moduleInfo))
-         .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
-         .pipe(addComponentInfo(changesStore, moduleInfo, pool))
-         .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
-         .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
-         .pipe(gulpIf(!!config.version, versionizeToStub(config, changesStore, moduleInfo))) // зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
-         .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
-         .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
-         .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
-         .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
-         .pipe(gulpIf(config.isReleaseMode, packOwnDeps(changesStore, moduleInfo))) // зависит от buildTmpl и buildXhtml
-         .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
-         .pipe(gulpIf(config.isReleaseMode, minifyJs(changesStore, moduleInfo, pool))) // зависит от packOwnDeps
-         .pipe(gulpIf(config.isReleaseMode, minifyOther(changesStore, moduleInfo)))
-         .pipe(gulpRename((file) => {
-            file.dirname = transliterate(file.dirname);
-            file.basename = transliterate(file.basename);
-         }))
-         .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
-         .pipe(createNavigationModulesJson(moduleInfo))
-         .pipe(createContentsJson(config, moduleInfo)) // зависит от buildStaticHtml и addComponentInfo
-         .pipe(createStaticTemplatesJson(moduleInfo)) // зависит от buildStaticHtml и gulpBuildHtmlTmpl
-         .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
-         .pipe(filterCached())
-         .pipe(gulpChmod({ read: true, write: true }))
-         .pipe(gulpIf(needSymlink(hasLocalization, config, moduleInfo), gulp.symlink(moduleInfo.output), gulp.dest(moduleInfo.output)));
+      return (
+         gulp
+            .src(moduleInput, { dot: false, nodir: true })
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача buildModule завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            )
+            .pipe(changedInPlace(changesStore, moduleInfo))
+            .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
+            .pipe(addComponentInfo(changesStore, moduleInfo, pool))
+            .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
+            .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
+
+            // versionizeToStub зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
+            .pipe(gulpIf(!!config.version, versionizeToStub(config, changesStore, moduleInfo)))
+            .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
+            .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
+            .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
+            .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
+
+            // packOwnDeps зависит от buildTmpl и buildXhtml
+            .pipe(gulpIf(config.isReleaseMode, packOwnDeps(changesStore, moduleInfo)))
+            .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
+
+            // minifyJs зависит от packOwnDeps
+            .pipe(gulpIf(config.isReleaseMode, minifyJs(changesStore, moduleInfo, pool)))
+            .pipe(gulpIf(config.isReleaseMode, minifyOther(changesStore, moduleInfo)))
+            .pipe(
+               gulpRename((file) => {
+                  file.dirname = transliterate(file.dirname);
+                  file.basename = transliterate(file.basename);
+               })
+            )
+            .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
+            .pipe(createNavigationModulesJson(moduleInfo))
+
+            // createContentsJson зависит от buildStaticHtml и addComponentInfo
+            .pipe(createContentsJson(config, moduleInfo))
+
+            // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
+            .pipe(createStaticTemplatesJson(moduleInfo))
+            .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
+            .pipe(filterCached())
+            .pipe(gulpChmod({ read: true, write: true }))
+            .pipe(
+               gulpIf(
+                  needSymlink(hasLocalization, config, moduleInfo),
+                  gulp.symlink(moduleInfo.output),
+                  gulp.dest(moduleInfo.output)
+               )
+            )
+      );
    };
 }
 

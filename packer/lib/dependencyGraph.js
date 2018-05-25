@@ -58,10 +58,8 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
  * @param {Number} [maxLevel=Infinity]
  * @returns {Array}
  */
-DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
+DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel = Infinity) {
    const self = this;
-
-   maxLevel = maxLevel || Infinity;
 
    this._n = 0;
 
@@ -78,12 +76,15 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
    startNodes.forEach(this._visitNode.bind(this, maxLevel));
 
    // Iterate over all nodes
-   return Object.keys(this._nodes).map((k) => {
-      // node-name -> node (+ module name)
-      const meta = self._nodes[k];
-      meta.module = k;
-      return meta;
-   }).filter(node => node.weight >= 0).sort((a, b) => a.weight - b.weight);
+   return Object.keys(this._nodes)
+      .map((k) => {
+         // node-name -> node (+ module name)
+         const meta = self._nodes[k];
+         meta.module = k;
+         return meta;
+      })
+      .filter(node => node.weight >= 0)
+      .sort((a, b) => a.weight - b.weight);
 };
 
 /**
@@ -119,10 +120,14 @@ DepGraph.prototype.hasNode = function(name) {
  * @return {String}
  */
 DepGraph.prototype.toJSON = function() {
-   return JSON.stringify({
-      nodes: this._nodes,
-      links: this._links
-   }, null, 2);
+   return JSON.stringify(
+      {
+         nodes: this._nodes,
+         links: this._links
+      },
+      null,
+      2
+   );
 };
 
 /**

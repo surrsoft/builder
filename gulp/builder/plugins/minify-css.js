@@ -7,13 +7,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-const excludeRegexes = [
-   /.*\.min\.css$/,
-   /\/node_modules\/.*/,
-   /\/design\/.*/,
-   /\/service\/.*/
-];
-
+const excludeRegexes = [/.*\.min\.css$/, /\/node_modules\/.*/, /\/design\/.*/, /\/service\/.*/];
 
 module.exports = function(changesStore, moduleInfo, pool) {
    return through.obj(async function(file, encoding, callback) {
@@ -76,7 +70,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при минификации',
+            message: "Ошибка builder'а при минификации",
             error,
             moduleInfo,
             filePath: file.path

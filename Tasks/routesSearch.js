@@ -17,8 +17,7 @@ module.exports = function(grunt) {
          contentsPath = path.join(applicationRoot, 'resources', 'contents.json'),
          routesSource = {};
 
-      let
-         jsModules = [];
+      let jsModules = [];
 
       try {
          const tmp = grunt.file.readJSON(contentsPath);

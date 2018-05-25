@@ -70,7 +70,7 @@ function generateWorkflow(processArgv) {
 
          // завершающие задачи
          generateTaskForRemoveFiles(changesStore),
-         generateTaskForSaveChangesStore(changesStore),
+         generateTaskForSaveChangesStore(changesStore)
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForTerminatePool(pool),
