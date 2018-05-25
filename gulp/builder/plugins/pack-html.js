@@ -5,8 +5,8 @@ const through = require('through2'),
    domHelpers = require('../../../packer/lib/domHelpers'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(moduleInfo, pool) {
-   return through.obj(async(file, encoding, callback) => {
+module.exports = function declarePlugin(moduleInfo, pool) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.extname !== '.html' || path.dirname(file.path) !== moduleInfo.output) {
             callback(null, file);

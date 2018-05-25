@@ -7,8 +7,8 @@ const VERSION_STUB = /\.vBUILDER_VERSION_STUB/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
-module.exports = function(config, moduleInfo) {
-   return through.obj((file, encoding, callback) => {
+module.exports = function declarePlugin(config, moduleInfo) {
+   return through.obj(function onTransform(file, encoding, callback) {
       try {
          if (!includeExts.includes(file.extname)) {
             callback(null, file);

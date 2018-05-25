@@ -6,7 +6,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
 const supportExtensions = ['.js', '.xhtml', '.tmpl'];
-module.exports = function(config, cache, moduleInfo, pool) {
+module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
    return through.obj(async(file, encoding, callback) => {
       if (!supportExtensions.includes(file.extname)) {
          callback();

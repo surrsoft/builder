@@ -10,7 +10,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate');
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
-   return through.obj(async function(file, encoding, callback) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (!file.path.endsWith('.less')) {
             callback(null, file);

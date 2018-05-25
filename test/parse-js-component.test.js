@@ -5,7 +5,7 @@ require('./init-test');
 const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
 
-const expect = chai.expect;
+const { expect } = chai;
 
 describe('parse js component', () => {
    it('empty file', () => {
@@ -42,7 +42,7 @@ describe('parse js component', () => {
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
       webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
       webPage.outFileName.should.equal('ca_stub');
@@ -63,7 +63,7 @@ describe('parse js component', () => {
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
       webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
       webPage.title.should.equal('TestTitle');
@@ -83,7 +83,7 @@ describe('parse js component', () => {
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
 
       // теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);

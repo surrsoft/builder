@@ -74,7 +74,7 @@ class BuildConfiguration {
       if (!this.rawConfig.hasOwnProperty('mode')) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
       }
-      const mode = this.rawConfig.mode;
+      const { mode } = this.rawConfig;
       if (mode !== 'release' && mode !== 'debug') {
          throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
       }

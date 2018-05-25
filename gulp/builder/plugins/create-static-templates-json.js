@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
@@ -7,12 +5,14 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers');
 
-module.exports = function(moduleInfo) {
+module.exports = function declarePlugin(moduleInfo) {
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          callback(null, file);
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.
             const file = new Vinyl({

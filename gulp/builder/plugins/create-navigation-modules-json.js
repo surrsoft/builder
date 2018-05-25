@@ -6,10 +6,12 @@ const through = require('through2'),
 
 module.exports = function declarePlugin(moduleInfo) {
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          callback(null, file);
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             this.push(
                new Vinyl({

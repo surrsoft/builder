@@ -5,7 +5,7 @@ require('./init-test');
 const chai = require('chai'),
    processingRoutes = require('../lib/processing-routes');
 
-const expect = chai.expect;
+const { expect } = chai;
 
 describe('processing routes.js', () => {
    describe('parse routes', () => {

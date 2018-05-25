@@ -1,17 +1,15 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(changesStore, moduleInfo) {
+module.exports = function declarePlugin(changesStore, moduleInfo) {
    // js файлы можно паковать только после сборки xhtml и tmpl файлов.
    // поэтому переместим обработку в самый конец
    const jsFiles = [];
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          if (file.extname !== '.js') {
             callback(null, file);
          } else {
@@ -19,7 +17,9 @@ module.exports = function(changesStore, moduleInfo) {
             callback();
          }
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             const markupCache = changesStore.getMarkupCache(moduleInfo.name);

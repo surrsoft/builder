@@ -8,7 +8,7 @@ const through = require('through2'),
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
-      async(file, encoding, callback) => {
+      async function onTransform(file, encoding, callback) {
          if (file.cached) {
             callback(null, file);
             return;
@@ -46,7 +46,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          changesStore.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
          callback(null, file);
       },
-      (callback) => {
+      function onFlush(callback) {
          try {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
@@ -66,7 +66,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             });
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

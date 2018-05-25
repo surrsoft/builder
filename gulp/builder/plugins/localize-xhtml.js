@@ -4,8 +4,8 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function(config, changesStore, moduleInfo, pool) {
-   return through.obj(async(file, encoding, callback) => {
+module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.cached) {
             callback(null, file);

@@ -1,4 +1,3 @@
-/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
@@ -10,10 +9,10 @@ const through = require('through2'),
 // если есть ресурсы локализации, то нужно записать <локаль>.js файл
 // в папку "lang/<локаль>" и занести данные в contents.json
 // + css локализации нужно объединить
-module.exports = (config, moduleInfo) => {
+module.exports = function declarePlugin(config, moduleInfo) {
    const indexer = new DictionaryIndexer(config.localizations);
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          try {
             // нам нужны только css и json локализации
             const locale = file.stem;

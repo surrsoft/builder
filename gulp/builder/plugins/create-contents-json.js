@@ -8,10 +8,12 @@ const through = require('through2'),
 
 module.exports = function declarePlugin(config, moduleInfo) {
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          callback(null, file);
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             // подготовим contents.json и contents.js
             moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);

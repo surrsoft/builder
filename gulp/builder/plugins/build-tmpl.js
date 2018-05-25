@@ -11,7 +11,7 @@ const through = require('through2'),
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
-   return through.obj(async function(file, encoding, callback) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.extname !== '.tmpl') {
             callback(null, file);

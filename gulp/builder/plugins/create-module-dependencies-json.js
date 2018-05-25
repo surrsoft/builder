@@ -46,10 +46,12 @@ const parsePlugins = dep => [
 ];
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          callback(null, file);
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             const json = {
                links: {},

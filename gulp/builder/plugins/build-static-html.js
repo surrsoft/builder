@@ -12,10 +12,10 @@ const transliterate = require('../../../lib/transliterate'),
 
 module.exports = function declarePlugin(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(
-      (file, encoding, callback) => {
+      function onTransform(file, encoding, callback) {
          callback(null, file);
       },
-      async function(callback) {
+      async function onFlush(callback) {
          try {
             const configForReplaceInHTML = {
                urlServicePath: config.urlServicePath,
@@ -70,7 +70,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, module
             }
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

@@ -95,7 +95,9 @@ function generateWorkflow(processArgv) {
    });
 
    return gulp.series(
-      guardSingleProcess.generateTaskForLock(config.cachePath), // прежде всего
+
+      //  generateTaskForLock прежде всего
+      guardSingleProcess.generateTaskForLock(config.cachePath),
       generateTaskForLoadCache(cache),
       generateTaskForGenerateJson(cache, config),
       generateTaskForGrabModules(cache, config, pool),
@@ -106,7 +108,9 @@ function generateWorkflow(processArgv) {
          generateTaskForSaveOutputJson(cache, config),
          generateTaskForTerminatePool(pool)
       ),
-      guardSingleProcess.generateTaskForUnlock() // после всего
+
+      // generateTaskForUnlock после всего
+      guardSingleProcess.generateTaskForUnlock()
    );
 }
 

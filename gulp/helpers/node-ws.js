@@ -41,7 +41,7 @@ function removeLeadingSlash(filePath) {
    return resultPath;
 }
 
-function _init() {
+function initWs() {
    global.wsConfig = {
       appRoot,
       wsRoot,
@@ -56,7 +56,7 @@ function _init() {
          return wsLogger;
       }
    };
-   global.rk = function(key) {
+   global.rk = function rk(key) {
       let resultKey = key;
       const index = resultKey.indexOf('@@');
       if (index > -1) {
@@ -66,6 +66,8 @@ function _init() {
    };
    global.requirejs = requireJS;
    global.define = requireJS.define;
+
+   // eslint-disable-next-line global-require
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
    const config = requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
       waitSeconds: 20,
@@ -96,7 +98,7 @@ module.exports = {
    init() {
       try {
          if (!initialized) {
-            _init();
+            initWs();
             initialized = true;
          }
       } catch (e) {

@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
@@ -10,9 +8,9 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    processingRoutes = require('../../../lib/processing-routes');
 
-module.exports = function(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
-      async(file, encoding, callback) => {
+      async function onTransform(file, encoding, callback) {
          if (file.cached) {
             callback(null, file);
             return;
@@ -36,7 +34,9 @@ module.exports = function(changesStore, moduleInfo, pool) {
          changesStore.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
          callback(null, file);
       },
-      function(callback) {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.
 

@@ -61,9 +61,13 @@ function generateWorkflow(processArgv) {
    const localizationEnable = config.localizations.length > 0;
 
    return gulp.series(
-      guardSingleProcess.generateTaskForLock(config.cachePath), // прежде всего
+
+      // generateTaskForLock прежде всего
+      guardSingleProcess.generateTaskForLock(config.cachePath),
       generateTaskForLoadChangesStore(changesStore),
-      generateTaskForClearCache(changesStore, config), // тут нужен загруженный кеш
+
+      // в generateTaskForClearCache нужен загруженный кеш
+      generateTaskForClearCache(changesStore, config),
       generateTaskForGenerateJson(changesStore, config, localizationEnable),
       generateTaskForBuildModules(changesStore, config, pool),
       gulp.parallel(
@@ -74,7 +78,9 @@ function generateWorkflow(processArgv) {
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForTerminatePool(pool),
-      guardSingleProcess.generateTaskForUnlock() // после всего
+
+      // generateTaskForUnlock после всего
+      guardSingleProcess.generateTaskForUnlock()
    );
 }
 

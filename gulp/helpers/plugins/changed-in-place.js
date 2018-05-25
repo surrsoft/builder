@@ -5,7 +5,7 @@ const logger = require('../../../lib/logger').logger(),
 
 // moduleInfo может отсутствовать
 module.exports = function declarePlugin(cache, moduleInfo) {
-   return through.obj(async(file, encoding, callback) => {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          const isChanged = cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
          if (isChanged instanceof Promise) {
