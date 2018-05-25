@@ -332,12 +332,7 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
          }
          if (node.fullName.includes('css!')) {
             cssModulesFromOrderQueue.push(node);
-            
-            /**
-             * пока оставляем и jsное обьявление для обратной совместимости с онлайном на rtpackage без VDOM.
-             * После необходимых правок со стороны СП мы уберём полностью css.
-             */
-            return true;
+            return false;
          }
          return true;
       });
