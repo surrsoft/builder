@@ -139,6 +139,7 @@ DepGraph.prototype.fromJSON = function(json) {
    const data = typeof json === 'string' ? JSON.parse(json) : json;
    this._nodes = data.nodes;
    this._links = data.links;
+   return this;
 };
 
 /**
