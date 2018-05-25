@@ -91,17 +91,6 @@ function getLoader(type) {
    return loaders[type] || loaders.default;
 }
 
-function promisedCopyFile(source, target) {
-   return new Promise((resolve, reject) => {
-      copyFile(source, target, (err, result) => {
-         if (err) {
-            return reject(err);
-         }
-         return resolve(result);
-      });
-   });
-}
-
 /**
  * Правильное копирование файлов
  * @param {String} source - откуда
@@ -519,6 +508,5 @@ module.exports = {
    limitingNativePackFiles: limitingNativePackFiles,
    getJsAndCssPackage: getJsAndCssPackage,
    getLoader: getLoader,
-   copyFile: copyFile,
-   promisedCopyFile: promisedCopyFile
+   copyFile: copyFile
 };
