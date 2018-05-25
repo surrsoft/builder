@@ -7,8 +7,6 @@ const parser = new xmldom.DOMParser();
 const serializer = new xmldom.XMLSerializer();
 const logger = require('../../lib/logger').logger();
 
-const domCache = {};
-
 function wrap(obj, prop, replacer) {
    (function(orig) {
       obj[prop] = replacer;
@@ -24,10 +22,7 @@ function uniqname(names, ext) {
    return md5.digest('hex') + '.' + ext;
 }
 
-function domify(f, mime) {
-   if (domCache[f]) {
-      return domCache[f];
-   }
+function domify(text) {
    const errors = [];
    wrap(console, 'log', function(m) {
       errors.push(m);
@@ -35,7 +30,7 @@ function domify(f, mime) {
    wrap(console, 'error', function(m) {
       errors.push(m);
    });
-   domCache[f] = parser.parseFromString(fs.readFileSync(f, 'utf-8'), mime || 'text/html');
+   const result = parser.parseFromString(text, 'text/html');
 
    //eslint-disable-next-line no-console
    console.log.restore();
@@ -43,7 +38,7 @@ function domify(f, mime) {
    //eslint-disable-next-line no-console
    console.error.restore();
 
-   return domCache[f];
+   return result;
 }
 
 function stringify(dom) {
@@ -104,7 +99,7 @@ const helpers = {
 
    package: function(fileset, root, packageHome, collector, packer, nodeProducer, ext) {
       fileset.map(function(f) {
-         let dom = domify(f),
+         let dom = domify(fs.readFileSync(f, 'utf-8')),
             results = collector(dom);
 
          results.forEach(function(result) {

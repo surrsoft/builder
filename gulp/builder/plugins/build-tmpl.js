@@ -5,6 +5,7 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
+   minifyTmpl = require('../../../lib/processing-tmpl').minifyTmpl,
    transliterate = require('../../../lib/transliterate');
 
 module.exports = function(config, changesStore, moduleInfo, pool) {
@@ -34,6 +35,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
+            newText = minifyTmpl(newText);
             const result = await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath]);
             changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
             newText = result.text;

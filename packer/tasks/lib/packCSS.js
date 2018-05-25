@@ -1,6 +1,6 @@
 'use strict';
 
-const helpers = require('./../../lib/domHelpers');
+const domHelpers = require('./../../lib/domHelpers');
 const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs-extra');
 const async = require('async');
@@ -55,13 +55,13 @@ module.exports = {
       }
 
       function getTargetNode(dom, path) {
-         return helpers.mkDomNode(dom, 'link', {
+         return domHelpers.mkDomNode(dom, 'link', {
             rel: 'stylesheet',
             href: '/' + path.replace(dblSlashes, '/')
          });
       }
 
-      helpers.package(htmlFiles, root, packageHome, collector, packer, getTargetNode, 'css');
+      domHelpers.package(htmlFiles, root, packageHome, collector, packer, getTargetNode, 'css');
    },
 
    /**

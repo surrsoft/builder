@@ -28,9 +28,11 @@ module.exports = function(changesStore, moduleInfo, pool) {
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
          try {
-            const result = await pool.exec('buildXhtml', [newText, relativeFilePath]);
-            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
-            newText = result.text;
+            newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
+
+            const resultBuild = await pool.exec('buildXhtml', [newText, relativeFilePath]);
+            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
+            newText = resultBuild.text;
 
             //если xhtml не возможно минифицировать, то запишем оригинал
             try {

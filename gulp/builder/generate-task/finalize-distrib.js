@@ -6,6 +6,7 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
+   packHtml = require('../plugins/pack-html'),
    gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
 
@@ -26,7 +27,8 @@ function generateTaskForCopyResources(config, pool) {
                }
             }))
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
-            .pipe(gzip(moduleInfo, pool))
+            .pipe(packHtml(moduleInfo, pool))
+            //.pipe(gzip(moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
    });

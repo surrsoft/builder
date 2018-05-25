@@ -16,6 +16,7 @@ const fs = require('fs-extra'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
    buildXhtml = require('../../lib/processing-xhtml').buildXhtml,
    runMinifyCss = require('../../lib/run-minify-css'),
+   runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
    uglifyJs = require('../../lib/run-uglify-js');
 
 let componentsProperties;
@@ -73,6 +74,7 @@ workerPool.worker({
    prepareXHTML: prepareXHTML,
    buildXhtml: buildXhtml,
    minifyCss: runMinifyCss,
+   minifyXhtmlAndHtml: runMinifyXhtmlAndHtml,
    uglifyJs: uglifyJs,
    gzip: helpers.gzip
 });

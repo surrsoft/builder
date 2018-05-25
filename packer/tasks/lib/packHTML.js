@@ -2,6 +2,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs-extra');
 const async = require('async');
 const esprima = require('esprima');
 const traverse = require('estraverse').traverse;
@@ -193,7 +194,7 @@ function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDo
       try {
          logger.debug(htmlFile);
 
-         const dom = domHelpers.domify(htmlFile),
+         const dom = domHelpers.domify(fs.readFileSync(htmlFile, 'utf-8')),
             divs = dom.getElementsByTagName('div'),
             jsTarget = dom.getElementById('ws-include-components'),
             cssTarget = dom.getElementById('ws-include-css'),

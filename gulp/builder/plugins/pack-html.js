@@ -1,0 +1,32 @@
+'use strict';
+
+const through = require('through2'),
+   Vinyl = require('vinyl'),
+   path = require('path'),
+   domHelpers = require('../../../packer/lib/domHelpers'),
+   logger = require('../../../lib/logger').logger();
+
+module.exports = function(moduleInfo, pool) {
+   return through.obj(async function(file, encoding, callback) {
+      try {
+         if (file.extname !== '.html' || path.dirname(file.path) !== moduleInfo.output) {
+            callback(null, file);
+            return;
+         }
+
+         let newText = file.contents.toString();
+         newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
+         const dom = domHelpers.domify(newText);
+
+         file.contents = Buffer.from(domHelpers.stringify(dom));
+      } catch (error) {
+         logger.error({
+            message: "Ошибка builder'а при паковке html",
+            error: error,
+            moduleInfo: moduleInfo,
+            filePath: file.path
+         });
+      }
+      callback(null, file);
+   });
+};
