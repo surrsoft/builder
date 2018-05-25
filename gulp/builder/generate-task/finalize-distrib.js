@@ -28,7 +28,7 @@ function generateTaskForCopyResources(config, pool) {
             }))
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
             .pipe(packHtml(moduleInfo, pool))
-            //.pipe(gzip(moduleInfo, pool))
+            .pipe(gzip(moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
    });

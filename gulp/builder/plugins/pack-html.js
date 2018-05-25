@@ -1,7 +1,6 @@
 'use strict';
 
 const through = require('through2'),
-   Vinyl = require('vinyl'),
    path = require('path'),
    domHelpers = require('../../../packer/lib/domHelpers'),
    logger = require('../../../lib/logger').logger();
