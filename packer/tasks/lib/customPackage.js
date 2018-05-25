@@ -197,12 +197,16 @@ function checkTemplateForAMD(templatePath) {
  * @param {Object} orderQueue - очередь модулей на запись в пакет.
  * @return {Array}
  */
-function generateBundle(orderQueue, splittedCore) {
+function generateBundle(orderQueue, cssModulesFromOrderQueue, splittedCore) {
    const
       bundle = [],
       moduleExtReg = /(\.module)?(\.min)?(\.original)?\.js$/,
       modulesToPushToOrderQueue = [];
 
+   /**
+    * в bundles непосредственно css должны остаться на случай динамического запроса пакетов
+    */
+   cssModulesFromOrderQueue.forEach(css => bundle.push(css.fullName));
    orderQueue.forEach(function(node) {
       const
          isJSModuleWithoutJSPlugin = node.fullName.indexOf('!') === -1 && node.plugin === 'js',
@@ -241,11 +245,19 @@ function generateBundle(orderQueue, splittedCore) {
                modulesToPushToOrderQueue.push(config);
             }
             if (moduleHaveCSS && !foundedElements.css) {
-               modulesToPushToOrderQueue.push({
-                  fullName: `css!${node.fullName}`,
-                  fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.css' : '.css'),
-                  plugin: 'css'
-               });
+               /**
+                * Проверяем наш список css на наличие подходящего имени и в случае его
+                * наличия не надо добавлять в orderQueue на запись.
+                */
+               const foundedCSSFromList = cssModulesFromOrderQueue.find(css => css.fullName.includes(`css!${node.fullName}`));
+               if (!foundedCSSFromList)
+               {
+                  modulesToPushToOrderQueue.push({
+                     fullName: `css!${node.fullName}`,
+                     fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.css' : '.css'),
+                     plugin: 'css'
+                  });
+               }
             }
          }
          bundle.push(node.fullName);
@@ -353,7 +365,7 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
    }
 
    if (cfg.platformPackage || !cfg.includeCore) {
-      bundlesOptions.bundles[packagePath] = generateBundle(orderQueue, bundlesOptions.splittedCore);
+      bundlesOptions.bundles[packagePath] = generateBundle(orderQueue, cssModulesFromOrderQueue.css, bundlesOptions.splittedCore);
       generateBundlesRouting(bundlesOptions.bundles[packagePath], packagePath, bundlesOptions.modulesInBundles);
    }
 
