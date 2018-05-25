@@ -52,7 +52,7 @@ function getMeta(dep) {
       encode = dep.match(re)[1] === 'true';
    }
 
-   let pluginAndModule = dep.replace(re, '').split('!'),
+   const pluginAndModule = dep.replace(re, '').split('!'),
       pluginType = pluginAndModule[1] ? pluginAndModule.shift() : '',
       moduleName = pluginAndModule.join('!'),
       meta = {

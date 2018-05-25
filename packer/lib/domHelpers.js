@@ -9,9 +9,9 @@ const serializer = new xmldom.XMLSerializer();
 const logger = require('../../lib/logger').logger();
 
 function wrap(obj, prop, replacer) {
-   (function(orig) {
+   ((orig) => {
       obj[prop] = replacer;
-      obj[prop].restore = function() {
+      obj[prop].restore = () => {
          obj[prop] = orig;
       };
    })(obj[prop]);

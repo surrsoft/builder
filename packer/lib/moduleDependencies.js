@@ -19,7 +19,7 @@ const MODULE_DEPENDENCIES_FILENAME = 'module-dependencies.json';
  * @return {boolean}
  */
 function checkModuleDependenciesSanity(applicationRoot, done) {
-   let resourcesPath = path.join(applicationRoot, 'resources'),
+   const resourcesPath = path.join(applicationRoot, 'resources'),
       moduleDependenciesFile = path.join(resourcesPath, MODULE_DEPENDENCIES_FILENAME),
       contentsFile = path.join(resourcesPath, 'contents.json');
 

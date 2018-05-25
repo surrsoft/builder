@@ -84,7 +84,7 @@ module.exports = {
     * @param {packCSS~callback} callback
     */
    packCSS(files, root, callback) {
-      function _read(css, cb) {
+      function read(css, cb) {
          fs.readFile(css, (err, content) => {
             if (err) {
                cb(err);
@@ -98,7 +98,7 @@ module.exports = {
       async.map(
          filesToRead,
          (css, cb) => {
-            _read(css, cb);
+            read(css, cb);
          },
          (err, results) => {
             if (err) {

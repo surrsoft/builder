@@ -1,7 +1,7 @@
 'use strict';
 
 const esprima = require('esprima');
-const traverse = require('estraverse').traverse;
+const { traverse } = require('estraverse');
 const async = require('async');
 const path = require('path');
 const fs = require('fs-extra');
@@ -249,7 +249,11 @@ function getModulePath(grunt, dep, plugin, errMes) {
          // добавляем расширение модуля в путь до работы функции requirejs.toUrl,
          // поскольку она требует обязательного наличия расширения.
          let ext = path.extname(pathToModule).substr(1);
-         if (!ext || (dep.plugin === 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
+         if (
+            !ext ||
+            (dep.plugin === 'html' && ext !== 'xhtml') ||
+            (dep.plugin !== 'html' && dep.plugin !== 'text' && ext !== dep.plugin)
+         ) {
             switch (dep.plugin) {
                case 'html':
                   ext = 'xhtml';
@@ -277,7 +281,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * чтобы в i18nLoader найти в ней словари для всех доступных языков.
           */
          if (dep.plugin === 'i18n') {
-            pathToModule = pathToModule.split('lang/')[0];
+            [pathToModule] = pathToModule.split('lang/');
          }
 
          /**
@@ -477,8 +481,8 @@ function parseModule(text) {
  * @param {String} fullPath - полный путь до модуля
  */
 function parsePathForPresentationService(applicationRoot, fullPath) {
-   let presentationService = fs.pathExistsSync(path.join(applicationRoot, 'resources', 'WS.Core')),
-      modulePath = path.relative(applicationRoot, fullPath),
+   const presentationService = fs.pathExistsSync(path.join(applicationRoot, 'resources', 'WS.Core'));
+   let modulePath = path.relative(applicationRoot, fullPath),
       parts;
 
    if (presentationService) {
@@ -558,17 +562,13 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
 
                      meta = getMeta(myName);
 
-                     let needToRegister =
-                        (meta.plugin === 'js' &&
-                           (!jsModules[meta.module] || jsModules[meta.module] === fullPath)) ||
-                        meta.plugin !== 'js',
-                        registeredDependencies;
-
-                     // deps = addI18NDep(meta, deps);
+                     const needToRegister =
+                        (meta.plugin === 'js' && (!jsModules[meta.module] || jsModules[meta.module] === fullPath)) ||
+                        meta.plugin !== 'js';
 
                      errMes = `-------- Parent module: "${myName}"; Parent path: "${fullPath}"`;
 
-                     registeredDependencies = deps.map(
+                     const registeredDependencies = deps.map(
                         registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes)
                      );
 

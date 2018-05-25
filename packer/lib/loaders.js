@@ -78,7 +78,7 @@ function jsLoader(module, base, done) {
       ignoreIfNoFile(function addNamesToAnonymousModules(err, res) {
          let anonymous = false,
             rebuild = false,
-            amd = module.amd;
+            { amd } = module;
 
          if (err) {
             done(err);
@@ -205,7 +205,7 @@ function xhtmlLoader(module, base, done) {
 function cssLoader(module, base, done, themeName) {
    const suffix = themeName ? `__${themeName}` : '';
    let modulePath = module.fullPath;
-   if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) {
+   if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
       modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
    readFile(
@@ -340,7 +340,6 @@ function removeSourceMap(res) {
  * @param {loaders~callback} done
  */
 
-
 function browserLoader(module, base, done) {
    const ifCondition = 'if(typeof window !== "undefined")';
    loaders[module.moduleIn.plugin](module.moduleIn, base, (err, res) => {
@@ -467,8 +466,8 @@ function ignoreIfNoFile(f, loaderName) {
  * @return {Function}
  */
 function onlyForIE10AndAbove(f, modName) {
-   let ifConditionThemes,
-      ifCondition = 'if(typeof window !== "undefined" && window.atob){';
+   let ifConditionThemes;
+   const ifCondition = 'if(typeof window !== "undefined" && window.atob){';
 
    if (
       modName.startsWith('css!SBIS3.CONTROLS') ||
@@ -560,7 +559,7 @@ head.appendChild(style);\
  * @return {Function}
  */
 function rebaseUrls(root, sourceFile, f) {
-   return function(err, res) {
+   return (err, res) => {
       if (err) {
          f(err);
       } else {

@@ -5,15 +5,13 @@ const fs = require('fs-extra');
 const async = require('async');
 const loaders = require('./loaders');
 const getMeta = require('./getDependencyMeta');
-const packCSS = require('./../tasks/lib/packCSS').packCSS;
+const { packCSS } = require('./../tasks/lib/packCSS');
 const packerDictionary = require('./../tasks/lib/packDictionary');
 const logger = require('../../lib/logger').logger();
 const pMap = require('p-map');
 const dblSlashes = /\\/g,
    CDN = /\/?cdn\//;
 
-const complexPlugins = /is!|browser!|browser\?|optional!/g;
-const specialPlugins = /preload!/;
 const langRe = /lang\/([a-z]{2}-[A-Z]{2})/;
 
 // TODO: костыль: список статических html страниц для которых не пакуем стили контролов
@@ -46,45 +44,6 @@ function checkItIsOfflineClient(applicationRoot) {
       return false;
    }
 }
-
-const PackStorage = function() {
-   this._resolvedNodes = [];
-};
-PackStorage.prototype.addToResolvedNodes = function(defineName) {
-   this._resolvedNodes.push(defineName);
-};
-PackStorage.prototype.isNodeResolved = function(defineName) {
-   return this._resolvedNodes.indexOf(defineName) > -1;
-};
-PackStorage.prototype.isNodesResolved = function(defineNamesArray) {
-   const self = this;
-   return !defineNamesArray.filter(defineName => !self.isNodeResolved(defineName)).length;
-};
-PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
-   const args = [];
-   for (let i = 0; i < defineNamesArray.length; i++) {
-      const dep = defineNamesArray[i];
-      var depWithoutComplexPlugins;
-
-      if (dep.indexOf('css!') > -1) {
-         args.push(`"${dep}"`);
-      } else if (dep.indexOf('i18n!') > -1) {
-         args.push('rk');
-      } else if (this.isNodeResolved(dep)) {
-         args.push(`defineStorage["${dep}"]`);
-      } else {
-         depWithoutComplexPlugins = dep.replace(complexPlugins, '');
-         if (this.isNodeResolved(depWithoutComplexPlugins)) {
-            args.push(`defineStorage["${depWithoutComplexPlugins}"]`);
-         } else if (specialPlugins.test(depWithoutComplexPlugins)) {
-            args.push(`defineStorage["preloadFunc"]("${depWithoutComplexPlugins}")`);
-         } else {
-            return new Error("Can't resolve deps");
-         }
-      }
-   }
-   return args.join();
-};
 
 /**
  * Get loader
@@ -138,7 +97,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
             themeName ||
             (!process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1)
          ) {
-            return !~module.fullName.indexOf('SBIS3.CONTROLS');
+            return !module.fullName.includes('SBIS3.CONTROLS');
          }
          return true;
       })
@@ -157,7 +116,15 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
    const cssFromCDN = /css!\/cdn\//;
    return orderQueue
       .filter(
-         dep => (dep.path ? !CDN.test(dep.path.replace(dblSlashes, '/')) : dep.module ? !cssFromCDN.test(dep.module) : true)
+         (dep) => {
+            if (dep.path) {
+               return !CDN.test(dep.path.replace(dblSlashes, '/'));
+            }
+            if (dep.module) {
+               return !cssFromCDN.test(dep.module);
+            }
+            return true;
+         }
       )
       .map(function parseModule(dep) {
          const meta = getMeta(dep.module);
@@ -413,7 +380,10 @@ async function limitingNativePackFiles(filesToPack, base) {
       await pMap(
          filesToPack,
          async(module) => {
-            const fullPath = module.fullPath ? module.fullPath : module.moduleYes ? module.moduleYes.fullPath : null;
+            let { fullPath } = module;
+            if (!fullPath) {
+               fullPath = module.moduleYes ? module.moduleYes.fullPath : null;
+            }
 
             /**
              * Позорный костыль для модулей, в которых нету плагина js, но которые используют

@@ -15,12 +15,12 @@ const commonPackage = require('./../../lib/commonPackage');
  * @param {collectModules~callback} done - callback
  */
 function collectModules(dg, modArray, bundlesOptions, done, themeName) {
-   let orderQueue = dg.getLoadOrder(modArray),
-      applicationRoot = JSON.parse(process.env.configParams).root;
+   let orderQueue = dg.getLoadOrder(modArray);
+   const applicationRoot = JSON.parse(process.env.configParams).root;
 
    if (themeName) {
       orderQueue = orderQueue.filter(function removeControlsIfTheme(module) {
-         return !~module.module.indexOf('SBIS3.CONTROLS');
+         return !module.module.includes('SBIS3.CONTROLS');
       });
    }
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, '');

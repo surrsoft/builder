@@ -58,7 +58,7 @@ const wsLogger = {
 };
 
 let isInit = false;
-module.exports = function() {
+module.exports = function initWs() {
    if (!isInit) {
       isInit = true;
 
@@ -76,7 +76,7 @@ module.exports = function() {
             return wsLogger;
          }
       };
-      global.rk = function(key) {
+      global.rk = function rk(key) {
          let newKey = key;
          const index = newKey.indexOf('@@');
          if (index > -1) {
@@ -86,6 +86,7 @@ module.exports = function() {
       };
       global.requirejs = requireJS;
       global.define = requireJS.define;
+      // eslint-disable-next-line global-require
       const requirejsConfig = require(path.join(root, wsRoot, 'ext/requirejs/config.js'));
       const requirejs = requireJS.config(
          requirejsConfig(root, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
@@ -97,6 +98,7 @@ module.exports = function() {
       const ws = requirejs('Core/core');
       const loadContents = requirejs('Core/load-contents');
       try {
+         // eslint-disable-next-line global-require
          const appContents = require(path.join(root, resourceRoot, 'contents.json'));
          loadContents(appContents, true, { service: appRoot });
       } catch (err) {

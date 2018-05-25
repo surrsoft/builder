@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 'use strict';
 
 const logger = require('../../lib/logger').logger();
@@ -58,7 +59,7 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
  * @param {Number} [maxLevel=Infinity]
  * @returns {Array}
  */
-DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel = Infinity) {
+DepGraph.prototype.getLoadOrder = function getLoadOrder(startNodes, maxLevel = Infinity) {
    const self = this;
 
    this._n = 0;
@@ -92,7 +93,7 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel = Infinity) {
  * @param {String} name
  * @param {Array} dependencies
  */
-DepGraph.prototype.addDependencyFor = function(name, dependencies) {
+DepGraph.prototype.addDependencyFor = function addDependencyFor(name, dependencies) {
    if (this.hasNode(name)) {
       this._links[name] = dependencies;
    }
@@ -103,7 +104,7 @@ DepGraph.prototype.addDependencyFor = function(name, dependencies) {
  * @param {String} name
  * @param {Object} meta
  */
-DepGraph.prototype.registerNode = function(name, meta) {
+DepGraph.prototype.registerNode = function registerNode(name, meta) {
    this._nodes[name] = meta;
 };
 
@@ -112,14 +113,14 @@ DepGraph.prototype.registerNode = function(name, meta) {
  * @param {String} name
  * @return {Boolean}
  */
-DepGraph.prototype.hasNode = function(name) {
+DepGraph.prototype.hasNode = function hasNode(name) {
    return name in this._nodes;
 };
 
 /**
  * @return {String}
  */
-DepGraph.prototype.toJSON = function() {
+DepGraph.prototype.toJSON = function toJSON() {
    return JSON.stringify(
       {
          nodes: this._nodes,
@@ -134,7 +135,7 @@ DepGraph.prototype.toJSON = function() {
  * Build graph for json
  * @param {String|Object} json
  */
-DepGraph.prototype.fromJSON = function(json) {
+DepGraph.prototype.fromJSON = function fromJSON(json) {
    const data = typeof json === 'string' ? JSON.parse(json) : json;
    this._nodes = data.nodes;
    this._links = data.links;
@@ -146,7 +147,7 @@ DepGraph.prototype.fromJSON = function(json) {
  * @param {String} name
  * @return {Array}
  */
-DepGraph.prototype.getDependenciesFor = function(name) {
+DepGraph.prototype.getDependenciesFor = function getDependenciesFor(name) {
    if (this.hasNode(name)) {
       return (this._links[name] || []).slice();
    }
@@ -157,7 +158,7 @@ DepGraph.prototype.getDependenciesFor = function(name) {
  * Get all nodes name
  * @return {Array}
  */
-DepGraph.prototype.getNodes = function() {
+DepGraph.prototype.getNodes = function getNodes() {
    return Object.keys(this._nodes);
 };
 
@@ -166,7 +167,7 @@ DepGraph.prototype.getNodes = function() {
  * @param {String} name
  * @return {Object}
  */
-DepGraph.prototype.getNodeMeta = function(name) {
+DepGraph.prototype.getNodeMeta = function getNodeMeta(name) {
    return this._nodes[name] || {};
 };
 
