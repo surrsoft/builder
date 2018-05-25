@@ -250,8 +250,7 @@ function generateBundle(orderQueue, cssModulesFromOrderQueue, splittedCore) {
                 * наличия не надо добавлять в orderQueue на запись.
                 */
                const foundedCSSFromList = cssModulesFromOrderQueue.find(css => css.fullName.includes(`css!${node.fullName}`));
-               if (!foundedCSSFromList)
-               {
+               if (!foundedCSSFromList) {
                   modulesToPushToOrderQueue.push({
                      fullName: `css!${node.fullName}`,
                      fullPath: modulePath.replace(moduleExtReg, splittedCore ? '.min.css' : '.css'),
