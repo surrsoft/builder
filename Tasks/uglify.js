@@ -13,7 +13,7 @@ const
 function getCurrentEXT(currentPath) {
    for (let i = 0; i < extensions.length; i++) {
       if (currentPath.match(extensions[i])) {
-         //если расширение .js или .modulepack.js, надо вернуть полный результат
+         // если расширение .js или .modulepack.js, надо вернуть полный результат
          if (i === 0) {
             return currentPath.match(extensions[i])[0];
          }
@@ -38,7 +38,7 @@ function getMinModulePath(currentPath, currentEXT, currentEXTString) {
       case '.js':
          let ext = '';
 
-         //packed own dependencies
+         // packed own dependencies
          if (fs.existsSync(currentPath.replace(currentEXT, '.modulepack.js'))) {
             ext = '.min.original.js';
          } else {
@@ -64,9 +64,9 @@ module.exports = function uglifyJsTask(grunt) {
           */
          splittedCore = this.data.splittedCore,
          getAvailableFiles = function(filesArray) {
-            return filesArray.filter(function(filepath) {
+            return filesArray.filter((filepath) => {
                if (!grunt.file.exists(filepath)) {
-                  logger.warning('Source file ' + filepath + ' not found');
+                  logger.warning(`Source file ${filepath} not found`);
                   return false;
                }
                return true;
@@ -78,13 +78,13 @@ module.exports = function uglifyJsTask(grunt) {
          nodes = Object.keys(mDeps.nodes);
 
       // Iterate over all src-dest file pairs.
-      async.eachSeries(this.files, function(currentFile, done) {
+      async.eachSeries(this.files, (currentFile, done) => {
          const availableFiles = getAvailableFiles(currentFile.src);
          if (availableFiles.length === 0) {
-            logger.warning('Destination ' + currentFile.dest + ' not written because src files were empty.');
+            logger.warning(`Destination ${currentFile.dest} not written because src files were empty.`);
             return;
          }
-         availableFiles.forEach(function(file) {
+         availableFiles.forEach((file) => {
             const
                currentPath = path.normalize(file),
                originalText = fs.readFileSync(currentPath, 'utf8'),
@@ -94,9 +94,7 @@ module.exports = function uglifyJsTask(grunt) {
             let
                currentEXTString = currentEXT.toString(),
                currentNodePath = helpers.prettifyPath(helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')),
-               currentNode = nodes.filter(function(node) {
-                  return mDeps.nodes[node].path === currentNodePath;
-               }),
+               currentNode = nodes.filter(node => mDeps.nodes[node].path === currentNodePath),
                sourceMapUrl, minModulePath, minMapPath;
 
             currentEXTString = currentEXTString.match(/\.js$/) ? currentEXTString : currentEXTString.slice(2, currentEXTString.length - 2);
@@ -116,7 +114,7 @@ module.exports = function uglifyJsTask(grunt) {
                }
             }
 
-            const targetPath = minModulePath ? minModulePath : currentPath;
+            const targetPath = minModulePath || currentPath;
 
             try {
                if (splittedCore && currentEXTString === '.jstpl') {
@@ -133,7 +131,7 @@ module.exports = function uglifyJsTask(grunt) {
                   try {
                      fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
                      if (splittedCore && currentNode.length > 0) {
-                        currentNode.forEach(function(node) {
+                        currentNode.forEach((node) => {
                            mDeps.nodes[node].path = mDeps.nodes[node].path.replace(currentEXT, '.min.json');
                         });
                      }
@@ -151,7 +149,7 @@ module.exports = function uglifyJsTask(grunt) {
                   const minified = runUglifyJs(currentPath, originalText, isMarkup, sourceMapUrl);
 
                   if (splittedCore && currentNode.length > 0 && currentEXTString === '.js') {
-                     currentNode.forEach(function(node) {
+                     currentNode.forEach((node) => {
                         mDeps.nodes[node].path = mDeps.nodes[node].path.replace(currentEXT, '.min.js');
                      });
                   }
@@ -164,12 +162,11 @@ module.exports = function uglifyJsTask(grunt) {
             } catch (error) {
                logger.error({
                   message: 'Ошибка при минификации файла',
-                  error: error,
+                  error,
                   filePath: currentPath
                });
                fs.writeFileSync(targetPath, originalText);
             }
-
          });
 
          /**
@@ -179,7 +176,7 @@ module.exports = function uglifyJsTask(grunt) {
           * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
           */
          setImmediate(done);
-      }, function(err) {
+      }, (err) => {
          if (err) {
             logger.error({
                error: err

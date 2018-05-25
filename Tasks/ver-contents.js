@@ -6,7 +6,7 @@ const logger = require('../lib/logger').logger();
 
 module.exports = function(grunt) {
    grunt.registerMultiTask('ver-contents', 'versionize contents.[js|json]', function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача ver-contents.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача ver-contents.`);
 
       const resourcesPath = path.join(this.data.cwd, 'resources');
       let contents = {};
@@ -24,7 +24,7 @@ module.exports = function(grunt) {
          contents.buildnumber = this.data.ver;
          contents = helpers.sortObject(contents);
          grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(contents, null, 2));
-         grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(contents));
+         grunt.file.write(path.join(resourcesPath, 'contents.js'), `contents=${JSON.stringify(contents)}`);
       } catch (err) {
          logger.error({
             error: err

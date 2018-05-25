@@ -14,17 +14,15 @@ const excludeRegexes = [
    /.*\/node_modules\/.*/,
    /.*\/ServerEvent\/worker\/.*/,
 
-   //https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4
+   // https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4
    /.*\/EDO2\/Route\/.*/
 ];
 
 function to(promise) {
    return (
       promise
-         //eslint-disable-next-line promise/prefer-await-to-then
-         .then(data => {
-            return [null, data];
-         })
+         // eslint-disable-next-line promise/prefer-await-to-then
+         .then(data => [null, data])
          .catch(err => [err])
    );
 }
@@ -59,10 +57,10 @@ module.exports = function(changesStore, moduleInfo, pool) {
 
          const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(file.extname, '');
          const outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
-         const outputMinJsFile = outputFileWoExt + '.min.js';
-         const outputMinOriginalJsFile = outputFileWoExt + '.min.original.js';
-         const outputMinJsMapFile = outputFileWoExt + '.min.js.map';
-         const outputModulepackJsFile = outputFileWoExt + '.modulepack.js';
+         const outputMinJsFile = `${outputFileWoExt}.min.js`;
+         const outputMinOriginalJsFile = `${outputFileWoExt}.min.original.js`;
+         const outputMinJsMapFile = `${outputFileWoExt}.min.js.map`;
+         const outputModulepackJsFile = `${outputFileWoExt}.modulepack.js`;
 
          if (file.cached) {
             changesStore.addOutputFile(file.history[0], outputMinJsFile);
@@ -74,7 +72,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
          }
 
          if (!file.modulepack) {
-            //если файл не возможно минифицировать, то запишем оригинал
+            // если файл не возможно минифицировать, то запишем оригинал
             let minText = file.contents.toString();
             const [error, minified] = await to(
                pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsFile)])
@@ -83,8 +81,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации файла',
-                  error: error,
-                  moduleInfo: moduleInfo,
+                  error,
+                  moduleInfo,
                   filePath: file.path
                });
             } else {
@@ -109,8 +107,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
             );
             changesStore.addOutputFile(file.history[0], outputMinJsFile);
          } else {
-            //минимизируем оригинальный JS
-            //если файл не возможно минифицировать, то запишем оригинал
+            // минимизируем оригинальный JS
+            // если файл не возможно минифицировать, то запишем оригинал
             let minOriginalText = file.contents.toString();
             const [errorOriginal, minifiedOriginal] = await to(
                pool.exec('uglifyJs', [file.path, minOriginalText, false])
@@ -120,7 +118,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
                logger.error({
                   message: 'Ошибка минификации файла',
                   error: errorOriginal,
-                  moduleInfo: moduleInfo,
+                  moduleInfo,
                   filePath: file.path
                });
             } else {
@@ -135,8 +133,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
             );
             changesStore.addOutputFile(file.history[0], outputMinJsFile);
 
-            //минимизируем JS c пакованными зависимостями
-            //если файл не возможно минифицировать, то запишем оригинал
+            // минимизируем JS c пакованными зависимостями
+            // если файл не возможно минифицировать, то запишем оригинал
             let minText = file.modulepack;
             this.push(
                new Vinyl({
@@ -153,8 +151,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации файла',
-                  error: error,
-                  moduleInfo: moduleInfo,
+                  error,
+                  moduleInfo,
                   filePath: outputModulepackJsFile
                });
             } else {
@@ -183,8 +181,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при минификации",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

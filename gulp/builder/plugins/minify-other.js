@@ -28,7 +28,7 @@ module.exports = function(changesStore, moduleInfo) {
 
          const relativePath = path
             .relative(moduleInfo.path, file.history[0])
-            .replace(file.extname, '.min' + file.extname);
+            .replace(file.extname, `.min${file.extname}`);
          const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
          if (file.cached) {
@@ -52,8 +52,8 @@ module.exports = function(changesStore, moduleInfo) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации файла',
-                  error: error,
-                  moduleInfo: moduleInfo,
+                  error,
+                  moduleInfo,
                   filePath: file.path
                });
             }
@@ -71,8 +71,8 @@ module.exports = function(changesStore, moduleInfo) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка builder\'а при минификации',
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

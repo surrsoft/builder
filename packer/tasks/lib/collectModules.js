@@ -25,7 +25,7 @@ function collectModules(dg, modArray, bundlesOptions, done, themeName) {
       });
    }
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, '');
-   orderQueue = orderQueue.filter(function(module) {
+   orderQueue = orderQueue.filter((module) => {
       if (module.plugin === 'is') {
          if (module.moduleYes && (module.moduleYes.plugin === 'js' && module.moduleYes.amd || module.moduleYes.plugin === 'css')) {
             return true;
@@ -40,27 +40,13 @@ function collectModules(dg, modArray, bundlesOptions, done, themeName) {
    });
    orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
    if (bundlesOptions.jsBundles) {
-      orderQueue.js = orderQueue.js.filter(function(module) {
-         return !bundlesOptions.jsBundles[module.fullName];
-      });
+      orderQueue.js = orderQueue.js.filter(module => !bundlesOptions.jsBundles[module.fullName]);
    }
 
    const result = {
-      css: orderQueue.css.map(function(mod) {
-         return mod.fullPath;
-      }).filter(function(path) {
-         return !!path;
-      }),
-      js: orderQueue.js.map(function(mod) {
-         return mod.fullPath;
-      }).filter(function(path) {
-         return !!path;
-      }),
-      modules: orderQueue.css.map(function(mod) {
-         return mod.fullName;
-      }).filter(function(fullName) {
-         return !!fullName;
-      })
+      css: orderQueue.css.map(mod => mod.fullPath).filter(path => !!path),
+      js: orderQueue.js.map(mod => mod.fullPath).filter(path => !!path),
+      modules: orderQueue.css.map(mod => mod.fullName).filter(fullName => !!fullName)
    };
 
    done(null, result);

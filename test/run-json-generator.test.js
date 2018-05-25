@@ -13,21 +13,21 @@ function clear() {
    return fs.remove(outputPath);
 }
 
-//просто проверяем, что run-json-generator нормально вызывается.
-describe('run json-generator', function() {
+// просто проверяем, что run-json-generator нормально вызывается.
+describe('run json-generator', () => {
    it('tests', async() => {
       let options,
          modules,
          result;
 
-      //пустой список модулей
+      // пустой список модулей
       await clear();
       modules = [];
       result = await runJsonGenerator(modules, outputPath);
       Object.keys(result.index).length.should.equal(0);
       result.errors.length.should.equal(0);
 
-      //простой тест
+      // простой тест
       await clear();
       modules = [
          path.join(testDirname, 'TestModuleWithModuleJs'),
@@ -51,4 +51,3 @@ describe('run json-generator', function() {
       await clear();
    });
 });
-

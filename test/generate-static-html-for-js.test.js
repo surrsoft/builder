@@ -30,8 +30,8 @@ const removeRSymbol = function(str) {
    return str.replace(/\r/g, '');
 };
 
-describe('generate static html for js', function() {
-   describe('module with web page', function() {
+describe('generate static html for js', () => {
+   describe('module with web page', () => {
       it('empty', async() => {
          const componentInfo = {
             componentName: 'MyModule',
@@ -128,7 +128,7 @@ describe('generate static html for js', function() {
          };
          const contents = {};
          const result = await generateStaticHtmlForJs('virtualFile', componentInfo, contents, config, modules, true);
-         expect(result).not.exist; //eslint-disable-line no-unused-expressions
+         expect(result).not.exist; // eslint-disable-line no-unused-expressions
       });
       it('component without name', () => {
          const componentInfo = {
@@ -169,7 +169,8 @@ describe('generate static html for js', function() {
                `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
                `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +
                `Ошибка при обработке файла ${root}/Modules/Ошибки/include2.html: ` +
-               `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`);
+               `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`
+            );
       });
    });
 });

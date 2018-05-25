@@ -14,13 +14,13 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
    let result;
    try {
       result = postcss().use(postcssUrl({
-         url: function(asset, dir) {
+         url(asset, dir) {
             // ignore absolute urls, hashes or data uris
             if (invalidUrl.test(asset.url)) {
                return asset.url;
             }
 
-            return '/' + path.relative(dir.to, path.join(dir.from, asset.url)).replace(dblSlashes, '/');
+            return `/${path.relative(dir.to, path.join(dir.from, asset.url)).replace(dblSlashes, '/')}`;
          }
       })).process(css, {
          parser: safe,
@@ -50,7 +50,7 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
 function bumpImportsUp(packedCss) {
    const imports = packedCss.match(importCss);
    if (imports) {
-      imports.forEach(function(anImport) {
+      imports.forEach((anImport) => {
          packedCss = packedCss.replace(anImport, '');
       });
       packedCss = imports.join('\n') + packedCss;
@@ -60,7 +60,6 @@ function bumpImportsUp(packedCss) {
 }
 
 function splitIntoBatches(numSelectorsPerBatch, content) {
-
    const batches = [];
    let numSelectorsInCurrentBatch = 0;
 
@@ -72,16 +71,16 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
    }
 
    function serializeChildren(node) {
-      return node.nodes ? node.nodes.reduce(fastSerialize, '{') + '}' : '';
+      return node.nodes ? `${node.nodes.reduce(fastSerialize, '{')}}` : '';
    }
 
    function fastSerialize(memo, node) {
       if (node.type === 'decl') {
-         return memo + node.prop + ':' + node.value + (node.important ? '!important' : '') + ';';
-      } else if (node.type === 'rule') {
+         return `${memo + node.prop}:${node.value}${node.important ? '!important' : ''};`;
+      } if (node.type === 'rule') {
          return memo + node.selector + serializeChildren(node);
-      } else if (node.type === 'atrule') {
-         return memo + '@' + node.name + ' ' + node.params + (node.nodes ? serializeChildren(node) : ';');
+      } if (node.type === 'atrule') {
+         return `${memo}@${node.name} ${node.params}${node.nodes ? serializeChildren(node) : ';'}`;
       }
       return memo;
    }
@@ -90,8 +89,8 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
       return root.nodes.reduce(fastSerialize, '');
    }
 
-   //wtf: если не сделать slice, то ровно половина массива пропадёт
-   const nodes = postcss().process(content, {parser: safe}).root.nodes.slice();
+   // wtf: если не сделать slice, то ровно половина массива пропадёт
+   const nodes = postcss().process(content, { parser: safe }).root.nodes.slice();
    let batch = mkBatch();
    for (const node of nodes) {
       // Считать селекторы будем только для CSS-правил (AtRules и т.п. - игнорируем)
@@ -116,6 +115,6 @@ function splitIntoBatches(numSelectorsPerBatch, content) {
 
 module.exports = {
    rebaseUrls: rebaseUrlsToAbsolutePath,
-   bumpImportsUp: bumpImportsUp,
-   splitIntoBatches: splitIntoBatches
+   bumpImportsUp,
+   splitIntoBatches
 };

@@ -35,7 +35,6 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
          if (link.indexOf('.js') == link.length - 3 &&
                 link.indexOf('http') !== 0 &&
                 link.indexOf('//') !== 0) {
-
             pack = packs[packName] || (packs[packName] = {
                files: [],
                nodes: [],
@@ -51,27 +50,22 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
          }
       }
 
-      return Object.keys(packs).map(function(k) {
-         return packs[k];
-      });
+      return Object.keys(packs).map(k => packs[k]);
    }
 
    function packer(files) {
-      return [files.map(function(js) {
-         return fs.readFileSync(js);
-      }).join(';\n')];
+      return [files.map(js => fs.readFileSync(js)).join(';\n')];
    }
 
    function nodeProducer(dom, path) {
       const script = helpers.mkDomNode(dom, 'script', {
          type: 'text/javascript',
          charset: 'utf-8',
-         src: '/' + path.replace(/\\/g, '/')
+         src: `/${path.replace(/\\/g, '/')}`
       });
       script.textContent = ' ';
       return script;
    }
 
    return helpers.package(htmlFiles, root, packageHome, collector, packer, nodeProducer, 'js');
-
 };

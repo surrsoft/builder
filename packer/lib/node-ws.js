@@ -5,15 +5,15 @@
 // есть ещё версия для gulp
 
 
-///////////////////////////
+// /////////////////////////
 // Это здесь нужно, потому что внутри они переопределяют require, и портят наш requirejs
 // Surprise MF
-///////////////////////////
+// /////////////////////////
 require('esprima');
 require('escodegen');
 require('estraverse');
 
-///////////////////////////
+// /////////////////////////
 
 const path = require('path'),
    fs = require('fs-extra');
@@ -46,13 +46,13 @@ function removeLeadingSlash(path) {
 }
 
 const wsLogger = {
-   error: function(tag, msg) {
+   error(tag, msg) {
       logger.info(`WS error: ${tag}::${msg}`);
    },
-   info: function(tag, msg) {
+   info(tag, msg) {
       logger.debug(`WS info: ${tag}::${msg}`);
    },
-   log: function(tag, msg) {
+   log(tag, msg) {
       logger.debug(`WS log: ${tag}::${msg}`);
    }
 };
@@ -63,16 +63,16 @@ module.exports = function() {
       isInit = true;
 
       global.wsConfig = {
-         appRoot: appRoot,
-         wsRoot: wsRoot,
-         resourceRoot: resourceRoot
+         appRoot,
+         wsRoot,
+         resourceRoot
       };
       global.wsBindings = {
-         ITransport: function() {
+         ITransport() {
             const e = new Error();
-            throw new Error('ITransport is not implemented in build environment.' + e.stack);
+            throw new Error(`ITransport is not implemented in build environment.${e.stack}`);
          },
-         ILogger: function() {
+         ILogger() {
             return wsLogger;
          }
       };
@@ -95,7 +95,7 @@ module.exports = function() {
       const loadContents = requirejs('Core/load-contents');
       try {
          const appContents = require(path.join(root, resourceRoot, 'contents.json'));
-         loadContents(appContents, true, {service: appRoot});
+         loadContents(appContents, true, { service: appRoot });
       } catch (err) {
          // eslint-disable-next-line no-console
          console.log('ws initialized without contents.json');

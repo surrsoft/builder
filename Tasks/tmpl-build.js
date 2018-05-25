@@ -43,7 +43,7 @@ module.exports = function(grunt) {
    const splittedCore = grunt.option('splitted-core');
 
    grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
-      //eslint-disable-next-line no-invalid-this
+      // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
 
@@ -59,7 +59,7 @@ module.exports = function(grunt) {
 
          let componentsProperties = {};
 
-         //запускаем только при наличии задач локализации
+         // запускаем только при наличии задач локализации
          if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
             const optModules = grunt.option('modules').replace(/"/g, '');
             const optJsonCache = grunt.option('json-cache').replace(/"/g, '');
@@ -77,7 +77,7 @@ module.exports = function(grunt) {
 
          await pMap(
             self.files,
-            async value => {
+            async(value) => {
                const fullPath = helpers.prettifyPath(value.dest);
                try {
                   const html = stripBOM((await fs.readFile(fullPath)).toString()),
@@ -92,18 +92,18 @@ module.exports = function(grunt) {
                      await fs.writeFile(fullPath.replace(extFile, '.min$1'), html);
                   }
 
-                  //relativePath должен начинаться с имени модуля
+                  // relativePath должен начинаться с имени модуля
                   let relativePath = path.relative(resourcesRoot, fullPath);
 
-                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  // если ws монолитный, то его tmpl нужно обрабатывать особо
                   if (!splittedCore && relativePath.includes('..')) {
                      relativePath = path.relative(applicationRoot, fullPath);
                   }
                   const tmplObj = await processingTmpl.buildTmpl(original, relativePath, componentsProperties);
                   const templateOptions = {
-                     fullPath: fullPath,
+                     fullPath,
                      currentNode: tmplObj.nodeName,
-                     original: original,
+                     original,
                      data: tmplObj.text
                   };
                   await writeTemplate(templateOptions, nodes, splittedCore);
@@ -111,7 +111,7 @@ module.exports = function(grunt) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
-                     error: error
+                     error
                   });
                }
             },
@@ -126,13 +126,13 @@ module.exports = function(grunt) {
          });
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({ error: error });
+         logger.error({ error });
       }
       done();
    });
 
    grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', async function() {
-      //eslint-disable-next-line no-invalid-this
+      // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
       try {
@@ -147,7 +147,7 @@ module.exports = function(grunt) {
 
          await pMap(
             self.files,
-            async value => {
+            async(value) => {
                const fullPath = helpers.prettifyPath(value.dest);
                try {
                   const html = stripBOM(await fs.readFile(fullPath, 'utf8'));
@@ -162,18 +162,18 @@ module.exports = function(grunt) {
                      await fs.writeFile(fullPath.replace(extFile, '.min$1'), original);
                   }
 
-                  //relativePath должен начинаться с имени модуля
+                  // relativePath должен начинаться с имени модуля
                   let relativePath = path.relative(resourcesRoot, fullPath);
 
-                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  // если ws монолитный, то его tmpl нужно обрабатывать особо
                   if (!splittedCore && relativePath.includes('..')) {
                      relativePath = path.relative(applicationRoot, fullPath);
                   }
                   const xhtmlObj = processingXhtml.buildXhtml(html, relativePath);
                   const templateOptions = {
-                     fullPath: fullPath,
+                     fullPath,
                      currentNode: xhtmlObj.nodeName,
-                     original: original,
+                     original,
                      data: xhtmlObj.text
                   };
 
@@ -182,7 +182,7 @@ module.exports = function(grunt) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
-                     error: error
+                     error
                   });
                }
             },
@@ -196,7 +196,7 @@ module.exports = function(grunt) {
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({ error: error });
+         logger.error({ error });
       }
       done();
    });

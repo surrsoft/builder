@@ -11,7 +11,7 @@ module.exports = function(changesStore, moduleInfo) {
    // поэтому переместим обработку в самый конец
    const jsFiles = [];
    return through.obj(
-      function(file, encoding, callback) {
+      (file, encoding, callback) => {
          if (file.extname !== '.js') {
             callback(null, file);
          } else {
@@ -26,15 +26,15 @@ module.exports = function(changesStore, moduleInfo) {
             const nodenameToMarkup = new Map();
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
-               nodenameToMarkup.set(markupObj.nodeName, {text: markupObj.text, filePath: filePath});
+               nodenameToMarkup.set(markupObj.nodeName, { text: markupObj.text, filePath });
             }
             const getFullPathInSource = (dep) => {
                const moduleNameOutput = path.basename(moduleInfo.output);
                let relativeFileName = '';
                if (dep.startsWith('html!')) {
-                  relativeFileName = relativeFileName.replace('html!', '') + '.xhtml';
+                  relativeFileName = `${relativeFileName.replace('html!', '')}.xhtml`;
                } else {
-                  relativeFileName = relativeFileName.replace('tmpl!', '') + '.tmpl';
+                  relativeFileName = `${relativeFileName.replace('tmpl!', '')}.tmpl`;
                }
                if (relativeFileName.startsWith(moduleNameOutput)) {
                   const relativeFileNameWoModule = relativeFileName.split('/').slice(1).join('/');
@@ -44,7 +44,7 @@ module.exports = function(changesStore, moduleInfo) {
             };
 
             for (const jsFile of jsFiles) {
-               //важно сохранить в зависимости для js все файлы, которые должны приводить к пересборке файла
+               // важно сохранить в зависимости для js все файлы, которые должны приводить к пересборке файла
                const filesDepsForCache = new Set();
                const ownDeps = [];
                if (componentsInfo.hasOwnProperty(jsFile.history[0])) {
@@ -57,7 +57,6 @@ module.exports = function(changesStore, moduleInfo) {
                            if (fullPath) {
                               filesDepsForCache.add(fullPath);
                            }
-
                         }
                      }
                   }
@@ -84,8 +83,8 @@ module.exports = function(changesStore, moduleInfo) {
          } catch (error) {
             logger.error({
                message: 'Ошибка Builder\'а',
-               error: error,
-               moduleInfo: moduleInfo
+               error,
+               moduleInfo
             });
          }
          callback(null);

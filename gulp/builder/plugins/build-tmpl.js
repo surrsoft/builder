@@ -30,7 +30,7 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             return;
          }
 
-         //если tmpl не возможно скомпилировать, то запишем оригинал
+         // если tmpl не возможно скомпилировать, то запишем оригинал
          let newText = file.contents.toString();
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
@@ -41,15 +41,15 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             newText = result.text;
 
             if (config.isReleaseMode) {
-               //если tmpl не возможно минифицировать, то запишем оригинал
+               // если tmpl не возможно минифицировать, то запишем оригинал
                try {
                   newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
                } catch (error) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации скомпилированного TMPL',
-                     error: error,
-                     moduleInfo: moduleInfo,
+                     error,
+                     moduleInfo,
                      filePath: relativeFilePath.replace('.tmpl', '.min.tmpl')
                   });
                }
@@ -58,8 +58,8 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка компиляции TMPL',
-               error: error,
-               moduleInfo: moduleInfo,
+               error,
+               moduleInfo,
                filePath: relativeFilePath
             });
          }
@@ -81,8 +81,8 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка builder\'а при компиляции TMPL',
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

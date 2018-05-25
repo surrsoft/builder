@@ -1,4 +1,4 @@
-/*eslint-disable max-nested-callbacks*/
+/* eslint-disable max-nested-callbacks */
 'use strict';
 
 const path = require('path');
@@ -19,7 +19,7 @@ module.exports = function(grunt) {
          patterns = this.data.src;
       let i = 0;
 
-      helpers.recurse(applicationRoot, function(file, callback) {
+      helpers.recurse(applicationRoot, (file, callback) => {
          if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
             fs.readFile(file, (err, text) => {
                if (err) {
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                }
 
                if (text.byteLength > 1024) {
-                  helpers.writeGzip(`${file}.gz`, text, function() {
+                  helpers.writeGzip(`${file}.gz`, text, () => {
                      if (++i % 1000 === 0) {
                         logger.debug(`${i} files processed`);
                      }
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
          } else {
             callback();
          }
-      }, function(err) {
+      }, (err) => {
          if (err) {
             logger.error({
                error: err

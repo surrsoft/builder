@@ -11,17 +11,17 @@ const logger = require('../../../lib/logger').logger(),
    versionizeFinish = require('../plugins/versionize-finish');
 
 function generateTaskForCopyResources(config, pool) {
-   const tasks = config.modules.map(moduleInfo => {
+   const tasks = config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
-         return gulp.src(input, {dot: false, nodir: true})
+         return gulp.src(input, { dot: false, nodir: true })
             .pipe(plumber({
-               errorHandler: function(err) {
+               errorHandler(err) {
                   logger.error({
                      message: 'Задача copyResources завершилась с ошибкой',
                      error: err,
-                     moduleInfo: moduleInfo
+                     moduleInfo
                   });
                   this.emit('end');
                }

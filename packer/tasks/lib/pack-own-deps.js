@@ -30,13 +30,13 @@ function getAllModules(dg, applicationRoot) {
             return node;
          })
 
-         //не включаем несуществующие пути(например в WS.Core не копируется папка test)
+         // не включаем несуществующие пути(например в WS.Core не копируется папка test)
          .filter(function excludeNotExistingModules(node) {
-            //eslint-disable-next-line no-sync
+            // eslint-disable-next-line no-sync
             return fs.existsSync(node.fullPath);
          })
          .filter(function excludePacked(node) {
-            //eslint-disable-next-line no-sync
+            // eslint-disable-next-line no-sync
             return !fs.existsSync(node.tempPath);
          })
          .map(function getDependencies(node) {
@@ -66,15 +66,15 @@ function getAllModules(dg, applicationRoot) {
                   let ownDeps = false;
                   if (dep.plugin === 'is') {
                      if (dep.moduleYes) {
-                        ownDeps = new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)').test(dep.moduleYes.fullName);
+                        ownDeps = new RegExp(`(.+!)?${node.module}($|\\\\|\\/)`).test(dep.moduleYes.fullName);
                      }
                      if (dep.moduleNo) {
-                        ownDeps = new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)').test(dep.moduleNo.fullName);
+                        ownDeps = new RegExp(`(.+!)?${node.module}($|\\\\|\\/)`).test(dep.moduleNo.fullName);
                      }
                   } else if ((dep.plugin === 'browser' || dep.plugin === 'optional') && dep.moduleIn) {
-                     ownDeps = new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)').test(dep.moduleIn.fullName);
+                     ownDeps = new RegExp(`(.+!)?${node.module}($|\\\\|\\/)`).test(dep.moduleIn.fullName);
                   } else {
-                     ownDeps = new RegExp('(.+!)?' + node.module + '($|\\\\|\\/)').test(dep.fullName);
+                     ownDeps = new RegExp(`(.+!)?${node.module}($|\\\\|\\/)`).test(dep.fullName);
                   }
                   return ownDeps;
                })
@@ -101,7 +101,7 @@ function getAllModules(dg, applicationRoot) {
                   return dep;
                })
 
-               //пакуем вместе с модулями исключительно шаблоны.
+               // пакуем вместе с модулями исключительно шаблоны.
                .filter(function includeOnlyTemplates(dep) {
                   return dep.plugin === 'tmpl' || dep.plugin === 'html';
                })
@@ -138,12 +138,10 @@ async function packOwnDependencies(dg, root, applicationRoot, splittedCore) {
    const allModules = getAllModules(dg, applicationRoot);
    await pMap(
       allModules,
-      async item => {
+      async(item) => {
          const loadedDependencies = await pMap(
             item.deps,
-            dep => {
-               return promisifyLoader(commonPackage.getLoader(dep.plugin), dep, root);
-            },
+            dep => promisifyLoader(commonPackage.getLoader(dep.plugin), dep, root),
             {
                concurrency: 5
             }
@@ -151,9 +149,7 @@ async function packOwnDependencies(dg, root, applicationRoot, splittedCore) {
 
          await fs.writeFile(
             item.tempPath,
-            loadedDependencies.reduce((res, modContent) => {
-               return res + (res ? '\n' : '') + modContent;
-            }, '')
+            loadedDependencies.reduce((res, modContent) => res + (res ? '\n' : '') + modContent, '')
          );
       },
       {
@@ -169,7 +165,7 @@ async function packOwnDependencies(dg, root, applicationRoot, splittedCore) {
    if (!splittedCore) {
       await pMap(
          allModules,
-         async item => {
+         async(item) => {
             /**
              * для начала удостоверимся, что временный файл существует, поскольку один и тот же путь может
              * быть у разных модулей-оригинал или например через is! плагин, это совершенно отдельные узлы и они

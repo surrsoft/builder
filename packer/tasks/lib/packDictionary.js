@@ -17,7 +17,7 @@ function getNameModule(pathModule) {
       splitPath = pathModule.split('/'),
       nameModule = '';
 
-   splitPath.some(function(name, index) {
+   splitPath.some((name, index) => {
       if (name === 'ws') {
          nameModule = 'WS';
          return true;
@@ -43,14 +43,14 @@ function getNameModule(pathModule) {
  * @returns {String} - путь до словаря.
  */
 function getPathDict(name, lang, applicationRoot) {
-   //Когда ws станет интерфейсным модулем можно удалить.
+   // Когда ws станет интерфейсным модулем можно удалить.
    if (name === 'WS') {
       name = 'ws';
    } else {
-      name = 'resources/' + name;
+      name = `resources/${name}`;
    }
 
-   return path.normalize(path.join(applicationRoot, name, 'lang', lang, lang + '.js'));
+   return path.normalize(path.join(applicationRoot, name, 'lang', lang, `${lang}.js`));
 }
 
 /**
@@ -74,7 +74,7 @@ function needPushDict(name, lang, isPackedDict) {
  * @returns {string} - имя модуля словаря.
  */
 function getNameDict(name, lang) {
-   return name + '/lang/' + lang + '/' + lang;
+   return `${name}/lang/${lang}/${lang}`;
 }
 
 /**
@@ -103,9 +103,9 @@ function createTextModule(modulejs) {
    return {
       amd: false,
       encode: false,
-      fullName: 'text!' + modulejs.fullName + '.json',
+      fullName: `text!${modulejs.fullName}.json`,
       fullPath: modulejs.fullPath.replace(/\.js$/, '.json'),
-      module: modulejs.module + '.json',
+      module: `${modulejs.module}.json`,
       plugin: 'text'
    };
 }
@@ -137,8 +137,8 @@ function createI18nModule(nameModule) {
    return {
       amd: true,
       encode: false,
-      fullName: nameModule + '_localization',
-      module: nameModule + '"_localization',
+      fullName: `${nameModule}_localization`,
+      module: `${nameModule}"_localization`,
       plugin: 'i18n'
    };
 }
@@ -149,12 +149,11 @@ function createI18nModule(nameModule) {
  * @returns {Array}
  */
 function deleteOldDepI18n(deps) {
-   return deps.filter(function(dep) {
+   return deps.filter((dep) => {
       if (dep.indexOf('i18n!') === -1) {
          return true;
-      } else {
-         return false;
       }
+      return false;
    });
 }
 
@@ -168,7 +167,7 @@ function deleteOldDepI18n(deps) {
 function getAvailableLanguageModule(availableLanguage, nameModule, applicationRoot) {
    const availableLang = {};
 
-   Object.keys(availableLanguage).forEach(function(lang) {
+   Object.keys(availableLanguage).forEach((lang) => {
       if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot))) {
          availableLang[lang] = true;
       }
@@ -196,7 +195,7 @@ async function packCustomDict(modules, applicationRoot) {
 
       await pMap(
          modules,
-         async module => {
+         async(module) => {
             if (linkModules.hasOwnProperty(module.fullName)) {
                linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
                moduleName = getNameModule(module.fullPath);
@@ -262,18 +261,17 @@ function packDictClassic(modules, applicationRoot) {
          dictTextModule,
          nameModule;
 
-      //fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
-      Object.keys(_const.availableLanguage).forEach(function(lang) {
+      // fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'), 'в module-dependencies.json уже записывают.log');
+      Object.keys(_const.availableLanguage).forEach((lang) => {
          dictPack[lang] = [];
       });
 
-      modules.forEach(function(module) {
+      modules.forEach((module) => {
          if (module.fullPath) {
             nameModule = getNameModule(module.fullPath);
-            Object.keys(dictPack).forEach(function(lang) {
+            Object.keys(dictPack).forEach((lang) => {
                const fullPath = getPathDict(nameModule, lang, applicationRoot);
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
-
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createTextModule(dictJsModule);
 
@@ -296,7 +294,7 @@ function packDictClassic(modules, applicationRoot) {
         fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'), JSON.stringify(modDepend, null, 2));
         */
    } finally {
-      //fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
+      // fs.unlinkSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'));
       return dictPack;
    }
 }
@@ -307,7 +305,7 @@ function packDictClassic(modules, applicationRoot) {
  * @returns {Array}
  */
 function deleteOldModulesLocalization(modules) {
-   return modules.filter(function(module) {
+   return modules.filter((module) => {
       if (module.plugin && module.plugin === 'i18n') {
          return false;
       }

@@ -3,9 +3,9 @@
 const logger = require('../../../lib/logger').logger(),
    through = require('through2');
 
-//moduleInfo может отсутствовать
+// moduleInfo может отсутствовать
 module.exports = function(cache, moduleInfo) {
-   return through.obj(async function(file, encoding, callback) {
+   return through.obj(async(file, encoding, callback) => {
       try {
          const isChanged = cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
          if (isChanged instanceof Promise) {
@@ -14,7 +14,7 @@ module.exports = function(cache, moduleInfo) {
             file.cached = !isChanged;
          }
       } catch (error) {
-         logger.error({error: error});
+         logger.error({ error });
       }
       callback(null, file);
    });

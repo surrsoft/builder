@@ -16,7 +16,7 @@ function getForceCall(value) {
 }
 
 function enableLocalization(text) {
-   return text += 'for (var i = 0; i < global._i18nStorage.length; i++) {global._i18nStorage[i](defineStorage["' + coreI18nName + '"]);}';
+   return text += `for (var i = 0; i < global._i18nStorage.length; i++) {global._i18nStorage[i](defineStorage["${coreI18nName}"]);}`;
 }
 
 /**
@@ -72,7 +72,7 @@ function getDeps(depArray, packStorage) {
                'type': 'Identifier',
                'name': 'rk'
             });
-         } else if (packStorage.isNodeResolved(defineName)) {//isNodeResolved(defineName, resolvedNodes)) {
+         } else if (packStorage.isNodeResolved(defineName)) {// isNodeResolved(defineName, resolvedNodes)) {
             deps.push({
                'type': 'MemberExpression',
                'computed': true,
@@ -82,10 +82,10 @@ function getDeps(depArray, packStorage) {
                },
                'property': {
                   'type': 'Identifier',
-                  'name': '\'' + defineName + '\''
+                  'name': `'${defineName}'`
                }
             });
-         } else if (packStorage.isNodeResolved(defineNameWithoutComplexPlugins)) {//isNodeResolved(defineNameWithoutComplexPlugins, resolvedNodes)) {
+         } else if (packStorage.isNodeResolved(defineNameWithoutComplexPlugins)) {// isNodeResolved(defineNameWithoutComplexPlugins, resolvedNodes)) {
             deps.push({
                'type': 'MemberExpression',
                'computed': true,
@@ -95,7 +95,7 @@ function getDeps(depArray, packStorage) {
                },
                'property': {
                   'type': 'Identifier',
-                  'name': '\'' + defineNameWithoutComplexPlugins + '\''
+                  'name': `'${defineNameWithoutComplexPlugins}'`
                }
             });
          } else if (specialPlugins.test(defineNameWithoutComplexPlugins)) {
@@ -117,12 +117,12 @@ function getDeps(depArray, packStorage) {
                'arguments': [
                   {
                      'type': 'Identifier',
-                     'name': '\'' + defineNameWithoutComplexPlugins + '\''
+                     'name': `'${defineNameWithoutComplexPlugins}'`
                   }
                ]
             });
          } else {
-            throw new Error('Can\'t resolve dependency: ' + defineName + ' of module ');
+            throw new Error(`Can't resolve dependency: ${defineName} of module `);
          }
       }
 
@@ -146,7 +146,7 @@ function getNodeToReplace(defineName, val, packStorage) {
             },
             'property': {
                'type': 'Identifier',
-               'name': '\'' + defineName + '\''
+               'name': `'${defineName}'`
             }
          },
          'right': val
@@ -173,8 +173,8 @@ function prepareToReplace(node, packStorage) {
       val = getValue(node.arguments[1], getForceCall(node.arguments[0].value));
       nodeToReplace = getNodeToReplace(defineName, val, packStorage);
       replaceMeta = {
-         defineName: defineName,
-         nodeToReplace: nodeToReplace
+         defineName,
+         nodeToReplace
       };
    } else if (node.arguments.length == 3) {
       try {
@@ -186,33 +186,29 @@ function prepareToReplace(node, packStorage) {
       val = getValue(node.arguments[2], deps, getForceCall(node.arguments[0].value));
       nodeToReplace = getNodeToReplace(defineName, val, packStorage);
       replaceMeta = {
-         defineName: defineName,
-         nodeToReplace: nodeToReplace
+         defineName,
+         nodeToReplace
       };
    }
 
    return replaceMeta;
-
 }
 
 function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
    if (node.callee.type === 'Identifier' && node.callee.name === 'define') {
-
       if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string' && pluginList.indexOf(node.arguments[0].value) == -1) {
-         //Будем игнорировать все вложенные ноды дефайна
+         // Будем игнорировать все вложенные ноды дефайна
          ctx.skip();
          const replaceMeta = prepareToReplace(node, packStorage);
 
-         //Если нода для замены успешно получена, то помечаем этот define как разрешенный и возвращаем полученную ноду.
-         //Если вернулась ошибка в разборе зависимостей, возвращаем ее. Нужно в replaceSequenceExpression.
+         // Если нода для замены успешно получена, то помечаем этот define как разрешенный и возвращаем полученную ноду.
+         // Если вернулась ошибка в разборе зависимостей, возвращаем ее. Нужно в replaceSequenceExpression.
          if (replaceMeta && replaceMeta.nodeToReplace) {
-
             setModified();
             replacedNames.push(replaceMeta.defineName);
 
             return replaceMeta.nodeToReplace;
-
-         } else if (replaceMeta instanceof Error) {
+         } if (replaceMeta instanceof Error) {
             return replaceMeta;
          }
       }
@@ -220,7 +216,6 @@ function parseExpression(node, replacedNames, packStorage, ctx, setModified) {
 }
 
 function replaceCallExpression(node, replacedNames, packStorage, ctx, setModified) {
-
    const parsed = parseExpression(node.expression, replacedNames, packStorage, ctx, setModified);
    return !parsed || parsed instanceof Error ? node : parsed;
 }
@@ -247,7 +242,7 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
    * Таким образом, если вызов parseExpression вернул ошибку, значит где-то не получилось разрешить зависимости,
    * устанавливаем флаг badSequence и оставляем все как есть.
    * */
-   varDeclarations = node.expression.expressions.map(function(exp) {
+   varDeclarations = node.expression.expressions.map((exp) => {
       if (exp.type === 'CallExpression') {
          let
             parsed = parseExpression(exp, replacedNames, packStorage, ctx, setModified),
@@ -264,9 +259,8 @@ function replaceSequenceExpression(node, replacedNames, packStorage, ctx, setMod
 
 
          return toReturn;
-      } else {
-         return exp;
       }
+      return exp;
    });
 
    if (!badSequence) {
@@ -294,16 +288,16 @@ function main(text, packStorage) {
    try {
       ast = esprima.parse(text);
    } catch (e) {
-      logger.error({error: e.message});
+      logger.error({ error: e.message });
       throw e;
    }
 
    replace(ast, {
-      enter: function(node) {
+      enter(node) {
          if (node.type === 'ExpressionStatement' && node.expression) {
             if (node.expression.type === 'CallExpression') {
                return replaceCallExpression(node, replacedNames, packStorage, this, setModified);
-            } else if (node.expression.type === 'SequenceExpression') {
+            } if (node.expression.type === 'SequenceExpression') {
                return replaceSequenceExpression(node, replacedNames, packStorage, this, setModified);
             }
          }
@@ -313,9 +307,9 @@ function main(text, packStorage) {
    if (wasModified) {
       res = escodegen.generate(ast);
 
-      //Добавляем дефолтные вызовы define со ссылками на defineStorage, на случай, если кто-то будет звать через requirejs.
-      replacedNames.forEach(function(name) {
-         res += 'define("' + name + '", function () {return defineStorage["' + name + '"]});';
+      // Добавляем дефолтные вызовы define со ссылками на defineStorage, на случай, если кто-то будет звать через requirejs.
+      replacedNames.forEach((name) => {
+         res += `define("${name}", function () {return defineStorage["${name}"]});`;
          if (name == coreI18nName) {
             res = enableLocalization(res);
          }
@@ -328,5 +322,5 @@ function main(text, packStorage) {
 }
 
 module.exports = {
-   main: main
+   main
 };

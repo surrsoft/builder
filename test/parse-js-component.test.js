@@ -7,7 +7,7 @@ const chai = require('chai'),
 
 const expect = chai.expect;
 
-describe('parse js component', function() {
+describe('parse js component', () => {
    it('empty file', () => {
       const result = parseJsComponent('');
       Object.getOwnPropertyNames(result).length.should.equal(0);
@@ -79,7 +79,7 @@ describe('parse js component', function() {
       result.hasOwnProperty('isNavigation').should.equal(false);
       const webPage = result.webPage;
 
-      //теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
+      // теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);
    });
 
@@ -124,6 +124,5 @@ describe('parse js component', function() {
       result = parseJsComponent('define("My.Module/Name", ["optional!Navigation/NavigationController"], function(){});');
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
-
    });
 });

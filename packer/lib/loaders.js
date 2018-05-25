@@ -58,7 +58,7 @@ function parseModule(text, module) {
    try {
       res = esprima.parse(text);
    } catch (e) {
-      e.message = 'While parsing ' + module.fullName + ' from ' + module.fullPath + ': ' + e.message;
+      e.message = `While parsing ${module.fullName} from ${module.fullPath}: ${e.message}`;
       res = e;
    }
    return res;
@@ -99,7 +99,7 @@ function jsLoader(module, base, done) {
                      node.callee.type === 'Identifier' &&
                      node.callee.name === 'define'
                   ) {
-                     //Check anonnimous define
+                     // Check anonnimous define
                      if (node.arguments.length < 3) {
                         if (
                            node.arguments.length == 2 &&
@@ -120,7 +120,7 @@ function jsLoader(module, base, done) {
                         amd = true;
                      }
 
-                     //Check additional dependenccies
+                     // Check additional dependenccies
                      if (!String(module.fullName).startsWith('Core/') && module.addDeps) {
                         if (!node.arguments[1].elements) {
                            node.arguments.splice(1, 0, {
@@ -159,7 +159,7 @@ function jsLoader(module, base, done) {
                      done(null, res);
                   }
                } else {
-                  done(null, 'define("' + module.fullName + '", ""); ' + res);
+                  done(null, `define("${module.fullName}", ""); ${res}`);
                }
             }
          }
@@ -177,21 +177,19 @@ function jsLoader(module, base, done) {
 function xhtmlLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
+         } else if (module.amd && res) {
+            done(null, res);
          } else {
-            if (module.amd && res) {
-               done(null, res);
-            } else {
-               /**
+            /**
                 * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
                 * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
                 * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за xhtml кастомным пакетом
                 * и упадёт.
                 */
-               done(null, `define('${module.fullName}', '');`);
-            }
+            done(null, `define('${module.fullName}', '');`);
          }
       }, 'xhtmlLoader')
    );
@@ -206,10 +204,10 @@ function xhtmlLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function cssLoader(module, base, done, themeName) {
-   const suffix = themeName ? '__' + themeName : '';
+   const suffix = themeName ? `__${themeName}` : '';
    let modulePath = module.fullPath;
    if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) {
-      modulePath = modulePath.slice(0, -4) + suffix + '.css';
+      modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
    readFile(
       modulePath,
@@ -235,7 +233,7 @@ function cssLoader(module, base, done, themeName) {
 function jsonLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
@@ -243,10 +241,10 @@ function jsonLoader(module, base, done) {
                res = JSON.stringify(JSON.parse(res));
             } catch (error) {
                logger.warning({
-                  error: error
+                  error
                });
             }
-            done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
+            done(null, `define("${module.fullName}", function() {return ${res};});`);
          }
       }, 'jsonLoader')
    );
@@ -262,11 +260,11 @@ function jsonLoader(module, base, done) {
 function xmlLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+            done(null, `define("${module.fullName}", function() {return ${JSON.stringify(res)};});`);
          }
       }, 'xmlLoader')
    );
@@ -298,30 +296,26 @@ function isLoader(module, base, done) {
       );
    }
    if (module.moduleYes) {
-      loaders[module.moduleYes.plugin](module.moduleYes, base, function(err, res) {
+      loaders[module.moduleYes.plugin](module.moduleYes, base, (err, res) => {
          if (err) {
             done(err);
+         } else if (!res) {
+            done(null, '');
          } else {
-            if (!res) {
-               done(null, '');
+            ifCondition = `${ifCondition}{${removeSourceMap(res)}}`;
+            if (module.moduleNo) {
+               loaders[module.moduleNo.plugin](module.moduleNo, base, (err, res) => {
+                  if (err) {
+                     done(err);
+                  } else if (!res) {
+                     done(null, '');
+                  } else {
+                     elseCondition = `${elseCondition}{${removeSourceMap(res)}}`;
+                     done(null, ifCondition + elseCondition);
+                  }
+               });
             } else {
-               ifCondition = ifCondition + '{' + removeSourceMap(res) + '}';
-               if (module.moduleNo) {
-                  loaders[module.moduleNo.plugin](module.moduleNo, base, function(err, res) {
-                     if (err) {
-                        done(err);
-                     } else {
-                        if (!res) {
-                           done(null, '');
-                        } else {
-                           elseCondition = elseCondition + '{' + removeSourceMap(res) + '}';
-                           done(null, ifCondition + elseCondition);
-                        }
-                     }
-                  });
-               } else {
-                  done(null, ifCondition);
-               }
+               done(null, ifCondition);
             }
          }
       });
@@ -347,15 +341,13 @@ function removeSourceMap(res) {
  */
 const ifCondition = 'if(typeof window !== "undefined")';
 function browserLoader(module, base, done) {
-   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+   loaders[module.moduleIn.plugin](module.moduleIn, base, (err, res) => {
       if (err) {
          done(err);
+      } else if (!res) {
+         done(null, '');
       } else {
-         if (!res) {
-            done(null, '');
-         } else {
-            done(null, ifCondition + '{' + removeSourceMap(res) + '}');
-         }
+         done(null, `${ifCondition}{${removeSourceMap(res)}}`);
       }
    });
 }
@@ -367,7 +359,7 @@ function browserLoader(module, base, done) {
  */
 function optionalLoader(module, base, done) {
    not404error = true;
-   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+   loaders[module.moduleIn.plugin](module.moduleIn, base, (err, res) => {
       not404error = false;
       if (err || !res) {
          done(null, '');
@@ -385,11 +377,11 @@ function optionalLoader(module, base, done) {
 function textLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+            done(null, `define("${module.fullName}", function() {return ${JSON.stringify(res)};});`);
          }
       }, 'textLoader')
    );
@@ -407,7 +399,7 @@ function baseTextLoader(module, base, done) {
 }
 
 function readFile(fullPath, done) {
-   fs.readFile(fullPath, 'utf8', function(err, file) {
+   fs.readFile(fullPath, 'utf8', (err, file) => {
       currentFile = fullPath;
       if (err) {
          done(err);
@@ -427,21 +419,19 @@ function readFile(fullPath, done) {
 function tmplLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, html) {
+      ignoreIfNoFile((err, html) => {
          if (err) {
             done(err);
+         } else if (module.amd && html) {
+            done(null, html);
          } else {
-            if (module.amd && html) {
-               done(null, html);
-            } else {
-               /**
+            /**
                 * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
                 * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
                 * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за tmpl шаблоном
                 * и упадёт.
                 */
-               done(null, `define('${module.fullName}', '');`);
-            }
+            done(null, `define('${module.fullName}', '');`);
          }
       }, 'tmplLoader')
    );
@@ -458,7 +448,7 @@ function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
       if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
          logger.warning({
-            message: 'Potential 404 error for loader ' + loaderName,
+            message: `Potential 404 error for loader ${loaderName}`,
             filePath: currentFile,
             error: err
          });
@@ -494,9 +484,9 @@ function onlyForIE10AndAbove(f, modName) {
          let result;
          if (ifConditionThemes) {
             const indexVar = res.indexOf('var style = document.createElement(');
-            result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
+            result = `${ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar)}}`;
          } else {
-            result = ifCondition + res + '}';
+            result = `${ifCondition + res}}`;
          }
          f(null, result);
       }
@@ -511,12 +501,12 @@ function onlyForIE10AndAbove(f, modName) {
  * @return {Function}
  */
 function asText(done, relPath, withPlugin) {
-   withPlugin = withPlugin ? withPlugin + '!/' : '';
+   withPlugin = withPlugin ? `${withPlugin}!/` : '';
    return function(err, res) {
       if (err) {
          done(err);
       } else {
-         done(null, 'define("' + withPlugin + relPath.replace(dblSlashes, '/') + '", ' + JSON.stringify(res) + ');');
+         done(null, `define("${withPlugin}${relPath.replace(dblSlashes, '/')}", ${JSON.stringify(res)});`);
       }
    };
 }
@@ -532,7 +522,7 @@ function asModuleWithContent(f, modName) {
       if (err) {
          f(err);
       } else {
-         f(null, 'define("' + modName + '", ' + res + ');');
+         f(null, `define("${modName}", ${res});`);
       }
    };
 }
@@ -548,16 +538,16 @@ function styleTagLoader(f) {
          f(err);
       } else {
          const code =
-            'function() {\
+            `function() {\
 var style = document.createElement("style"),\
 head = document.head || document.getElementsByTagName("head")[0];\
 style.type = "text/css";\
 style.setAttribute("data-vdomignore", "true");\
-style.appendChild(document.createTextNode(' +
-            JSON.stringify(res) +
-            '));\
+style.appendChild(document.createTextNode(${
+   JSON.stringify(res)
+}));\
 head.appendChild(style);\
-}';
+}`;
          f(null, code);
       }
    };
@@ -625,14 +615,11 @@ function i18nLoader(module, base, done) {
       return done(null, getTemplateI18nModule(module));
    }
 
-   const noCssDeps = module.deps.filter(function(d) {
-      //не позвоялем явно загрузить css
-      return d.indexOf('native-css!') === -1;
-   });
+   const noCssDeps = module.deps.filter(d => d.indexOf('native-css!') === -1);
 
    const noLangDeps = [];
    const langDeps = [];
-   deps.concat(noCssDeps).forEach(function(d) {
+   deps.concat(noCssDeps).forEach((d) => {
       if (d.match(langRegExp) === null) {
          noLangDeps.push(d);
       } else {
@@ -642,15 +629,15 @@ function i18nLoader(module, base, done) {
 
    // дописываем зависимость только от необходимого языка
    const result =
-      'define("' +
-      module.fullName +
-      '", ' +
-      JSON.stringify(noLangDeps) +
-      ', function(i18n) {var langDep = ' +
-      JSON.stringify(langDeps) +
-      '.filter(function(dep){var lang = dep.match(' +
-      langRegExp +
-      '); if (lang && lang[1] == i18n.getLang()){return dep;}}); if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});';
+      `define("${
+         module.fullName
+      }", ${
+         JSON.stringify(noLangDeps)
+      }, function(i18n) {var langDep = ${
+         JSON.stringify(langDeps)
+      }.filter(function(dep){var lang = dep.match(${
+         langRegExp
+      }); if (lang && lang[1] == i18n.getLang()){return dep;}}); if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});`;
 
    done(null, result);
 }

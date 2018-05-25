@@ -6,7 +6,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
 module.exports = function(moduleInfo, pool) {
-   return through.obj(async function(file, encoding, callback) {
+   return through.obj(async(file, encoding, callback) => {
       try {
          if (file.extname !== '.html' || path.dirname(file.path) !== moduleInfo.output) {
             callback(null, file);
@@ -21,8 +21,8 @@ module.exports = function(moduleInfo, pool) {
       } catch (error) {
          logger.error({
             message: "Ошибка builder'а при паковке html",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

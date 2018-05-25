@@ -33,9 +33,9 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                'Необходимо удалить лишний CSS-файл';
             logger.warning({
-               message: message,
+               message,
                filePath: cssInSources,
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -53,9 +53,9 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.warning({
-               error: error,
+               error,
                filePath: file.history[0],
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -79,8 +79,8 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при компиляции less",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.history[0]
          });
       }

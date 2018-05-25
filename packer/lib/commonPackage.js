@@ -51,10 +51,7 @@ PackStorage.prototype.isNodeResolved = function(defineName) {
 };
 PackStorage.prototype.isNodesResolved = function(defineNamesArray) {
    const self = this;
-   return !defineNamesArray.filter(function(defineName) {
-      return !self.isNodeResolved(defineName);
-   }).length;
-
+   return !defineNamesArray.filter(defineName => !self.isNodeResolved(defineName)).length;
 };
 PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
    const args = [];
@@ -63,17 +60,17 @@ PackStorage.prototype.generateArgumentsString = function(defineNamesArray) {
       var depWithoutComplexPlugins;
 
       if (dep.indexOf('css!') > -1) {
-         args.push('"' + dep + '"');
+         args.push(`"${dep}"`);
       } else if (dep.indexOf('i18n!') > -1) {
          args.push('rk');
       } else if (this.isNodeResolved(dep)) {
-         args.push('defineStorage["' + dep + '"]');
+         args.push(`defineStorage["${dep}"]`);
       } else {
          depWithoutComplexPlugins = dep.replace(complexPlugins, '');
          if (this.isNodeResolved(depWithoutComplexPlugins)) {
-            args.push('defineStorage["' + depWithoutComplexPlugins + '"]');
+            args.push(`defineStorage["${depWithoutComplexPlugins}"]`);
          } else if (specialPlugins.test(depWithoutComplexPlugins)) {
-            args.push('defineStorage["preloadFunc"]("' + depWithoutComplexPlugins + '")');
+            args.push(`defineStorage["preloadFunc"]("${depWithoutComplexPlugins}")`);
          } else {
             return new Error('Can\'t resolve deps');
          }
@@ -101,14 +98,14 @@ function copyFile(source, target, cb) {
    let cbCalled = false;
 
    const rd = fs.createReadStream(source);
-   rd.on('error', function(err) {
+   rd.on('error', (err) => {
       done(err);
    });
    const wr = fs.createWriteStream(target);
-   wr.on('error', function(err) {
+   wr.on('error', (err) => {
       done(err);
    });
-   wr.on('close', function() {
+   wr.on('close', () => {
       done();
    });
    rd.pipe(wr);
@@ -128,15 +125,12 @@ function copyFile(source, target, cb) {
  * @return {String}
  */
 function generateFakeModules(filesToPack, themeName, staticHtmlName) {
-   return '(function(){\n' + filesToPack.filter(function removeControls(module) {
+   return `(function(){\n${filesToPack.filter(function removeControls(module) {
       if (themeName || !process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1) {
          return !~module.fullName.indexOf('SBIS3.CONTROLS');
-      } else {
-         return true;
       }
-   }).map(function(module) {
-      return 'define(\'' + module.fullName + '\', \'\');';
-   }).join('\n') + '\n})();';
+      return true;
+   }).map(module => `define('${module.fullName}', '');`).join('\n')}\n})();`;
 }
 
 /**
@@ -148,15 +142,8 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
  */
 function prepareOrderQueue(dg, orderQueue, applicationRoot) {
    const cssFromCDN = /css!\/cdn\//;
-   return orderQueue.filter(function(dep) {
-      /**
-       * Проверяем чтобы упоминания cdn не было не только в пути, но и в названии
-       * самого модуля, поскольку пути может и не быть по причине отсутствия в
-       * module-dependencies
-       */
-      return dep.path ? !CDN.test(dep.path.replace(dblSlashes, '/'))
-         : dep.module ? !cssFromCDN.test(dep.module) : true;
-   })
+   return orderQueue.filter(dep => (dep.path ? !CDN.test(dep.path.replace(dblSlashes, '/'))
+      : dep.module ? !cssFromCDN.test(dep.module) : true))
       .map(function parseModule(dep) {
          const meta = getMeta(dep.module);
          if (meta.plugin === 'is') {
@@ -181,23 +168,23 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
          }
          return meta;
       })
-      .filter(function(module) {
+      .filter((module) => {
          if (module.plugin === 'is') {
             if (module.moduleYes && !module.moduleYes.fullPath) {
-               logger.warning('Empty file name: ' + module.moduleYes.fullName);
+               logger.warning(`Empty file name: ${module.moduleYes.fullName}`);
                return false;
             }
             if (module.moduleNo && !module.moduleNo.fullPath) {
-               logger.warning('Empty file name: ' + module.moduleNo.fullName);
+               logger.warning(`Empty file name: ${module.moduleNo.fullName}`);
                return false;
             }
          } else if (module.plugin === 'browser' || module.plugin === 'optional') {
             if (module.moduleIn && !module.moduleIn.fullPath) {
-               logger.warning('Empty file name: ' + module.moduleIn.fullName);
+               logger.warning(`Empty file name: ${module.moduleIn.fullName}`);
                return false;
             }
          } else if (!module.fullPath) {
-            logger.warning('Empty file name: ' + module.fullName);
+            logger.warning(`Empty file name: ${module.fullName}`);
             return false;
          }
          return true;
@@ -246,7 +233,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
  * @return {{js: Array, css: Array, dict: Object, cssForLocale: Object}}
  */
 function prepareResultQueue(orderQueue, applicationRoot) {
-   const pack = orderQueue.reduce(function(memo, module) {
+   const pack = orderQueue.reduce((memo, module) => {
       if (module.plugin === 'is') {
          if (!memo.paths[module.moduleYes.fullPath]) {
             if (module.moduleYes && module.moduleYes.plugin === 'css') {
@@ -272,38 +259,38 @@ function prepareResultQueue(orderQueue, applicationRoot) {
                memo.paths[module.moduleIn.fullPath] = true;
             }
          }
-      } else {
-         if (!memo.paths[module.fullPath]) {
-            if (module.plugin === 'css') {
-               memo.css.push(module);
-            } else {
-               const matchLangArray = module.fullName.match(langRe);
+      } else if (!memo.paths[module.fullPath]) {
+         if (module.plugin === 'css') {
+            memo.css.push(module);
+         } else {
+            const matchLangArray = module.fullName.match(langRe);
 
-               /*if (matchLangArray !== null && (module.plugin === 'text' || module.plugin === 'js')) {
+            /* if (matchLangArray !== null && (module.plugin === 'text' || module.plugin === 'js')) {
                         var locale = matchLangArray[1];
                         (memo.dict[locale] ? memo.dict[locale]: memo.dict[locale] = []).push(module);
                         //в итоге получится memo.dict = {'en-US': [modules], 'ru-RU': [modules], ...}
                     }
                     else */
-               if (matchLangArray !== null && module.plugin === 'native-css') {
-                  const locale = matchLangArray[1];
-                  (memo.cssForLocale[locale] ? memo.cssForLocale[locale] : memo.cssForLocale[locale] = []).push(module);
+            if (matchLangArray !== null && module.plugin === 'native-css') {
+               const locale = matchLangArray[1];
+               (memo.cssForLocale[locale] ? memo.cssForLocale[locale] : memo.cssForLocale[locale] = []).push(module);
 
-                  //в итоге получится memo.cssForLocale = {'en-US': [modules], 'ru-RU': [modules], ...} только теперь для css-ок
-               } else {
-                  memo.js.push(module);
-               }
+               // в итоге получится memo.cssForLocale = {'en-US': [modules], 'ru-RU': [modules], ...} только теперь для css-ок
+            } else {
+               memo.js.push(module);
             }
-            memo.paths[module.fullPath] = true;
          }
+         memo.paths[module.fullPath] = true;
       }
       return memo;
-   }, {css: [], js: [], dict: {}, cssForLocale: {}, paths: {}});
+   }, {
+      css: [], js: [], dict: {}, cssForLocale: {}, paths: {}
+   });
 
-   //Удалим все модули локализации добавленные жёсткими зависимостями от i18n.
+   // Удалим все модули локализации добавленные жёсткими зависимостями от i18n.
    pack.js = packerDictionary.deleteModulesLocalization(pack.js);
 
-   //Запакуем словари.
+   // Запакуем словари.
    pack.dict = packerDictionary.packerDictionary(pack.js, applicationRoot);
 
    return pack;
@@ -323,9 +310,9 @@ function prepareResultQueue(orderQueue, applicationRoot) {
  */
 function nativePackFiles(filesToPack, base, done, themeName) {
    if (filesToPack && filesToPack.length) {
-      async.mapLimit(filesToPack, 5, function(module, done) {
+      async.mapLimit(filesToPack, 5, (module, done) => {
          getLoader(module.plugin)(module, base, done, themeName);
-      }, function(err, result) {
+      }, (err, result) => {
          if (err) {
             done(err);
          } else {
@@ -379,7 +366,7 @@ async function limitingNativePackFiles(filesToPack, base) {
 
       await pMap(
          filesToPack,
-         async module => {
+         async(module) => {
             const fullPath = module.fullPath ? module.fullPath
                : module.moduleYes ? module.moduleYes.fullPath : null;
 
@@ -404,9 +391,8 @@ async function limitingNativePackFiles(filesToPack, base) {
          }
       );
       return result;
-   } else {
-      return '';
    }
+   return '';
 }
 
 /**
@@ -429,7 +415,7 @@ function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlNa
    isOfflineClient = checkItIsOfflineClient(applicationRoot);
 
    async.parallel({
-      js: nativePackFiles.bind(null, orderQueue.js.filter(function(node) {
+      js: nativePackFiles.bind(null, orderQueue.js.filter((node) => {
          /** TODO
           * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
           * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
@@ -446,21 +432,20 @@ function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlNa
       css: packCSS.bind(null, orderQueue.css.filter(function removeControls(module) {
          // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
          if (themeName || !process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1 || isOfflineClient) {
-            //TODO Косытыль чтобы в пакет не попадали css контролов. Необходимо только для PRESTO И CARRY.
+            // TODO Косытыль чтобы в пакет не попадали css контролов. Необходимо только для PRESTO И CARRY.
             return !module.fullName.startsWith('css!SBIS3.CONTROLS/') && !module.fullName.startsWith('css!Controls/');
-         } else {
-            return true;
          }
+         return true;
       }).map(function onlyPath(module) {
          return module.fullPath;
       }), applicationRoot),
-      dict: function(callback) {
+      dict(callback) {
          // нужно вызвать packer для каждой локали
          const dictAsyncParallelArgs = {};
-         Object.keys(orderQueue.dict).map(function(locale) {
+         Object.keys(orderQueue.dict).map((locale) => {
             dictAsyncParallelArgs[locale] = nativePackFiles.bind(null, orderQueue.dict[locale], applicationRoot);
          });
-         async.parallel(dictAsyncParallelArgs, function(err, result) {
+         async.parallel(dictAsyncParallelArgs, (err, result) => {
             if (err) {
                done(err);
             } else {
@@ -468,15 +453,15 @@ function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlNa
             }
          });
       },
-      cssForLocale: function(callback) {
+      cssForLocale(callback) {
          // нужно вызвать packer для каждой локали
          const dictAsyncParallelArgs = {};
-         Object.keys(orderQueue.cssForLocale).map(function(locale) {
+         Object.keys(orderQueue.cssForLocale).map((locale) => {
             dictAsyncParallelArgs[locale] = packCSS.bind(null, orderQueue.cssForLocale[locale].map(function onlyPath(module) {
                return module.fullPath;
             }), applicationRoot);
          });
-         async.parallel(dictAsyncParallelArgs, function(err, result) {
+         async.parallel(dictAsyncParallelArgs, (err, result) => {
             if (err) {
                done(err);
             } else {
@@ -484,17 +469,13 @@ function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlNa
             }
          });
       }
-   }, function(err, result) {
+   }, (err, result) => {
       if (err) {
          done(err);
       } else {
          done(null, {
-            js: [generateFakeModules(orderQueue.css, themeName, staticHtmlName), result.js].filter(function(i) {
-               return !!i;
-            }).join('\n'),
-            css: result.css.filter(function(i) {
-               return !!i;
-            }),
+            js: [generateFakeModules(orderQueue.css, themeName, staticHtmlName), result.js].filter(i => !!i).join('\n'),
+            css: result.css.filter(i => !!i),
             dict: result.dict,
             cssForLocale: result.cssForLocale
          });
@@ -503,10 +484,10 @@ function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlNa
 }
 
 module.exports = {
-   prepareOrderQueue: prepareOrderQueue,
-   prepareResultQueue: prepareResultQueue,
-   limitingNativePackFiles: limitingNativePackFiles,
-   getJsAndCssPackage: getJsAndCssPackage,
-   getLoader: getLoader,
-   copyFile: copyFile
+   prepareOrderQueue,
+   prepareResultQueue,
+   limitingNativePackFiles,
+   getJsAndCssPackage,
+   getLoader,
+   copyFile
 };

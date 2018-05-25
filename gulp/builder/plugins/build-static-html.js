@@ -12,7 +12,7 @@ const transliterate = require('../../../lib/transliterate'),
 
 module.exports = function(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(
-      function(file, encoding, callback) {
+      (file, encoding, callback) => {
          callback(null, file);
       },
       async function(callback) {
@@ -25,7 +25,7 @@ module.exports = function(config, changesStore, moduleInfo, modulesMap) {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             const results = await pMap(
                Object.keys(componentsInfo),
-               async filePath => {
+               async(filePath) => {
                   try {
                      const result = await generateStaticHtmlForJs(
                         filePath,
@@ -42,9 +42,9 @@ module.exports = function(config, changesStore, moduleInfo, modulesMap) {
                   } catch (error) {
                      logger.error({
                         message: 'Ошибка при генерации статической html для JS',
-                        filePath: filePath,
-                        error: error,
-                        moduleInfo: moduleInfo
+                        filePath,
+                        error,
+                        moduleInfo
                      });
                   }
                   return null;
@@ -71,8 +71,8 @@ module.exports = function(config, changesStore, moduleInfo, modulesMap) {
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",
-               error: error,
-               moduleInfo: moduleInfo
+               error,
+               moduleInfo
             });
          }
          callback();

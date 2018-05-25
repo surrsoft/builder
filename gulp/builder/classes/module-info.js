@@ -9,24 +9,24 @@ class ModuleInfo extends BaseModuleInfo {
       super(moduleName, moduleResponsible, modulePath);
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
 
-      //объект для записи contents.json
-      //availableLanguage, defaultLanguage и dictionary добавляются только при локализации
+      // объект для записи contents.json
+      // availableLanguage, defaultLanguage и dictionary добавляются только при локализации
       this.contents = {
          'htmlNames': {},
          'jsModules': {},
          'modules': {},
-         'requirejsPaths': {}, //TODO: Удалить
-         'xmlContents': {} //TODO: Удалить
+         'requirejsPaths': {}, // TODO: Удалить
+         'xmlContents': {} // TODO: Удалить
       };
 
-      //объект для записи routes-info.json
+      // объект для записи routes-info.json
       this.routesInfo = {};
 
-      //объект для записи static_templates.json
-      //соответствие запроса html физическиому расположению файла
+      // объект для записи static_templates.json
+      // соответствие запроса html физическиому расположению файла
       this.staticTemplates = {};
 
-      //объект для записи navigation-modules.json
+      // объект для записи navigation-modules.json
       this.navigationModules = [];
    }
 }

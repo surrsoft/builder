@@ -27,7 +27,7 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
    if (node) {
       if (node.mark > 0) {
          if (node.mark === 1) {
-            logger.warning('Cycle dependency detected: ' + this._path.join(', '));
+            logger.warning(`Cycle dependency detected: ${this._path.join(', ')}`);
          }
          this._path.pop();
          return;
@@ -69,7 +69,7 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
       return [];
    }
 
-   Object.keys(this._nodes).forEach(function(node) {
+   Object.keys(this._nodes).forEach((node) => {
       // Fill meta
       self._nodes[node].mark = 0;
       self._nodes[node].weight = -1;
@@ -78,18 +78,12 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
    startNodes.forEach(this._visitNode.bind(this, maxLevel));
 
    // Iterate over all nodes
-   return Object.keys(this._nodes).map(function(k) {
+   return Object.keys(this._nodes).map((k) => {
       // node-name -> node (+ module name)
       const meta = self._nodes[k];
       meta.module = k;
       return meta;
-   }).filter(function(node) {
-      // leave only the nodes that have weight > 0, that is visited when traversing
-      return node.weight >= 0;
-   }).sort(function(a, b) {
-      // sort by weight
-      return a.weight - b.weight;
-   });
+   }).filter(node => node.weight >= 0).sort((a, b) => a.weight - b.weight);
 };
 
 /**
@@ -150,9 +144,8 @@ DepGraph.prototype.fromJSON = function(json) {
 DepGraph.prototype.getDependenciesFor = function(name) {
    if (this.hasNode(name)) {
       return (this._links[name] || []).slice();
-   } else {
-      return [];
    }
+   return [];
 };
 
 /**

@@ -1,9 +1,9 @@
 'use strict';
 
-//логгер - прежде всего
+// логгер - прежде всего
 require('../../lib/logger').setGulpLogger();
 
-//ws должен быть вызван раньше чем первый global.requirejs
+// ws должен быть вызван раньше чем первый global.requirejs
 require('../helpers/node-ws').init();
 
 const
@@ -14,7 +14,7 @@ const
 let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
-   //eslint-disable-next-line no-console
+   // eslint-disable-next-line no-console
    console.log('[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ', 'Unhandled Rejection at:\n', p, '\nreason:\n', reason);
    process.exit(1);
 });
@@ -28,5 +28,5 @@ async function collectWords(modulePath, filePath, componentsPropertiesFilePath) 
 }
 
 workerPool.worker({
-   collectWords: collectWords,
+   collectWords,
 });

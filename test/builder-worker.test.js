@@ -1,4 +1,4 @@
-/* eslint-disable promise/prefer-await-to-then*/
+/* eslint-disable promise/prefer-await-to-then */
 
 'use strict';
 
@@ -29,8 +29,8 @@ const prepareTest = async function() {
    await fs.copy(fixtureFolder, workspaceFolder);
 };
 
-describe('gulp/builder/worker.js', function() {
-   it('тест с минимально допустимыми входными данными', async function() {
+describe('gulp/builder/worker.js', () => {
+   it('тест с минимально допустимыми входными данными', async() => {
       const pool = workerPool.pool(workerPath);
 
       try {
@@ -54,7 +54,7 @@ describe('gulp/builder/worker.js', function() {
          await pool.terminate();
       }
    });
-   it('тест с обычными входными данными', async function() {
+   it('тест с обычными входными данными', async() => {
       const pool = workerPool.pool(workerPath);
 
       try {
@@ -90,34 +90,30 @@ describe('gulp/builder/worker.js', function() {
          await pool.terminate();
       }
    });
-   it('тест корректности возвращаемых ошибок', async function() {
+   it('тест корректности возвращаемых ошибок', async() => {
       const pool = workerPool.pool(workerPath);
 
       try {
          await prepareTest();
 
          const promiseParseJsComponent = pool.exec('parseJsComponent', ['define(']);
-         await expect(promiseParseJsComponent).to.be.rejected.then(function(error) {
-            return expect(error).to.have.property(
-               'message',
-               'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
-            );
-         });
+         await expect(promiseParseJsComponent).to.be.rejected.then(error => expect(error).to.have.property(
+            'message',
+            'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
+         ));
 
          const promiseParseRoutes = pool.exec('parseRoutes', ['define(']);
-         await expect(promiseParseRoutes).to.be.rejected.then(function(error) {
-            return expect(error).to.have.property(
-               'message',
-               'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
-            );
-         });
+         await expect(promiseParseRoutes).to.be.rejected.then(error => expect(error).to.have.property(
+            'message',
+            'Ошибка при парсинге: Error: Line 1: Unexpected end of input'
+         ));
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
          const promise = pool.exec('buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
 
-         return expect(promise).to.be.rejected.then(function(error) {
-            //заменяем слеши, иначе не сравнить на linux и windows одинаково
+         return expect(promise).to.be.rejected.then((error) => {
+            // заменяем слеши, иначе не сравнить на linux и windows одинаково
             const errorMessage = error.message.replace(/\\/g, '/');
             return lib
                .trimLessError(errorMessage)

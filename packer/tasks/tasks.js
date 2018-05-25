@@ -19,7 +19,7 @@ const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
  */
 function gruntCollectDependencies(grunt) {
    return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача сбора зависимостей.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача сбора зависимостей.`);
 
       let root = this.data.root,
          application = this.data.application,
@@ -27,18 +27,18 @@ function gruntCollectDependencies(grunt) {
          taskDone = this.async(),
          jsFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
       sourceFiles.sort();
       sourceFiles
          .filter(function isDemo(pathToSource) {
             return !isDemoModule.test(pathToSource);
          })
-         .forEach(function(pathToSource) {
+         .forEach((pathToSource) => {
             jsFiles.push(path.join(applicationRoot, pathToSource));
          });
 
-      makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, function(err, jsonGraph) {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача сбора зависимостей выполнена.');
+      makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, (err, jsonGraph) => {
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача сбора зависимостей выполнена.`);
          if (err) {
             taskDone(err);
          } else {
@@ -56,7 +56,7 @@ function gruntCollectDependencies(grunt) {
  */
 function gruntPackModules(grunt) {
    return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки зависимостей.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки зависимостей.`);
 
       let root = this.data.root,
          application = this.data.application,
@@ -66,7 +66,7 @@ function gruntPackModules(grunt) {
          taskDone, dg;
 
       taskDone = function() {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки зависимостей выполнена.');
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки зависимостей выполнена.`);
          done();
       };
 
@@ -76,8 +76,8 @@ function gruntPackModules(grunt) {
 
       dg = modDeps.getDependencyGraphSync(applicationRoot);
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
@@ -118,8 +118,8 @@ function gruntPackCSS(grunt) {
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
@@ -131,20 +131,20 @@ function gruntPackCSS(grunt) {
 
 function gruntPackJS(grunt) {
    return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки js.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки js.`);
 
       let root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
       packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки js выполнена.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки js выполнена.`);
    };
 }
 

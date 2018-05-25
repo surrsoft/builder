@@ -15,17 +15,17 @@ const appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '
    resourceRoot = '/';
 
 const wsLogger = {
-   error: function(tag, msg, err) {
+   error(tag, msg, err) {
       let stack = '';
       if (err && err.hasOwnProperty('stack')) {
-         stack = ': ' + err.stack;
+         stack = `: ${err.stack}`;
       }
       logger.info(`WS error: ${tag}::${msg}${stack}`);
    },
-   info: function(tag, msg) {
+   info(tag, msg) {
       logger.debug(`WS info: ${tag}::${msg}`);
    },
-   log: function(tag, msg) {
+   log(tag, msg) {
       logger.debug(`WS log: ${tag}::${msg}`);
    }
 };
@@ -43,16 +43,16 @@ function removeLeadingSlash(filePath) {
 
 function _init() {
    global.wsConfig = {
-      appRoot: appRoot,
-      wsRoot: wsRoot,
-      resourceRoot: resourceRoot
+      appRoot,
+      wsRoot,
+      resourceRoot
    };
    global.wsBindings = {
-      ITransport: function() {
+      ITransport() {
          const e = new Error();
-         throw new Error('ITransport is not implemented in build environment.' + e.stack);
+         throw new Error(`ITransport is not implemented in build environment.${e.stack}`);
       },
-      ILogger: function() {
+      ILogger() {
          return wsLogger;
       }
    };
@@ -88,12 +88,12 @@ function _init() {
          'WS.Data': 'ws-data/WS.Data'
       }
    };
-   loadContents(appContents, true, {service: appRoot});
+   loadContents(appContents, true, { service: appRoot });
 }
 
 let initialized = false;
 module.exports = {
-   init: function() {
+   init() {
       try {
          if (!initialized) {
             _init();

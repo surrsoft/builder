@@ -163,26 +163,23 @@ function getDependencies(grunt, fullPath, deps) {
       }
    });
 
-   deps = deps.filter(function(i) {
+   deps = deps.filter((i) => {
       if (i.plugin === 'is') {
          const yesPlugin = i.moduleYes && i.moduleYes.plugin;
          const noPlugin = i.moduleNo && i.moduleNo.plugin;
          return !hasValue(pluginsOnlyDeps, yesPlugin) && !hasValue(pluginsOnlyDeps, noPlugin);
-      } else if (i.plugin === 'browser' || i.plugin === 'optional') {
+      } if (i.plugin === 'browser' || i.plugin === 'optional') {
          const inPlugin = i.moduleIn && i.moduleIn.plugin;
          return !hasValue(pluginsOnlyDeps, inPlugin);
-      } else {
-         return !hasValue(pluginsOnlyDeps, i.plugin);
       }
+      return !hasValue(pluginsOnlyDeps, i.plugin);
    });
 
-   //формируем объект зависимости для плагина и вставляем в начало массива зависимостей
-   plugins.map(function(name) {
-      return {
-         fullName: name,
-         amd: true
-      };
-   }).forEach(function pushPluginsDependencies(plugin) {
+   // формируем объект зависимости для плагина и вставляем в начало массива зависимостей
+   plugins.map(name => ({
+      fullName: name,
+      amd: true
+   })).forEach(function pushPluginsDependencies(plugin) {
       deps.unshift(plugin);
    });
 
@@ -214,14 +211,13 @@ function getModulePath(grunt, dep, plugin, errMes) {
             /**
              * Перебираем все доступные языки и пытаемся получить путь до любой css или json
              */
-            availableLangs.forEach(function(lang) {
+            availableLangs.forEach((lang) => {
                jsPath = i18n.getDictPath(dep.module, lang, 'json');
                cssPath = i18n.getDictPath(dep.module, lang, 'css');
                countryPath = i18n.getDictPath(dep.module, lang.split('-')[1], 'css');
 
                pathToModule = jsPath || cssPath || countryPath || '';
             });
-
          } else {
             pathToModule = requirejsPathResolver(dep.module, dep.plugin);
          }
@@ -232,7 +228,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
       pathToModule = pathToModule ? path.normalize(pathToModule).replace(dblSlashes, '/') : '';
 
       if (pathToModule) {
-         //добавляем расширение модуля в путь до работы функции requirejs.toUrl, поскольку она требует обязательного наличия расширения.
+         // добавляем расширение модуля в путь до работы функции requirejs.toUrl, поскольку она требует обязательного наличия расширения.
          let ext = path.extname(pathToModule).substr(1);
          if (!ext || (dep.plugin === 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
             switch (dep.plugin) {
@@ -253,7 +249,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
                   }
                   break;
             }
-            pathToModule = pathToModule + (ext ? '.' + ext : '');
+            pathToModule = pathToModule + (ext ? `.${ext}` : '');
          }
          pathToModule = global.requirejs.toUrl(pathToModule);
 
@@ -302,7 +298,7 @@ function registerNodeMaybe(grunt, graph, applicationRoot, dep, plugin, errMes) {
       try {
          pathToModule = getModulePath(grunt, dep, plugin, errMes);
       } catch (e) {
-         //pass;
+         // pass;
          // ловим эксепшн из pathResolver, чтобы не хламить сборку
       }
 
@@ -356,14 +352,12 @@ function getComponentForTmpl(grunt, graph, applicationRoot, mod) {
          if (text) {
             const tmplstr = global.requirejs('Core/tmpl/tmplstr');
             const config = global.requirejs('View/config');
-            const arr = tmplstr.getComponents(text, config).map(function(dp) {
-               return {
-                  type: 'Literal',
-                  value: dp
-               };
-            });
+            const arr = tmplstr.getComponents(text, config).map(dp => ({
+               type: 'Literal',
+               value: dp
+            }));
             const d = getDependencies(grunt, mod.fullPath, arr);
-            const errMes = '-------- Parent name: "' + mod.fullName + '"; Parent path: "' + mod.fullPath + '"';
+            const errMes = `-------- Parent name: "${mod.fullName}"; Parent path: "${mod.fullPath}"`;
             graph.addDependencyFor(mod.fullName, d.map(registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes)));
          }
       } catch (err) {
@@ -386,31 +380,31 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
       try {
          const deps = [];
          const resourceRoot = path.join(applicationRoot, 'resources');
-         availableLangs.forEach(function(lang) {
+         availableLangs.forEach((lang) => {
             const country = lang.split('-')[1];
-            const jsonPath = path.join(mod.fullPath, 'lang', lang, lang + '.json');
+            const jsonPath = path.join(mod.fullPath, 'lang', lang, `${lang}.json`);
             const dictPath = jsonPath.replace('.json', '.js');
             const dictModule = path.relative(resourceRoot, dictPath).replace(dblSlashes, '/').replace(isWS, 'WS').replace('.js', '');
 
-            const cssPath = path.join(mod.fullPath, 'lang', lang, lang + '.css');
-            const cssModule = 'native-css!' + path.relative(resourceRoot, cssPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
+            const cssPath = path.join(mod.fullPath, 'lang', lang, `${lang}.css`);
+            const cssModule = `native-css!${path.relative(resourceRoot, cssPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS')}`;
 
-            const countryPath = path.join(mod.fullPath, 'lang', country, country + '.css');
-            const countryModule = 'native-css!' + path.relative(resourceRoot, countryPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
+            const countryPath = path.join(mod.fullPath, 'lang', country, `${country}.css`);
+            const countryModule = `native-css!${path.relative(resourceRoot, countryPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS')}`;
 
             if (fs.existsSync(cssPath)) {
-               deps.push({plugin: 'native-css', fullPath: cssPath, fullName: cssModule});
+               deps.push({ plugin: 'native-css', fullPath: cssPath, fullName: cssModule });
             }
             if (fs.existsSync(countryPath)) {
-               deps.push({plugin: 'native-css', fullPath: countryPath, fullName: countryModule});
+               deps.push({ plugin: 'native-css', fullPath: countryPath, fullName: countryModule });
             }
 
             if (fs.existsSync(dictPath)) {
-               deps.push({plugin: 'js', fullPath: dictPath, fullName: dictModule});
+               deps.push({ plugin: 'js', fullPath: dictPath, fullName: dictModule });
             }
          });
 
-         deps.forEach(function(dep) {
+         deps.forEach((dep) => {
             if (!graph.hasNode(dep.fullName)) {
                graph.registerNode(dep.fullName, {
                   path: path.relative(applicationRoot, dep.fullPath)
@@ -418,9 +412,7 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
             }
          });
 
-         graph.addDependencyFor(mod.fullName, deps.map(function(dep) {
-            return dep.fullName;
-         }));
+         graph.addDependencyFor(mod.fullName, deps.map(dep => dep.fullName));
       } catch (err) {
          logger.warning({
             error: err
@@ -488,7 +480,7 @@ function parsePathForPresentationService(applicationRoot, fullPath) {
  */
 function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, taskDone) {
    logger.debug(`Building dependencies tree on ${jsFiles.length} files`);
-   async.eachSeries(jsFiles, function(fullPath, done) {
+   async.eachSeries(jsFiles, (fullPath, done) => {
       logger.debug(`Loading dependencies for ${fullPath}`);
       fs.readFile(fullPath, 'utf8', function moduleParser(err, res) {
          if (err) {
@@ -497,7 +489,7 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
             const ast = parseModule(res);
 
             if (ast instanceof Error) {
-               ast.message += '\nPath: ' + fullPath;
+               ast.message += `\nPath: ${fullPath}`;
                return done(ast);
             }
 
@@ -506,7 +498,6 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
                enter: function getModuleNameAndDependencies(node) {
                   if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
                      node.callee.name === 'define') {
-
                      if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                         myName = node.arguments[0].value;
                         if (node.arguments[1].type === 'ArrayExpression') {
@@ -525,7 +516,7 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
                      let needToRegister = meta.plugin === 'js' && (!jsModules[meta.module] || jsModules[meta.module] == fullPath) || meta.plugin !== 'js',
                         registeredDependencies;
 
-                     //deps = addI18NDep(meta, deps);
+                     // deps = addI18NDep(meta, deps);
 
                      errMes = `-------- Parent module: "${myName}"; Parent path: "${fullPath}"`;
 
@@ -552,7 +543,7 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
             done();
          }
       });
-   }, function(err) {
+   }, (err) => {
       if (err) {
          taskDone(err);
       } else {
@@ -569,11 +560,11 @@ function addRoot(root) {
 
 function merge(obj1, obj2) {
    const result = {};
-   Object.keys(obj1).forEach(function(name) {
+   Object.keys(obj1).forEach((name) => {
       result[name] = path.normalize(obj1[name]);
    });
 
-   Object.keys(obj2).forEach(function(name) {
+   Object.keys(obj2).forEach((name) => {
       result[name] = result[name] || path.normalize(obj2[name]);
    });
 
@@ -582,13 +573,13 @@ function merge(obj1, obj2) {
 
 function map(obj, fn) {
    const result = {};
-   Object.keys(obj).forEach(function(name) {
+   Object.keys(obj).forEach((name) => {
       result[name] = fn(obj[name]);
    });
    return result;
 }
 
-//TODO отказываемся от автоматического добавления зависомостей i18n. Удалить в 3.17.350.
+// TODO отказываемся от автоматического добавления зависомостей i18n. Удалить в 3.17.350.
 /*
 function addI18NDep(meta, deps) {
     if (meta.plugin === 'js' && meta.module.indexOf('SBIS3') == 0) {
@@ -610,7 +601,7 @@ function addI18NDep(meta, deps) {
     }
 
     return deps;
-}*/
+} */
 
 function makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, done) {
    const graph = new DepGraph(),

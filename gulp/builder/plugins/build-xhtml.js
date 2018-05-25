@@ -23,7 +23,7 @@ module.exports = function(changesStore, moduleInfo, pool) {
             return;
          }
 
-         //если xhtml не возможно скомпилировать, то запишем оригинал
+         // если xhtml не возможно скомпилировать, то запишем оригинал
          let newText = file.contents.toString();
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
@@ -34,15 +34,15 @@ module.exports = function(changesStore, moduleInfo, pool) {
             changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
             newText = resultBuild.text;
 
-            //если xhtml не возможно минифицировать, то запишем оригинал
+            // если xhtml не возможно минифицировать, то запишем оригинал
             try {
                newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
             } catch (error) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации скомпилированного XHTML',
-                  error: error,
-                  moduleInfo: moduleInfo,
+                  error,
+                  moduleInfo,
                   filePath: relativeFilePath.replace('.xhtml', '.min.xhtml')
                });
             }
@@ -50,8 +50,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка компиляции XHTML',
-               error: error,
-               moduleInfo: moduleInfo,
+               error,
+               moduleInfo,
                filePath: relativeFilePath
             });
          }
@@ -69,8 +69,8 @@ module.exports = function(changesStore, moduleInfo, pool) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при компиляции XHTML",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

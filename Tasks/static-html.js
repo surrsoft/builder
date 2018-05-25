@@ -38,7 +38,7 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
 
    helpers.recurse(
       resourcesRoot,
-      async function(fullPath, callback) {
+      async(fullPath, callback) => {
          try {
             // фильтр по файлам .html.tmpl
             if (!helpers.validateFile(fullPath, filePattern)) {
@@ -53,13 +53,13 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
                logger.error({
                   message: 'Ошибка чтения файла',
                   filePath: fullPath,
-                  error: error
+                  error
                });
                setImmediate(callback);
                return;
             }
 
-            //relativePath должен начинаться с имени модуля
+            // relativePath должен начинаться с имени модуля
             const relativePath = path.relative(resourcesRoot, fullPath);
             const htmlText = await processingTmpl.buildHtmlTmpl(
                tmplText,
@@ -98,9 +98,9 @@ module.exports = function(grunt) {
          applicationRoot = path.join(root, application),
          resourcesRoot = path.join(applicationRoot, 'resources'),
          filePattern = this.data.filePattern,
-         componentsProperties = {}; //TODO
+         componentsProperties = {}; // TODO
 
-      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, function(err) {
+      convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, (err) => {
          if (err) {
             logger.error({ error: err });
          }
@@ -164,14 +164,14 @@ module.exports = function(grunt) {
 
       if (oldHtml && oldHtml.length) {
          const start = Date.now();
-         oldHtml.forEach(function(file) {
+         oldHtml.forEach((file) => {
             const filePath = path.join(applicationRoot, file);
             try {
                fs.unlinkSync(path.join(applicationRoot, file));
             } catch (err) {
                logger.warning({
                   message: "Can't delete old html",
-                  filePath: filePath,
+                  filePath,
                   error: err
                });
             }
@@ -180,18 +180,18 @@ module.exports = function(grunt) {
       }
 
       const config = {
-         root: root,
-         application: application,
-         servicesPath: servicesPath,
-         userParams: userParams,
-         globalParams: globalParams,
+         root,
+         application,
+         servicesPath,
+         userParams,
+         globalParams,
          urlServicePath: grunt.option('url-service-path') ? grunt.option('url-service-path') : application,
          wsPath: splittedCore ? 'resources/WS.Core/' : 'ws/'
       };
 
       helpers.recurse(
          applicationRoot,
-         function(file, callback) {
+         (file, callback) => {
             if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
                fs.readFile(file, (err, text) => {
                   if (err) {
@@ -208,14 +208,14 @@ module.exports = function(grunt) {
                      logger.error({
                         message: 'Возникла ошибка при парсинге файла',
                         filePath: file,
-                        error: error
+                        error
                      });
                      callback();
                      return;
                   }
 
                   generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
-                     result => {
+                     (result) => {
                         if (result) {
                            let outputPath;
                            if (splittedCore) {
@@ -232,11 +232,11 @@ module.exports = function(grunt) {
                            callback();
                         }
                      },
-                     error => {
+                     (error) => {
                         logger.error({
                            message: 'Ошибка при генерации статической html для JS',
                            filePath: file,
-                           error: error
+                           error
                         });
                         callback();
                      }
@@ -246,7 +246,7 @@ module.exports = function(grunt) {
                callback();
             }
          },
-         function(err) {
+         (err) => {
             if (err) {
                logger.error({
                   error: err
@@ -257,10 +257,10 @@ module.exports = function(grunt) {
                const sorted = helpers.sortObject(contents);
 
                grunt.file.write(path.join(resourcesRoot, 'contents.json'), JSON.stringify(sorted, null, 2));
-               grunt.file.write(path.join(resourcesRoot, 'contents.js'), 'contents=' + JSON.stringify(sorted));
+               grunt.file.write(path.join(resourcesRoot, 'contents.js'), `contents=${JSON.stringify(sorted)}`);
             } catch (error) {
                logger.error({
-                  error: error
+                  error
                });
             }
 

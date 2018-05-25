@@ -5,7 +5,7 @@ const
    fs = require('fs-extra');
 
 function getConfigPath(argv) {
-   //для получения 1 параметра --config не нужна сторонняя библиотека
+   // для получения 1 параметра --config не нужна сторонняя библиотека
    for (const argument of argv) {
       if (argument.startsWith('--config=')) {
          return argument.replace('--config=', '').replace(/"/g, '');
@@ -52,10 +52,9 @@ function checkModules(rawConfig) {
          throw new Error(`Директория ${module.path} не существует`);
       }
    }
-
 }
 
 module.exports = {
-   getConfigPath: getConfigPath,
+   getConfigPath,
    readConfigFileSync: readConfigFile
 };

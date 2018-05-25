@@ -8,7 +8,7 @@ const
    runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
    logger = require('../../../lib/logger').logger();
 
-//cache и config для builder'а и grubber'а - разные классы!
+// cache и config для builder'а и grubber'а - разные классы!
 function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
    if (!localizationEnable) {
       return function generateJson(done) {
@@ -30,7 +30,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
             });
          }
 
-         //если components-properties поменялись, то нужно сбросить кеш для верстки
+         // если components-properties поменялись, то нужно сбросить кеш для верстки
          let isComponentsPropertiesChanged = false;
          const filePath = path.join(config.cachePath, 'components-properties.json');
          if (await fs.pathExists(filePath)) {
@@ -40,7 +40,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
             } catch (err) {
                logger.warning({
                   message: 'Не удалось прочитать файл кеша',
-                  filePath: filePath,
+                  filePath,
                   error: err
                });
             }
@@ -56,12 +56,12 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
          if (isComponentsPropertiesChanged) {
             logger.info('Кеш для файлов верстки будет сброшен, если был.');
             cache.setDropCacheForMarkup();
-            await fs.writeJSON(filePath, resultJsonGenerator.index, {spaces: 1});
+            await fs.writeJSON(filePath, resultJsonGenerator.index, { spaces: 1 });
          }
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а. Задача generateJson',
-            error: error
+            error
          });
       }
    };

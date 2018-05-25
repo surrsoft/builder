@@ -27,15 +27,15 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
       const moduleName = path.basename(modulePath);
       const cssFilePath = lessFilePath.replace('.less', '.css');
       if (await fs.pathExists(cssFilePath)) {
-         //если файл уже есть, то не нужно его перезаписывать.
-         //иначе при деплое локального стенда мы перезапишем css в исходниках.
-         //просто ругаемся и ждём, что поправят.
+         // если файл уже есть, то не нужно его перезаписывать.
+         // иначе при деплое локального стенда мы перезапишем css в исходниках.
+         // просто ругаемся и ждём, что поправят.
          const message =
             `Существующий CSS-файл мешает записи результата компиляции '${lessFilePath}'. ` +
             'Необходимо удалить лишний CSS-файл';
 
          logger.warning({
-            message: message,
+            message,
             filePath: cssFilePath
          });
          return;
@@ -65,7 +65,7 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
    } catch (error) {
       logger.warning({
          message: 'Ошибка при компиляции less файла',
-         error: error,
+         error,
          filePath: lessFilePath
       });
    }
@@ -75,7 +75,7 @@ module.exports = function(grunt) {
    grunt.registerMultiTask('convert', 'transliterate paths', async function() {
       logger.debug('Запускается задача конвертации ресурсов');
       const startTask = Date.now();
-      const doneAsync = this.async(); //eslint-disable-line no-invalid-this
+      const doneAsync = this.async(); // eslint-disable-line no-invalid-this
       const done = () => {
          logger.correctExitCode();
          doneAsync();
@@ -87,7 +87,7 @@ module.exports = function(grunt) {
          i18n = !!grunt.option('index-dict'),
          application = grunt.option('application') || '',
          applicationName = application.replace('/', '').replace(dblSlashes, ''),
-         applicationRoot = this.data.cwd, //eslint-disable-line no-invalid-this
+         applicationRoot = this.data.cwd, // eslint-disable-line no-invalid-this
          resourcesPath = path.join(applicationRoot, 'resources'),
          packaging = grunt.option('package');
 
@@ -124,15 +124,15 @@ module.exports = function(grunt) {
          }
       }
 
-      //пробуем удалить результат предудущей конвертации, если не получается, то ждём 1 секунду и снова пытаемся
+      // пробуем удалить результат предудущей конвертации, если не получается, то ждём 1 секунду и снова пытаемся
       logger.debug('Запускается удаление ресурсов');
       let errorRemove = await helpers.tryRemoveFolder(resourcesPath);
       let attemptRemove = 5;
       while (errorRemove && attemptRemove) {
-         //eslint-disable-next-line no-await-in-loop
+         // eslint-disable-next-line no-await-in-loop
          await helpers.delay(1000);
          logger.debug('Удаление завершилось с ошибкой, пробуем ещё раз');
-         //eslint-disable-next-line no-await-in-loop
+         // eslint-disable-next-line no-await-in-loop
          errorRemove = await helpers.tryRemoveFolder(resourcesPath);
          attemptRemove--;
       }
@@ -153,15 +153,15 @@ module.exports = function(grunt) {
          pathsForImportSet.add(path.dirname(modulePath));
          if (path.basename(modulePath) === 'SBIS3.CONTROLS') {
             sbis3ControlsPath = modulePath;
-            logger.debug('Путь до модуля SBIS3.CONTROLS: ' + sbis3ControlsPath);
+            logger.debug(`Путь до модуля SBIS3.CONTROLS: ${sbis3ControlsPath}`);
          }
       }
       const pathsForImport = [...pathsForImportSet];
 
-      //обработка модулей
+      // обработка модулей
       async.eachSeries(
          paths,
-         function(input, callbackForProcessingModule) {
+         (input, callbackForProcessingModule) => {
             const partsFilePath = input.replace(dblSlashes, '/').split('/');
             const moduleName = partsFilePath[partsFilePath.length - 1];
             const tsdModuleName = transliterate(moduleName);
@@ -169,8 +169,8 @@ module.exports = function(grunt) {
 
             if (applicationName === tsdModuleName) {
                logger.error(
-                  'Имя сервиса и имя модуля облака не должны совпадать. Сервис: ' + applicationName,
-                  '; Модуль: ' + tsdModuleName
+                  `Имя сервиса и имя модуля облака не должны совпадать. Сервис: ${applicationName}`,
+                  `; Модуль: ${tsdModuleName}`
                );
             }
 
@@ -181,7 +181,7 @@ module.exports = function(grunt) {
 
             helpers.recurse(
                input,
-               async function(file, callbackForProcessingFile) {
+               async(file, callbackForProcessingFile) => {
                   try {
                      const destination = path.join(
                         resourcesPath,
@@ -193,7 +193,7 @@ module.exports = function(grunt) {
                         isNavigationModule = false;
 
                      if (isJs.test(file)) {
-                        logger.debug('Читаем js-файл по пути: ' + file);
+                        logger.debug(`Читаем js-файл по пути: ${file}`);
                         text = await fs.readFile(file);
                         isNavigationModule = text.includes('Navigation/NavigationController');
                      }
@@ -245,12 +245,12 @@ module.exports = function(grunt) {
                      }
                   } catch (error) {
                      logger.error({
-                        error: error
+                        error
                      });
                      callbackForProcessingFile();
                   }
                },
-               function() {
+               () => {
                   if (listNavMod.length !== 0) {
                      if (splittedCore) {
                         const output = path.join(path.join(resourcesPath, tsdModuleName), 'navigation-modules.json');
@@ -264,7 +264,7 @@ module.exports = function(grunt) {
                }
             );
          },
-         function(err) {
+         (err) => {
             try {
                if (err) {
                   logger.error({
@@ -305,11 +305,11 @@ module.exports = function(grunt) {
                contents.buildMode = packaging ? 'release' : 'debug';
                const sorted = helpers.sortObject(contents);
                grunt.file.write(path.join(resourcesPath, 'contents.json'), JSON.stringify(sorted, null, 2));
-               grunt.file.write(path.join(resourcesPath, 'contents.js'), 'contents=' + JSON.stringify(sorted));
+               grunt.file.write(path.join(resourcesPath, 'contents.js'), `contents=${JSON.stringify(sorted)}`);
                logger.info(`Duration: ${(Date.now() - startTask) / 1000} sec`);
             } catch (error) {
                logger.error({
-                  error: error
+                  error
                });
             }
             done();

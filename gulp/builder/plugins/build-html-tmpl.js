@@ -45,8 +45,8 @@ module.exports = function(config, changesStore, moduleInfo, pool) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: 'Ошибка при обработке html-tmpl шаблона',
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.history[0]
          });
       }

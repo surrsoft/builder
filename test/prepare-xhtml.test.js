@@ -4,8 +4,8 @@ require('./init-test');
 
 const prepareXhtml = require('../lib/i18n/prepare-xhtml');
 
-describe('i18n', function() {
-   describe('prepare XHTML', function() {
+describe('i18n', () => {
+   describe('prepare XHTML', () => {
       it('empty file', () => {
          const result = prepareXhtml('', {});
          result.should.equal('');
@@ -17,14 +17,14 @@ describe('i18n', function() {
          result.should.equal('<div>{[Текст]}</div><span>{[Текст]}</span>');
       });
 
-      //title в теге <а>
+      // title в теге <а>
       it('simple a title', () => {
          const text = '<a href="/" title="Текст">';
          const result = prepareXhtml(text, {});
          result.should.equal('<a href="/" title="{[Текст]}">');
       });
 
-      //несколько видов задания простых опций
+      // несколько видов задания простых опций
       it('simple component option', () => {
          const text = '<component data-component="Test.Component">\n' +
             '   <option name="test1">Текст1</option>\n' +
@@ -67,7 +67,7 @@ describe('i18n', function() {
             '</component>');
       });
 
-      //опции с версткой - тип content
+      // опции с версткой - тип content
       it('content component option', () => {
          const text = '<component data-component="Test.Component">\n' +
             '   <option name="contentOpt"><div>Текст</div></option>\n' +
@@ -92,7 +92,7 @@ describe('i18n', function() {
             '</component>');
       });
 
-      //опции-массивы
+      // опции-массивы
       it('array component option', () => {
          const text = '<component data-component="Test.Component">\n' +
             '   <options name="arrayOpt" type="array">' +
@@ -136,9 +136,9 @@ describe('i18n', function() {
             '</component>');
       });
 
-      //опции-массивы c рекурсией
+      // опции-массивы c рекурсией
       it('recursive array component option', () => {
-         //меню - классический пример рекурсивных опций
+         // меню - классический пример рекурсивных опций
          const text = '<component data-component="Deprecated/Controls/Menu/Menu" name="Menu">\n' +
             '   <options name="data" type="array">\n' +
             '      <options>\n' +

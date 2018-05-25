@@ -9,7 +9,7 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate');
 
-//плагины, которые должны попасть в links
+// плагины, которые должны попасть в links
 const supportedPluginsForLinks = new Set([
    'is',
    'html',
@@ -27,30 +27,28 @@ const supportedPluginsForLinks = new Set([
    'remote'
 ]);
 
-//стандартные модули, которые и так всегда есть
+// стандартные модули, которые и так всегда есть
 const excludeSystemModulesForLinks = new Set(['module', 'require', 'exports']);
 
-//нужно добавить эти плагины, но сами зависимости добавлять в links не нужно
+// нужно добавить эти плагины, но сами зависимости добавлять в links не нужно
 const pluginsOnlyDeps = new Set(['cdn', 'preload', 'remote']);
 
-const parsePlugins = dep => {
-   return [
-      ...new Set(
-         dep
-            .split('!')
-            .slice(0, -1)
-            .map(depName => {
-               if (depName.includes('?')) {
-                  return depName.split('?')[1];
-               }
-               return depName;
-            })
-      )
-   ];
-};
+const parsePlugins = dep => [
+   ...new Set(
+      dep
+         .split('!')
+         .slice(0, -1)
+         .map((depName) => {
+            if (depName.includes('?')) {
+               return depName.split('?')[1];
+            }
+            return depName;
+         })
+   )
+];
 module.exports = function(changesStore, moduleInfo) {
    return through.obj(
-      function(file, encoding, callback) {
+      (file, encoding, callback) => {
          callback(null, file);
       },
       function(callback) {
@@ -60,14 +58,14 @@ module.exports = function(changesStore, moduleInfo) {
                nodes: {}
             };
 
-            const filePathToRelativeInResources = filePath => {
+            const filePathToRelativeInResources = (filePath) => {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
-               return prettyPath.replace(ext, '.min' + ext);
+               return prettyPath.replace(ext, `.min${ext}`);
             };
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
-            Object.keys(componentsInfo).forEach(filePath => {
+            Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
                if (info.hasOwnProperty('componentName')) {
                   const depsOfLink = new Set();
@@ -114,7 +112,7 @@ module.exports = function(changesStore, moduleInfo) {
             for (const filePath of cssFiles) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = helpers.prettifyPath(transliterate(relativePath));
-               const nodeName = 'css!' + prettyPath.replace('.css', '');
+               const nodeName = `css!${prettyPath.replace('.css', '')}`;
                json.nodes[nodeName] = {
                   path: filePathToRelativeInResources(filePath)
                };
@@ -123,14 +121,14 @@ module.exports = function(changesStore, moduleInfo) {
             const jsonFile = new Vinyl({
                path: 'module-dependencies.json',
                contents: Buffer.from(JSON.stringify(helpers.sortObject(json), null, 2)),
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             this.push(jsonFile);
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",
-               error: error,
-               moduleInfo: moduleInfo
+               error,
+               moduleInfo
             });
          }
          callback();

@@ -11,12 +11,12 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
 
 const languages = ['en-US', 'ru-RU'];
 
-describe('lib/i18n/normalize-key.js', function() {
-   before(async function() {
+describe('lib/i18n/normalize-key.js', () => {
+   before(async() => {
       await fs.remove(workspaceFolder);
       await fs.copy(fixtureFolder, workspaceFolder);
    });
-   after(async function() {
+   after(async() => {
       await fs.remove(workspaceFolder);
    });
    it('main', async() => {

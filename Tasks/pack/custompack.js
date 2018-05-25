@@ -27,7 +27,7 @@ module.exports = function gruntCustomPack(grunt) {
             wsRoot = await fs.pathExists(path.join(applicationRoot, 'resources/WS.Core')) ? 'resources/WS.Core' : 'ws',
             depsTree = await modDeps.getDependencyGraph(applicationRoot, bundlesOptions.splittedCore);
 
-         let sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
+         let sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
 
          /**
           * Не рассматриваем конфигурации, которые расположены в директории ws, если сборка
@@ -35,9 +35,7 @@ module.exports = function gruntCustomPack(grunt) {
           * из WS.Core и один и тот же код парсится дважды.
           */
          if (wsRoot !== 'ws') {
-            sourceFiles = sourceFiles.filter(function(pathToSource) {
-               return !/^ws/.test(pathToSource);
-            });
+            sourceFiles = sourceFiles.filter(pathToSource => !/^ws/.test(pathToSource));
          }
 
          const configsArray = await customPacker.getAllConfigs(sourceFiles, applicationRoot);

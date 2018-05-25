@@ -1,6 +1,6 @@
 'use strict';
 
-//предотвращение множественного запуска builder'а на одном кеше для предсказуемого результата.
+// предотвращение множественного запуска builder'а на одном кеше для предсказуемого результата.
 const
    logger = require('../../../lib/logger').logger(),
    path = require('path'),
@@ -27,7 +27,6 @@ function generateTaskForLock(cachePath) {
          logger.debug(`Создали файл '${lockFile}'`);
          resolve();
       });
-
    };
 }
 

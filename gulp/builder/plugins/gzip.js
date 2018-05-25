@@ -42,7 +42,7 @@ module.exports = function(moduleInfo, pool) {
          this.push(
             new Vinyl({
                base: file.base,
-               path: file.path + '.gz',
+               path: `${file.path}.gz`,
                contents: Buffer.from(gzipContent),
                history: [...file.history]
             })
@@ -50,8 +50,8 @@ module.exports = function(moduleInfo, pool) {
       } catch (error) {
          logger.error({
             message: "Ошибка builder'а при архивации",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

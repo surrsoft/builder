@@ -4,7 +4,7 @@ require('./init-test');
 
 const helpers = require('../lib/helpers');
 
-describe('helpers', function() {
+describe('helpers', () => {
    it('getFirstDirInRelativePath', () => {
       helpers.getFirstDirInRelativePath('/Test1/test2/').should.equal('Test1');
       helpers.getFirstDirInRelativePath('Test1/test1').should.equal('Test1');
@@ -22,7 +22,7 @@ describe('helpers', function() {
       helpers.prettifyPath('\\').should.equal('/');
       helpers.prettifyPath('/').should.equal('/');
 
-      helpers.prettifyPath('\\simple\\').should.equal('/simple/'); 
+      helpers.prettifyPath('\\simple\\').should.equal('/simple/');
       helpers.prettifyPath('/simple/').should.equal('/simple/');
 
       // на windows пути, которые начинаются с \\, являются сетевыми и требуют особой обработки
@@ -36,4 +36,3 @@ describe('helpers', function() {
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });
 });
-

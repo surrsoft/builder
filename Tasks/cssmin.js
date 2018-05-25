@@ -29,7 +29,7 @@ module.exports = function(grunt) {
 
          await pMap(
             self.files,
-            async value => {
+            async(value) => {
                const prettyFilePath = helpers.prettifyPath(value.dest);
                let outputFilePath = prettyFilePath;
                if (self.data.splittedCore) {
@@ -59,12 +59,10 @@ module.exports = function(grunt) {
 
                if (self.data.splittedCore) {
                   let currentNodePath = helpers.removeLeadingSlash(prettyFilePath.replace(applicationRoot, ''));
-                  const currentNode = self.nodes.filter(function(node) {
-                     return self.mDeps.nodes[node].path === currentNodePath;
-                  });
+                  const currentNode = self.nodes.filter(node => self.mDeps.nodes[node].path === currentNodePath);
                   currentNodePath = helpers.removeLeadingSlash(outputFilePath.replace(applicationRoot, ''));
                   if (currentNode.length > 0) {
-                     currentNode.forEach(function(node) {
+                     currentNode.forEach((node) => {
                         self.mDeps.nodes[node].path = currentNodePath;
                      });
                   }
@@ -75,7 +73,7 @@ module.exports = function(grunt) {
          );
 
          if (self.data.splittedCore) {
-            //пишем module-dependencies, если производили в нём изменения
+            // пишем module-dependencies, если производили в нём изменения
             await fs.writeJson(mDepsPath, self.mDeps);
          }
          done();

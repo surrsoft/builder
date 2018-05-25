@@ -32,7 +32,7 @@ function isParser(dep) {
    }
 
    return {
-      feature: feature,
+      feature,
       yes: yesModuleId,
       no: noModuleId
    };
@@ -56,7 +56,7 @@ function getMeta(dep) {
          fullName: dep,
          plugin: pluginType,
          module: moduleName,
-         encode: encode
+         encode
       };
 
    if (pluginType === 'is') {

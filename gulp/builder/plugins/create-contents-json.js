@@ -9,11 +9,11 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate');
 
 module.exports = function(config, moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+   return through.obj((file, encoding, callback) => {
       callback(null, file);
    }, function(callback) {
       try {
-         //подготовим contents.json и contents.js
+         // подготовим contents.json и contents.js
          moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
 
          if (config.version) {
@@ -22,13 +22,13 @@ module.exports = function(config, moduleInfo) {
 
          const contentsJsFile = new Vinyl({
             path: 'contents.js',
-            contents: Buffer.from('contents=' + JSON.stringify(helpers.sortObject(moduleInfo.contents))),
-            moduleInfo: moduleInfo
+            contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(moduleInfo.contents))}`),
+            moduleInfo
          });
          const contentsJsonFile = new Vinyl({
             path: 'contents.json',
             contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
-            moduleInfo: moduleInfo
+            moduleInfo
          });
 
          this.push(contentsJsFile);
@@ -36,8 +36,8 @@ module.exports = function(config, moduleInfo) {
       } catch (error) {
          logger.error({
             message: 'Ошибка Builder\'а',
-            error: error,
-            moduleInfo: moduleInfo
+            error,
+            moduleInfo
          });
       }
       callback();

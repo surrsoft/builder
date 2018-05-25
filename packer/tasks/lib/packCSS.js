@@ -8,7 +8,7 @@ const pMap = require('p-map');
 const dblSlashes = /\\/g;
 
 module.exports = {
-   gruntPackCSS: function(htmlFiles, root, packageHome) {
+   gruntPackCSS(htmlFiles, root, packageHome) {
       function collector(dom) {
          const links = dom.getElementsByTagName('link'),
             files = [],
@@ -33,7 +33,7 @@ module.exports = {
                href.indexOf('http') !== 0 &&
                href.indexOf('//') !== 0 &&
                href.indexOf('.css') !== href.length - 3) {
-               //убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
+               // убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
                href = href.replace(/\.v.+?(\.css)$/, '$1');
                files.push(href);
                elements.push(link);
@@ -42,22 +42,20 @@ module.exports = {
          }
 
          return [{
-            files: files,
+            files,
             nodes: elements,
-            before: before
+            before
          }];
       }
 
       function packer(files, root) {
-         return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(function(css) {
-            return cssHelpers.rebaseUrls(root, css, fs.readFileSync(css));
-         }).join('\n')));
+         return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(css => cssHelpers.rebaseUrls(root, css, fs.readFileSync(css))).join('\n')));
       }
 
       function getTargetNode(dom, path) {
          return domHelpers.mkDomNode(dom, 'link', {
             rel: 'stylesheet',
-            href: '/' + path.replace(dblSlashes, '/')
+            href: `/${path.replace(dblSlashes, '/')}`
          });
       }
 
@@ -75,9 +73,9 @@ module.exports = {
     * @param {String} root - корень сайта
     * @param {packCSS~callback} callback
     */
-   packCSS: function(files, root, callback) {
+   packCSS(files, root, callback) {
       function _read(css, cb) {
-         fs.readFile(css, function(err, content) {
+         fs.readFile(css, (err, content) => {
             if (err) {
                cb(err);
             } else {
@@ -86,15 +84,15 @@ module.exports = {
          });
       }
 
-      files = files.filter(function(file) {
+      files = files.filter((file) => {
          if (!fs.existsSync(file)) {
             return false;
          }
          return true;
       });
-      async.map(files, function(css, cb) {
+      async.map(files, (css, cb) => {
          _read(css, cb);
-      }, function(err, results) {
+      }, (err, results) => {
          if (err) {
             callback(err);
          } else {
@@ -107,7 +105,7 @@ module.exports = {
    promisedPackCSS: async(files, applicationRoot) => {
       const results = await pMap(
          files,
-         async css => {
+         async(css) => {
             if (await fs.pathExists(css)) {
                const content = await fs.readFile(css);
                return cssHelpers.rebaseUrls(applicationRoot, css, content.toString());

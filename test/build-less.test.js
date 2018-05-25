@@ -1,4 +1,4 @@
-/* eslint-disable promise/prefer-await-to-then*/
+/* eslint-disable promise/prefer-await-to-then */
 
 'use strict';
 
@@ -18,7 +18,7 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
    sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
    pathsForImport = [workspaceFolder];
 
-describe('build less', function() {
+describe('build less', () => {
    it('empty less', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
@@ -65,14 +65,14 @@ describe('build less', function() {
       );
    });
 
-   //важно отобразить корректно строку в которой ошибка
+   // важно отобразить корректно строку в которой ошибка
    it('less with error', () => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
 
       const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
-      return expect(promise).to.be.rejected.then(function(error) {
-         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+      return expect(promise).to.be.rejected.then((error) => {
+         // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return lib
             .trimLessError(errorMessage)
@@ -88,8 +88,8 @@ describe('build less', function() {
       const text = '@import "notExist";';
 
       const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
-      return expect(promise).to.be.rejected.then(function(error) {
-         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+      return expect(promise).to.be.rejected.then((error) => {
+         // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return lib
             .trimLessError(errorMessage)
@@ -105,8 +105,8 @@ describe('build less', function() {
       const text = '@import "Error";';
 
       const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport);
-      return expect(promise).to.be.rejected.then(function(error) {
-         //заменяем слеши, иначе не сравнить на linux и windows одинаково
+      return expect(promise).to.be.rejected.then((error) => {
+         // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
          return lib
             .trimLessError(errorMessage)

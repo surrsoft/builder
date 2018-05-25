@@ -9,37 +9,37 @@ const ConfigurationReader = require('../../helpers/configuration-reader'),
 
 class BuildConfiguration {
    constructor() {
-      //путь до файла конфигурации
+      // путь до файла конфигурации
       this.configFile = '';
 
-      //не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
+      // не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
       this.rawConfig = {};
 
-      //список объектов, содержащий в себе полную информацию о модулях.
+      // список объектов, содержащий в себе полную информацию о модулях.
       this.modules = [];
 
-      //путь до папки с кешем
+      // путь до папки с кешем
       this.cachePath = '';
 
-      //release отличается от debug наличием паковки и минизации
+      // release отличается от debug наличием паковки и минизации
       this.isReleaseMode = false;
 
-      //папка с результатами сборки
+      // папка с результатами сборки
       this.outputPath = '';
 
-      //список поддерживаемых локалей
+      // список поддерживаемых локалей
       this.localizations = [];
 
-      //локаль по умолчанию
+      // локаль по умолчанию
       this.defaultLocalization = '';
 
-      //если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
+      // если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
       this.multiService = false;
 
-      //относительный url текущего сервиса
+      // относительный url текущего сервиса
       this.urlServicePath = '';
 
-      //относительный url текущего сервиса
+      // относительный url текущего сервиса
       this.version = '';
    }
 
@@ -49,7 +49,7 @@ class BuildConfiguration {
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
-      //version есть только при сборке дистрибутива
+      // version есть только при сборке дистрибутива
       if (this.rawConfig.hasOwnProperty('version') && typeof this.rawConfig.version === 'string') {
          this.version = this.rawConfig.version;
       }
@@ -80,10 +80,10 @@ class BuildConfiguration {
       }
       this.isReleaseMode = mode === 'release';
 
-      //localization может быть списком или false
+      // localization может быть списком или false
       const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && !!this.rawConfig.localization;
 
-      //default-localization может быть строкой или false
+      // default-localization может быть строкой или false
       const hasDefaultLocalization =
          this.rawConfig.hasOwnProperty('default-localization') && !!this.rawConfig['default-localization'];
 

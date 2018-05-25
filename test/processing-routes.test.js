@@ -7,9 +7,9 @@ const chai = require('chai'),
 
 const expect = chai.expect;
 
-describe('processing routes.js', function() {
-   describe('parse routes', function() {
-      it('empty file', function() {
+describe('processing routes.js', () => {
+   describe('parse routes', () => {
+      it('empty file', () => {
          const result = processingRoutes.parseRoutes('');
          Object.getOwnPropertyNames(result).length.should.equal(0);
       });
@@ -47,7 +47,7 @@ describe('processing routes.js', function() {
          expect(result['/test_2/'].controller).to.be.null; // eslint-disable-line no-unused-expressions
       });
       it('no return routes', () => {
-         //примеры не корретного роутинга:
+         // примеры не корретного роутинга:
          // - ключ роутинга не начинаться с слеша
          // - значение роутинго - объект
          const text = 'module.exports = function (Component, Service) {\n' +
@@ -70,14 +70,14 @@ describe('processing routes.js', function() {
       });
    });
 
-   describe('prepare to save', function() {
-      it('routes info is empty', function() {
+   describe('prepare to save', () => {
+      it('routes info is empty', () => {
          const routesInfo = {};
          const jsModules = [];
          processingRoutes.prepareToSave(routesInfo, jsModules);
          Object.getOwnPropertyNames(routesInfo).length.should.equal(0);
       });
-      it('controller exist', function() {
+      it('controller exist', () => {
          const routesInfo = {
             'resources/Test.routes.js': {
                '/test.html': {
@@ -89,7 +89,7 @@ describe('processing routes.js', function() {
          processingRoutes.prepareToSave(routesInfo, jsModules);
          routesInfo['resources/Test.routes.js']['/test.html'].isMasterPage.should.equal(true);
       });
-      it('controller not exist', function() {
+      it('controller not exist', () => {
          const routesInfo = {
             'resources/Test.routes.js': {
                '/test.html': {

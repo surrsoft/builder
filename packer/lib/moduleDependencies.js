@@ -29,7 +29,7 @@ function checkModuleDependenciesSanity(applicationRoot, done) {
    }
 
    if (fs.existsSync(contentsFile) && fs.statSync(contentsFile).mtime > fs.statSync(moduleDependenciesFile).mtime) {
-      done(new Error(MODULE_DEPENDENCIES_FILENAME + ' is outdated. Please recreate with --collect-dependencies'));
+      done(new Error(`${MODULE_DEPENDENCIES_FILENAME} is outdated. Please recreate with --collect-dependencies`));
       return false;
    }
 
@@ -66,7 +66,7 @@ async function getDirectoriesList(source) {
 
    await pMap(
       sourceList,
-      async element => {
+      async(element) => {
          const elementStats = await fs.lstat(path.join(source, element));
          if (elementStats.isDirectory()) {
             directories.push(element);
@@ -77,7 +77,6 @@ async function getDirectoriesList(source) {
       }
    );
    return directories;
-
 }
 
 /**
@@ -94,15 +93,15 @@ async function createModuleDepsFromParts(resourcePath) {
 
    await pMap(
       interfaceModules,
-      async currentDir => {
+      async(currentDir) => {
          const moduleMDepsPath = path.join(resourcePath, currentDir, 'module-dependencies.json');
          let moduleMDeps;
          if (await fs.pathExists(moduleMDepsPath)) {
             moduleMDeps = await fs.readJson(moduleMDepsPath);
-            Object.keys(moduleMDeps.nodes).forEach(node => {
+            Object.keys(moduleMDeps.nodes).forEach((node) => {
                mDeps.nodes[node] = moduleMDeps.nodes[node];
             });
-            Object.keys(moduleMDeps.links).forEach(node => {
+            Object.keys(moduleMDeps.links).forEach((node) => {
                mDeps.links[node] = moduleMDeps.links[node];
             });
          }
@@ -126,8 +125,8 @@ async function getDependencyGraph(applicationRoot, splittedCore) {
 }
 
 module.exports = {
-   checkModuleDependenciesSanity: checkModuleDependenciesSanity,
-   getModuleDependenciesPath: getModuleDependenciesPath,
-   getDependencyGraphSync: getDependencyGraphSync,
-   getDependencyGraph: getDependencyGraph
+   checkModuleDependenciesSanity,
+   getModuleDependenciesPath,
+   getDependencyGraphSync,
+   getDependencyGraph
 };
