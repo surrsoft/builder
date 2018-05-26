@@ -294,16 +294,16 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  * @returns {string}
  */
 function generateLinkForCss(cssModules, packagePath, buildNumber) {
-    let result = '(function(){var link = document.createElement("link"),' +
-       'head = document.head || document.getElementsByTagName("head")[0];' +
-       'link.setAttribute("rel", "stylesheet");' +
-       `link.setAttribute("href", "${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css");` +
-       'link.setAttribute("data-vdomignore", "true");' +
-       'head.appendChild(link);';
-    cssModules.forEach(module => {
-       result+=`define('${module.fullName}', '');`
-    });
-    return result + '})();';
+   let result = '(function(){var link = document.createElement("link"),' +
+      'head = document.head || document.getElementsByTagName("head")[0];' +
+      'link.setAttribute("rel", "stylesheet");' +
+      `link.setAttribute("href", "${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css");` +
+      'link.setAttribute("data-vdomignore", "true");' +
+      'head.appendChild(link);';
+   cssModules.forEach(module => {
+      result+=`define('${module.fullName}', '');`
+   });
+   return result + '})();';
 }
 
 /**
