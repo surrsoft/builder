@@ -301,7 +301,7 @@ function generateLinkForCss(cssModules, packagePath, buildNumber) {
       'link.setAttribute("data-vdomignore", "true");' +
       'head.appendChild(link);';
    cssModules.forEach(module => {
-      result+=`define('${module.fullName}', '');`
+      result+=`define('${module.fullName}', '');`;
    });
    return result + '})();';
 }
