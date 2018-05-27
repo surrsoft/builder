@@ -315,6 +315,7 @@ function gruntCustomPack(grunt) {
       }
 
       bundlesOptions.splittedCore = this.data.splittedCore;
+      bundlesOptions.buildNumber = grunt.option('versionize');
       customPackage.collectDepsAndIntersects(dg, configsArray, applicationRoot, wsRoot, bundlesOptions, collectDepsAndIntersectsDone);
    };
 }

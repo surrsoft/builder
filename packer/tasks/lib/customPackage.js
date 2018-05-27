@@ -284,6 +284,29 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
 }
 
 /**
+ * Генерим код для правильного подключения кастомных css-пакетов
+ * Аппендим линку с версией для кэширования, и дефайним все css
+ * модули пустышками, чтобы они не затянулись отдельно через require
+ * TODO надо будет доработать с Никитой, чтобы я не аппендил линки, если он уже зааппендил в момент серверной вёрстки(какой нибудь аттрибут?например cssBundles).
+ * @param cssModules - список всех css-модулей
+ * @param packagePath - путь до пакета
+ * @param buildNumber - номер билда
+ * @returns {string}
+ */
+function generateLinkForCss(cssModules, packagePath, buildNumber) {
+   let result = '(function(){var link = document.createElement("link"),' +
+      'head = document.head || document.getElementsByTagName("head")[0];' +
+      'link.setAttribute("rel", "stylesheet");' +
+      `link.setAttribute("href", "${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css");` +
+      'link.setAttribute("data-vdomignore", "true");' +
+      'head.appendChild(link);';
+   cssModules.forEach(module => {
+      result += `define('${module.fullName}', '');`;
+   });
+   return result + '})();';
+}
+
+/**
  * Создает кастомный пакет по заданной конфигурации.
  * @param {Object} grunt
  * @param {DepGraph} dg - граф завивимостей
@@ -308,6 +331,10 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
                delete bundlesOptions.bundles[cfg.packagePath];
                done(err);
             } else {
+
+               if (cfg.cssModulesFromOrderQueue.length > 0) {
+                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, cfg.packagePath, bundlesOptions.buildNumber));
+               }
                grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
                   return res + (res ? '\n' : '') + modContent;
                }, '') : '');
@@ -374,6 +401,7 @@ function _collectDepsAndIntersects(dg, cfg, applicationRoot, wsRoot, bundlesOpti
    cfg.outputFile = outputFile;
    cfg.packagePath = packagePath;
    cfg.orderQueue = orderQueue;
+   cfg.cssModulesFromOrderQueue = cssModulesFromOrderQueue.css;
    bundlesOptions.outputs[cfg.outputFile] = 1;
    done();
 }
