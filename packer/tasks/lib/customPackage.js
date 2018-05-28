@@ -303,7 +303,7 @@ function generateLinkForCss(cssModules, application, packagePath, buildNumber) {
       '(function(){var linkAppended = false;function generateLink(){' +
       `var linkHref = '${linkHref}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
       'if(!linkAppended){var links = document.getElementsByClassName("cssBundles");if(links.length > 0){' +
-      'for(var i=0;i<links.length;i++){if(link.getAttribute("href") === linkHref){linkAppended = true;}}}}' +
+      'for(var i=0;i<links.length;i++){if(links[i].getAttribute("href") === linkHref){linkAppended = true;}}}}' +
       'if(!linkAppended){var link = document.createElement("link"),head = document.head || document.getElementsByTagName("head")[0];' +
       'link.setAttribute("rel", "stylesheet");link.classList.add("cssBundles");' +
       'link.setAttribute("href", linkHref);link.setAttribute("data-vdomignore", "true");' +
