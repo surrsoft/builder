@@ -9,6 +9,7 @@ const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
 const packCSS = require('./packCSS').packCSS;
+const helpers = require('../../../lib/helpers');
 
 /**
  * Путь до original файла
@@ -294,9 +295,13 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  * @returns {string}
  */
 function generateLinkForCss(cssModules, application, packagePath, buildNumber) {
+   let linkHref = helpers.prettifyPath(application ? path.join(application, packagePath) : packagePath);
+   if (linkHref[0] !== '/') {
+      linkHref = '/' + linkHref;
+   }
    let result =
       '(function(){var linkAppended = false;function generateLink(){' +
-      `var linkHref = '${application ? application : '/'}${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
+      `var linkHref = '${linkHref}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
       'if(!linkAppended){var links = document.getElementsByClassName("cssBundles");if(links.length > 0){' +
       'links.forEach(function(link){if(link.getAttribute(href) === linkHref){linkAppended = true;}});}}' +
       'if(!linkAppended){var link = document.createElement("link"),head = document.head || document.getElementsByTagName("head")[0];' +
