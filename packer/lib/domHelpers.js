@@ -28,6 +28,9 @@ function domify(text) {
    wrap(console, 'log', (m) => {
       errors.push(m);
    });
+   wrap(console, 'warn', (m) => {
+      errors.push(m);
+   });
    wrap(console, 'error', (m) => {
       errors.push(m);
    });
@@ -35,6 +38,9 @@ function domify(text) {
 
    // eslint-disable-next-line no-console
    console.log.restore();
+
+   // eslint-disable-next-line no-console
+   console.warn.restore();
 
    // eslint-disable-next-line no-console
    console.error.restore();
