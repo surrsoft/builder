@@ -296,7 +296,7 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
 function generateLinkForCss(cssModules, packagePath, buildNumber) {
    let result =
       '(function(){var linkAppended = false;function generateLink(){' +
-      `var linkHref = '${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
+      `var linkHref = '/${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
       'if(!linkAppended){var links = document.getElementsByClassName("cssBundles");if(links.length > 0){' +
       'links.forEach(function(link){if(link.getAttribute(href) === linkHref){linkAppended = true;}});}}' +
       'if(!linkAppended){var link = document.createElement("link"),head = document.head || document.getElementsByTagName("head")[0];' +
