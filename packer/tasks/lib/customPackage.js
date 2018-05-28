@@ -9,6 +9,7 @@ const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
 const packCSS = require('./packCSS').packCSS;
+const helpers = require('../../../lib/helpers');
 
 /**
  * Путь до original файла
@@ -293,10 +294,14 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  * @param buildNumber - номер билда
  * @returns {string}
  */
-function generateLinkForCss(cssModules, packagePath, buildNumber) {
+function generateLinkForCss(cssModules, application, packagePath, buildNumber) {
+   let linkHref = helpers.prettifyPath(application ? path.join(application, packagePath) : packagePath);
+   if (linkHref[0] !== '/') {
+      linkHref = '/' + linkHref;
+   }
    let result =
       '(function(){var linkAppended = false;function generateLink(){' +
-      `var linkHref = '${packagePath}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
+      `var linkHref = '${linkHref}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
       'if(!linkAppended){var links = document.getElementsByClassName("cssBundles");if(links.length > 0){' +
       'links.forEach(function(link){if(link.getAttribute(href) === linkHref){linkAppended = true;}});}}' +
       'if(!linkAppended){var link = document.createElement("link"),head = document.head || document.getElementsByTagName("head")[0];' +
@@ -336,7 +341,7 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
             } else {
 
                if (cfg.cssModulesFromOrderQueue.length > 0) {
-                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, cfg.packagePath, bundlesOptions.buildNumber));
+                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, bundlesOptions.appRoot, cfg.packagePath, bundlesOptions.buildNumber));
                }
                grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
                   return res + (res ? '\n' : '') + modContent;
