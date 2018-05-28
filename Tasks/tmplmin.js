@@ -1,28 +1,25 @@
 'use strict';
 
 const path = require('path');
+const { minifyTmpl } = require('../lib/processing-tmpl');
 
-function xmlMin(text) {
+module.exports = function register(grunt) {
+   grunt.registerMultiTask('tmplmin', 'Minify templates',
 
-   const str = text.replace(/<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)>/g, '');
-   return  str.replace(/>\s{0}</g, '><');
-}
+      /** @this grunt */
+      function tmplminTask() {
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача tmplmin.`);
+         const root = grunt.option('root') || '',
+            app = grunt.option('application') || '',
+            rootPath = path.join(root, app),
+            sourceFiles = grunt.file.expand({ cwd: rootPath }, this.data.src);
 
-module.exports = function(grunt) {
-   grunt.registerMultiTask('tmplmin', 'Minify templates', function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача tmplmin.');
-      let root = grunt.option('root') || '',
-         app = grunt.option('application') || '',
-         rootPath = path.join(root, app),
-         sourceFiles = grunt.file.expand({cwd: rootPath}, this.data.src);
+         sourceFiles.forEach((file) => {
+            const xmlPath = path.join(rootPath, file);
+            const xmlContent = grunt.file.read(xmlPath);
+            grunt.file.write(xmlPath, minifyTmpl(xmlContent));
+         });
 
-      sourceFiles.forEach(function(file) {
-         const xmlPath = path.join(rootPath, file);
-         const xmlContent = grunt.file.read(xmlPath);
-         grunt.file.write(xmlPath, xmlMin(xmlContent));
-
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача tmplmin выполнена.`);
       });
-
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача tmplmin выполнена.');
-   });
 };

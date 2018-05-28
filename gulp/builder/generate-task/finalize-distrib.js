@@ -6,26 +6,31 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
+   packHtml = require('../plugins/pack-html'),
    gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
 
 function generateTaskForCopyResources(config, pool) {
-   const tasks = config.modules.map(moduleInfo => {
+   const tasks = config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
-         return gulp.src(input, {dot: false, nodir: true})
-            .pipe(plumber({
-               errorHandler: function(err) {
-                  logger.error({
-                     message: 'Задача copyResources завершилась с ошибкой',
-                     error: err,
-                     moduleInfo: moduleInfo
-                  });
-                  this.emit('end');
-               }
-            }))
+         return gulp
+            .src(input, { dot: false, nodir: true })
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача copyResources завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            )
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
+            .pipe(packHtml(moduleInfo, pool))
             .pipe(gzip(moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
@@ -41,7 +46,7 @@ function generateTaskForNormalizeKey(config) {
          done();
       } catch (e) {
          logger.error({
-            message: 'Ошибка Builder\'а',
+            message: "Ошибка Builder'а",
             error: e
          });
       }

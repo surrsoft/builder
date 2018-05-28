@@ -6,16 +6,16 @@ const ConfigurationReader = require('../../helpers/configuration-reader'),
 
 class GrabberConfiguration {
    constructor() {
-      //путь до файла конфигурации
+      // путь до файла конфигурации
       this.configFile = '';
 
-      //не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
+      // не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
       this.rawConfig = {};
 
-      //список объектов, содержащий в себе полную информацию о модулях.
+      // список объектов, содержащий в себе полную информацию о модулях.
       this.modules = [];
 
-      //путь до папки с кешем
+      // путь до папки с кешем
       this.cachePath = '';
    }
 
@@ -24,11 +24,7 @@ class GrabberConfiguration {
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
 
       for (const module of this.rawConfig.modules) {
-         this.modules.push(new ModuleInfo(
-            module.name,
-            module.responsible,
-            module.path
-         ));
+         this.modules.push(new ModuleInfo(module.name, module.responsible, module.path));
       }
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
@@ -47,7 +43,6 @@ class GrabberConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
    }
-
 }
 
 module.exports = GrabberConfiguration;

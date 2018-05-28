@@ -9,8 +9,11 @@ const re = /encode=([\S]+)\?/;
  * @return {{feature: string, yes: string, no: string}}
  */
 function isParser(dep) {
-   let yesModuleId = null, noModuleId = null,
-      f, feature, actions;
+   let yesModuleId = null,
+      noModuleId = null,
+      f,
+      feature,
+      actions;
 
    if (dep.indexOf('is!') > -1) {
       f = dep.replace('is!', '');
@@ -32,7 +35,7 @@ function isParser(dep) {
    }
 
    return {
-      feature: feature,
+      feature,
       yes: yesModuleId,
       no: noModuleId
    };
@@ -49,14 +52,14 @@ function getMeta(dep) {
       encode = dep.match(re)[1] === 'true';
    }
 
-   let pluginAndModule = dep.replace(re, '').split('!'),
+   const pluginAndModule = dep.replace(re, '').split('!'),
       pluginType = pluginAndModule[1] ? pluginAndModule.shift() : '',
       moduleName = pluginAndModule.join('!'),
       meta = {
          fullName: dep,
          plugin: pluginType,
          module: moduleName,
-         encode: encode
+         encode
       };
 
    if (pluginType === 'is') {

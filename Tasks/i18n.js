@@ -32,7 +32,7 @@ function getAvailableLang(languagesStr) {
          parts = lang.split('-');
          local = parts[0].toLowerCase();
          country = parts[1].toUpperCase();
-         lang = local + '-' + country;
+         lang = `${local}-${country}`;
          availableLang.push(lang);
       }
    }
@@ -58,7 +58,7 @@ function runPrepareXHTML(root, componentsProperties, done) {
       // Находим все xhtml файлы
       helpers.recurse(
          root,
-         async function(filePath, fileDone) {
+         async(filePath, fileDone) => {
             if (/\.xhtml$/.test(filePath)) {
                try {
                   const text = (await fs.readFile(filePath)).toString();
@@ -68,31 +68,31 @@ function runPrepareXHTML(root, componentsProperties, done) {
                } catch (err) {
                   logger.error({
                      message: 'Error on localization XHTML',
-                     filePath: filePath,
+                     filePath,
                      error: err
                   });
                }
             }
             setImmediate(fileDone);
          },
-         function(err) {
+         (err) => {
             if (err) {
-               logger.error({error: err});
+               logger.error({ error: err });
             }
             done();
          }
       );
       logger.info('Подготовка xhtml файлов для локализации выполнена.');
    } catch (err) {
-      logger.error({error: err});
+      logger.error({ error: err });
    }
 }
 
 function runCreateResultDictForDir(words, dir, componentsProperties) {
-   return new Promise(function(resolve) {
+   return new Promise((resolve) => {
       helpers.recurse(
          dir,
-         function(filePath, fileDone) {
+         (filePath, fileDone) => {
             if (!helpers.validateFile(filePath, ['**/*.xhtml', '**/*.tmpl', '**/*.js'])) {
                setImmediate(fileDone);
                return;
@@ -102,7 +102,7 @@ function runCreateResultDictForDir(words, dir, componentsProperties) {
                   logger.error({
                      message: 'Ошибка при чтении less файла',
                      error: readFileError,
-                     filePath: filePath
+                     filePath
                   });
                   setImmediate(fileDone);
                   return;
@@ -113,16 +113,16 @@ function runCreateResultDictForDir(words, dir, componentsProperties) {
                } catch (error) {
                   logger.error({
                      message: 'Ошибка при сборе фраз для локализации',
-                     error: error,
-                     filePath: filePath
+                     error,
+                     filePath
                   });
                }
                setImmediate(fileDone);
             });
          },
-         function(err) {
+         (err) => {
             if (err) {
-               logger.error({error: err});
+               logger.error({ error: err });
             }
             resolve();
          }
@@ -131,7 +131,7 @@ function runCreateResultDictForDir(words, dir, componentsProperties) {
 }
 
 function runCreateResultDict(modules, componentsProperties, out) {
-   return new Promise(function(resolve, reject) {
+   return new Promise((resolve, reject) => {
       try {
          logger.info('Запускается построение результирующего словаря.');
 
@@ -151,21 +151,21 @@ function runCreateResultDict(modules, componentsProperties, out) {
 
          async.eachSeries(
             paths,
-            function(dir, dirDone) {
+            (dir, dirDone) => {
                runCreateResultDictForDir(words, dir, componentsProperties).then(
                   () => {
                      dirDone();
                      curCountModule += 1;
                      logger.progress(100 * curCountModule / paths.length, path.basename(dir));
                   },
-                  error => {
+                  (error) => {
                      dirDone(error);
                   }
                );
             },
-            function(err) {
+            (err) => {
                if (err) {
-                  logger.error({error: err});
+                  logger.error({ error: err });
                }
 
                // Записать в результирующий словарь
@@ -173,9 +173,9 @@ function runCreateResultDict(modules, componentsProperties, out) {
                   fs.writeFileSync(out, JSON.stringify(words, null, 2));
                } catch (error) {
                   logger.error({
-                     message: 'Could\'t create output file ',
+                     message: "Could't create output file ",
                      filePath: out,
-                     error: error
+                     error
                   });
                }
 
@@ -189,15 +189,15 @@ function runCreateResultDict(modules, componentsProperties, out) {
    });
 }
 
-module.exports = function(grunt) {
-   grunt.registerMultiTask('i18n', 'Translate static', async function() {
-      logger.info(grunt.template.today('hh:MM:ss') + ': Запускается задача i18n.');
+module.exports = function register(grunt) {
+   grunt.registerMultiTask('i18n', 'Translate static', async function i18nTask() {
+      logger.info(`${grunt.template.today('hh:MM:ss')}: Запускается задача i18n.`);
 
       const taskDone = this.async();
       let taskCount = 0;
       let isDone = false;
 
-      const readOption = name => {
+      const readOption = (name) => {
          const value = grunt.option(name);
          if (!value) {
             return value;
@@ -234,7 +234,7 @@ module.exports = function(grunt) {
                await runCreateResultDict(optModules, componentsProperties, optOut);
                done();
             } catch (error) {
-               logger.error({error: error});
+               logger.error({ error });
             }
          }
 
@@ -248,7 +248,8 @@ module.exports = function(grunt) {
             applicationRoot = path.join(this.data.root, this.data.application),
             resourceRoot = path.join(applicationRoot, 'resources');
 
-         await normalizeKeyDict(resourceRoot, langs); //Приводит повторяющиеся ключи в словарях к единому значению
+         // Приводит повторяющиеся ключи в словарях к единому значению
+         await normalizeKeyDict(resourceRoot, langs);
          indexDict(grunt, optIndexDict, this.data, ++taskCount && done);
       }
 
@@ -258,14 +259,14 @@ module.exports = function(grunt) {
 
       function done(err) {
          if (err) {
-            logger.error({error: err});
+            logger.error({ error: err });
          }
 
          if (!isDone && --taskCount <= 0) {
-            logger.info(grunt.template.today('hh:MM:ss') + ': Задача i18n выполнена.');
+            logger.info(`${grunt.template.today('hh:MM:ss')}: Задача i18n выполнена.`);
             isDone = true;
 
-            //i18n - особая таска. выполняется и отдельно и в составе default задачи
+            // i18n - особая таска. выполняется и отдельно и в составе default задачи
             logger.correctExitCode(false);
             taskDone();
          }

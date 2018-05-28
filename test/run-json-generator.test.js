@@ -13,42 +13,36 @@ function clear() {
    return fs.remove(outputPath);
 }
 
-//просто проверяем, что run-json-generator нормально вызывается.
-describe('run json-generator', function() {
+// просто проверяем, что run-json-generator нормально вызывается.
+describe('run json-generator', () => {
    it('tests', async() => {
-      let options,
-         modules,
-         result;
+      let testedOptions, modules, result;
 
-      //пустой список модулей
+      // пустой список модулей
       await clear();
       modules = [];
       result = await runJsonGenerator(modules, outputPath);
       Object.keys(result.index).length.should.equal(0);
       result.errors.length.should.equal(0);
 
-      //простой тест
+      // простой тест
       await clear();
-      modules = [
-         path.join(testDirname, 'TestModuleWithModuleJs'),
-         path.join(testDirname, 'TestModuleWithoutModuleJs')
-      ];
+      modules = [path.join(testDirname, 'TestModuleWithModuleJs'), path.join(testDirname, 'TestModuleWithoutModuleJs')];
       result = await runJsonGenerator(modules, outputPath);
       result.errors.length.should.equal(0);
       const resultIndex = result.index;
       Object.keys(resultIndex).length.should.equal(2);
 
       resultIndex.hasOwnProperty('TestModuleWithoutModuleJs/MyComponent').should.equal(true);
-      options = resultIndex['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
-      options.caption.translatable.should.equal(true);
-      options.icon.hasOwnProperty('translatable').should.equal(false);
+      testedOptions = resultIndex['TestModuleWithoutModuleJs/MyComponent'].properties['ws-config'].options;
+      testedOptions.caption.translatable.should.equal(true);
+      testedOptions.icon.hasOwnProperty('translatable').should.equal(false);
 
       resultIndex.hasOwnProperty('My.Component').should.equal(true);
-      options = resultIndex['My.Component'].properties['ws-config'].options;
-      options.caption.translatable.should.equal(true);
-      options.icon.hasOwnProperty('translatable').should.equal(false);
+      testedOptions = resultIndex['My.Component'].properties['ws-config'].options;
+      testedOptions.caption.translatable.should.equal(true);
+      testedOptions.icon.hasOwnProperty('translatable').should.equal(false);
 
       await clear();
    });
 });
-

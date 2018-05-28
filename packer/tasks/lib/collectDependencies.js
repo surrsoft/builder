@@ -1,7 +1,7 @@
 'use strict';
 
 const esprima = require('esprima');
-const traverse = require('estraverse').traverse;
+const { traverse } = require('estraverse');
 const async = require('async');
 const path = require('path');
 const fs = require('fs-extra');
@@ -14,7 +14,19 @@ const requirejsPathResolver = global.requirejs('Core/pathResolver');
 const i18n = global.requirejs('Core/i18n');
 const availableLangs = Object.keys(i18n.getAvailableLang());
 
-let supportedPlugins = ['js', 'html', 'css', 'json', 'xml', 'text', 'native-css', 'browser', 'optional', 'i18n', 'tmpl'];
+let supportedPlugins = [
+   'js',
+   'html',
+   'css',
+   'json',
+   'xml',
+   'text',
+   'native-css',
+   'browser',
+   'optional',
+   'i18n',
+   'tmpl'
+];
 const pluginsOnlyDeps = ['cdn', 'preload', 'remote'];
 const systemModules = ['module', 'require', 'exports'];
 const reIsRemote = /^http[s]?:|^\/\//i;
@@ -37,7 +49,6 @@ supportedPlugins = supportedPlugins.concat(pluginsOnlyDeps);
  * @property {Boolean} [amd] - module is amd notation
  * @property {Array} [deps] - module dependencies
  */
-
 
 /**
  * Определяем, нужен ли включать плагин в зависимости
@@ -73,8 +84,10 @@ function hasValue(arr, val) {
  */
 function whitelistedPlugin(meta) {
    if (meta.plugin === 'is') {
-      return (meta.moduleYes ? hasValue(supportedPlugins, meta.moduleYes.plugin) : true) &&
-         (meta.moduleNo ? hasValue(supportedPlugins, meta.moduleNo.plugin) : true);
+      return (
+         (meta.moduleYes ? hasValue(supportedPlugins, meta.moduleYes.plugin) : true) &&
+         (meta.moduleNo ? hasValue(supportedPlugins, meta.moduleNo.plugin) : true)
+      );
    }
    if (meta.plugin === 'browser' || meta.plugin === 'optional') {
       return meta.moduleIn ? hasValue(supportedPlugins, meta.moduleIn.plugin) : true;
@@ -89,8 +102,10 @@ function whitelistedPlugin(meta) {
  */
 function notRemoteFile(meta) {
    if (meta.plugin === 'is') {
-      return (meta.moduleYes ? !reIsRemote.test(meta.moduleYes.module) : true) &&
-         (meta.moduleNo ? !reIsRemote.test(meta.moduleNo.module) : true);
+      return (
+         (meta.moduleYes ? !reIsRemote.test(meta.moduleYes.module) : true) &&
+         (meta.moduleNo ? !reIsRemote.test(meta.moduleNo.module) : true)
+      );
    }
    if (meta.plugin === 'browser' || meta.plugin === 'optional') {
       return meta.moduleIn ? !reIsRemote.test(meta.moduleIn.module) : true;
@@ -126,8 +141,8 @@ function replaceFirstDot(meta) {
  */
 function getDependencies(grunt, fullPath, deps) {
    const plugins = [];
-   deps = deps && deps instanceof Array ? deps : [];
-   deps = deps
+   let newDeps = deps && deps instanceof Array ? deps : [];
+   newDeps = newDeps
       .map(function getValue(i) {
          if (!i || i.type !== 'Literal') {
             logger.debug(`Warning! Dependencies is not literal. ${fullPath}. ${JSON.stringify(i)}`);
@@ -141,7 +156,7 @@ function getDependencies(grunt, fullPath, deps) {
       .filter(notSystemModule)
       .map(replaceFirstDot);
 
-   deps.forEach(function collectPlugins(i) {
+   newDeps.forEach(function collectPlugins(i) {
       if (i.plugin && !hasValue(plugins, i.plugin) && needPlugin(i)) {
          plugins.push(i.plugin);
       }
@@ -163,30 +178,30 @@ function getDependencies(grunt, fullPath, deps) {
       }
    });
 
-   deps = deps.filter(function(i) {
+   newDeps = newDeps.filter((i) => {
       if (i.plugin === 'is') {
          const yesPlugin = i.moduleYes && i.moduleYes.plugin;
          const noPlugin = i.moduleNo && i.moduleNo.plugin;
          return !hasValue(pluginsOnlyDeps, yesPlugin) && !hasValue(pluginsOnlyDeps, noPlugin);
-      } else if (i.plugin === 'browser' || i.plugin === 'optional') {
+      }
+      if (i.plugin === 'browser' || i.plugin === 'optional') {
          const inPlugin = i.moduleIn && i.moduleIn.plugin;
          return !hasValue(pluginsOnlyDeps, inPlugin);
-      } else {
-         return !hasValue(pluginsOnlyDeps, i.plugin);
       }
+      return !hasValue(pluginsOnlyDeps, i.plugin);
    });
 
-   //формируем объект зависимости для плагина и вставляем в начало массива зависимостей
-   plugins.map(function(name) {
-      return {
+   // формируем объект зависимости для плагина и вставляем в начало массива зависимостей
+   plugins
+      .map(name => ({
          fullName: name,
          amd: true
-      };
-   }).forEach(function pushPluginsDependencies(plugin) {
-      deps.unshift(plugin);
-   });
+      }))
+      .forEach(function pushPluginsDependencies(plugin) {
+         newDeps.unshift(plugin);
+      });
 
-   return deps;
+   return newDeps;
 }
 
 /**
@@ -214,14 +229,13 @@ function getModulePath(grunt, dep, plugin, errMes) {
             /**
              * Перебираем все доступные языки и пытаемся получить путь до любой css или json
              */
-            availableLangs.forEach(function(lang) {
+            availableLangs.forEach((lang) => {
                jsPath = i18n.getDictPath(dep.module, lang, 'json');
                cssPath = i18n.getDictPath(dep.module, lang, 'css');
                countryPath = i18n.getDictPath(dep.module, lang.split('-')[1], 'css');
 
                pathToModule = jsPath || cssPath || countryPath || '';
             });
-
          } else {
             pathToModule = requirejsPathResolver(dep.module, dep.plugin);
          }
@@ -232,9 +246,14 @@ function getModulePath(grunt, dep, plugin, errMes) {
       pathToModule = pathToModule ? path.normalize(pathToModule).replace(dblSlashes, '/') : '';
 
       if (pathToModule) {
-         //добавляем расширение модуля в путь до работы функции requirejs.toUrl, поскольку она требует обязательного наличия расширения.
+         // добавляем расширение модуля в путь до работы функции requirejs.toUrl,
+         // поскольку она требует обязательного наличия расширения.
          let ext = path.extname(pathToModule).substr(1);
-         if (!ext || (dep.plugin === 'html' ? ext !== 'xhtml' : dep.plugin !== 'text' ? ext !== dep.plugin : false)) {
+         if (
+            !ext ||
+            (dep.plugin === 'html' && ext !== 'xhtml') ||
+            (dep.plugin !== 'html' && dep.plugin !== 'text' && ext !== dep.plugin)
+         ) {
             switch (dep.plugin) {
                case 'html':
                   ext = 'xhtml';
@@ -253,7 +272,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
                   }
                   break;
             }
-            pathToModule = pathToModule + (ext ? '.' + ext : '');
+            pathToModule = pathToModule + (ext ? `.${ext}` : '');
          }
          pathToModule = global.requirejs.toUrl(pathToModule);
 
@@ -262,7 +281,7 @@ function getModulePath(grunt, dep, plugin, errMes) {
           * чтобы в i18nLoader найти в ней словари для всех доступных языков.
           */
          if (dep.plugin === 'i18n') {
-            pathToModule = pathToModule.split('lang/')[0];
+            [pathToModule] = pathToModule.split('lang/');
          }
 
          /**
@@ -302,7 +321,7 @@ function registerNodeMaybe(grunt, graph, applicationRoot, dep, plugin, errMes) {
       try {
          pathToModule = getModulePath(grunt, dep, plugin, errMes);
       } catch (e) {
-         //pass;
+         // pass;
          // ловим эксепшн из pathResolver, чтобы не хламить сборку
       }
 
@@ -315,7 +334,6 @@ function registerNodeMaybe(grunt, graph, applicationRoot, dep, plugin, errMes) {
       }
    }
 }
-
 
 /**
  * Регистрирует зависимость модуля, если она еще не зарегистрирована
@@ -356,15 +374,16 @@ function getComponentForTmpl(grunt, graph, applicationRoot, mod) {
          if (text) {
             const tmplstr = global.requirejs('Core/tmpl/tmplstr');
             const config = global.requirejs('View/config');
-            const arr = tmplstr.getComponents(text, config).map(function(dp) {
-               return {
-                  type: 'Literal',
-                  value: dp
-               };
-            });
+            const arr = tmplstr.getComponents(text, config).map(dp => ({
+               type: 'Literal',
+               value: dp
+            }));
             const d = getDependencies(grunt, mod.fullPath, arr);
-            const errMes = '-------- Parent name: "' + mod.fullName + '"; Parent path: "' + mod.fullPath + '"';
-            graph.addDependencyFor(mod.fullName, d.map(registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes)));
+            const errMes = `-------- Parent name: "${mod.fullName}"; Parent path: "${mod.fullPath}"`;
+            graph.addDependencyFor(
+               mod.fullName,
+               d.map(registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes))
+            );
          }
       } catch (err) {
          logger.warning({
@@ -386,31 +405,43 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
       try {
          const deps = [];
          const resourceRoot = path.join(applicationRoot, 'resources');
-         availableLangs.forEach(function(lang) {
+         availableLangs.forEach((lang) => {
             const country = lang.split('-')[1];
-            const jsonPath = path.join(mod.fullPath, 'lang', lang, lang + '.json');
+            const jsonPath = path.join(mod.fullPath, 'lang', lang, `${lang}.json`);
             const dictPath = jsonPath.replace('.json', '.js');
-            const dictModule = path.relative(resourceRoot, dictPath).replace(dblSlashes, '/').replace(isWS, 'WS').replace('.js', '');
+            const dictModule = path
+               .relative(resourceRoot, dictPath)
+               .replace(dblSlashes, '/')
+               .replace(isWS, 'WS')
+               .replace('.js', '');
 
-            const cssPath = path.join(mod.fullPath, 'lang', lang, lang + '.css');
-            const cssModule = 'native-css!' + path.relative(resourceRoot, cssPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
+            const cssPath = path.join(mod.fullPath, 'lang', lang, `${lang}.css`);
+            const cssModule = `native-css!${path
+               .relative(resourceRoot, cssPath)
+               .replace(dblSlashes, '/')
+               .replace(isCss, '')
+               .replace(isWS, 'WS')}`;
 
-            const countryPath = path.join(mod.fullPath, 'lang', country, country + '.css');
-            const countryModule = 'native-css!' + path.relative(resourceRoot, countryPath).replace(dblSlashes, '/').replace(isCss, '').replace(isWS, 'WS');
+            const countryPath = path.join(mod.fullPath, 'lang', country, `${country}.css`);
+            const countryModule = `native-css!${path
+               .relative(resourceRoot, countryPath)
+               .replace(dblSlashes, '/')
+               .replace(isCss, '')
+               .replace(isWS, 'WS')}`;
 
             if (fs.existsSync(cssPath)) {
-               deps.push({plugin: 'native-css', fullPath: cssPath, fullName: cssModule});
+               deps.push({ plugin: 'native-css', fullPath: cssPath, fullName: cssModule });
             }
             if (fs.existsSync(countryPath)) {
-               deps.push({plugin: 'native-css', fullPath: countryPath, fullName: countryModule});
+               deps.push({ plugin: 'native-css', fullPath: countryPath, fullName: countryModule });
             }
 
             if (fs.existsSync(dictPath)) {
-               deps.push({plugin: 'js', fullPath: dictPath, fullName: dictModule});
+               deps.push({ plugin: 'js', fullPath: dictPath, fullName: dictModule });
             }
          });
 
-         deps.forEach(function(dep) {
+         deps.forEach((dep) => {
             if (!graph.hasNode(dep.fullName)) {
                graph.registerNode(dep.fullName, {
                   path: path.relative(applicationRoot, dep.fullPath)
@@ -418,9 +449,7 @@ function getDependenciesForI18N(grunt, graph, applicationRoot, mod) {
             }
          });
 
-         graph.addDependencyFor(mod.fullName, deps.map(function(dep) {
-            return dep.fullName;
-         }));
+         graph.addDependencyFor(mod.fullName, deps.map(dep => dep.fullName));
       } catch (err) {
          logger.warning({
             error: err
@@ -452,9 +481,8 @@ function parseModule(text) {
  * @param {String} fullPath - полный путь до модуля
  */
 function parsePathForPresentationService(applicationRoot, fullPath) {
-   let
-      presentationService = fs.pathExistsSync(path.join(applicationRoot, 'resources', 'WS.Core')),
-      modulePath = path.relative(applicationRoot, fullPath),
+   const presentationService = fs.pathExistsSync(path.join(applicationRoot, 'resources', 'WS.Core'));
+   let modulePath = path.relative(applicationRoot, fullPath),
       parts;
 
    if (presentationService) {
@@ -488,31 +516,43 @@ function parsePathForPresentationService(applicationRoot, fullPath) {
  */
 function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, taskDone) {
    logger.debug(`Building dependencies tree on ${jsFiles.length} files`);
-   async.eachSeries(jsFiles, function(fullPath, done) {
-      logger.debug(`Loading dependencies for ${fullPath}`);
-      fs.readFile(fullPath, 'utf8', function moduleParser(err, res) {
-         if (err) {
-            done(err);
-         } else {
+   async.eachSeries(
+      jsFiles,
+      (fullPath, done) => {
+         logger.debug(`Loading dependencies for ${fullPath}`);
+         fs.readFile(fullPath, 'utf8', function moduleParser(err, res) {
+            if (err) {
+               done(err);
+               return;
+            }
             const ast = parseModule(res);
 
             if (ast instanceof Error) {
-               ast.message += '\nPath: ' + fullPath;
-               return done(ast);
+               ast.message += `\nPath: ${fullPath}`;
+               done(ast);
+               return;
             }
 
-            let myName, meta, deps = [], errMes;
+            let myName,
+               meta,
+               deps = [],
+               errMes;
             traverse(ast, {
                enter: function getModuleNameAndDependencies(node) {
-                  if (node.type === 'CallExpression' && node.callee.type === 'Identifier' &&
-                     node.callee.name === 'define') {
-
+                  if (
+                     node.type === 'CallExpression' &&
+                     node.callee.type === 'Identifier' &&
+                     node.callee.name === 'define'
+                  ) {
                      if (node.arguments[0].type === 'Literal' && typeof node.arguments[0].value === 'string') {
                         myName = node.arguments[0].value;
                         if (node.arguments[1].type === 'ArrayExpression') {
                            deps = getDependencies(grunt, fullPath, node.arguments[1].elements);
                         }
-                     } else if (node.arguments[0].type === 'ArrayExpression' || node.arguments[0].type === 'FunctionExpression') {
+                     } else if (
+                        node.arguments[0].type === 'ArrayExpression' ||
+                        node.arguments[0].type === 'FunctionExpression'
+                     ) {
                         logger.debug(`Ignore anonymous define ${fullPath}`);
                         return;
                      } else {
@@ -522,14 +562,15 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
 
                      meta = getMeta(myName);
 
-                     let needToRegister = meta.plugin === 'js' && (!jsModules[meta.module] || jsModules[meta.module] == fullPath) || meta.plugin !== 'js',
-                        registeredDependencies;
-
-                     //deps = addI18NDep(meta, deps);
+                     const needToRegister =
+                        (meta.plugin === 'js' && (!jsModules[meta.module] || jsModules[meta.module] === fullPath)) ||
+                        meta.plugin !== 'js';
 
                      errMes = `-------- Parent module: "${myName}"; Parent path: "${fullPath}"`;
 
-                     registeredDependencies = deps.map(registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes));
+                     const registeredDependencies = deps.map(
+                        registerDependencyMayBe.bind(undefined, grunt, graph, applicationRoot, errMes)
+                     );
 
                      if (needToRegister) {
                         /**
@@ -541,7 +582,8 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
                         });
 
                         /**
-                         * links['(supportedPlugins)!NAME.SPACE.MODULE'] = [ '(supportedPlugins)!NAME.SPACE.MODULE', ... ]
+                         * links['(supportedPlugins)!NAME.SPACE.MODULE'] =
+                         *    [ '(supportedPlugins)!NAME.SPACE.MODULE', ... ]
                          */
                         graph.addDependencyFor(myName, registeredDependencies);
                      }
@@ -550,30 +592,29 @@ function collectDependencies(grunt, graph, jsFiles, jsModules, applicationRoot, 
             });
 
             done();
+         });
+      },
+      (err) => {
+         if (err) {
+            taskDone(err);
+         } else {
+            taskDone(null, graph.toJSON());
          }
-      });
-   }, function(err) {
-      if (err) {
-         taskDone(err);
-      } else {
-         taskDone(null, graph.toJSON());
       }
-   });
+   );
 }
 
 function addRoot(root) {
-   return function(p) {
-      return root ? path.join(root, p) : p;
-   };
+   return p => (root ? path.join(root, p) : p);
 }
 
 function merge(obj1, obj2) {
    const result = {};
-   Object.keys(obj1).forEach(function(name) {
+   Object.keys(obj1).forEach((name) => {
       result[name] = path.normalize(obj1[name]);
    });
 
-   Object.keys(obj2).forEach(function(name) {
+   Object.keys(obj2).forEach((name) => {
       result[name] = result[name] || path.normalize(obj2[name]);
    });
 
@@ -582,41 +623,17 @@ function merge(obj1, obj2) {
 
 function map(obj, fn) {
    const result = {};
-   Object.keys(obj).forEach(function(name) {
+   Object.keys(obj).forEach((name) => {
       result[name] = fn(obj[name]);
    });
    return result;
 }
 
-//TODO отказываемся от автоматического добавления зависомостей i18n. Удалить в 3.17.350.
-/*
-function addI18NDep(meta, deps) {
-    if (meta.plugin === 'js' && meta.module.indexOf('SBIS3') == 0) {
-        var hasLocalization = false;
-
-        deps.forEach(function (dep) {
-            if (dep.module == meta.module && dep.plugin === 'i18n') {
-                hasLocalization = true;
-    }
-        });
-
-        if (!hasLocalization) {
-            deps.push(
-               { fullName: 'i18n!' + meta.module,
-                plugin: 'i18n',
-                module: meta.module,
-                encode: false })
-        }
-    }
-
-    return deps;
-}*/
-
 function makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, done) {
    const graph = new DepGraph(),
-      _const = global.requirejs('Core/constants'),
-      jsCoreModules = map(_const.jsCoreModules, addRoot(path.join(applicationRoot, 'ws'))),
-      jsModules = map(_const.jsModules, addRoot(root)),
+      coreConstants = global.requirejs('Core/constants'),
+      jsCoreModules = map(coreConstants.jsCoreModules, addRoot(path.join(applicationRoot, 'ws'))),
+      jsModules = map(coreConstants.jsModules, addRoot(root)),
       modules = merge(jsCoreModules, jsModules);
 
    collectDependencies(grunt, graph, jsFiles, modules, applicationRoot, done);

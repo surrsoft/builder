@@ -9,5 +9,5 @@ const trimLessError = function(message) {
 };
 
 module.exports = {
-   trimLessError: trimLessError
+   trimLessError
 };

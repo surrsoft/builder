@@ -7,8 +7,8 @@ const VERSION_STUB = '.vBUILDER_VERSION_STUB';
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
-module.exports = function(config, changesStore, moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
+module.exports = function declarePlugin(config, changesStore, moduleInfo) {
+   return through.obj(function onTransform(file, encoding, callback) {
       try {
          if (!includeExts.includes(file.extname)) {
             callback(null, file);
@@ -45,7 +45,7 @@ module.exports = function(config, changesStore, moduleInfo) {
                )
                .replace(
                   /([\w]+[\s]*=[\s]*)((?:"|')(?:[a-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
-                  function(match, partEqual, partFilePath, partExt) {
+                  (match, partEqual, partFilePath, partExt) => {
                      // ignore cdn and data-providers
                      if (
                         partFilePath.indexOf('cdn/') > -1 ||
@@ -65,8 +65,8 @@ module.exports = function(config, changesStore, moduleInfo) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при версионировании",
-            error: error,
-            moduleInfo: moduleInfo,
+            error,
+            moduleInfo,
             filePath: file.path
          });
       }

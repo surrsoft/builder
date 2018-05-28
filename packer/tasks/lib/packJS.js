@@ -5,10 +5,17 @@ const helpers = require('./../../lib/domHelpers');
 
 module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
    function collector(dom) {
-      let defId = 0,
+      const
          scripts = dom.getElementsByTagName('script'),
-         packs = {},
-         script, link, packName, pack, lastPackName, type;
+         packs = {};
+
+      let defId = 0,
+         script,
+         link,
+         packName,
+         pack,
+         lastPackName,
+         type;
 
       for (let i = 0, l = scripts.length; i < l; i++) {
          script = scripts[i];
@@ -24,7 +31,7 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
             continue;
          }
 
-         if (lastPackName && lastPackName != packName) {
+         if (lastPackName && lastPackName !== packName) {
             defId++;
          }
 
@@ -32,15 +39,14 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
          packName = packName + defId;
 
          // ends with .js and not starts with http and not starts with // (schema-less urls)
-         if (link.indexOf('.js') == link.length - 3 &&
-                link.indexOf('http') !== 0 &&
-                link.indexOf('//') !== 0) {
-
-            pack = packs[packName] || (packs[packName] = {
-               files: [],
-               nodes: [],
-               before: null
-            });
+         if (link.indexOf('.js') === link.length - 3 && link.indexOf('http') !== 0 && link.indexOf('//') !== 0) {
+            pack =
+               packs[packName] ||
+               (packs[packName] = {
+                  files: [],
+                  nodes: [],
+                  before: null
+               });
 
             pack.files.push(link);
             pack.nodes.push(script);
@@ -51,27 +57,22 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
          }
       }
 
-      return Object.keys(packs).map(function(k) {
-         return packs[k];
-      });
+      return Object.keys(packs).map(k => packs[k]);
    }
 
    function packer(files) {
-      return [files.map(function(js) {
-         return fs.readFileSync(js);
-      }).join(';\n')];
+      return [files.map(js => fs.readFileSync(js)).join(';\n')];
    }
 
    function nodeProducer(dom, path) {
       const script = helpers.mkDomNode(dom, 'script', {
          type: 'text/javascript',
          charset: 'utf-8',
-         src: '/' + path.replace(/\\/g, '/')
+         src: `/${path.replace(/\\/g, '/')}`
       });
       script.textContent = ' ';
       return script;
    }
 
    return helpers.package(htmlFiles, root, packageHome, collector, packer, nodeProducer, 'js');
-
 };

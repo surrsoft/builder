@@ -1,7 +1,7 @@
 'use strict';
 
 const esprima = require('esprima');
-const traverse = require('estraverse').traverse;
+const { traverse } = require('estraverse');
 const codegen = require('escodegen');
 const stripBOM = require('strip-bom');
 const path = require('path');
@@ -58,7 +58,7 @@ function parseModule(text, module) {
    try {
       res = esprima.parse(text);
    } catch (e) {
-      e.message = 'While parsing ' + module.fullName + ' from ' + module.fullPath + ': ' + e.message;
+      e.message = `While parsing ${module.fullName} from ${module.fullPath}: ${e.message}`;
       res = e;
    }
    return res;
@@ -78,7 +78,7 @@ function jsLoader(module, base, done) {
       ignoreIfNoFile(function addNamesToAnonymousModules(err, res) {
          let anonymous = false,
             rebuild = false,
-            amd = module.amd;
+            { amd } = module;
 
          if (err) {
             done(err);
@@ -89,7 +89,8 @@ function jsLoader(module, base, done) {
          } else {
             const ast = parseModule(res, module);
             if (ast instanceof Error) {
-               return done(ast);
+               done(ast);
+               return;
             }
 
             traverse(ast, {
@@ -99,10 +100,10 @@ function jsLoader(module, base, done) {
                      node.callee.type === 'Identifier' &&
                      node.callee.name === 'define'
                   ) {
-                     //Check anonnimous define
+                     // Check anonnimous define
                      if (node.arguments.length < 3) {
                         if (
-                           node.arguments.length == 2 &&
+                           node.arguments.length === 2 &&
                            node.arguments[0].type === 'Literal' &&
                            typeof node.arguments[0].value === 'string'
                         ) {
@@ -115,12 +116,12 @@ function jsLoader(module, base, done) {
                         node.arguments[0] &&
                         node.arguments[0].type === 'Literal' &&
                         typeof node.arguments[0].value === 'string' &&
-                        node.arguments[0].value == module.fullName
+                        node.arguments[0].value === module.fullName
                      ) {
                         amd = true;
                      }
 
-                     //Check additional dependenccies
+                     // Check additional dependenccies
                      if (!String(module.fullName).startsWith('Core/') && module.addDeps) {
                         if (!node.arguments[1].elements) {
                            node.arguments.splice(1, 0, {
@@ -140,27 +141,25 @@ function jsLoader(module, base, done) {
             });
             if (anonymous) {
                done(null, '');
-            } else {
+            } else if (amd || module.fullPath.indexOf('ext/requirejs/plugins') !== -1) {
                /**
                 * временный костыль для плагинов requirejs, спилю как будет решение ошибки
                 * https://online.sbis.ru/opendoc.html?guid=04191b13-e919-498d-b2e5-135e85f06f74
                 */
-               if (amd || module.fullPath.indexOf('ext/requirejs/plugins') !== -1) {
-                  if (rebuild) {
-                     done(
-                        null,
-                        codegen.generate(ast, {
-                           format: {
-                              compact: true
-                           }
-                        })
-                     );
-                  } else {
-                     done(null, res);
-                  }
+               if (rebuild) {
+                  done(
+                     null,
+                     codegen.generate(ast, {
+                        format: {
+                           compact: true
+                        }
+                     })
+                  );
                } else {
-                  done(null, 'define("' + module.fullName + '", ""); ' + res);
+                  done(null, res);
                }
+            } else {
+               done(null, `define("${module.fullName}", ""); ${res}`);
             }
          }
       }, 'jsLoader')
@@ -177,21 +176,19 @@ function jsLoader(module, base, done) {
 function xhtmlLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
+         } else if (module.amd && res) {
+            done(null, res);
          } else {
-            if (module.amd && res) {
-               done(null, res);
-            } else {
-               /**
-                * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
-                * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
-                * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за xhtml кастомным пакетом
-                * и упадёт.
-                */
-               done(null, `define('${module.fullName}', '');`);
-            }
+            /**
+             * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
+             * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
+             * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля
+             * пойдёт за xhtml кастомным пакетом и упадёт.
+             */
+            done(null, `define('${module.fullName}', '');`);
          }
       }, 'xhtmlLoader')
    );
@@ -206,10 +203,10 @@ function xhtmlLoader(module, base, done) {
  * @param {loaders~callback} done
  */
 function cssLoader(module, base, done, themeName) {
-   const suffix = themeName ? '__' + themeName : '';
+   const suffix = themeName ? `__${themeName}` : '';
    let modulePath = module.fullPath;
-   if (suffix && ~module.fullName.indexOf('SBIS3.CONTROLS')) {
-      modulePath = modulePath.slice(0, -4) + suffix + '.css';
+   if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
+      modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
    readFile(
       modulePath,
@@ -235,18 +232,19 @@ function cssLoader(module, base, done, themeName) {
 function jsonLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
+            let minRes = res;
             try {
-               res = JSON.stringify(JSON.parse(res));
+               minRes = JSON.stringify(JSON.parse(minRes));
             } catch (error) {
                logger.warning({
-                  error: error
+                  error
                });
             }
-            done(null, 'define("' + module.fullName + '", function() {return ' + res + ';});');
+            done(null, `define("${module.fullName}", function() {return ${minRes};});`);
          }
       }, 'jsonLoader')
    );
@@ -262,11 +260,11 @@ function jsonLoader(module, base, done) {
 function xmlLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+            done(null, `define("${module.fullName}", function() {return ${JSON.stringify(res)};});`);
          }
       }, 'xmlLoader')
    );
@@ -298,30 +296,26 @@ function isLoader(module, base, done) {
       );
    }
    if (module.moduleYes) {
-      loaders[module.moduleYes.plugin](module.moduleYes, base, function(err, res) {
+      loaders[module.moduleYes.plugin](module.moduleYes, base, (err, res) => {
          if (err) {
             done(err);
+         } else if (!res) {
+            done(null, '');
          } else {
-            if (!res) {
-               done(null, '');
+            ifCondition = `${ifCondition}{${removeSourceMap(res)}}`;
+            if (module.moduleNo) {
+               loaders[module.moduleNo.plugin](module.moduleNo, base, (curErr, curRes) => {
+                  if (curErr) {
+                     done(curErr);
+                  } else if (!curRes) {
+                     done(null, '');
+                  } else {
+                     elseCondition = `${elseCondition}{${removeSourceMap(curRes)}}`;
+                     done(null, ifCondition + elseCondition);
+                  }
+               });
             } else {
-               ifCondition = ifCondition + '{' + removeSourceMap(res) + '}';
-               if (module.moduleNo) {
-                  loaders[module.moduleNo.plugin](module.moduleNo, base, function(err, res) {
-                     if (err) {
-                        done(err);
-                     } else {
-                        if (!res) {
-                           done(null, '');
-                        } else {
-                           elseCondition = elseCondition + '{' + removeSourceMap(res) + '}';
-                           done(null, ifCondition + elseCondition);
-                        }
-                     }
-                  });
-               } else {
-                  done(null, ifCondition);
-               }
+               done(null, ifCondition);
             }
          }
       });
@@ -345,17 +339,16 @@ function removeSourceMap(res) {
  * @param {String} base - site root
  * @param {loaders~callback} done
  */
-const ifCondition = 'if(typeof window !== "undefined")';
+
 function browserLoader(module, base, done) {
-   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+   const ifCondition = 'if(typeof window !== "undefined")';
+   loaders[module.moduleIn.plugin](module.moduleIn, base, (err, res) => {
       if (err) {
          done(err);
+      } else if (!res) {
+         done(null, '');
       } else {
-         if (!res) {
-            done(null, '');
-         } else {
-            done(null, ifCondition + '{' + removeSourceMap(res) + '}');
-         }
+         done(null, `${ifCondition}{${removeSourceMap(res)}}`);
       }
    });
 }
@@ -367,7 +360,7 @@ function browserLoader(module, base, done) {
  */
 function optionalLoader(module, base, done) {
    not404error = true;
-   loaders[module.moduleIn.plugin](module.moduleIn, base, function(err, res) {
+   loaders[module.moduleIn.plugin](module.moduleIn, base, (err, res) => {
       not404error = false;
       if (err || !res) {
          done(null, '');
@@ -385,11 +378,11 @@ function optionalLoader(module, base, done) {
 function textLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, res) {
+      ignoreIfNoFile((err, res) => {
          if (err) {
             done(err);
          } else {
-            done(null, 'define("' + module.fullName + '", function() {return ' + JSON.stringify(res) + ';});');
+            done(null, `define("${module.fullName}", function() {return ${JSON.stringify(res)};});`);
          }
       }, 'textLoader')
    );
@@ -407,7 +400,7 @@ function baseTextLoader(module, base, done) {
 }
 
 function readFile(fullPath, done) {
-   fs.readFile(fullPath, 'utf8', function(err, file) {
+   fs.readFile(fullPath, 'utf8', (err, file) => {
       currentFile = fullPath;
       if (err) {
          done(err);
@@ -427,21 +420,19 @@ function readFile(fullPath, done) {
 function tmplLoader(module, base, done) {
    readFile(
       module.fullPath,
-      ignoreIfNoFile(function(err, html) {
+      ignoreIfNoFile((err, html) => {
          if (err) {
             done(err);
+         } else if (module.amd && html) {
+            done(null, html);
          } else {
-            if (module.amd && html) {
-               done(null, html);
-            } else {
-               /**
-                * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
-                * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
-                * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе модуля пойдёт за tmpl шаблоном
-                * и упадёт.
-                */
-               done(null, `define('${module.fullName}', '');`);
-            }
+            /**
+             * сгенеренного шаблона нету, это означает что произошла ранее ошибка при его генерации
+             * и пытаться здесь сгенерировать его снова нет смысла, всё равно будет ошибка.
+             * Но для кастомной паковки дефайн всё равно должен быть, иначе реквайр при запросе
+             * модуля пойдёт за tmpl шаблоном и упадёт.
+             */
+            done(null, `define('${module.fullName}', '');`);
          }
       }, 'tmplLoader')
    );
@@ -458,7 +449,7 @@ function ignoreIfNoFile(f, loaderName) {
    return function log404AndIgnoreIt(err, res) {
       if (err && (err.code === 'ENOENT' || err.code === 'EISDIR') && !not404error) {
          logger.warning({
-            message: 'Potential 404 error for loader ' + loaderName,
+            message: `Potential 404 error for loader ${loaderName}`,
             filePath: currentFile,
             error: err
          });
@@ -475,8 +466,8 @@ function ignoreIfNoFile(f, loaderName) {
  * @return {Function}
  */
 function onlyForIE10AndAbove(f, modName) {
-   let ifConditionThemes,
-      ifCondition = 'if(typeof window !== "undefined" && window.atob){';
+   let ifConditionThemes;
+   const ifCondition = 'if(typeof window !== "undefined" && window.atob){';
 
    if (
       modName.startsWith('css!SBIS3.CONTROLS') ||
@@ -494,9 +485,9 @@ function onlyForIE10AndAbove(f, modName) {
          let result;
          if (ifConditionThemes) {
             const indexVar = res.indexOf('var style = document.createElement(');
-            result = ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar) + '}';
+            result = `${ifCondition + res.slice(0, indexVar) + ifConditionThemes + res.slice(indexVar)}}`;
          } else {
-            result = ifCondition + res + '}';
+            result = `${ifCondition + res}}`;
          }
          f(null, result);
       }
@@ -511,12 +502,12 @@ function onlyForIE10AndAbove(f, modName) {
  * @return {Function}
  */
 function asText(done, relPath, withPlugin) {
-   withPlugin = withPlugin ? withPlugin + '!/' : '';
-   return function(err, res) {
+   const withPluginStr = withPlugin ? `${withPlugin}!/` : '';
+   return (err, res) => {
       if (err) {
          done(err);
       } else {
-         done(null, 'define("' + withPlugin + relPath.replace(dblSlashes, '/') + '", ' + JSON.stringify(res) + ');');
+         done(null, `define("${withPluginStr}${relPath.replace(dblSlashes, '/')}", ${JSON.stringify(res)});`);
       }
    };
 }
@@ -532,7 +523,7 @@ function asModuleWithContent(f, modName) {
       if (err) {
          f(err);
       } else {
-         f(null, 'define("' + modName + '", ' + res + ');');
+         f(null, `define("${modName}", ${res});`);
       }
    };
 }
@@ -547,17 +538,14 @@ function styleTagLoader(f) {
       if (err) {
          f(err);
       } else {
-         const code =
-            'function() {\
+         const code = `function() {\
 var style = document.createElement("style"),\
 head = document.head || document.getElementsByTagName("head")[0];\
 style.type = "text/css";\
 style.setAttribute("data-vdomignore", "true");\
-style.appendChild(document.createTextNode(' +
-            JSON.stringify(res) +
-            '));\
+style.appendChild(document.createTextNode(${JSON.stringify(res)}));\
 head.appendChild(style);\
-}';
+}`;
          f(null, code);
       }
    };
@@ -571,7 +559,7 @@ head.appendChild(style);\
  * @return {Function}
  */
 function rebaseUrls(root, sourceFile, f) {
-   return function(err, res) {
+   return (err, res) => {
       if (err) {
          f(err);
       } else {
@@ -616,23 +604,21 @@ function getTemplateI18nModule(module) {
  * @return {Function}
  */
 function i18nLoader(module, base, done) {
-   let _const = global.requirejs('Core/constants'),
+   const coreConstants = global.requirejs('Core/constants'),
       deps = ['Core/i18n'];
 
    availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
 
-   if (!availableLangs || _const && !_const.defaultLanguage || !module.deps) {
-      return done(null, getTemplateI18nModule(module));
+   if (!availableLangs || (coreConstants && !coreConstants.defaultLanguage) || !module.deps) {
+      done(null, getTemplateI18nModule(module));
+      return;
    }
 
-   const noCssDeps = module.deps.filter(function(d) {
-      //не позвоялем явно загрузить css
-      return d.indexOf('native-css!') === -1;
-   });
+   const noCssDeps = module.deps.filter(d => d.indexOf('native-css!') === -1);
 
    const noLangDeps = [];
    const langDeps = [];
-   deps.concat(noCssDeps).forEach(function(d) {
+   deps.concat(noCssDeps).forEach((d) => {
       if (d.match(langRegExp) === null) {
          noLangDeps.push(d);
       } else {
@@ -642,15 +628,10 @@ function i18nLoader(module, base, done) {
 
    // дописываем зависимость только от необходимого языка
    const result =
-      'define("' +
-      module.fullName +
-      '", ' +
-      JSON.stringify(noLangDeps) +
-      ', function(i18n) {var langDep = ' +
-      JSON.stringify(langDeps) +
-      '.filter(function(dep){var lang = dep.match(' +
-      langRegExp +
-      '); if (lang && lang[1] == i18n.getLang()){return dep;}}); if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});';
+      `define("${module.fullName}", ${JSON.stringify(noLangDeps)}, function(i18n) {` +
+      `var langDep = ${JSON.stringify(langDeps)}.filter(function(dep){var lang = dep.match(${langRegExp}); ` +
+      'if (lang && lang[1] == i18n.getLang()){return dep;}}); ' +
+      'if (langDep){global.requirejs(langDep)} return i18n.rk.bind(i18n);});';
 
    done(null, result);
 }

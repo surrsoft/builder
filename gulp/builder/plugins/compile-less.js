@@ -9,8 +9,8 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
-   return through.obj(async function(file, encoding, callback) {
+module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (!file.path.endsWith('.less')) {
             callback(null, file);
@@ -33,9 +33,9 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                'Необходимо удалить лишний CSS-файл';
             logger.warning({
-               message: message,
+               message,
                filePath: cssInSources,
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -53,9 +53,9 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.warning({
-               error: error,
+               error,
                filePath: file.history[0],
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -78,9 +78,9 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: "Ошибка builder'а при компиляции less",
-            error: error,
-            moduleInfo: moduleInfo,
+            message: 'Ошибка builder\'а при компиляции less',
+            error,
+            moduleInfo,
             filePath: file.history[0]
          });
       }

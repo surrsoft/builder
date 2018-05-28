@@ -4,16 +4,15 @@
 // данная версия загружает модули платформы из развернутого стенда
 // есть ещё версия для gulp
 
-
-///////////////////////////
+// /////////////////////////
 // Это здесь нужно, потому что внутри они переопределяют require, и портят наш requirejs
 // Surprise MF
-///////////////////////////
+// /////////////////////////
 require('esprima');
 require('escodegen');
 require('estraverse');
 
-///////////////////////////
+// /////////////////////////
 
 const path = require('path'),
    fs = require('fs-extra');
@@ -35,67 +34,73 @@ const resourceRoot = existWsCore ? '.' : path.join(appRoot, 'resources', path.se
 const requireJS = require('requirejs');
 const logger = require('./../../lib/logger').logger();
 
-function removeLeadingSlash(path) {
-   if (path) {
-      const head = path.charAt(0);
+function removeLeadingSlash(filePath) {
+   let newFilePath = filePath;
+   if (newFilePath) {
+      const head = newFilePath.charAt(0);
       if (head === '/' || head === '\\') {
-         path = path.substr(1);
+         newFilePath = newFilePath.substr(1);
       }
    }
-   return path;
+   return newFilePath;
 }
 
 const wsLogger = {
-   error: function(tag, msg) {
+   error(tag, msg) {
       logger.info(`WS error: ${tag}::${msg}`);
    },
-   info: function(tag, msg) {
+   info(tag, msg) {
       logger.debug(`WS info: ${tag}::${msg}`);
    },
-   log: function(tag, msg) {
+   log(tag, msg) {
       logger.debug(`WS log: ${tag}::${msg}`);
    }
 };
 
 let isInit = false;
-module.exports = function() {
+module.exports = function initWs() {
    if (!isInit) {
       isInit = true;
 
       global.wsConfig = {
-         appRoot: appRoot,
-         wsRoot: wsRoot,
-         resourceRoot: resourceRoot
+         appRoot,
+         wsRoot,
+         resourceRoot
       };
       global.wsBindings = {
-         ITransport: function() {
+         ITransport() {
             const e = new Error();
-            throw new Error('ITransport is not implemented in build environment.' + e.stack);
+            throw new Error(`ITransport is not implemented in build environment.${e.stack}`);
          },
-         ILogger: function() {
+         ILogger() {
             return wsLogger;
          }
       };
-      global.rk = function(key) {
-         const index = key.indexOf('@@');
+      global.rk = function rk(key) {
+         let newKey = key;
+         const index = newKey.indexOf('@@');
          if (index > -1) {
-            key = key.substr(index + '@@'.length);
+            newKey = newKey.substr(index + '@@'.length);
          }
-         return key;
+         return newKey;
       };
       global.requirejs = requireJS;
       global.define = requireJS.define;
+      // eslint-disable-next-line global-require
       const requirejsConfig = require(path.join(root, wsRoot, 'ext/requirejs/config.js'));
-      const requirejs = requireJS.config(requirejsConfig(root, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
-         waitSeconds: 20,
-         nodeRequire: require
-      }));
+      const requirejs = requireJS.config(
+         requirejsConfig(root, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+            waitSeconds: 20,
+            nodeRequire: require
+         })
+      );
       requirejs(path.join(root, wsRoot, 'lib/core.js'));
       const ws = requirejs('Core/core');
       const loadContents = requirejs('Core/load-contents');
       try {
+         // eslint-disable-next-line global-require
          const appContents = require(path.join(root, resourceRoot, 'contents.json'));
-         loadContents(appContents, true, {service: appRoot});
+         loadContents(appContents, true, { service: appRoot });
       } catch (err) {
          // eslint-disable-next-line no-console
          console.log('ws initialized without contents.json');

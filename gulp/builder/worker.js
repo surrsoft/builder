@@ -1,9 +1,9 @@
 'use strict';
 
-//логгер - прежде всего
+// логгер - прежде всего
 require('../../lib/logger').setGulpLogger();
 
-//ws должен быть вызван раньше чем первый global.requirejs
+// ws должен быть вызван раньше чем первый global.requirejs
 require('../helpers/node-ws').init();
 
 const fs = require('fs-extra'),
@@ -14,16 +14,17 @@ const fs = require('fs-extra'),
    parseJsComponent = require('../../lib/parse-js-component'),
    processingRoutes = require('../../lib/processing-routes'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
-   buildXhtml = require('../../lib/processing-xhtml').buildXhtml,
+   { buildXhtml } = require('../../lib/processing-xhtml'),
    runMinifyCss = require('../../lib/run-minify-css'),
+   runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
    uglifyJs = require('../../lib/run-uglify-js');
 
 let componentsProperties;
 
 process.on('unhandledRejection', (reason, p) => {
-   //eslint-disable-next-line no-console
+   // eslint-disable-next-line no-console
    console.log(
-      '[00:00:00] [ERROR] Критическая ошибка в работе worker\'а. ',
+      "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
       'Unhandled Rejection at:\n',
       p,
       '\nreason:\n',
@@ -65,14 +66,15 @@ async function prepareXHTML(text, componentsPropertiesFilePath) {
 }
 
 workerPool.worker({
-   parseJsComponent: parseJsComponent,
+   parseJsComponent,
    parseRoutes: processingRoutes.parseRoutes,
-   buildLess: buildLess,
-   buildTmpl: buildTmpl,
-   buildHtmlTmpl: buildHtmlTmpl,
-   prepareXHTML: prepareXHTML,
-   buildXhtml: buildXhtml,
+   buildLess,
+   buildTmpl,
+   buildHtmlTmpl,
+   prepareXHTML,
+   buildXhtml,
    minifyCss: runMinifyCss,
-   uglifyJs: uglifyJs,
+   minifyXhtmlAndHtml: runMinifyXhtmlAndHtml,
+   uglifyJs,
    gzip: helpers.gzip
 });

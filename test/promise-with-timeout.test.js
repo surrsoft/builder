@@ -4,11 +4,11 @@ require('./init-test');
 
 const promiseTimeout = require('../lib/promise-with-timeout');
 
-describe('promise with timeout', function() {
+describe('promise with timeout', () => {
    let result;
    it('should return timeout error if Timeout', async() => {
       try {
-         result = await promiseTimeout.promiseWithTimeout(new Promise((resolve) => setTimeout(resolve, 100)), 10);
+         result = await promiseTimeout.promiseWithTimeout(new Promise(resolve => setTimeout(resolve, 100)), 10);
       } catch (err) {
          result = err instanceof promiseTimeout.TimeoutError;
       }
@@ -18,7 +18,10 @@ describe('promise with timeout', function() {
    it('should return result if resolved successfully', async() => {
       const testResult = 'some value';
       try {
-         result = await promiseTimeout.promiseWithTimeout(new Promise((resolve) => setTimeout(() => resolve(testResult), 10)), 100);
+         result = await promiseTimeout.promiseWithTimeout(
+            new Promise(resolve => setTimeout(() => resolve(testResult), 10)),
+            100
+         );
       } catch (err) {
          result = err;
       }
@@ -28,12 +31,15 @@ describe('promise with timeout', function() {
    it('should return correct exception if promise rejected with Error', async() => {
       const testError = new Error('some Error rejected');
       try {
-         result = await promiseTimeout.promiseWithTimeout(new Promise((resolve, reject) => setTimeout(() => reject(testError), 10)), 100);
+         result = await promiseTimeout.promiseWithTimeout(
+            new Promise((resolve, reject) => setTimeout(() => reject(testError), 10)),
+            100
+         );
       } catch (err) {
          result = err;
       }
 
-      //результат должен быть ошибкой, но не по таймауту
+      // результат должен быть ошибкой, но не по таймауту
       (!(result instanceof promiseTimeout.TimeoutError) && result instanceof Error).should.equal(true);
       result.message.should.equal('some Error rejected');
    });

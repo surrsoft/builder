@@ -4,7 +4,7 @@ require('./init-test');
 
 const runUglifyJs = require('../lib/run-uglify-js');
 
-describe('run uglify-js', function() {
+describe('run uglify-js', () => {
    it('empty', () => {
       const text = '';
       const result = runUglifyJs('virtual.js', text);
@@ -18,7 +18,7 @@ describe('run uglify-js', function() {
        * и добиться работы данного теста.( и пожаловаться авторам сия чуда:))
        */
 
-      const text = '(function(){ return this || (0,eval)(\'this\'); }())';
+      const text = "(function(){ return this || (0,eval)('this'); }())";
       const result = runUglifyJs('virtual.js', text);
       result.code.should.equal('(function(){this||(0,eval)("this")})();');
    });
@@ -28,8 +28,8 @@ describe('run uglify-js', function() {
       result.code.should.equal('var r=0;');
    });
    it('simple test for typeof undefined', () => {
-      //нельзя заменять "undefined" === typeof test1 на void 0 === test1
-      //это не равнозначные действия
+      // нельзя заменять "undefined" === typeof test1 на void 0 === test1
+      // это не равнозначные действия
       const text = 'if("undefined" === typeof test1){test2 = 0;}';
 
       const result = runUglifyJs('virtual.js', text, false);
@@ -40,21 +40,25 @@ describe('run uglify-js', function() {
    });
 
    it('complex test for typeof undefined', () => {
-      //нельзя заменять "undefined" === typeof test1 на void 0 === test1
-      //это не равнозначные действия
+      // нельзя заменять "undefined" === typeof test1 на void 0 === test1
+      // это не равнозначные действия
 
-      const text = '(function() {\n' +
-         '   var thelpers = typeof tclosure === \'undefined\' || !tclosure ? arguments[arguments.length - 1] : tclosure;\n' +
-         '   if (typeof thelpers === \'undefined\') {\n' +
+      const text =
+         '(function() {\n' +
+         "   var thelpers = typeof tclosure === 'undefined' || !tclosure ? arguments[arguments.length - 1] : tclosure;\n" +
+         "   if (typeof thelpers === 'undefined') {\n" +
          '      console.log(1);\n' +
          '   }\n' +
          '})();';
 
       const result = runUglifyJs('virtual.js', text, false);
-      result.code.should.equal('(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();');
+      result.code.should.equal(
+         '(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();'
+      );
 
       const resultForMarkup = runUglifyJs('virtual.js', text, true);
-      resultForMarkup.code.should.equal('(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();');
+      resultForMarkup.code.should.equal(
+         '(function(){var e;if("undefined"===typeof("undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure))console.log(1)})();'
+      );
    });
 });
-

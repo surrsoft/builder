@@ -4,7 +4,7 @@ require('./init-test');
 
 const helpers = require('../lib/helpers');
 
-describe('helpers', function() {
+describe('helpers', () => {
    it('getFirstDirInRelativePath', () => {
       helpers.getFirstDirInRelativePath('/Test1/test2/').should.equal('Test1');
       helpers.getFirstDirInRelativePath('Test1/test1').should.equal('Test1');
@@ -22,11 +22,13 @@ describe('helpers', function() {
       helpers.prettifyPath('\\').should.equal('/');
       helpers.prettifyPath('/').should.equal('/');
 
-      helpers.prettifyPath('\\simple\\').should.equal('/simple/'); 
+      helpers.prettifyPath('\\simple\\').should.equal('/simple/');
       helpers.prettifyPath('/simple/').should.equal('/simple/');
 
       // на windows пути, которые начинаются с \\, являются сетевыми и требуют особой обработки
-      helpers.prettifyPath('\\\\simple\\\\file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
+      helpers
+         .prettifyPath('\\\\simple\\\\file.less')
+         .should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
       helpers.prettifyPath('\\\\simple/file.less').should.equal(isWin ? '\\\\simple\\file.less' : '/simple/file.less');
 
       // jinnee-utility может передавать не правильно сетевые пути до файлов. нужно обработать
@@ -36,4 +38,3 @@ describe('helpers', function() {
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });
 });
-

@@ -18,27 +18,26 @@ const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
  * @return {Function}
  */
 function gruntCollectDependencies(grunt) {
-   return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача сбора зависимостей.');
+   return function collectDependencies() {
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача сбора зависимостей.`);
 
-      let root = this.data.root,
-         application = this.data.application,
+      const { root, application } = this.data,
          applicationRoot = path.join(root, application),
          taskDone = this.async(),
          jsFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
       sourceFiles.sort();
       sourceFiles
          .filter(function isDemo(pathToSource) {
             return !isDemoModule.test(pathToSource);
          })
-         .forEach(function(pathToSource) {
+         .forEach((pathToSource) => {
             jsFiles.push(path.join(applicationRoot, pathToSource));
          });
 
-      makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, function(err, jsonGraph) {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача сбора зависимостей выполнена.');
+      makeDependenciesGraph(grunt, root, applicationRoot, jsFiles, (err, jsonGraph) => {
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача сбора зависимостей выполнена.`);
          if (err) {
             taskDone(err);
          } else {
@@ -55,18 +54,16 @@ function gruntCollectDependencies(grunt) {
  * @return {Function}
  */
 function gruntPackModules(grunt) {
-   return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки зависимостей.');
+   return function packModules() {
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки зависимостей.`);
 
-      let root = this.data.root,
-         application = this.data.application,
+      const { root, application } = this.data,
          applicationRoot = path.join(root, application),
          done = this.async(),
-         htmlFiles = [],
-         taskDone, dg;
+         htmlFiles = [];
 
-      taskDone = function() {
-         grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки зависимостей выполнена.');
+      const taskDone = function() {
+         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки зависимостей выполнена.`);
          done();
       };
 
@@ -74,10 +71,10 @@ function gruntPackModules(grunt) {
          return;
       }
 
-      dg = modDeps.getDependencyGraphSync(applicationRoot);
+      const dg = modDeps.getDependencyGraphSync(applicationRoot);
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
@@ -92,7 +89,7 @@ function gruntPackOwnDependencies() {
    return async function gruntPackOwnDependenciesTask() {
       logger.debug('Запускается задача паковки собственных зависимостей.');
 
-      const root = this.data.root,
+      const { root } = this.data,
          applicationRoot = path.join(root, this.data.application),
          done = this.async();
 
@@ -111,15 +108,15 @@ function gruntPackOwnDependencies() {
 }
 
 function gruntPackCSS(grunt) {
-   return function() {
+   return function packCss() {
       logger.debug('Запускается задача паковки css.');
 
-      const root = this.data.root,
+      const { root } = this.data,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
@@ -130,25 +127,25 @@ function gruntPackCSS(grunt) {
 }
 
 function gruntPackJS(grunt) {
-   return function() {
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки js.');
+   return function packJs() {
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки js.`);
 
-      let root = this.data.root,
+      const { root } = this.data,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
-      const sourceFiles = grunt.file.expand({cwd: applicationRoot}, this.data.src);
-      sourceFiles.forEach(function(pathToSource) {
+      const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
+      sourceFiles.forEach((pathToSource) => {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
       packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
-      grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки js выполнена.');
+      grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки js выполнена.`);
    };
 }
 
-module.exports = function(grunt) {
+module.exports = function registerTasks(grunt) {
    grunt.registerMultiTask('packwsmod', 'TODO', gruntPackModules(grunt));
    grunt.registerMultiTask('owndepspack', 'TODO', gruntPackOwnDependencies(grunt));
    grunt.registerMultiTask('collect-dependencies', 'TODO', gruntCollectDependencies(grunt));

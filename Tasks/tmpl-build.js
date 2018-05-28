@@ -17,49 +17,47 @@ async function writeTemplate(templateOptions, nodes, splittedCore) {
    /**
     * Позорный костыль для обратной поддержки препроцессора
     */
-   const fullPath = templateOptions.fullPath,
-      nameModule = templateOptions.currentNode,
-      original = templateOptions.original,
-      data = templateOptions.data;
+   const {
+      fullPath, original, data, currentNode
+   } = templateOptions;
 
    if (splittedCore) {
       await fs.writeFile(fullPath.replace(extFile, '.min$1'), data);
-      if (nodes.hasOwnProperty(nameModule)) {
-         nodes[nameModule].amd = true;
-         nodes[nameModule].path = nodes[nameModule].path.replace(extFile, '.min$1');
+      if (nodes.hasOwnProperty(currentNode)) {
+         nodes[currentNode].amd = true;
+         nodes[currentNode].path = nodes[currentNode].path.replace(extFile, '.min$1');
       }
    } else {
       await Promise.all([
          fs.writeFile(fullPath.replace(extFile, '.original$1'), original),
          fs.writeFile(fullPath, data)
       ]);
-      if (nodes.hasOwnProperty(nameModule)) {
-         nodes[nameModule].amd = true;
+      if (nodes.hasOwnProperty(currentNode)) {
+         nodes[currentNode].amd = true;
       }
    }
 }
 
-module.exports = function(grunt) {
+module.exports = function register(grunt) {
    const splittedCore = grunt.option('splitted-core');
 
-   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function() {
-      //eslint-disable-next-line no-invalid-this
+   grunt.registerMultiTask('tmpl-build', 'Generate static html from modules', async function tmplBuildTask() {
+      // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
 
       try {
          logger.debug('Запускается задача tmpl-build.');
          const start = Date.now(),
-            root = self.data.root,
-            application = self.data.application,
+            { root, application } = self.data,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(root, application, 'resources'),
             mDeps = await fs.readJSON(path.join(resourcesRoot, 'module-dependencies.json')),
-            nodes = mDeps.nodes;
+            { nodes } = mDeps;
 
          let componentsProperties = {};
 
-         //запускаем только при наличии задач локализации
+         // запускаем только при наличии задач локализации
          if (grunt.option('prepare-xhtml' || grunt.option('make-dict') || grunt.option('index-dict'))) {
             const optModules = grunt.option('modules').replace(/"/g, '');
             const optJsonCache = grunt.option('json-cache').replace(/"/g, '');
@@ -77,7 +75,7 @@ module.exports = function(grunt) {
 
          await pMap(
             self.files,
-            async value => {
+            async(value) => {
                const fullPath = helpers.prettifyPath(value.dest);
                try {
                   const html = stripBOM((await fs.readFile(fullPath)).toString()),
@@ -85,25 +83,26 @@ module.exports = function(grunt) {
 
                   if (splittedCore) {
                      /**
-                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
-                      * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
-                      * когда шаблон будет генерироваться находу, как в дебаге.
+                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным
+                      * шаблоном. В случае ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны,
+                      * а разрабам сразу прилетит в консоль ошибка, когда шаблон будет генерироваться находу,
+                      * как в дебаге.
                       */
                      await fs.writeFile(fullPath.replace(extFile, '.min$1'), html);
                   }
 
-                  //relativePath должен начинаться с имени модуля
+                  // relativePath должен начинаться с имени модуля
                   let relativePath = path.relative(resourcesRoot, fullPath);
 
-                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  // если ws монолитный, то его tmpl нужно обрабатывать особо
                   if (!splittedCore && relativePath.includes('..')) {
                      relativePath = path.relative(applicationRoot, fullPath);
                   }
                   const tmplObj = await processingTmpl.buildTmpl(original, relativePath, componentsProperties);
                   const templateOptions = {
-                     fullPath: fullPath,
+                     fullPath,
                      currentNode: tmplObj.nodeName,
-                     original: original,
+                     original,
                      data: tmplObj.text
                   };
                   await writeTemplate(templateOptions, nodes, splittedCore);
@@ -111,7 +110,7 @@ module.exports = function(grunt) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
-                     error: error
+                     error
                   });
                }
             },
@@ -126,28 +125,27 @@ module.exports = function(grunt) {
          });
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({ error: error });
+         logger.error({ error });
       }
       done();
    });
 
-   grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', async function() {
-      //eslint-disable-next-line no-invalid-this
+   grunt.registerMultiTask('xhtml-build', 'Generate static html from modules', async function xhtmlBuildTask() {
+      // eslint-disable-next-line no-invalid-this
       const self = this,
          done = self.async();
       try {
          logger.debug('Запускается задача xhtml-build.');
          const start = Date.now();
-         const root = self.data.root,
-            application = self.data.application,
+         const { root, application } = self.data,
             applicationRoot = path.join(root, application),
             resourcesRoot = path.join(root, application, 'resources'),
             mDeps = await fs.readJSON(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
-            nodes = mDeps.nodes;
+            { nodes } = mDeps;
 
          await pMap(
             self.files,
-            async value => {
+            async(value) => {
                const fullPath = helpers.prettifyPath(value.dest);
                try {
                   const html = stripBOM(await fs.readFile(fullPath, 'utf8'));
@@ -155,25 +153,26 @@ module.exports = function(grunt) {
 
                   if (splittedCore) {
                      /**
-                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит сгенеренным шаблоном. В случае
-                      * ошибки мы на клиенте не будем получать 404х ошибок на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка,
-                      * когда шаблон будет генерироваться находу, как в дебаге.
+                      * пишем сразу оригинал в .min файл. В случае успешной генерации .min будет перебит
+                      * сгенеренным шаблоном. В случае ошибки мы на клиенте не будем получать 404х ошибок
+                      * на плохие шаблоны, а разрабам сразу прилетит в консоль ошибка, когда шаблон будет
+                      * генерироваться находу, как в дебаге.
                       */
                      await fs.writeFile(fullPath.replace(extFile, '.min$1'), original);
                   }
 
-                  //relativePath должен начинаться с имени модуля
+                  // relativePath должен начинаться с имени модуля
                   let relativePath = path.relative(resourcesRoot, fullPath);
 
-                  //если ws монолитный, то его tmpl нужно обрабатывать особо
+                  // если ws монолитный, то его tmpl нужно обрабатывать особо
                   if (!splittedCore && relativePath.includes('..')) {
                      relativePath = path.relative(applicationRoot, fullPath);
                   }
                   const xhtmlObj = processingXhtml.buildXhtml(html, relativePath);
                   const templateOptions = {
-                     fullPath: fullPath,
+                     fullPath,
                      currentNode: xhtmlObj.nodeName,
-                     original: original,
+                     original,
                      data: xhtmlObj.text
                   };
 
@@ -182,7 +181,7 @@ module.exports = function(grunt) {
                   logger.warning({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
-                     error: error
+                     error
                   });
                }
             },
@@ -196,7 +195,7 @@ module.exports = function(grunt) {
 
          logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
       } catch (error) {
-         logger.error({ error: error });
+         logger.error({ error });
       }
       done();
    });
