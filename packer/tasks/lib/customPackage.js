@@ -9,7 +9,6 @@ const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
 const packCSS = require('./packCSS').packCSS;
-const helpers = require('../../../lib/helpers');
 
 /**
  * Путь до original файла
