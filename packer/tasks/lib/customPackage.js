@@ -9,7 +9,6 @@ const excludeCore = ['^Core/*', '^Deprecated/*', '^Transport/*'];
 const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
 const packCSS = require('./packCSS').packCSS;
-const helpers = require('../../../lib/helpers');
 
 /**
  * Путь до original файла
@@ -294,22 +293,11 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  * @param buildNumber - номер билда
  * @returns {string}
  */
-function generateLinkForCss(cssModules, application, packagePath, buildNumber) {
-   let linkHref = helpers.prettifyPath(application ? path.join(application, packagePath) : packagePath);
-   if (linkHref[0] !== '/') {
-      linkHref = '/' + linkHref;
-   }
-   let result =
-      '(function(){var linkAppended = false;function generateLink(){' +
-      `var linkHref = '${linkHref}${buildNumber ? `.v${buildNumber}` : ''}.css';` +
-      'if(!linkAppended){var links = document.getElementsByClassName("cssBundles");if(links.length > 0){' +
-      'for(var i=0;i<links.length;i++){if(links[i].getAttribute("href") === linkHref){linkAppended = true;}}}}' +
-      'if(!linkAppended){var link = document.createElement("link"),head = document.head || document.getElementsByTagName("head")[0];' +
-      'link.setAttribute("rel", "stylesheet");link.classList.add("cssBundles");' +
-      'link.setAttribute("href", linkHref);link.setAttribute("data-vdomignore", "true");' +
-      'head.appendChild(link);linkAppended = true;}}';
+function generateLinkForCss(cssModules, packagePath) {
+   let linkHref = packagePath.replace(/\.min$/, '');
+   let result = '(function(){';
    cssModules.forEach(module => {
-      result += `define('${module.fullName}', generateLink);`;
+      result += `define('${module.fullName}',['css!${linkHref}'],'');`;
    });
    return result + '})();';
 }
@@ -341,7 +329,7 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
             } else {
 
                if (cfg.cssModulesFromOrderQueue.length > 0) {
-                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, bundlesOptions.appRoot, cfg.packagePath, bundlesOptions.buildNumber));
+                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, cfg.packagePath));
                }
                grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
                   return res + (res ? '\n' : '') + modContent;
