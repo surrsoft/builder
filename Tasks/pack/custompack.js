@@ -21,7 +21,8 @@ module.exports = function gruntCustomPack(grunt) {
                modulesInBundles: {},
                outputs: {},
                splittedCore: self.data.splittedCore,
-               buildNumber: grunt.option('versionize')
+               buildNumber: grunt.option('versionize'),
+               appRoot: self.data.application
             },
             applicationRoot = path.join(self.data.root, self.data.application),
             done = self.async(),
