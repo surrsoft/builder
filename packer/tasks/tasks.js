@@ -316,6 +316,7 @@ function gruntCustomPack(grunt) {
 
       bundlesOptions.splittedCore = this.data.splittedCore;
       bundlesOptions.buildNumber = grunt.option('versionize');
+      bundlesOptions.appRoot = this.data.application;
       customPackage.collectDepsAndIntersects(dg, configsArray, applicationRoot, wsRoot, bundlesOptions, collectDepsAndIntersectsDone);
    };
 }
