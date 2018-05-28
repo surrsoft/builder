@@ -20,9 +20,7 @@ module.exports = function register(grunt) {
                bundles: {},
                modulesInBundles: {},
                outputs: {},
-               splittedCore: self.data.splittedCore,
-               buildNumber: grunt.option('versionize'),
-               appRoot: self.data.application
+               splittedCore: self.data.splittedCore
             },
             applicationRoot = path.join(self.data.root, self.data.application),
             done = self.async(),
