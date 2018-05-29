@@ -227,7 +227,7 @@ module.exports = function register(grunt) {
                            if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
                               const partsComponentName = componentInfo.componentName.split('!');
                               if (partsComponentName[0] === 'js') {
-                                 logger.error({
+                                 logger.warning({
                                     message: `Имя компонента ${
                                        componentInfo.componentName
                                     } не будет добавлено в contents.json. Использование плагина js! недопустимо.`,
