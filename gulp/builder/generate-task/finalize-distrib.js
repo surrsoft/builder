@@ -6,7 +6,6 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
-   packHtml = require('../plugins/pack-html'),
    gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
 
