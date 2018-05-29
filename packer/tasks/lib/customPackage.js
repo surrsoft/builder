@@ -10,6 +10,10 @@ const logger = require('../../../lib/logger').logger();
 const fs = require('fs-extra');
 const packCSS = require('./packCSS').packCSS;
 
+//набор регулярок для генерации линков css
+const isResources = /^(resources)/i;
+const isWS = /^(ws)/i;
+
 /**
  * Путь до original файла
  * @param {String} path
@@ -295,6 +299,13 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  */
 function generateLinkForCss(cssModules, packagePath) {
    let linkHref = packagePath.replace(/\.min$/, '');
+   const isResourcesPath = linkHref.match(isResources);
+   if (isResourcesPath) {
+      linkHref = linkHref.replace(isResourcesPath[1], 'Resources');
+   } else {
+      const wsPath = linkHref.match(isWS);
+      linkHref = linkHref.replace(wsPath[1], 'WS');
+   }
    let result = '(function(){';
    cssModules.forEach(module => {
       result += `define('${module.fullName}',['css!${linkHref}'],'');`;
