@@ -28,9 +28,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
 
             const relativePath = path
                .relative(moduleInfo.path, file.history[0])
-               .replace(file.extname, `.min${file.extname}`);
-            const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
+               .replace(/(\.css|\.less)$/, '.min.css');
 
+            const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
                changesStore.addOutputFile(file.history[0], outputMinFile);
                callback(null, file);
