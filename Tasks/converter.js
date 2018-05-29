@@ -8,8 +8,6 @@ const transliterate = require('../lib/transliterate');
 const buildLess = require('../lib/build-less');
 const parseJsComponent = require('../lib/parse-js-component');
 const logger = require('../lib/logger').logger();
-const fixedModuleJs = require('../lib/fixedModuleJs');
-const fixedJsModules = new Set(fixedModuleJs);
 
 const dblSlashes = /\\/g;
 const isModuleJs = /\.module\.js$/;
@@ -229,24 +227,12 @@ module.exports = function register(grunt) {
                            if (componentInfo.hasOwnProperty('componentName') && !isNavigationModule) {
                               const partsComponentName = componentInfo.componentName.split('!');
                               if (partsComponentName[0] === 'js') {
-                                 if (fixedJsModules.has(partsComponentName[1])) {
-                                    logger.warning({
-                                       message: `Для компонента ${
-                                          componentInfo.componentName
-                                       } следует отказаться от использования плагина js.`,
-                                       filePath: file
-                                    });
-                                    jsModules[partsComponentName[1]] = path
-                                       .join(tsdModuleName, transliterate(path.relative(input, file)))
-                                       .replace(dblSlashes, '/');
-                                 } else {
-                                    logger.error({
-                                       message: `Имя компонента ${
-                                          componentInfo.componentName
-                                       } не будет добавлено в contents.json. Использование плагина js! недопустимо.`,
-                                       filePath: file
-                                    });
-                                 }
+                                 logger.error({
+                                    message: `Имя компонента ${
+                                       componentInfo.componentName
+                                    } не будет добавлено в contents.json. Использование плагина js! недопустимо.`,
+                                    filePath: file
+                                 });
                               }
                            }
                            if (componentInfo.hasOwnProperty('isNavigation') && componentInfo.isNavigation) {
