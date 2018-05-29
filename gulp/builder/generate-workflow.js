@@ -9,6 +9,7 @@ const path = require('path'),
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
+   generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    ChangesStore = require('./classes/changes-store'),
@@ -77,6 +78,7 @@ function generateWorkflow(processArgv) {
          generateTaskForSaveChangesStore(changesStore)
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      generateTaskForPackHtml(config, pool),
       generateTaskForTerminatePool(pool),
 
       // generateTaskForUnlock после всего
