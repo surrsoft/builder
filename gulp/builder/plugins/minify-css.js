@@ -14,7 +14,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
       /** @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            if (file.extname !== '.css') {
+            // Нужно вызвать changesStore.addOutputFile для less, чтобы не удалился *.min.css файл.
+            // Ведь самой css не будет в потоке при повторном запуске
+            if (!['.css', '.less'].includes(file.extname)) {
                callback(null, file);
                return;
             }
@@ -33,6 +35,12 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
                changesStore.addOutputFile(file.history[0], outputMinFile);
+               callback(null, file);
+               return;
+            }
+
+            // Минифицировать less не нужно
+            if (file.extname !== '.css') {
                callback(null, file);
                return;
             }

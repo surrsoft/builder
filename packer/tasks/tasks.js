@@ -7,7 +7,7 @@ const packHTML = require('./lib/packHTML');
 const packOwnDeps = require('./lib/pack-own-deps');
 const makeDependenciesGraph = require('./lib/collectDependencies');
 const packCSS = require('./lib/packCSS').gruntPackCSS;
-const packJS = require('./lib/packJS');
+const packJS = require('./lib/packJS').gruntPackJS;
 const logger = require('../../lib/logger').logger();
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
@@ -108,10 +108,11 @@ function gruntPackOwnDependencies() {
 }
 
 function gruntPackCSS(grunt) {
-   return function packCss() {
+   return async function packCss() {
       logger.debug('Запускается задача паковки css.');
 
       const { root } = this.data,
+         done = this.async(),
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
@@ -120,17 +121,19 @@ function gruntPackCSS(grunt) {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
-      packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+      await packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
       logger.debug('Задача паковки css выполнена.');
+      done();
    };
 }
 
 function gruntPackJS(grunt) {
-   return function packJs() {
+   return async function packJs() {
       grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки js.`);
 
       const { root } = this.data,
+         done = this.async(),
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
 
@@ -139,9 +142,10 @@ function gruntPackJS(grunt) {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
-      packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+      await packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
 
       grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки js выполнена.`);
+      done();
    };
 }
 

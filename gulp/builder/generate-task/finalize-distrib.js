@@ -21,7 +21,7 @@ function generateTaskForCopyResources(config, pool) {
                plumber({
                   errorHandler(err) {
                      logger.error({
-                        message: 'Задача copyResources завершилась с ошибкой',
+                        message: 'Задача packHtml завершилась с ошибкой',
                         error: err,
                         moduleInfo
                      });
@@ -30,7 +30,6 @@ function generateTaskForCopyResources(config, pool) {
                })
             )
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
-            .pipe(packHtml(moduleInfo, pool))
             .pipe(gzip(moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
