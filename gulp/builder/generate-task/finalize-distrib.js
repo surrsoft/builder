@@ -20,7 +20,7 @@ function generateTaskForCopyResources(config, pool) {
                plumber({
                   errorHandler(err) {
                      logger.error({
-                        message: 'Задача packHtml завершилась с ошибкой',
+                        message: 'Задача copyResources завершилась с ошибкой',
                         error: err,
                         moduleInfo
                      });
