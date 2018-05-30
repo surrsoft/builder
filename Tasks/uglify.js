@@ -205,6 +205,5 @@ module.exports = function register(grunt) {
                taskDone();
             }
          );
-      }
-   );
+      });
 };
