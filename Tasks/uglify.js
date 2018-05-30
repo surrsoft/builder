@@ -58,23 +58,23 @@ module.exports = function register(grunt) {
       function uglifyJsTask() {
          grunt.log.ok(`${humanize.date('H:i:s')} : Запускается задача uglify.`);
          const taskDone = this.async(),
-            applicationRoot = path.join(this.data.root, this.data.application),
+            applicationRoot = path.join(this.data.root, this.data.application);
 
-            /**
+         /**
           * Опция splittedCore описывает, распиленное ядро или обычное мы используем.
           * Она нам пригодится, чтобы на Препроцессоре не генерить SourceMaps, поскольку в целях отладки
           * там присутствует /debug
           */
-            { splittedCore } = this.data.splittedCore,
-            getAvailableFiles = function(filesArray) {
-               return filesArray.filter((filepath) => {
-                  if (!grunt.file.exists(filepath)) {
-                     logger.warning(`Source file ${filepath} not found`);
-                     return false;
-                  }
-                  return true;
-               });
-            };
+         const { splittedCore } = this.data;
+         const getAvailableFiles = function(filesArray) {
+            return filesArray.filter((filepath) => {
+               if (!grunt.file.exists(filepath)) {
+                  logger.warning(`Source file ${filepath} not found`);
+                  return false;
+               }
+               return true;
+            });
+         };
 
          const mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
             nodes = Object.keys(mDeps.nodes);
@@ -94,8 +94,7 @@ module.exports = function register(grunt) {
                      isMarkup = originalText.match(/define\("(tmpl!|html!)/),
                      currentEXT = getCurrentEXT(currentPath);
 
-                  const
-                     currentNodePath = helpers.prettifyPath(
+                  const currentNodePath = helpers.prettifyPath(
                         helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')
                      ),
                      currentNode = nodes.filter(node => mDeps.nodes[node].path === currentNodePath);
@@ -110,8 +109,8 @@ module.exports = function register(grunt) {
                      : currentEXTString.slice(2, currentEXTString.length - 2);
 
                   /**
-                * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
-                */
+                   * Если шаблон не был сгенерен, тогда минифицировать нечего и обработку файла завершаем.
+                   */
                   if ((currentEXTString.match(extensions[1]) || currentEXTString.match(extensions[2])) && !isMarkup) {
                      logger.debug(
                         `Template ${currentPath} doesnt generated. Check tmpl/xhtml-build task logs for errors. `
@@ -130,16 +129,16 @@ module.exports = function register(grunt) {
 
                   try {
                      if (splittedCore && currentEXTString === '.jstpl') {
-                     /**
-                      * jstpl копируем напрямую, их минифицировать никак нельзя,
-                      * но .min файл присутствовать должен во избежание 404х
-                      */
+                        /**
+                         * jstpl копируем напрямую, их минифицировать никак нельзя,
+                         * но .min файл присутствовать должен во избежание 404х
+                         */
                         fs.writeFileSync(minModulePath, originalText);
                      } else if (splittedCore && currentEXTString === '.json') {
-                     /**
-                      * Для json воспользуемся нативной функцией JSON.stringify, чтобы избавиться
-                      * от табуляции и получить минифицированный вариант
-                      */
+                        /**
+                         * Для json воспользуемся нативной функцией JSON.stringify, чтобы избавиться
+                         * от табуляции и получить минифицированный вариант
+                         */
                         try {
                            fs.writeFileSync(minModulePath, JSON.stringify(JSON.parse(originalText)));
                            if (splittedCore && currentNode.length > 0) {
@@ -155,9 +154,9 @@ module.exports = function register(grunt) {
                            });
                         }
                      } else {
-                     /**
-                      * для остальных модулей выполняем стандартную минификацию
-                      */
+                        /**
+                         * для остальных модулей выполняем стандартную минификацию
+                         */
                         const minified = runUglifyJs(currentPath, originalText, isMarkup, sourceMapUrl);
 
                         if (splittedCore && currentNode.length > 0 && currentEXTString === '.js') {
@@ -182,11 +181,11 @@ module.exports = function register(grunt) {
                });
 
                /**
-             * используем такой способ возвращения callback'а итеративной функции, поскольку
-             * в противном случае мы получим переполнение размера стека вызовов. Подробнее
-             * можно почитать здесь:
-             * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
-             */
+                * используем такой способ возвращения callback'а итеративной функции, поскольку
+                * в противном случае мы получим переполнение размера стека вызовов. Подробнее
+                * можно почитать здесь:
+                * https://github.com/caolan/async/blob/master/intro.md#synchronous-iteration-functions
+                */
                setImmediate(done);
             },
             (err) => {
@@ -206,5 +205,6 @@ module.exports = function register(grunt) {
                taskDone();
             }
          );
-      });
+      }
+   );
 };
