@@ -81,8 +81,9 @@ module.exports = function gruntMain(grunt) {
          /**
           * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
           * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
+          * packjs и packcss работают с *.min.* файлами
           */
-         defaultTasks.push('packjs', 'packcss', 'owndepspack', 'uglify', 'custompack', 'packwsmod', 'gzip');
+         defaultTasks.push('packcss', 'owndepspack', 'uglify', 'packjs', 'custompack', 'packwsmod', 'gzip');
       }
 
       if (!packaging && versionize && typeof versionize === 'string') {
