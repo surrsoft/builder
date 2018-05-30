@@ -89,8 +89,8 @@ function checkFiles(root, sourceFile, result) {
       }
    });
    if (!isSane) {
-      logger.warning('Warning: ' + path.relative(root, sourceFile) + ' skipped');
-      logger.warning(errors.join('\n'));
+      logger.info('Warning: ' + path.relative(root, sourceFile) + ' skipped');
+      logger.info(errors.join('\n'));
    }
    return isSane;
 }
@@ -150,7 +150,7 @@ const helpers = {
 
                   logger.debug('OK  : ' + f);
                } else {
-                  logger.warning({
+                  logger.info({
                      message: 'Skip file',
                      filePath: f
                   });
