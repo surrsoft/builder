@@ -3,24 +3,16 @@ const gulp = require('gulp'),
    path = require('path'),
    generatePackageJson = require('../plugins/custom-packer'),
    getModuleMDeps = require('../plugins/read-module-mdeps'),
-   saveCustomPackResults = require('../../../lib/pack/custom-packer').saveCustomPackResults,
    logger = require('../../../lib/logger').logger(),
-   gulpIf = require('gulp-if'),
-   DependencyGraph = require('../../../packer/lib/dependencyGraph');
+   DependencyGraph = require('../../../packer/lib/dependencyGraph'),
+   plumber = require('gulp-plumber'),
+   { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
-function testFunction(results) {
-   const test = results;
-   debugger;
-}
-function saveResults(results, applicationRoot, moduleInfo) {
-   const moduleOutput = path.join(applicationRoot, path.basename(moduleInfo.output));
-   const input = path.join(moduleOutput, '/**/*.package.json');
-   return function test() {
-      return gulp
-         .src(input, {dot: false, nodir: true})
-         .pipe(testFunction(results))
-         .pipe(gulp.dest(moduleOutput));
-   }
+function generateSaveResultsTask(config, results, applicationRoot, splittedCore) {
+   return function saveCustomPackerResults() {
+      results.bundlesJson = results.bundles;
+      return saveCustomPackResults(results, applicationRoot, splittedCore, true);
+   };
 }
 
 function generateTaskForCustomPack(config) {
@@ -28,7 +20,10 @@ function generateTaskForCustomPack(config) {
       applicationRoot = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
-      results = {};
+      results = {
+         bundles: {},
+         bundlesRoute: {}
+      };
 
    if (!config.isReleaseMode) {
       return function skipCustomPack(done) {
@@ -42,7 +37,19 @@ function generateTaskForCustomPack(config) {
       return function getModuleDeps() {
          return gulp
             .src(input, {dot: false, nodir: true})
-            .pipe(getModuleMDeps(depsTree));
+            .pipe(getModuleMDeps(depsTree))
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача getModuleDeps завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            );
       };
    });
 
@@ -53,14 +60,26 @@ function generateTaskForCustomPack(config) {
       return function custompack() {
          return gulp
             .src(input, {dot: false, nodir: true})
-            .pipe(gulpIf(moduleOutput.split(/\/|\\/).pop().includes('Controls'), generatePackageJson(depsTree, results, applicationRoot, splittedCore)));
+            .pipe(generatePackageJson(depsTree, results, applicationRoot, splittedCore))
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача custompack завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            );
       };
    });
 
    return gulp.series(
       gulp.parallel(getMDepsTasks),
       gulp.parallel(generatePackagesTasks),
-      saveResults(results, applicationRoot, config.modules[0])
+      generateSaveResultsTask(config, results, applicationRoot, splittedCore)
    );
 }
 

@@ -297,7 +297,7 @@ function prepareResultQueue(orderQueue, applicationRoot, depsTree) {
    pack.js = packerDictionary.deleteModulesLocalization(pack.js);
 
    // Запакуем словари.
-   pack.dict = packerDictionary.packerDictionary(pack.js, applicationRoot, depsTree);
+   pack.dict = packerDictionary.packerDictionary(pack.js, applicationRoot);
 
    return pack;
 }

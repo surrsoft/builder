@@ -27,12 +27,12 @@ module.exports = function generatePackageJson(depsTree, results, applicationRoot
          depsTree,
          configsArray,
          applicationRoot,
+         splittedCore,
          true
       );
 
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundles');
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundlesRoute');
-      debugger;
       callback();
    });
 };

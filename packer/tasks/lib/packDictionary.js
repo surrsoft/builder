@@ -254,25 +254,8 @@ async function packCustomDict(modules, applicationRoot, depsTree) {
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Object}
  */
-function packDictClassic(modules, applicationRoot, depsTree) {
+function packDictClassic(modules, applicationRoot) {
    const dictPack = {};
-   let modDepend;
-   if (depsTree) {
-      modDepend = {
-         nodes: depsTree.getNodeObject(),
-         links: depsTree.getLinksObject()
-      };
-   } else {
-      modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json')));
-   }
-
-   /*
-   костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
-   когда словари сформируются и начнут записываться в module-dependencies параллельно и одновременно
-    */
-   if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
-      return dictPack;
-   }
    try {
       const coreConstants = global.requirejs('Core/constants'),
          isPackedDict = {};
@@ -290,9 +273,6 @@ function packDictClassic(modules, applicationRoot, depsTree) {
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createTextModule(dictJsModule);
-
-                  modDepend = creatTextInModDeps(modDepend, dictTextModule);
-
                   dictPack[lang].push(dictTextModule);
                   dictPack[lang].push(dictJsModule);
 
@@ -304,12 +284,6 @@ function packDictClassic(modules, applicationRoot, depsTree) {
             });
          }
       });
-
-      /*
-        в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
-        fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'),
-        JSON.stringify(modDepend, null, 2));
-        */
    } catch (error) {
       logger.error({
          error

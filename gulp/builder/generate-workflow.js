@@ -80,8 +80,7 @@ function generateWorkflow(processArgv) {
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForPackHtml(config, pool),
-      //generateTaskForFinalizeDistrib(config, pool, localizationEnable),
-      generateTaskForCustomPack(config, pool),
+      generateTaskForCustomPack(config),
       generateTaskForTerminatePool(pool),
 
       // generateTaskForUnlock после всего

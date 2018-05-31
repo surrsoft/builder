@@ -50,6 +50,7 @@ module.exports = function register(grunt) {
             applicationRoot,
             bundlesOptions
          );
+         results.bundlesJson = results.bundles;
          await customPacker.saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore);
          time = new Date();
          logger.info(
