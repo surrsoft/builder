@@ -2,10 +2,8 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const async = require('async');
 const loaders = require('./loaders');
 const getMeta = require('./getDependencyMeta');
-const { packCSS } = require('./../tasks/lib/packCSS');
 const packerDictionary = require('./../tasks/lib/packDictionary');
 const logger = require('../../lib/logger').logger();
 const pMap = require('p-map');
@@ -13,37 +11,6 @@ const dblSlashes = /\\/g,
    CDN = /\/?cdn\//;
 
 const langRe = /lang\/([a-z]{2}-[A-Z]{2})/;
-
-// TODO: костыль: список статических html страниц для которых не пакуем стили контролов
-const HTMLPAGESWITHNOONLINESTYLES = [
-   'carry.html',
-   'presto.html',
-   'carry_minimal.html',
-   'booking.html',
-   'plugin.html',
-   'hint.html',
-   'CryptoAppWindow.html'
-];
-
-// TODO: Костыль: Узнаем по наличию модуля (s3mod) в оффлайне мы или нет
-
-const offlineModuleName = 'Retail_Offline';
-let isOfflineClient;
-
-function checkItIsOfflineClient(applicationRoot) {
-   if (isOfflineClient !== undefined) {
-      return isOfflineClient;
-   }
-   if (process.application) {
-      return false;
-   }
-   const offlineClientModulePath = path.join(applicationRoot, `resources/${offlineModuleName}/`);
-   try {
-      return fs.existsSync(offlineClientModulePath);
-   } catch (err) {
-      return false;
-   }
-}
 
 /**
  * Get loader
@@ -85,27 +52,6 @@ function copyFile(source, target, cb) {
 }
 
 /**
- * Формирует фейковые обертки для css, чтобы не грузить дважды
- * @param {Array} filesToPack
- * @param {Array} staticHtmlName
- * @return {String}
- */
-function generateFakeModules(filesToPack, themeName, staticHtmlName) {
-   return `(function(){\n${filesToPack
-      .filter(function removeControls(module) {
-         if (
-            themeName ||
-            (!process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1)
-         ) {
-            return !module.fullName.includes('SBIS3.CONTROLS');
-         }
-         return true;
-      })
-      .map(module => `define('${module.fullName}', '');`)
-      .join('\n')}\n})();`;
-}
-
-/**
  * Подготавливает метаданные модулей графа
  * @param {DepGraph} dg
  * @param {Array} orderQueue - развернутый граф
@@ -115,17 +61,15 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
 function prepareOrderQueue(dg, orderQueue, applicationRoot) {
    const cssFromCDN = /css!\/cdn\//;
    return orderQueue
-      .filter(
-         (dep) => {
-            if (dep.path) {
-               return !CDN.test(dep.path.replace(dblSlashes, '/'));
-            }
-            if (dep.module) {
-               return !cssFromCDN.test(dep.module);
-            }
-            return true;
+      .filter((dep) => {
+         if (dep.path) {
+            return !CDN.test(dep.path.replace(dblSlashes, '/'));
          }
-      )
+         if (dep.module) {
+            return !cssFromCDN.test(dep.module);
+         }
+         return true;
+      })
       .map(function parseModule(dep) {
          const meta = getMeta(dep.module);
          if (meta.plugin === 'is') {
@@ -303,59 +247,27 @@ function prepareResultQueue(orderQueue, applicationRoot) {
 }
 
 /**
- * @callback nativePackFiles~callback
- * @param {Error} error
- * @param {String} [result]
- */
-/**
- * Просто собирает указанные файлы в один большой кусок текста
- * @param {Array} filesToPack - модули для паковки
- * @param {String} base - полный путь до папки с пакетами
- * Относительно этой папки будут высчитаны новые пути в ссылках
- * @param {nativePackFiles~callback} packDone
- */
-function nativePackFiles(filesToPack, base, packDone, themeName) {
-   if (filesToPack && filesToPack.length) {
-      async.mapLimit(
-         filesToPack,
-         5,
-         (module, done) => {
-            getLoader(module.plugin)(module, base, done, themeName);
-         },
-         (err, result) => {
-            if (err) {
-               packDone(err);
-            } else {
-               packDone(
-                  null,
-                  result.reduce(function concat(res, modContent) {
-                     return res + (res ? '\n' : '') + modContent;
-                  }, '')
-               );
-            }
-         }
-      );
-   } else {
-      packDone(null, '');
-   }
-}
-
-/**
  * Тот же загрузчик модулей, что использует callback,
  * но зато могёт с промисами
  * @param loader
  * @param module
  * @param base
+ * @param themeName
  * @returns {Promise<any>}
  */
-function promisifyLoader(loader, module, base) {
+function promisifyLoader(loader, module, base, themeName) {
    return new Promise((resolve, reject) => {
-      loader(module, base, (err, result) => {
-         if (err) {
-            return reject(err);
-         }
-         return resolve(result);
-      });
+      loader(
+         module,
+         base,
+         (err, result) => {
+            if (err) {
+               return reject(err);
+            }
+            return resolve(result);
+         },
+         themeName
+      );
    });
 }
 
@@ -410,131 +322,11 @@ async function limitingNativePackFiles(filesToPack, base) {
    return '';
 }
 
-/**
- * @callback getJsAndCssPackage~callback
- * @param {Error} error
- * @param {{js: string, css: string, dict: Object}} [result]
- */
-/**
- * Формирует пакеты js, css и объект dict с пакетом для каждой локали
- * @param {Object} orderQueue - развернутый граф, разбитый на js, css, dict (словари локализации) и
- *    cssForLocale (css-ок для каждой локали)
- * @param {Array} orderQueue.js
- * @param {Array} orderQueue.css
- * @param {Array} orderQueue.dict
- * @param {Array} orderQueue.cssForLocale
- * @param {String} applicationRoot - полный путь до корня пакета
- * @param {getJsAndCssPackage~callback} done - callback
- * @param {getJsAndCssPackage~callback} staticHtmlName - имя статической html странички
- */
-function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName, done) {
-   isOfflineClient = checkItIsOfflineClient(applicationRoot);
-
-   async.parallel(
-      {
-         js: nativePackFiles.bind(
-            null,
-            orderQueue.js.filter((node) => {
-               /** TODO
-                * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
-                * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
-                * не включаем по умолчанию. После доработки статической паковки будем учитывать
-                * модули в бандлах по аналогии с rtpackage
-                */
-               const wsDatareg = /WS\.Data/;
-               if (
-                  (node.fullName && node.fullName.match(wsDatareg)) ||
-                  (node.moduleYes && node.moduleYes.fullName.match(wsDatareg))
-               ) {
-                  return false;
-               }
-
-               return node.amd;
-            }),
-            applicationRoot
-         ),
-         css: packCSS.bind(
-            null,
-            orderQueue.css
-               .filter(function removeControls(module) {
-                  // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
-                  if (
-                     themeName ||
-                     (!process.application &&
-                        staticHtmlName &&
-                        HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1) ||
-                     isOfflineClient
-                  ) {
-                     // TODO Косытыль чтобы в пакет не попадали css контролов. Необходимо только для PRESTO И CARRY.
-                     return (
-                        !module.fullName.startsWith('css!SBIS3.CONTROLS/') &&
-                        !module.fullName.startsWith('css!Controls/')
-                     );
-                  }
-                  return true;
-               })
-               .map(function onlyPath(module) {
-                  return module.fullPath;
-               }),
-            applicationRoot
-         ),
-         dict(callback) {
-            // нужно вызвать packer для каждой локали
-            const dictAsyncParallelArgs = {};
-            Object.keys(orderQueue.dict).forEach((locale) => {
-               dictAsyncParallelArgs[locale] = nativePackFiles.bind(null, orderQueue.dict[locale], applicationRoot);
-            });
-            async.parallel(dictAsyncParallelArgs, (err, result) => {
-               if (err) {
-                  done(err);
-               } else {
-                  callback(null, result);
-               }
-            });
-         },
-         cssForLocale(callback) {
-            // нужно вызвать packer для каждой локали
-            const dictAsyncParallelArgs = {};
-            Object.keys(orderQueue.cssForLocale).forEach((locale) => {
-               dictAsyncParallelArgs[locale] = packCSS.bind(
-                  null,
-                  orderQueue.cssForLocale[locale].map(function onlyPath(module) {
-                     return module.fullPath;
-                  }),
-                  applicationRoot
-               );
-            });
-            async.parallel(dictAsyncParallelArgs, (err, result) => {
-               if (err) {
-                  done(err);
-               } else {
-                  callback(null, result);
-               }
-            });
-         }
-      },
-      (err, result) => {
-         if (err) {
-            done(err);
-         } else {
-            done(null, {
-               js: [generateFakeModules(orderQueue.css, themeName, staticHtmlName), result.js]
-                  .filter(i => !!i)
-                  .join('\n'),
-               css: result.css.filter(i => !!i),
-               dict: result.dict,
-               cssForLocale: result.cssForLocale
-            });
-         }
-      }
-   );
-}
-
 module.exports = {
    prepareOrderQueue,
    prepareResultQueue,
    limitingNativePackFiles,
-   getJsAndCssPackage,
    getLoader,
+   promisifyLoader,
    copyFile
 };

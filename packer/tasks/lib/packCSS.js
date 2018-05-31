@@ -3,7 +3,6 @@
 const domHelpers = require('./../../lib/domHelpers');
 const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs-extra');
-const async = require('async');
 const pMap = require('p-map');
 const helpers = require('../../../lib/helpers');
 
@@ -84,45 +83,6 @@ module.exports = {
       );
    },
 
-   /**
-    * @callback packCSS~callback
-    * @param {Error} error
-    * @param {String} [result]
-    */
-   /**
-    * Пакует переданные css. Делит пакет на пачки по 4000 правил (ie8-9)
-    * @param {Array.<String>} files - пути до файлов
-    * @param {String} root - корень сайта
-    * @param {packCSS~callback} callback
-    */
-   packCSS(files, root, callback) {
-      function read(css, cb) {
-         fs.readFile(css, (err, content) => {
-            if (err) {
-               cb(err);
-            } else {
-               cb(null, cssHelpers.rebaseUrls(root, css, content.toString()));
-            }
-         });
-      }
-
-      const filesToRead = files.filter(file => fs.existsSync(file));
-      async.map(
-         filesToRead,
-         (css, cb) => {
-            read(css, cb);
-         },
-         (err, results) => {
-            if (err) {
-               callback(err);
-            } else {
-               let res = results.join('\n');
-               res = cssHelpers.bumpImportsUp(res);
-               callback(null, cssHelpers.splitIntoBatches(4000, res));
-            }
-         }
-      );
-   },
    promisedPackCSS: async(files, applicationRoot) => {
       const results = await pMap(
          files,

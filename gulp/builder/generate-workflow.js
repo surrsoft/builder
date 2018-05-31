@@ -78,7 +78,7 @@ function generateWorkflow(processArgv) {
          generateTaskForSaveChangesStore(changesStore)
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
-      generateTaskForPackHtml(config, pool),
+      generateTaskForPackHtml(changesStore, config, pool),
       generateTaskForTerminatePool(pool),
 
       // generateTaskForUnlock после всего

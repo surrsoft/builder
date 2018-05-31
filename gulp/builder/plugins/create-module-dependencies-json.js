@@ -124,6 +124,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                moduleInfo
             });
             this.push(jsonFile);
+
+            changesStore.storeLocalModuleDependencies(json);
          } catch (error) {
             logger.error({
                message: 'Ошибка Builder\'а',
