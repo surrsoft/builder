@@ -13,6 +13,7 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
+   generateTaskForSaveLoggerReport = require('../helpers/generate-task/save-logger-report'),
    ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js');
 
@@ -82,6 +83,7 @@ function generateWorkflow(processArgv) {
       generateTaskForPackHtml(changesStore, config, pool),
       generateTaskForCustomPack(config),
       generateTaskForTerminatePool(pool),
+      generateTaskForSaveLoggerReport(config),
 
       // generateTaskForUnlock после всего
       guardSingleProcess.generateTaskForUnlock()
