@@ -36,7 +36,7 @@ function generateTaskForCustomPack(config) {
       const input = path.join(moduleOutput, 'module-dependencies.json');
       return function getModuleDeps() {
          return gulp
-            .src(input, {dot: false, nodir: true})
+            .src(input, { dot: false, nodir: true })
             .pipe(getModuleMDeps(depsTree))
             .pipe(
                plumber({
@@ -59,7 +59,7 @@ function generateTaskForCustomPack(config) {
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function custompack() {
          return gulp
-            .src(input, {dot: false, nodir: true})
+            .src(input, { dot: false, nodir: true })
             .pipe(generatePackageJson(depsTree, results, applicationRoot, splittedCore))
             .pipe(
                plumber({
