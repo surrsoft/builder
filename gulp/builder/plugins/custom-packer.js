@@ -18,7 +18,7 @@ module.exports = function generatePackageJson(depsTree, results, applicationRoot
             filePath: file.path
          });
       }
-      const configsArray = await packHelpers.getConfigsFromPackageJson(
+      const configsArray = packHelpers.getConfigsFromPackageJson(
          file.path.replace(path.normalize(`${applicationRoot}/`), ''),
          applicationRoot,
          currentConfig
