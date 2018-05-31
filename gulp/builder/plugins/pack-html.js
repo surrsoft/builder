@@ -16,7 +16,6 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             return;
          }
 
-         logger.debug(`PACK HTML ${file.path}`);
          let newText = file.contents.toString();
          newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
          let dom = domHelpers.domify(newText);
@@ -44,7 +43,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             '',
             config.version,
             replacePath,
-            config.urlServicePath,
+            path.join(config.rawConfig.output, config.urlServicePath)
          );
 
          file.contents = Buffer.from(domHelpers.stringify(dom));

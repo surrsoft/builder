@@ -242,8 +242,8 @@ function generatePackage(
    packageTarget,
    applicationRoot,
    siteRoot,
-   replacePath,
-   urlServicePath,
+   needReplacePaths,
+   resourcesPath,
    namePrefix = ''
 ) {
    if (filesToPack) {
@@ -252,21 +252,21 @@ function generatePackage(
          filesToPackList = [filesToPackList];
       }
 
-      return filesToPackList.map((file) => {
-         const packageName = namePrefix + domHelpers.uniqname(file, ext),
+      return filesToPackList.map((text) => {
+         const packageName = namePrefix + domHelpers.uniqname(text, ext),
             packedFileName = path.join(packageTarget, packageName);
 
-         let packedFilePath = path.normalize(path.join(applicationRoot, packedFileName));
+         const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));
 
-         fs.outputFileSync(packedFilePath.replace(ext, extWithoutVersion), file);
+         fs.outputFileSync(packedFilePath.replace(ext, extWithoutVersion), text);
 
-         packedFilePath = path.normalize(path.join(urlServicePath, packedFileName));
-
-         if (replacePath) {
-            return { name: `/${path.relative(siteRoot, packedFilePath)}`, skip: !!namePrefix };
+         let newName = `/${path.relative(siteRoot, packedFilePath)}`;
+         if (!needReplacePaths) {
+            newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
          }
+
          return {
-            name: `%{RESOURCE_ROOT}${packedFileName.replace(/resources(?:\/|\\)/, '')}`,
+            name: newName,
             skip: !!namePrefix
          };
       });
@@ -344,8 +344,8 @@ async function packageSingleHtml(
    dg,
    application,
    buildNumber,
-   replacePath,
-   urlServicePath
+   needReplacePaths,
+   resourcesPath
 ) {
    const newDom = dom,
       divs = newDom.getElementsByTagName('div'),
@@ -397,8 +397,8 @@ async function packageSingleHtml(
                      packageHome,
                      applicationRoot,
                      root,
-                     replacePath,
-                     urlServicePath
+                     needReplacePaths,
+                     resourcesPath
                   )
                );
             });
@@ -415,8 +415,8 @@ async function packageSingleHtml(
                      packageHome,
                      applicationRoot,
                      root,
-                     replacePath,
-                     urlServicePath,
+                     needReplacePaths,
+                     resourcesPath,
                      locale
                   )
                );
@@ -431,8 +431,8 @@ async function packageSingleHtml(
             packageHome,
             applicationRoot,
             root,
-            replacePath,
-            urlServicePath
+            needReplacePaths,
+            resourcesPath
          );
          packages[key] = packages[key].concat(generatedScript);
       }
@@ -449,15 +449,15 @@ async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, applicat
    logger.debug(`Packing dependencies of ${htmlFileset.length} files...`);
 
    const buildNumber = grunt.option('versionize');
-   const urlServicePath = grunt.option('url-service-path')
-      ? path.join(root, grunt.option('url-service-path'))
-      : application;
+   const resourcesPath = grunt.option('url-service-path')
+      ? path.join(root, grunt.option('url-service-path'), 'resources')
+      : path.join(root, application, 'resources');
 
    // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с конструкцией
    // %{RESOURCE_ROOT} или абсолютный путь.
    // false - если у нас разделённое ядро и несколько сервисов.
    // true - если у нас монолитное ядро или один сервис.
-   const replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
+   const needReplacePaths = !(grunt.option('splitted-core') && grunt.option('multi-service'));
 
    await pMap(
       htmlFileset,
@@ -474,8 +474,8 @@ async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, applicat
                dg,
                application,
                buildNumber,
-               replacePath,
-               urlServicePath
+               needReplacePaths,
+               resourcesPath
             );
             await fs.outputFile(filePath, domHelpers.stringify(dom));
          } catch (err) {

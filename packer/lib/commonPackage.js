@@ -97,20 +97,20 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
       .filter((module) => {
          if (module.plugin === 'is') {
             if (module.moduleYes && !module.moduleYes.fullPath) {
-               logger.warning(`Empty file name: ${module.moduleYes.fullName}`);
+               logger.debug(`Empty file name: ${module.moduleYes.fullName}`);
                return false;
             }
             if (module.moduleNo && !module.moduleNo.fullPath) {
-               logger.warning(`Empty file name: ${module.moduleNo.fullName}`);
+               logger.debug(`Empty file name: ${module.moduleNo.fullName}`);
                return false;
             }
          } else if (module.plugin === 'browser' || module.plugin === 'optional') {
             if (module.moduleIn && !module.moduleIn.fullPath) {
-               logger.warning(`Empty file name: ${module.moduleIn.fullName}`);
+               logger.debug(`Empty file name: ${module.moduleIn.fullName}`);
                return false;
             }
          } else if (!module.fullPath) {
-            logger.warning(`Empty file name: ${module.fullName}`);
+            logger.debug(`Empty file name: ${module.fullName}`);
             return false;
          }
          return true;
