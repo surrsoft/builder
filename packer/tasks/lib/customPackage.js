@@ -297,14 +297,18 @@ function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObjec
  * @param buildNumber - номер билда
  * @returns {string}
  */
-function generateLinkForCss(cssModules, packagePath) {
+function generateLinkForCss(cssModules, packagePath, splittedCore) {
    let linkHref = packagePath.replace(/\.min$/, '');
-   const isResourcesPath = linkHref.match(isResources);
-   if (isResourcesPath) {
-      linkHref = linkHref.replace(isResourcesPath[1], 'Resources');
+   if (splittedCore) {
+      linkHref = linkHref.replace(/^resources\//, '');
    } else {
-      const wsPath = linkHref.match(isWS);
-      linkHref = linkHref.replace(wsPath[1], 'WS');
+      const isResourcesPath = linkHref.match(isResources);
+      if (isResourcesPath) {
+         linkHref = linkHref.replace(isResourcesPath[1], 'Resources');
+      } else {
+         const wsPath = linkHref.match(isWS);
+         linkHref = linkHref.replace(wsPath[1], 'WS');
+      }
    }
    let result = '(function(){';
    cssModules.forEach(module => {
@@ -340,7 +344,7 @@ function _createGruntPackage(grunt, cfg, root, bundlesOptions, done) {
             } else {
 
                if (cfg.cssModulesFromOrderQueue.length > 0) {
-                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, cfg.packagePath));
+                  result.unshift(generateLinkForCss(cfg.cssModulesFromOrderQueue, cfg.packagePath, bundlesOptions.splittedCore));
                }
                grunt.file.write(cfg.outputFile, result ? result.reduce(function concat(res, modContent) {
                   return res + (res ? '\n' : '') + modContent;
