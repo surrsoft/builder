@@ -166,16 +166,23 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Array}
  */
-async function packCustomDict(modules, applicationRoot) {
+async function packCustomDict(modules, applicationRoot, depsTree) {
    let resultPackage = [];
+   let modDepend;
+   if (depsTree) {
+      modDepend = {
+         nodes: depsTree.getNodeObject(),
+         links: depsTree.getLinksObject()
+      };
+   } else {
+      modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json'));
+   }
 
    try {
       const modulesI18n = {},
          coreConstants = global.requirejs('Core/constants'),
-         modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
          linkModules = modDepend.links;
       let moduleName;
-
       await pMap(
          modules,
          async(module) => {
@@ -237,10 +244,7 @@ function packDictClassic(modules, applicationRoot) {
       const coreConstants = global.requirejs('Core/constants'),
          isPackedDict = {};
 
-      let dictJsModule,
-         dictTextModule,
-         nameModule;
-
+      let dictJsModule, dictTextModule, nameModule;
       Object.keys(coreConstants.availableLanguage).forEach((lang) => {
          dictPack[lang] = [];
       });
@@ -253,7 +257,6 @@ function packDictClassic(modules, applicationRoot) {
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createTextModule(dictJsModule);
-
                   dictPack[lang].push(dictTextModule);
                   dictPack[lang].push(dictJsModule);
 

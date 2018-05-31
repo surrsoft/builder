@@ -14,6 +14,22 @@ function DepGraph() {
    this._n = 0;
 }
 
+DepGraph.prototype.setLink = function setLink(property, value) {
+   this._links[property] = value;
+};
+
+DepGraph.prototype.setNode = function setNode(property, value) {
+   this._nodes[property] = value;
+};
+
+DepGraph.prototype.getNodeObject = function getNodeObject() {
+   return this._nodes;
+};
+
+DepGraph.prototype.getLinksObject = function getLinksObject() {
+   return this._links;
+};
+
 DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
    if (this._path.length >= maxLvl) {
       return;

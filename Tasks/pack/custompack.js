@@ -44,7 +44,14 @@ module.exports = function register(grunt) {
          if (configsArray.length === 0) {
             logger.info('Конфигураций не обнаружено.');
          }
-         await customPacker.generatePackageJsonConfigs(depsTree, configsArray, applicationRoot, bundlesOptions);
+         const results = await customPacker.generatePackageJsonConfigs(
+            depsTree,
+            configsArray,
+            applicationRoot,
+            bundlesOptions
+         );
+         results.bundlesJson = results.bundles;
+         await customPacker.saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore);
          time = new Date();
          logger.info(
             `Задача создания кастомных пакетов завершена. ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
