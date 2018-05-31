@@ -228,7 +228,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
  * @param {Array} orderQueue - развернутый граф
  * @return {{js: Array, css: Array, dict: Object, cssForLocale: Object}}
  */
-function prepareResultQueue(orderQueue, applicationRoot, depsTree) {
+function prepareResultQueue(orderQueue, applicationRoot) {
    const pack = orderQueue.reduce(
       (memo, module) => {
          if (module.plugin === 'is') {

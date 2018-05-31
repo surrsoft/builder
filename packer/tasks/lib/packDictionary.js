@@ -77,23 +77,6 @@ function getNameDict(name, lang) {
 }
 
 /**
- * Добавляет в module-dependencies.json узел для модуля словаря с плагином text!.
- * @param {object} modDeps - module-dependencies.json.
- * @param {Object} module - модуля словарь.
- * @returns {Object}
- */
-function creatTextInModDeps(modDeps, module) {
-   if (!modDeps.nodes.hasOwnProperty(module.fullName)) {
-      modDeps.nodes[module.fullName] = {
-         path: path.normalize(path.join('resources', module.module))
-      };
-      modDeps.links[module.fullName] = [];
-   }
-
-   return modDeps;
-}
-
-/**
  * Создаёт модуль с плагином text!.
  * @param {Object} modulejs - мета данные js-ого модуля словаря.
  * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}}
