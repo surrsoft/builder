@@ -1,6 +1,5 @@
 'use strict';
 
-// предотвращение множественного запуска builder'а на одном кеше для предсказуемого результата.
 const logger = require('../../../lib/logger').logger(),
    path = require('path'),
    fs = require('fs-extra');
