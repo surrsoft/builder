@@ -5,71 +5,83 @@ const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs-extra');
 const async = require('async');
 const pMap = require('p-map');
-const dblSlashes = /\\/g;
+const helpers = require('../../../lib/helpers');
+
+function cssCollector(dom) {
+   const links = dom.getElementsByTagName('link'),
+      files = [],
+      elements = [];
+   let before, link, href, packName, rel, media;
+   for (let i = 0, l = links.length; i < l; i++) {
+      link = links[i];
+      packName = link.getAttribute('data-pack-name');
+
+      // data-pack-name='skip' == skip this css from packing
+      if (packName === 'skip') {
+         continue;
+      }
+
+      href = links[i].getAttribute('href');
+      rel = links[i].getAttribute('rel');
+      media = links[i].getAttribute('media') || 'screen';
+
+      // stylesheet, has href ends with .css and not starts with http or //, media is screen
+      if (
+         href &&
+         rel === 'stylesheet' &&
+         media === 'screen' &&
+         href.indexOf('http') !== 0 &&
+         href.indexOf('//') !== 0 &&
+         href.indexOf('.css') !== href.length - 3
+      ) {
+         files.push(href);
+         elements.push(link);
+         before = link.nextSibling;
+      }
+   }
+
+   return [
+      {
+         files,
+         nodes: elements,
+         before
+      }
+   ];
+}
+
+function cssPacker(filesToPack, currentRoot) {
+   return cssHelpers.splitIntoBatches(
+      4000,
+      cssHelpers.bumpImportsUp(
+         Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
+      )
+   );
+}
+
+function cssGetTargetNode(dom, filePath) {
+   return domHelpers.mkDomNode(dom, 'link', {
+      rel: 'stylesheet',
+      href: `/${helpers.prettifyPath(filePath)}`
+   });
+}
+
+
+function packageSingleCss(filePath, dom, root, packageHome) {
+   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, cssCollector, cssPacker, cssGetTargetNode, 'css');
+}
 
 module.exports = {
+   packageSingleCss,
    gruntPackCSS(htmlFiles, root, packageHome) {
-      function collector(dom) {
-         const links = dom.getElementsByTagName('link'),
-            files = [],
-            elements = [];
-         let before, link, href, packName, rel, media;
-         for (let i = 0, l = links.length; i < l; i++) {
-            link = links[i];
-            packName = link.getAttribute('data-pack-name');
-
-            // data-pack-name='skip' == skip this css from packing
-            if (packName === 'skip') {
-               continue;
-            }
-
-            href = links[i].getAttribute('href');
-            rel = links[i].getAttribute('rel');
-            media = links[i].getAttribute('media') || 'screen';
-
-            // stylesheet, has href ends with .css and not starts with http or //, media is screen
-            if (
-               href &&
-               rel === 'stylesheet' &&
-               media === 'screen' &&
-               href.indexOf('http') !== 0 &&
-               href.indexOf('//') !== 0 &&
-               href.indexOf('.css') !== href.length - 3
-            ) {
-               // убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
-               href = href.replace(/\.v.+?(\.css)$/, '$1');
-               files.push(href);
-               elements.push(link);
-               before = link.nextSibling;
-            }
-         }
-
-         return [
-            {
-               files,
-               nodes: elements,
-               before
-            }
-         ];
-      }
-
-      function packer(files, currentRoot) {
-         return cssHelpers.splitIntoBatches(
-            4000,
-            cssHelpers.bumpImportsUp(
-               files.map(css => cssHelpers.rebaseUrls(currentRoot, css, fs.readFileSync(css))).join('\n')
-            )
-         );
-      }
-
-      function getTargetNode(dom, path) {
-         return domHelpers.mkDomNode(dom, 'link', {
-            rel: 'stylesheet',
-            href: `/${path.replace(dblSlashes, '/')}`
-         });
-      }
-
-      domHelpers.package(htmlFiles, root, packageHome, collector, packer, getTargetNode, 'css');
+      return pMap(
+         htmlFiles,
+         async(filePath) => {
+            const dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
+            const newDom = await packageSingleCss(filePath, dom, root, packageHome);
+            await fs.writeFile(filePath, domHelpers.stringify(newDom));
+         },
+         { concurrency: 20 }
+      );
    },
 
    /**

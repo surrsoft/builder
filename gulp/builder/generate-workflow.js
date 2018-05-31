@@ -9,6 +9,7 @@ const path = require('path'),
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
+   generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
@@ -68,15 +69,17 @@ function generateWorkflow(processArgv) {
       generateTaskForLoadChangesStore(changesStore),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      //generateTaskForClearCache(changesStore, config),
-      //generateTaskForGenerateJson(changesStore, config, localizationEnable),
-      //generateTaskForBuildModules(changesStore, config, pool),
+      generateTaskForClearCache(changesStore, config),
+      generateTaskForGenerateJson(changesStore, config, localizationEnable),
+      generateTaskForBuildModules(changesStore, config, pool),
       gulp.parallel(
 
          // завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore)
       ),
+      generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      generateTaskForPackHtml(config, pool),
       //generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForCustomPack(config, pool),
       generateTaskForTerminatePool(pool),
