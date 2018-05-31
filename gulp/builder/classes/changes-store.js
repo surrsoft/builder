@@ -100,6 +100,12 @@ class ChangesStore {
       // less - зависмости через import
       // js - зависимости на xhtml и tmpl для кастомной паковки
       this.cacheChanges = {};
+
+      // сохраняем в кеше moduleDependencies для быстрого доступа в паковке, чтобы не читать файлы
+      this.moduleDependencies = {
+         links: {},
+         nodes: {}
+      };
    }
 
    load() {
@@ -418,6 +424,17 @@ class ChangesStore {
 
    setDropCacheForMarkup() {
       this.dropCacheForMarkup = true;
+   }
+
+   storeLocalModuleDependencies(obj) {
+      this.moduleDependencies = {
+         links: { ...this.moduleDependencies.links, ...obj.links },
+         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes }
+      };
+   }
+
+   getModuleDependencies() {
+      return this.moduleDependencies;
    }
 }
 

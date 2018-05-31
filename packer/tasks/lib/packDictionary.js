@@ -77,23 +77,6 @@ function getNameDict(name, lang) {
 }
 
 /**
- * Добавляет в module-dependencies.json узел для модуля словаря с плагином text!.
- * @param {object} modDeps - module-dependencies.json.
- * @param {Object} module - модуля словарь.
- * @returns {Object}
- */
-function creatTextInModDeps(modDeps, module) {
-   if (!modDeps.nodes.hasOwnProperty(module.fullName)) {
-      modDeps.nodes[module.fullName] = {
-         path: path.normalize(path.join('resources', module.module))
-      };
-      modDeps.links[module.fullName] = [];
-   }
-
-   return modDeps;
-}
-
-/**
  * Создаёт модуль с плагином text!.
  * @param {Object} modulejs - мета данные js-ого модуля словаря.
  * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}}
@@ -250,19 +233,11 @@ async function packCustomDict(modules, applicationRoot) {
 function packDictClassic(modules, applicationRoot) {
    const dictPack = {};
 
-   /*
-   костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
-   когда словари сформируются и начнут записываться в module-dependencies параллельно и одновременно
-    */
-   if (fs.existsSync(path.join(applicationRoot, 'resources', 'module-dependencies-locked.log'))) {
-      return dictPack;
-   }
    try {
       const coreConstants = global.requirejs('Core/constants'),
          isPackedDict = {};
 
-      let modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         dictJsModule,
+      let dictJsModule,
          dictTextModule,
          nameModule;
 
@@ -279,8 +254,6 @@ function packDictClassic(modules, applicationRoot) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createTextModule(dictJsModule);
 
-                  modDepend = creatTextInModDeps(modDepend, dictTextModule);
-
                   dictPack[lang].push(dictTextModule);
                   dictPack[lang].push(dictJsModule);
 
@@ -292,12 +265,6 @@ function packDictClassic(modules, applicationRoot) {
             });
          }
       });
-
-      /*
-        в 320 отключаем запись в module-dependencies, поскольку заглушка не помогает и ломает нам вёрстку.
-        fs.writeFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'),
-        JSON.stringify(modDepend, null, 2));
-        */
    } catch (error) {
       logger.error({
          error
