@@ -16,8 +16,7 @@ function generateSaveResultsTask(config, results, applicationRoot, splittedCore)
 }
 
 function generateTaskForCustomPack(config) {
-   const
-      applicationRoot = config.rawConfig.output,
+   const applicationRoot = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
       results = {
@@ -37,7 +36,6 @@ function generateTaskForCustomPack(config) {
       return function getModuleDeps() {
          return gulp
             .src(input, { dot: false, nodir: true })
-            .pipe(getModuleMDeps(depsTree))
             .pipe(
                plumber({
                   errorHandler(err) {
@@ -49,13 +47,13 @@ function generateTaskForCustomPack(config) {
                      this.emit('end');
                   }
                })
-            );
+            )
+            .pipe(getModuleMDeps(depsTree));
       };
    });
 
    const generatePackagesTasks = config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(applicationRoot, path.basename(moduleInfo.output));
-      logger.info(moduleOutput);
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function custompack() {
          return gulp

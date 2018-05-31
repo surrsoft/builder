@@ -41,6 +41,9 @@ class BuildConfiguration {
 
       // относительный url текущего сервиса
       this.version = '';
+
+      // папка, куда сохраняются все логи
+      this.logFolder = '';
    }
 
    loadSync(argv) {
@@ -132,6 +135,11 @@ class BuildConfiguration {
 
       if (this.rawConfig.hasOwnProperty('url-service-path')) {
          this.urlServicePath = this.rawConfig['url-service-path'];
+      }
+
+      this.logFolder = this.rawConfig.logs;
+      if (!this.logFolder) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр logs - папка для выгрузки логов`);
       }
    }
 }
