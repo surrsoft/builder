@@ -228,7 +228,7 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
  * @param {Array} orderQueue - развернутый граф
  * @return {{js: Array, css: Array, dict: Object, cssForLocale: Object}}
  */
-function prepareResultQueue(orderQueue, applicationRoot) {
+function prepareResultQueue(orderQueue, applicationRoot, depsTree) {
    const pack = orderQueue.reduce(
       (memo, module) => {
          if (module.plugin === 'is') {
@@ -297,7 +297,7 @@ function prepareResultQueue(orderQueue, applicationRoot) {
    pack.js = packerDictionary.deleteModulesLocalization(pack.js);
 
    // Запакуем словари.
-   pack.dict = packerDictionary.packerDictionary(pack.js, applicationRoot);
+   pack.dict = packerDictionary.packerDictionary(pack.js, applicationRoot, depsTree);
 
    return pack;
 }

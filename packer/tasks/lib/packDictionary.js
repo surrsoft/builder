@@ -183,16 +183,23 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Array}
  */
-async function packCustomDict(modules, applicationRoot) {
+async function packCustomDict(modules, applicationRoot, depsTree) {
    let resultPackage = [];
+   let modDepend;
+   if (depsTree) {
+      modDepend = {
+         nodes: depsTree.getNodeObject(),
+         links: depsTree.getLinksObject()
+      };
+   } else {
+      modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json'));
+   }
 
    try {
       const modulesI18n = {},
          coreConstants = global.requirejs('Core/constants'),
-         modDepend = await fs.readJson(path.join(applicationRoot, 'resources', 'module-dependencies.json')),
          linkModules = modDepend.links;
       let moduleName;
-
       await pMap(
          modules,
          async(module) => {
@@ -247,8 +254,17 @@ async function packCustomDict(modules, applicationRoot) {
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Object}
  */
-function packDictClassic(modules, applicationRoot) {
+function packDictClassic(modules, applicationRoot, depsTree) {
    const dictPack = {};
+   let modDepend;
+   if (depsTree) {
+      modDepend = {
+         nodes: depsTree.getNodeObject(),
+         links: depsTree.getLinksObject()
+      };
+   } else {
+      modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json')));
+   }
 
    /*
    костыль для записи в словари. На препроцессоре в нескольких потоках может возникнуть ситуация,
@@ -261,11 +277,7 @@ function packDictClassic(modules, applicationRoot) {
       const coreConstants = global.requirejs('Core/constants'),
          isPackedDict = {};
 
-      let modDepend = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
-         dictJsModule,
-         dictTextModule,
-         nameModule;
-
+      let dictJsModule, dictTextModule, nameModule;
       Object.keys(coreConstants.availableLanguage).forEach((lang) => {
          dictPack[lang] = [];
       });

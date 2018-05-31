@@ -68,16 +68,16 @@ function generateWorkflow(processArgv) {
       generateTaskForLoadChangesStore(changesStore),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      generateTaskForClearCache(changesStore, config),
-      generateTaskForGenerateJson(changesStore, config, localizationEnable),
-      generateTaskForBuildModules(changesStore, config, pool),
+      //generateTaskForClearCache(changesStore, config),
+      //generateTaskForGenerateJson(changesStore, config, localizationEnable),
+      //generateTaskForBuildModules(changesStore, config, pool),
       gulp.parallel(
 
          // завершающие задачи
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore)
       ),
-      generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      //generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForCustomPack(config, pool),
       generateTaskForTerminatePool(pool),
 
