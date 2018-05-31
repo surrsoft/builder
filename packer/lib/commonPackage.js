@@ -374,12 +374,12 @@ function promisifyLoader(loader, module, base) {
  */
 async function limitingNativePackFiles(filesToPack, base) {
    if (filesToPack && filesToPack.length) {
-      const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`),
-         result = [];
+      const result = [];
 
       await pMap(
          filesToPack,
          async(module) => {
+            const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`);
             let { fullPath } = module;
             if (!fullPath) {
                fullPath = module.moduleYes ? module.moduleYes.fullPath : null;
