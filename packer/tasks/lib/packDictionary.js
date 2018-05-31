@@ -239,6 +239,7 @@ async function packCustomDict(modules, applicationRoot, depsTree) {
  */
 function packDictClassic(modules, applicationRoot) {
    const dictPack = {};
+
    try {
       const coreConstants = global.requirejs('Core/constants'),
          isPackedDict = {};

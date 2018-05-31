@@ -4,15 +4,22 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
+   DepGraph = require('../../../packer/lib/dependencyGraph'),
    pluginPackHtml = require('../plugins/pack-html');
 
-function generateTaskForPackHtml(config, pool) {
+function generateTaskForLoadDG(changesStore, depGraph) {
+   return function load(done) {
+      depGraph.fromJSON(changesStore.getModuleDependencies());
+      done();
+   };
+}
+function generateTaskForPackHtml(changesStore, config, pool) {
    if (!config.isReleaseMode) {
       return function skipPackHtml(done) {
          done();
       };
    }
-
+   const depGraph = new DepGraph();
    const tasks = config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
 
@@ -34,12 +41,12 @@ function generateTaskForPackHtml(config, pool) {
                   }
                })
             )
-            .pipe(pluginPackHtml(config, moduleInfo, pool))
+            .pipe(pluginPackHtml(depGraph, config, moduleInfo, pool))
             .pipe(gulp.dest(moduleOutput));
       };
    });
 
-   return gulp.parallel(tasks);
+   return gulp.series(generateTaskForLoadDG(changesStore, depGraph), gulp.parallel(tasks));
 }
 
 module.exports = generateTaskForPackHtml;
