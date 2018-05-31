@@ -137,9 +137,8 @@ class BuildConfiguration {
          this.urlServicePath = this.rawConfig['url-service-path'];
       }
 
-      this.logFolder = this.rawConfig.logs;
-      if (!this.logFolder) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр logs - папка для выгрузки логов`);
+      if (this.rawConfig.hasOwnProperty('logs')) {
+         this.logFolder = this.rawConfig.logs;
       }
    }
 }
