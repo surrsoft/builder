@@ -24,7 +24,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
 
          if (file.extname === '.css') {
             newText = newText.replace(
-               /(url\(['"]?)([\w/.\-@{}]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg|\.css|\.woff|\.eot)/g,
+               /(url\(['"]?)([\w/.\-@{}]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg|\.css|\.woff|\.eot|\.ttf)/g,
                (match, partUrl, partFilePath, partExt) => {
                   if (partFilePath.indexOf('cdn/') > -1) {
                      return match;
@@ -34,17 +34,17 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
             );
          } else if (file.extname === '.js') {
             newText = newText.replace(
-               /((?:"|')(?:[a-z]+(?!:\/)|\/|\.\/|ws:\/)[\w/+-.]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg)/g,
+               /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|ws:\/)[\w/+-.]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg)/g,
                `$1${VERSION_STUB}$2`
             );
          } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[a-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   `$1${VERSION_STUB}$2`
                )
                .replace(
-                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[a-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
+                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
                   (match, partEqual, partFilePath, partExt) => {
                      // ignore cdn and data-providers
                      if (
