@@ -77,7 +77,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             // если файл не возможно минифицировать, то запишем оригинал
                let minText = file.contents.toString();
                const [error, minified] = await to(
-                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsFile)])
+                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsFile)]).timeout(10000)
                );
                if (error) {
                   changesStore.markFileAsFailed(file.history[0]);
@@ -113,7 +113,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             // если файл не возможно минифицировать, то запишем оригинал
                let minOriginalText = file.contents.toString();
                const [errorOriginal, minifiedOriginal] = await to(
-                  pool.exec('uglifyJs', [file.path, minOriginalText, false])
+                  pool.exec('uglifyJs', [file.path, minOriginalText, false]).timeout(10000)
                );
                if (errorOriginal) {
                   changesStore.markFileAsFailed(file.history[0]);
@@ -147,7 +147,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                );
 
                const [error, minified] = await to(
-                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsMapFile)])
+                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsMapFile)]).timeout(10000)
                );
                if (error) {
                   changesStore.markFileAsFailed(file.history[0]);

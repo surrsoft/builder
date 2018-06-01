@@ -30,15 +30,16 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
             try {
-               newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
+               newText = await pool.exec('minifyXhtmlAndHtml', [newText]).timeout(10000);
 
-               const resultBuild = await pool.exec('buildXhtml', [newText, relativeFilePath]);
+               const resultBuild = await pool.exec('buildXhtml', [newText, relativeFilePath]).timeout(10000);
                changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
                newText = resultBuild.text;
 
                // если xhtml не возможно минифицировать, то запишем оригинал
                try {
-                  newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
+                  const obj = await pool.exec('uglifyJs', [file.path, newText, true]).timeout(10000);
+                  newText = obj.code;
                } catch (error) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({

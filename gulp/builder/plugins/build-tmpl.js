@@ -43,7 +43,8 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             if (config.isReleaseMode) {
                // если tmpl не возможно минифицировать, то запишем оригинал
                try {
-                  newText = (await pool.exec('uglifyJs', [file.path, newText, true])).code;
+                  const obj = await pool.exec('uglifyJs', [file.path, newText, true]).timeout(10000);
+                  newText = obj.code;
                } catch (error) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({
