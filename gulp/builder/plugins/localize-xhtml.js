@@ -18,7 +18,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
          const newText = await pool
             .exec('prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath])
-            .timeout(10000);
+            .timeout(60000);
          file.contents = Buffer.from(newText);
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);

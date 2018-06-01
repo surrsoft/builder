@@ -33,7 +33,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          }
          let componentInfo;
          try {
-            componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]).timeout(10000);
+            componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]).timeout(60000);
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
