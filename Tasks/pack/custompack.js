@@ -48,7 +48,7 @@ module.exports = function register(grunt) {
             depsTree,
             configsArray,
             applicationRoot,
-            bundlesOptions
+            bundlesOptions.splittedCore
          );
          results.bundlesJson = results.bundles;
          await customPacker.saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore);
