@@ -102,7 +102,7 @@ const helpers = {
    mkDomNode: mkDomNode,
    mkCommentNode: mkCommentNode,
 
-   package: function(fileset, root, packageHome, collector, packer, nodeProducer, ext) {
+   package: function(fileset, root, packageHome, buildnumber, collector, packer, nodeProducer, ext) {
       fileset.map(function(f) {
          let dom = domify(f),
             results = collector(dom);
@@ -137,7 +137,7 @@ const helpers = {
 
                   // For each packed file create new DOM node and attach it to document
                   packedFiles.forEach(function(aSingleFile) {
-                     const newNode = nodeProducer(dom, path.relative(root, aSingleFile));
+                     const newNode = nodeProducer(dom, path.relative(root, aSingleFile), buildnumber);
                      if (result.before) {
                         result.before.parentNode.insertBefore(newNode, result.before);
                      } else {

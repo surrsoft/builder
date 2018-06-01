@@ -13,7 +13,7 @@ const nopLogger = {
 };
 
 module.exports = {
-   gruntPackCSS: function(htmlFiles, root, packageHome) {
+   gruntPackCSS: function(htmlFiles, root, packageHome, buildnumber) {
       function collector(dom) {
          let links = dom.getElementsByTagName('link'),
             files = [],
@@ -53,19 +53,23 @@ module.exports = {
       }
 
       function packer(files, root) {
-         return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(function(css) {
+         return cssHelpers.bumpImportsUp(files.map(function(css) {
             return cssHelpers.rebaseUrls(root, css, fs.readFileSync(css));
-         }).join('\n')));
+         }).join('\n'));
       }
 
-      function getTargetNode(dom, path) {
+      function getTargetNode(dom, path, buildNumber) {
+         let link = path;
+         if (buildNumber) {
+            link = link.replace(/\.css$/, `.v${buildNumber}.css`);
+         }
          return helpers.mkDomNode(dom, 'link', {
             rel: 'stylesheet',
-            href: '/' + path.replace(dblSlashes, '/')
+            href: '/' + link.replace(dblSlashes, '/')
          });
       }
 
-      helpers.package(htmlFiles, root, packageHome, collector, packer, getTargetNode, 'css');
+      helpers.package(htmlFiles, root, packageHome, buildnumber, collector, packer, getTargetNode, 'css');
    },
 
    /**
