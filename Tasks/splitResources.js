@@ -69,7 +69,12 @@ module.exports = function splitResourcesTask(grunt) {
          pathModule = getPath(name, nameModule);
 
          try {
-            const sortedContents = helpers.sortObject(data[nameModule]);
+            let sortedContents;
+            if (data[nameModule] instanceof Array) {
+               sortedContents = data[nameModule].sort();
+            } else {
+               sortedContents = helpers.sortObject(data[nameModule]);
+            }
             if (name !== 'contents.js') {
                fs.writeFileSync(pathModule, JSON.stringify(sortedContents, null, 2));
             } else {
