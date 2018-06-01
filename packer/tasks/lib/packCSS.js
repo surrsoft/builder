@@ -49,34 +49,35 @@ function cssCollector(dom) {
 }
 
 function cssPacker(filesToPack, currentRoot) {
-   return cssHelpers.splitIntoBatches(
-      4000,
-      cssHelpers.bumpImportsUp(
-         Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
-      )
+   return cssHelpers.bumpImportsUp(
+      Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
    );
 }
 
-function cssGetTargetNode(dom, filePath) {
+function cssGetTargetNode(dom, filePath, buildNumber) {
+   let linkPath = filePath;
+   if (buildNumber) {
+      linkPath = linkPath.replace(/\.css$/, `.v${buildNumber}.css`);
+   }
    return domHelpers.mkDomNode(dom, 'link', {
       rel: 'stylesheet',
-      href: `/${helpers.prettifyPath(filePath)}`
+      href: `/${helpers.prettifyPath(linkPath)}`
    });
 }
 
 
-function packageSingleCss(filePath, dom, root, packageHome) {
-   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, cssCollector, cssPacker, cssGetTargetNode, 'css');
+function packageSingleCss(filePath, dom, root, packageHome, buildNumber) {
+   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, buildNumber, cssCollector, cssPacker, cssGetTargetNode, 'css');
 }
 
 module.exports = {
    packageSingleCss,
-   gruntPackCSS(htmlFiles, root, packageHome) {
+   gruntPackCSS(htmlFiles, root, packageHome, buildNumber) {
       return pMap(
          htmlFiles,
          async(filePath) => {
             const dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
-            const newDom = await packageSingleCss(filePath, dom, root, packageHome);
+            const newDom = await packageSingleCss(filePath, dom, root, packageHome, buildNumber);
             await fs.writeFile(filePath, domHelpers.stringify(newDom));
          },
          { concurrency: 20 }
