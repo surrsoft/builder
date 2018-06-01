@@ -21,7 +21,9 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
       let collectWords = [];
       try {
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-         const promiseExec = pool.exec('collectWords', [moduleInfo.path, file.path, componentsPropertiesFilePath]);
+         const promiseExec = pool
+            .exec('collectWords', [moduleInfo.path, file.path, componentsPropertiesFilePath])
+            .timeout(10000);
 
          // установим таймаут на минуту. на случай зависания воркера на сервере сборки
          collectWords = await promiseTimeout.promiseWithTimeout(promiseExec, 60000);

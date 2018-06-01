@@ -16,7 +16,9 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             return;
          }
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-         const newText = await pool.exec('prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
+         const newText = await pool
+            .exec('prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath])
+            .timeout(10000);
          file.contents = Buffer.from(newText);
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);

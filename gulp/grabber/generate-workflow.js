@@ -91,7 +91,9 @@ function generateWorkflow(processArgv) {
    const cache = new Cache(config);
 
    const pool = workerPool.pool(path.join(__dirname, './worker.js'), {
-      maxWorkers: os.cpus().length
+
+      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
+      maxWorkers: os.cpus().length - 1 || 1
    });
 
    return gulp.series(

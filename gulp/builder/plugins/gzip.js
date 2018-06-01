@@ -40,7 +40,7 @@ module.exports = function declarePlugin(moduleInfo, pool) {
                }
             }
 
-            const gzipContent = await pool.exec('gzip', [file.contents.toString()]);
+            const gzipContent = await pool.exec('gzip', [file.contents.toString()]).timeout(10000);
             this.push(
                new Vinyl({
                   base: file.base,

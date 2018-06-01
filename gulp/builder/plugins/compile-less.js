@@ -49,7 +49,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                moduleInfo.path,
                sbis3ControlsPath,
                pathsForImport
-            ]);
+            ]).timeout(60000);
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.warning({
