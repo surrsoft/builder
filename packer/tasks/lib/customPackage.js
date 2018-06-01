@@ -281,8 +281,10 @@ function generateBundle(orderQueue, cssModulesFromOrderQueue, splittedCore) {
  */
 function generateBundlesRouting(currentBundle, pathToBundle, bundlesRoutingObject) {
    for (let i = 0; i < currentBundle.length; i++) {
-      if (currentBundle[i].indexOf('css!') === -1) {
-         bundlesRoutingObject[currentBundle[i]] = pathToBundle;
+      if (currentBundle[i].indexOf('css!') === 0) {
+         bundlesRoutingObject[currentBundle[i]] = pathToBundle + '.css';
+      } else {
+         bundlesRoutingObject[currentBundle[i]] = pathToBundle + '.js';
       }
    }
 }
