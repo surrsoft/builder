@@ -17,7 +17,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
          }
 
          let newText = file.contents.toString();
-         newText = await pool.exec('minifyXhtmlAndHtml', [newText]).timeout(10000);
+         newText = await pool.exec('minifyXhtmlAndHtml', [newText]).timeout(60000);
          let dom = domHelpers.domify(newText);
          const root = path.dirname(config.rawConfig.output);
 

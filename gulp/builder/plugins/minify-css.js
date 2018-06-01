@@ -48,7 +48,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             // если файл не возможно минифицировать, то запишем оригинал
             let newText = file.contents.toString();
             try {
-               const minified = await pool.exec('minifyCss', [newText]).timeout(10000);
+               const minified = await pool.exec('minifyCss', [newText]).timeout(60000);
                newText = minified.styles;
                if (minified.errors.length > 0) {
                   changesStore.markFileAsFailed(file.history[0]);

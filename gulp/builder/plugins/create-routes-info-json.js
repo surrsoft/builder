@@ -22,7 +22,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
 
          let routeInfo;
          try {
-            routeInfo = await pool.exec('parseRoutes', [file.contents.toString()]).timeout(10000);
+            routeInfo = await pool.exec('parseRoutes', [file.contents.toString()]).timeout(60000);
          } catch (error) {
             logger.error({
                message: 'Ошибка при обработке файла роутинга',

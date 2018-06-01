@@ -31,7 +31,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                file.history[0],
                relativeTmplPathWithModuleName,
                componentsPropertiesFilePath
-            ]).timeout(10000);
+            ]).timeout(60000);
             const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
             changesStore.addOutputFile(file.history[0], outputPath);
             this.push(

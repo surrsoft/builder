@@ -27,7 +27,8 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    minifyJs = require('../plugins/minify-js'),
    minifyOther = require('../plugins/minify-other'),
    packOwnDeps = require('../plugins/pack-own-deps'),
-   versionizeToStub = require('../plugins/versionize-to-stub');
+   versionizeToStub = require('../plugins/versionize-to-stub'),
+   createPreloadUrlsJson = require('../plugins/create-preload-urls-json');
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
@@ -97,6 +98,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
             .pipe(createStaticTemplatesJson(moduleInfo))
             .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
+            .pipe(gulpIf(config.isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
