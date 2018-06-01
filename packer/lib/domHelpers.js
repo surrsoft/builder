@@ -93,7 +93,17 @@ async function checkFiles(root, sourceFile, result) {
    return filesNotFound.join(', ');
 }
 
-async function packageSingleFile(htmlFilePath, dom, root, packageHome, buildNumber, collector, packer, nodeProducer, ext) {
+async function packageSingleFile(
+   htmlFilePath,
+   dom,
+   root,
+   packageHome,
+   buildNumber,
+   collector,
+   packer,
+   nodeProducer,
+   ext
+) {
    const
       results = collector(dom).filter(result => result.files.length > 1);
 
