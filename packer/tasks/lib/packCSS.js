@@ -53,9 +53,9 @@ module.exports = {
       }
 
       function packer(files, root) {
-         return cssHelpers.bumpImportsUp(files.map(function(css) {
+         return cssHelpers.splitIntoBatches(4000, cssHelpers.bumpImportsUp(files.map(function(css) {
             return cssHelpers.rebaseUrls(root, css, fs.readFileSync(css));
-         }).join('\n'));
+         }).join('\n')));
       }
 
       function getTargetNode(dom, path, buildNumber) {
