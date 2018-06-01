@@ -15,7 +15,10 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             callback(null, file);
             return;
          }
-
+         let buildNumber;
+         if (config.version) {
+            buildNumber = config.version;
+         }
          let newText = file.contents.toString();
          newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
          let dom = domHelpers.domify(newText);
@@ -25,13 +28,15 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             file.path,
             dom,
             root,
-            path.join(config.rawConfig.output, 'WI.SBIS/packer/css')
+            path.join(config.rawConfig.output, 'WI.SBIS/packer/css'),
+            buildNumber
          );
          dom = await packJs.packageSingleJs(
             file.path,
             dom,
             root,
-            path.join(config.rawConfig.output, 'WI.SBIS/packer/js')
+            path.join(config.rawConfig.output, 'WI.SBIS/packer/js'),
+            buildNumber
          );
          const replacePath = !config.multiService;
          dom = await packHtml.packageSingleHtml(
