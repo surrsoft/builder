@@ -49,8 +49,11 @@ function cssCollector(dom) {
 }
 
 function cssPacker(filesToPack, currentRoot) {
-   return cssHelpers.bumpImportsUp(
-      Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
+   return cssHelpers.splitIntoBatches(
+      4000,
+      cssHelpers.bumpImportsUp(
+         Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
+      )
    );
 }
 
