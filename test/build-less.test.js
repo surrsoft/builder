@@ -124,6 +124,23 @@ describe('build less', function() {
       result.hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
+   it('ignore folder _less. №1', async() => {
+      const retailModulePath = path.join(workspaceFolder, 'Retail');
+      const filePath = path.join(retailModulePath, '_less/themes/presto/normal.less');
+      const text = '';
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
+      result.hasOwnProperty('ignoreMessage').should.equal(true);
+   });
+
+
+   it('ignore folder _less. №2', async() => {
+      const retailModulePath = path.join(workspaceFolder, 'Retail');
+      const filePath = path.join(retailModulePath, 'themes\\presto\\_less\\normal.less');
+      const text = '';
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
+      result.hasOwnProperty('ignoreMessage').should.equal(true);
+   });
+
    it('less from ws', async() => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\n' + 'test-mixin: @test-mixin;' + 'test-var: @test-var;' + '}';
