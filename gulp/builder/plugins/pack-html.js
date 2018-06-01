@@ -15,14 +15,12 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             callback(null, file);
             return;
          }
-         let buildNumber;
-         if (config.version) {
-            buildNumber = config.version;
-         }
          let newText = file.contents.toString();
          newText = await pool.exec('minifyXhtmlAndHtml', [newText]);
          let dom = domHelpers.domify(newText);
-         const root = path.dirname(config.rawConfig.output);
+         const
+            root = path.dirname(config.rawConfig.output),
+            buildNumber = config.version;
 
          dom = await packCss.packageSingleCss(
             file.path,
