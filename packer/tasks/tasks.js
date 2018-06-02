@@ -128,14 +128,15 @@ function gruntPackCSSTask(grunt) {
          const { root } = this.data,
             done = this.async(),
             applicationRoot = path.join(root, this.data.application),
-            htmlFiles = [];
+            htmlFiles = [],
+            buildNumber = grunt.option('versionize');
 
          const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
          sourceFiles.forEach((pathToSource) => {
             htmlFiles.push(path.join(applicationRoot, pathToSource));
          });
 
-         await gruntPackCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+         await gruntPackCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildNumber);
 
          logger.debug('Задача паковки css выполнена.');
          done();
@@ -153,14 +154,15 @@ function gruntPackJSTask(grunt) {
          const { root } = this.data,
             done = this.async(),
             applicationRoot = path.join(root, this.data.application),
-            htmlFiles = [];
+            htmlFiles = [],
+            buildNumber = grunt.option('versionize');
 
          const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
          sourceFiles.forEach((pathToSource) => {
             htmlFiles.push(path.join(applicationRoot, pathToSource));
          });
 
-         await packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+         await packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildNumber);
 
          grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки js выполнена.`);
          done();

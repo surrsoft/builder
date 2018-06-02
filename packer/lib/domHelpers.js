@@ -93,7 +93,17 @@ async function checkFiles(root, sourceFile, result) {
    return filesNotFound.join(', ');
 }
 
-async function packageSingleFile(htmlFilePath, dom, root, packageHome, collector, packer, nodeProducer, ext) {
+async function packageSingleFile(
+   htmlFilePath,
+   dom,
+   root,
+   packageHome,
+   buildNumber,
+   collector,
+   packer,
+   nodeProducer,
+   ext
+) {
    const
       results = collector(dom).filter(result => result.files.length > 1);
 
@@ -147,7 +157,7 @@ async function packageSingleFile(htmlFilePath, dom, root, packageHome, collector
 
       // For each packed file create new DOM node and attach it to document
       for (const aSingleFile of packedFiles) {
-         const newNode = nodeProducer(dom, path.relative(root, aSingleFile));
+         const newNode = nodeProducer(dom, path.relative(root, aSingleFile), buildNumber);
          if (result.before) {
             result.before.parentNode.insertBefore(newNode, result.before);
          } else {

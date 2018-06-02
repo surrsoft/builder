@@ -64,25 +64,29 @@ function jsPacker(filesToPack) {
    return [Object.values(filesToPack).join(';\n')];
 }
 
-function jsNodeProducer(dom, path) {
+function jsNodeProducer(dom, path, buildNumber) {
+   let scriptPath = path;
+   if (buildNumber) {
+      scriptPath = scriptPath.replace(/\.js$/, `.v${buildNumber}.js`);
+   }
    const script = domHelpers.mkDomNode(dom, 'script', {
       type: 'text/javascript',
       charset: 'utf-8',
-      src: `/${path.replace(/\\/g, '/')}`
+      src: `/${scriptPath.replace(/\\/g, '/')}`
    });
    script.textContent = ' ';
    return script;
 }
 
-function packageSingleJs(filePath, dom, root, packageHome) {
-   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, jsCollector, jsPacker, jsNodeProducer, 'js');
+function packageSingleJs(filePath, dom, root, packageHome, buildNumber) {
+   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, buildNumber, jsCollector, jsPacker, jsNodeProducer, 'js');
 }
-function gruntPackJS(htmlFiles, root, packageHome) {
+function gruntPackJS(htmlFiles, root, packageHome, buildNumber) {
    return pMap(
       htmlFiles,
       async(filePath) => {
          const dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
-         const newDom = await packageSingleJs(filePath, dom, root, packageHome);
+         const newDom = await packageSingleJs(filePath, dom, root, packageHome, buildNumber);
          await fs.writeFile(filePath, domHelpers.stringify(newDom));
       },
       { concurrency: 20 }
