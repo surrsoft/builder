@@ -3,7 +3,7 @@
 const fs = require('fs-extra');
 const helpers = require('./../../lib/domHelpers');
 
-module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
+module.exports = function gruntPackJS(htmlFiles, root, packageHome, buildnumber) {
    function collector(dom) {
       let defId = 0,
          scripts = dom.getElementsByTagName('script'),
@@ -62,16 +62,20 @@ module.exports = function gruntPackJS(htmlFiles, root, packageHome) {
       }).join(';\n')];
    }
 
-   function nodeProducer(dom, path) {
+   function nodeProducer(dom, path, buildNumber) {
+      let scriptPath = path;
+      if (buildNumber) {
+         scriptPath = scriptPath.replace(/\.js$/, `.v${buildNumber}.js`);
+      }
       const script = helpers.mkDomNode(dom, 'script', {
          type: 'text/javascript',
          charset: 'utf-8',
-         src: '/' + path.replace(/\\/g, '/')
+         src: '/' + scriptPath.replace(/\\/g, '/')
       });
       script.textContent = ' ';
       return script;
    }
 
-   return helpers.package(htmlFiles, root, packageHome, collector, packer, nodeProducer, 'js');
+   return helpers.package(htmlFiles, root, packageHome, buildnumber, collector, packer, nodeProducer, 'js');
 
 };

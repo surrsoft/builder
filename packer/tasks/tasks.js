@@ -322,7 +322,7 @@ function gruntCustomPack(grunt) {
 function gruntPackCSS(grunt) {
    return function() {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки css.');
-
+      const buildnumber = grunt.option('versionize');
       let root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
@@ -332,7 +332,7 @@ function gruntPackCSS(grunt) {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
-      packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+      packCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildnumber);
 
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки css выполнена.');
    };
@@ -342,6 +342,7 @@ function gruntPackJS(grunt) {
    return function() {
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Запускается задача паковки js.');
 
+      const buildnumber = grunt.option('versionize');
       let root = this.data.root,
          applicationRoot = path.join(root, this.data.application),
          htmlFiles = [];
@@ -351,7 +352,7 @@ function gruntPackJS(grunt) {
          htmlFiles.push(path.join(applicationRoot, pathToSource));
       });
 
-      packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages));
+      packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildnumber);
 
       grunt.log.ok(grunt.template.today('hh:MM:ss') + ': Задача паковки js выполнена.');
    };
