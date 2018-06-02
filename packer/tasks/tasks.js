@@ -136,8 +136,10 @@ function saveBundlesForEachModule(grunt, applicationRoot) {
          bundleRouteToWrite = grunt.file.exists(bundlePath) ? JSON.parse(grunt.file.read(bundlePath)) : {};
 
       currentModules.forEach(function(node) {
-         if (node.indexOf('css!') === -1) {
-            bundleRouteToWrite[node] = currentBundle;
+         if (node.indexOf('css!') === 0) {
+            bundleRouteToWrite[node] = currentBundle + '.css';
+         } else {
+            bundleRouteToWrite[node] = currentBundle + '.js';
          }
       });
       grunt.file.write(bundlePath, JSON.stringify(bundleRouteToWrite));
