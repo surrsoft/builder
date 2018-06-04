@@ -15,17 +15,17 @@ const appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '
    resourceRoot = '/';
 
 const wsLogger = {
-   error: function(tag, msg, err) {
+   error(tag, msg, err) {
       let stack = '';
       if (err && err.hasOwnProperty('stack')) {
-         stack = ': ' + err.stack;
+         stack = `: ${err.stack}`;
       }
       logger.info(`WS error: ${tag}::${msg}${stack}`);
    },
-   info: function(tag, msg) {
+   info(tag, msg) {
       logger.debug(`WS info: ${tag}::${msg}`);
    },
-   log: function(tag, msg) {
+   log(tag, msg) {
       logger.debug(`WS log: ${tag}::${msg}`);
    }
 };
@@ -41,22 +41,22 @@ function removeLeadingSlash(filePath) {
    return resultPath;
 }
 
-function _init() {
+function initWs() {
    global.wsConfig = {
-      appRoot: appRoot,
-      wsRoot: wsRoot,
-      resourceRoot: resourceRoot
+      appRoot,
+      wsRoot,
+      resourceRoot
    };
    global.wsBindings = {
-      ITransport: function() {
+      ITransport() {
          const e = new Error();
-         throw new Error('ITransport is not implemented in build environment.' + e.stack);
+         throw new Error(`ITransport is not implemented in build environment.${e.stack}`);
       },
-      ILogger: function() {
+      ILogger() {
          return wsLogger;
       }
    };
-   global.rk = function(key) {
+   global.rk = function rk(key) {
       let resultKey = key;
       const index = resultKey.indexOf('@@');
       if (index > -1) {
@@ -66,6 +66,8 @@ function _init() {
    };
    global.requirejs = requireJS;
    global.define = requireJS.define;
+
+   // eslint-disable-next-line global-require
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
    const config = requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
       waitSeconds: 20,
@@ -76,27 +78,27 @@ function _init() {
    global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
-      'jsModules': {},
-      'modules': {
-         'View': 'sbis3-ws/View',
-         'Controls': 'sbis3-controls/Controls',
+      jsModules: {},
+      modules: {
+         View: 'sbis3-ws/View',
+         Controls: 'sbis3-controls/Controls',
          'WS.Data': 'ws-data/WS.Data'
       },
-      'requirejsPaths': {
-         'View': 'sbis3-ws/View',
-         'Controls': 'sbis3-controls/Controls',
+      requirejsPaths: {
+         View: 'sbis3-ws/View',
+         Controls: 'sbis3-controls/Controls',
          'WS.Data': 'ws-data/WS.Data'
       }
    };
-   loadContents(appContents, true, {service: appRoot});
+   loadContents(appContents, true, { service: appRoot });
 }
 
 let initialized = false;
 module.exports = {
-   init: function() {
+   init() {
       try {
          if (!initialized) {
-            _init();
+            initWs();
             initialized = true;
          }
       } catch (e) {

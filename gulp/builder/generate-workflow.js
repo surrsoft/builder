@@ -8,8 +8,12 @@ const path = require('path'),
    pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
+   generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
+   generateTaskForPackHtml = require('./generate-task/pack-html'),
+   generateTaskForCustomPack = require('./generate-task/custom-packer'),
    generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
+   generateTaskForSaveLoggerReport = require('../helpers/generate-task/save-logger-report'),
    ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js');
 
@@ -47,32 +51,44 @@ function generateTaskForRemoveFiles(changesStore) {
 }
 
 function generateWorkflow(processArgv) {
-   //загрузка конфигурации должна быть снхронной, иначе не построятся задачи для сборки модулей
+   // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
    const changesStore = new ChangesStore(config);
 
    const pool = workerPool.pool(path.join(__dirname, './worker.js'), {
-      maxWorkers: os.cpus().length
+
+      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
+      maxWorkers: os.cpus().length - 1 || 1
    });
 
    const localizationEnable = config.localizations.length > 0;
 
    return gulp.series(
-      guardSingleProcess.generateTaskForLock(config.cachePath), //прежде всего
+
+      // generateTaskForLock прежде всего
+      guardSingleProcess.generateTaskForLock(config.cachePath),
       generateTaskForLoadChangesStore(changesStore),
-      generateTaskForClearCache(changesStore, config), //тут нужен загруженный кеш
+
+      // в generateTaskForClearCache нужен загруженный кеш
+      generateTaskForClearCache(changesStore, config),
       generateTaskForGenerateJson(changesStore, config, localizationEnable),
       generateTaskForBuildModules(changesStore, config, pool),
       gulp.parallel(
 
-         //завершающие задачи
+         // завершающие задачи
          generateTaskForRemoveFiles(changesStore),
-         generateTaskForSaveChangesStore(changesStore),
-         generateTaskForTerminatePool(pool)
+         generateTaskForSaveChangesStore(changesStore)
       ),
-      guardSingleProcess.generateTaskForUnlock() //после всего
+      generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      generateTaskForPackHtml(changesStore, config, pool),
+      generateTaskForCustomPack(config),
+      generateTaskForTerminatePool(pool),
+      generateTaskForSaveLoggerReport(config),
+
+      // generateTaskForUnlock после всего
+      guardSingleProcess.generateTaskForUnlock()
    );
 }
 

@@ -1,4 +1,6 @@
-'use script';
+/* eslint-disable no-await-in-loop */
+'use strict';
+
 const crypto = require('crypto');
 const xmldom = require('tensor-xmldom');
 const fs = require('fs-extra');
@@ -6,13 +8,12 @@ const path = require('path');
 const parser = new xmldom.DOMParser();
 const serializer = new xmldom.XMLSerializer();
 const logger = require('../../lib/logger').logger();
-
-const domCache = {};
+const pMap = require('p-map');
 
 function wrap(obj, prop, replacer) {
-   (function(orig) {
+   ((orig) => {
       obj[prop] = replacer;
-      obj[prop].restore = function() {
+      obj[prop].restore = () => {
          obj[prop] = orig;
       };
    })(obj[prop]);
@@ -20,30 +21,33 @@ function wrap(obj, prop, replacer) {
 
 function uniqname(names, ext) {
    const md5 = crypto.createHash('md5');
-   md5.update(names + '');
-   return md5.digest('hex') + '.' + ext;
+   md5.update(`${names}`);
+   return `${md5.digest('hex')}.${ext}`;
 }
 
-function domify(f, mime) {
-   if (domCache[f]) {
-      return domCache[f];
-   }
+function domify(text) {
    const errors = [];
-   wrap(console, 'log', function(m) {
+   wrap(console, 'log', (m) => {
       errors.push(m);
    });
-   wrap(console, 'error', function(m) {
+   wrap(console, 'warn', (m) => {
       errors.push(m);
    });
-   domCache[f] = parser.parseFromString(fs.readFileSync(f, 'utf-8'), mime || 'text/html');
+   wrap(console, 'error', (m) => {
+      errors.push(m);
+   });
+   const result = parser.parseFromString(text, 'text/html');
 
-   //eslint-disable-next-line no-console
+   // eslint-disable-next-line no-console
    console.log.restore();
 
-   //eslint-disable-next-line no-console
+   // eslint-disable-next-line no-console
+   console.warn.restore();
+
+   // eslint-disable-next-line no-console
    console.error.restore();
 
-   return domCache[f];
+   return result;
 }
 
 function stringify(dom) {
@@ -52,7 +56,7 @@ function stringify(dom) {
 
 function mkDomNode(document, node, attributes) {
    const newNode = document.createElement(node);
-   Object.keys(attributes || {}).forEach(function(attrName) {
+   Object.keys(attributes || {}).forEach((attrName) => {
       newNode.setAttribute(attrName, attributes[attrName]);
    });
    if (node === 'script') {
@@ -67,98 +71,108 @@ function mkCommentNode(document, data) {
 
 function removeDomCollection(col, filter) {
    const deadlist = [];
-   for (var i = 0, l = col.length; i < l; i++) {
+   for (let i = 0, l = col.length; i < l; i++) {
       if (!filter || filter(col[i])) {
          deadlist.push(col[i]);
       }
    }
-   for (i = 0, l = deadlist.length; i < l; i++) {
+   for (let i = 0, l = deadlist.length; i < l; i++) {
       deadlist[i].parentNode.removeChild(deadlist[i]);
    }
 }
 
-function checkFiles(root, sourceFile, result) {
-   let isSane = true, errors = [];
-   result.files.forEach(function(packItem, i) {
+async function checkFiles(root, sourceFile, result) {
+   const filesNotFound = [];
+   for (const packItem of result.files) {
       const fullPath = path.join(root, packItem);
-      if (!fs.existsSync(fullPath)) {
-         let l = result.nodes[i].lineNumber,
-            c = result.nodes[i].columnNumber;
-         errors.push('line ' + l + ' col ' + c + ': file not found' + ' ' + packItem);
-         isSane = false;
+      if (!await fs.pathExists(fullPath)) {
+         filesNotFound.push(packItem);
       }
-   });
-   if (!isSane) {
-      logger.info('Warning: ' + path.relative(root, sourceFile) + ' skipped');
-      logger.info(errors.join('\n'));
    }
-   return isSane;
+
+   return filesNotFound.join(', ');
 }
 
-const helpers = {
-   uniqname: uniqname,
-   domify: domify,
-   stringify: stringify,
-   mkDomNode: mkDomNode,
-   mkCommentNode: mkCommentNode,
+async function packageSingleFile(
+   htmlFilePath,
+   dom,
+   root,
+   packageHome,
+   buildNumber,
+   collector,
+   packer,
+   nodeProducer,
+   ext
+) {
+   const
+      results = collector(dom).filter(result => result.files.length > 1);
 
-   package: function(fileset, root, packageHome, collector, packer, nodeProducer, ext) {
-      fileset.map(function(f) {
-         let dom = domify(f),
-            results = collector(dom);
-
-         results.forEach(function(result) {
-            let packedContent, packedFiles = [];
-
-            if (result.files.length > 1) {
-               if (checkFiles(root, f, result)) {
-                  packedContent = packer(result.files.map(function(fl) {
-                     return path.join(root, fl);
-                  }).filter(function deleteControls(filename) {
-                     if (ext === 'css') {
-                        filename = filename.replace(/\\/g, '/');
-                        return !(filename.includes('resources/Controls') ||
-                           (filename.includes('resources/SBIS3.CONTROLS') && !filename.includes('resources/SBIS3.CONTROLS/themes')));
-                     } else {
-                        return true;
-                     }
-                  }), root);
-
-                  // For each result content item create uniq filename and write item to it
-                  packedContent.forEach(function(aSinglePackedFileContent, idx) {
-                     const packedFile = path.join(packageHome, uniqname(result.files, idx + '.' + ext));
-                     packedFiles.push(packedFile);
-                     fs.ensureDirSync(path.dirname(packedFile));
-                     fs.writeFileSync(packedFile, aSinglePackedFileContent);
-                  });
-
-                  // Remove initial collection from DOM
-                  removeDomCollection(result.nodes);
-
-                  // For each packed file create new DOM node and attach it to document
-                  packedFiles.forEach(function(aSingleFile) {
-                     const newNode = nodeProducer(dom, path.relative(root, aSingleFile));
-                     if (result.before) {
-                        result.before.parentNode.insertBefore(newNode, result.before);
-                     } else {
-                        dom.getElementsByTagName('head')[0].appendChild(newNode);
-                     }
-                  });
-
-                  // update HTML
-                  fs.writeFileSync(f, stringify(dom));
-
-                  logger.debug('OK  : ' + f);
-               } else {
-                  logger.info({
-                     message: 'Skip file',
-                     filePath: f
-                  });
-               }
-            }
+   for (const result of results) {
+      // убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
+      result.files = result.files.map(filePath => filePath.replace(/\.v.+?(\.css|\.js)$/, '.min$1'));
+      const filesNotFound = await checkFiles(root, htmlFilePath, result);
+      if (filesNotFound !== '') {
+         logger.warning({
+            message: `Can't find files for pack: ${filesNotFound}`,
+            filePath: htmlFilePath
          });
-      });
-   }
-};
+         continue;
+      }
+      let filesPathsToPack = result.files.map(fl => path.join(root, fl));
 
-module.exports = helpers;
+      if (ext === 'css') {
+         filesPathsToPack = filesPathsToPack.filter((filename) => {
+            const prettyFilename = filename;
+            return !(
+               prettyFilename.includes('resources/Controls') ||
+                     (prettyFilename.includes('resources/SBIS3.CONTROLS') &&
+                        !prettyFilename.includes('resources/SBIS3.CONTROLS/themes'))
+            );
+         });
+      }
+      const filesToPack = {};
+      await pMap(filesPathsToPack, async(filePath) => {
+         filesToPack[filePath] = await fs.readFile(filePath, 'utf8');
+      }, { concurrency: 5 });
+
+      const packedContent = packer(
+         filesToPack,
+         root
+      );
+
+      const packedFiles = [];
+      let idx = 0;
+
+      // For each result content item create uniq filename and write item to it
+      for (const aSinglePackedFileContent of packedContent) {
+         const packedFile = path.join(packageHome, uniqname(result.files, `${idx}.${ext}`));
+         packedFiles.push(packedFile);
+         await fs.ensureDir(path.dirname(packedFile));
+         await fs.writeFile(packedFile, aSinglePackedFileContent);
+         idx++;
+      }
+
+      // Remove initial collection from DOM
+      removeDomCollection(result.nodes);
+
+      // For each packed file create new DOM node and attach it to document
+      for (const aSingleFile of packedFiles) {
+         const newNode = nodeProducer(dom, path.relative(root, aSingleFile), buildNumber);
+         if (result.before) {
+            result.before.parentNode.insertBefore(newNode, result.before);
+         } else {
+            dom.getElementsByTagName('head')[0].appendChild(newNode);
+         }
+      }
+   }
+   return dom;
+}
+
+module.exports = {
+   uniqname,
+   domify,
+   stringify,
+   mkDomNode,
+   mkCommentNode,
+   packageSingleFile
+};

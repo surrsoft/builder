@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 'use strict';
 
 const logger = require('../../lib/logger').logger();
@@ -13,6 +14,22 @@ function DepGraph() {
    this._n = 0;
 }
 
+DepGraph.prototype.setLink = function setLink(property, value) {
+   this._links[property] = value;
+};
+
+DepGraph.prototype.setNode = function setNode(property, value) {
+   this._nodes[property] = value;
+};
+
+DepGraph.prototype.getNodeObject = function getNodeObject() {
+   return this._nodes;
+};
+
+DepGraph.prototype.getLinksObject = function getLinksObject() {
+   return this._links;
+};
+
 DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
    if (this._path.length >= maxLvl) {
       return;
@@ -27,7 +44,7 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
    if (node) {
       if (node.mark > 0) {
          if (node.mark === 1) {
-            logger.warning('Cycle dependency detected: ' + this._path.join(', '));
+            logger.warning(`Cycle dependency detected: ${this._path.join(', ')}`);
          }
          this._path.pop();
          return;
@@ -58,10 +75,8 @@ DepGraph.prototype._visitNode = function visitNode(maxLvl, name) {
  * @param {Number} [maxLevel=Infinity]
  * @returns {Array}
  */
-DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
+DepGraph.prototype.getLoadOrder = function getLoadOrder(startNodes, maxLevel = Infinity) {
    const self = this;
-
-   maxLevel = maxLevel || Infinity;
 
    this._n = 0;
 
@@ -69,7 +84,7 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
       return [];
    }
 
-   Object.keys(this._nodes).forEach(function(node) {
+   Object.keys(this._nodes).forEach((node) => {
       // Fill meta
       self._nodes[node].mark = 0;
       self._nodes[node].weight = -1;
@@ -78,18 +93,15 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
    startNodes.forEach(this._visitNode.bind(this, maxLevel));
 
    // Iterate over all nodes
-   return Object.keys(this._nodes).map(function(k) {
-      // node-name -> node (+ module name)
-      const meta = self._nodes[k];
-      meta.module = k;
-      return meta;
-   }).filter(function(node) {
-      // leave only the nodes that have weight > 0, that is visited when traversing
-      return node.weight >= 0;
-   }).sort(function(a, b) {
-      // sort by weight
-      return a.weight - b.weight;
-   });
+   return Object.keys(this._nodes)
+      .map((k) => {
+         // node-name -> node (+ module name)
+         const meta = self._nodes[k];
+         meta.module = k;
+         return meta;
+      })
+      .filter(node => node.weight >= 0)
+      .sort((a, b) => a.weight - b.weight);
 };
 
 /**
@@ -97,7 +109,7 @@ DepGraph.prototype.getLoadOrder = function(startNodes, maxLevel) {
  * @param {String} name
  * @param {Array} dependencies
  */
-DepGraph.prototype.addDependencyFor = function(name, dependencies) {
+DepGraph.prototype.addDependencyFor = function addDependencyFor(name, dependencies) {
    if (this.hasNode(name)) {
       this._links[name] = dependencies;
    }
@@ -108,7 +120,7 @@ DepGraph.prototype.addDependencyFor = function(name, dependencies) {
  * @param {String} name
  * @param {Object} meta
  */
-DepGraph.prototype.registerNode = function(name, meta) {
+DepGraph.prototype.registerNode = function registerNode(name, meta) {
    this._nodes[name] = meta;
 };
 
@@ -117,28 +129,33 @@ DepGraph.prototype.registerNode = function(name, meta) {
  * @param {String} name
  * @return {Boolean}
  */
-DepGraph.prototype.hasNode = function(name) {
+DepGraph.prototype.hasNode = function hasNode(name) {
    return name in this._nodes;
 };
 
 /**
  * @return {String}
  */
-DepGraph.prototype.toJSON = function() {
-   return JSON.stringify({
-      nodes: this._nodes,
-      links: this._links
-   }, null, 2);
+DepGraph.prototype.toJSON = function toJSON() {
+   return JSON.stringify(
+      {
+         nodes: this._nodes,
+         links: this._links
+      },
+      null,
+      2
+   );
 };
 
 /**
  * Build graph for json
  * @param {String|Object} json
  */
-DepGraph.prototype.fromJSON = function(json) {
+DepGraph.prototype.fromJSON = function fromJSON(json) {
    const data = typeof json === 'string' ? JSON.parse(json) : json;
    this._nodes = data.nodes;
    this._links = data.links;
+   return this;
 };
 
 /**
@@ -146,19 +163,18 @@ DepGraph.prototype.fromJSON = function(json) {
  * @param {String} name
  * @return {Array}
  */
-DepGraph.prototype.getDependenciesFor = function(name) {
+DepGraph.prototype.getDependenciesFor = function getDependenciesFor(name) {
    if (this.hasNode(name)) {
       return (this._links[name] || []).slice();
-   } else {
-      return [];
    }
+   return [];
 };
 
 /**
  * Get all nodes name
  * @return {Array}
  */
-DepGraph.prototype.getNodes = function() {
+DepGraph.prototype.getNodes = function getNodes() {
    return Object.keys(this._nodes);
 };
 
@@ -167,7 +183,7 @@ DepGraph.prototype.getNodes = function() {
  * @param {String} name
  * @return {Object}
  */
-DepGraph.prototype.getNodeMeta = function(name) {
+DepGraph.prototype.getNodeMeta = function getNodeMeta(name) {
    return this._nodes[name] || {};
 };
 

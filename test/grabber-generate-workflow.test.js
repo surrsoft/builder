@@ -15,12 +15,12 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
 const config = {
-   'cache': cacheFolder,
-   'output': outputJson,
-   'modules': [
+   cache: cacheFolder,
+   output: outputJson,
+   modules: [
       {
-         'name': 'Модуль',
-         'path': path.join(sourceFolder, 'Модуль')
+         name: 'Модуль',
+         path: path.join(sourceFolder, 'Модуль')
       }
    ]
 };
@@ -36,7 +36,7 @@ const prepareTest = async function(fixtureFolder) {
 };
 
 const runWorkflow = function() {
-   return new Promise(resolve => {
+   return new Promise((resolve) => {
       generateWorkflow([`--config="${configPath}"`])(resolve);
    });
 };
@@ -45,28 +45,28 @@ const timeout = function(ms) {
    return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-//в файловой системе HFS Plus точность хранения даты равняется 1 секунде
-//из-за этого тесты могуть падать непредсказуемым образом, и при этом для пользователя проблем не будет
+// в файловой системе HFS Plus точность хранения даты равняется 1 секунде
+// из-за этого тесты могуть падать непредсказуемым образом, и при этом для пользователя проблем не будет
 const timeoutForMacOS = async function() {
    if (process.platform === 'darwin') {
       await timeout(1000);
    }
 };
 
-//все тесты по сути завязаны на значение контекста(context) одной фразы в файле Component.<extension>
+// все тесты по сути завязаны на значение контекста(context) одной фразы в файле Component.<extension>
 const checkResult = async function(extension, context) {
    const resultObj = await fs.readJSON(outputJson);
    resultObj.length.should.equals(1);
    resultObj[0].key.should.equals('AnyText');
    resultObj[0].context.should.equals(context);
    resultObj[0].ui.should.equals(moduleSourceFolder);
-   resultObj[0].module.should.equals(path.join(moduleSourceFolder, 'Component.' + extension));
+   resultObj[0].module.should.equals(path.join(moduleSourceFolder, `Component.${extension}`));
 };
 
-//нужно проверить что происходить, что кеш работает
-describe('gulp/grabber/generate-workflow.js', function() {
-   describe('проверка сбора фраз локализации по js коду', function() {
-      it('перезапуск без изменений', async function() {
+// нужно проверить что происходить, что кеш работает
+describe('gulp/grabber/generate-workflow.js', () => {
+   describe('проверка сбора фраз локализации по js коду', () => {
+      it('перезапуск без изменений', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -80,7 +80,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в исходниках', async function() {
+      it('перезапуск с изменениями в исходниках', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -99,7 +99,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async function() {
+      it('перезапуск с изменениями в кеше', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
@@ -120,8 +120,8 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
    });
 
-   describe('проверка сбора фраз локализации по xhtml коду', function() {
-      it('перезапуск без изменений', async function() {
+   describe('проверка сбора фраз локализации по xhtml коду', () => {
+      it('перезапуск без изменений', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -135,7 +135,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в xhtml', async function() {
+      it('перезапуск с изменениями в xhtml', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -154,7 +154,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async function() {
+      it('перезапуск с изменениями в кеше', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
@@ -174,8 +174,8 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в js', async function() {
-         //при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
+      it('перезапуск с изменениями в js', async() => {
+         // при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -202,8 +202,8 @@ describe('gulp/grabber/generate-workflow.js', function() {
       });
    });
 
-   describe('проверка сбора фраз локализации по tmpl коду', function() {
-      it('перезапуск без изменений', async function() {
+   describe('проверка сбора фраз локализации по tmpl коду', () => {
+      it('перезапуск без изменений', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -217,7 +217,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в tmpl', async function() {
+      it('перезапуск с изменениями в tmpl', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -236,7 +236,7 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async function() {
+      it('перезапуск с изменениями в кеше', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
@@ -256,8 +256,8 @@ describe('gulp/grabber/generate-workflow.js', function() {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в js', async function() {
-         //при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
+      it('перезапуск с изменениями в js', async() => {
+         // при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);

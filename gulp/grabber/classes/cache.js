@@ -10,19 +10,21 @@ const helpers = require('../../../lib/helpers'),
 
 class StoreInfo {
    constructor() {
-      //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
+      // в случае изменений параметров запуска проще кеш сбросить,
+      // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
 
-      //если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      this.versionOfBuilder = 'unknown'; //unknown используется далее
+      // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
+      // unknown используется далее
+      this.versionOfBuilder = 'unknown';
 
-      //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
-      //для сравнения с mtime у файлов
+      // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
+      // для сравнения с mtime у файлов
       this.startBuildTime = 0;
 
-      //запоминаем соответствие "файл - список фраз для локализации"
-      //1. отследить восстановленный из корзины файл
-      //2. удалить лишние файлы
+      // запоминаем соответствие "файл - список фраз для локализации"
+      // 1. отследить восстановленный из корзины файл
+      // 2. удалить лишние файлы
       this.cachedFiles = {};
    }
 
@@ -38,7 +40,7 @@ class StoreInfo {
       } catch (error) {
          logger.warning({
             message: `Не удалось прочитать файл кеша ${filePath}`,
-            error: error
+            error
          });
       }
    }
@@ -70,7 +72,7 @@ class Cache {
 
       this.filePath = path.join(this.config.cachePath, 'grabber-cache.json');
 
-      //если хоть 1 json описания компонента поменялся, то нужно обрабатывать xhtml и tmpl заново
+      // если хоть 1 json описания компонента поменялся, то нужно обрабатывать xhtml и tmpl заново
       this.dropCacheForMarkup = false;
    }
 
@@ -91,14 +93,14 @@ class Cache {
       try {
          assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
       } catch (error) {
-         logger.info("Параметры запуска builder'а поменялись. " + finishText);
+         logger.info(`Параметры запуска builder'а поменялись. ${finishText}`);
          return true;
       }
 
-      //новая версия билдера может быть полностью не совместима
+      // новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
-         logger.info("Версия builder'а не соответствует сохранённому значению в кеше. " + finishText);
+         logger.info(`Версия builder'а не соответствует сохранённому значению в кеше. ${finishText}`);
          return true;
       }
 
@@ -110,7 +112,7 @@ class Cache {
       if (this.cacheHasIncompatibleChanges()) {
          this.lastStore = new StoreInfo();
 
-         //из кеша можно удалить всё кроме .lockfile
+         // из кеша можно удалить всё кроме .lockfile
          if (await fs.pathExists(this.config.cachePath)) {
             for (const fullPath of await fs.readdir(this.config.cachePath)) {
                if (!fullPath.endsWith('.lockfile')) {
@@ -132,15 +134,16 @@ class Cache {
          return true;
       }
 
-      //кеша не было, значит все файлы новые
+      // кеша не было, значит все файлы новые
       const noCache = !this.lastStore.startBuildTime;
 
-      //проверка modification time. этой проверки может быть не достаточно в двух слуаях:
-      //1. файл вернули из корзины
-      //2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
+      // проверка modification time. этой проверки может быть не достаточно в двух слуаях:
+      // 1. файл вернули из корзины
+      // 2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
       const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
 
-      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath); //новый файл
+      // новый файл
+      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath);
 
       if (!isChanged) {
          this.currentStore.cachedFiles[prettyPath] = this.lastStore.cachedFiles[prettyPath];

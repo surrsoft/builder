@@ -10,8 +10,8 @@ if (fs.pathExistsSync(dest)) {
 }
 fs.ensureDirSync(dest);
 
-//files используем из package.json, чтобы было как можно более стандартно.
-//и работала проверка no-unpublished-require
+// files используем из package.json, чтобы было как можно более стандартно.
+// и работала проверка no-unpublished-require
 for (const fileOrDir of packageObj.files) {
    fs.copySync(path.join(__dirname, fileOrDir), path.join(dest, fileOrDir));
 }

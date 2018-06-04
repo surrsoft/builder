@@ -1,159 +1,305 @@
-/*eslint-disable max-nested-callbacks*/
 'use strict';
 
-const fs = require('fs-extra');
 const path = require('path');
-const async = require('async');
-const packInOrder = require('./packInOrder');
-const domHelpers = require('./../../lib/domHelpers');
-const indexer = require('./../../lib/index-project');
-const logger = require('../../../lib/logger').logger();
+const fs = require('fs-extra');
 const esprima = require('esprima');
-const traverse = require('estraverse').traverse;
+const { traverse } = require('estraverse');
+const pMap = require('p-map');
+const cssHelpers = require('./../../lib/cssHelpers');
+
+const logger = require('../../../lib/logger').logger();
+
+const domHelpers = require('./../../lib/domHelpers');
+const commonPackage = require('./../../lib/commonPackage');
+
+// TODO: костыль: список статических html страниц для которых не пакуем стили контролов
+const HTMLPAGESWITHNOONLINESTYLES = [
+   'carry.html',
+   'presto.html',
+   'carry_minimal.html',
+   'booking.html',
+   'plugin.html',
+   'hint.html',
+   'CryptoAppWindow.html'
+];
+
+// TODO: Костыль: Узнаем по наличию модуля (s3mod) в оффлайне мы или нет
+
+const offlineModuleName = 'Retail_Offline';
+
+async function checkItIsOfflineClient(applicationRoot) {
+   const offlineClientModulePath = path.join(applicationRoot, `resources/${offlineModuleName}/`);
+   try {
+      return await fs.pathExists(offlineClientModulePath);
+   } catch (err) {
+      return false;
+   }
+}
+
+/**
+ * Просто собирает указанные файлы в один большой кусок текста
+ * @param {Array} filesToPack - модули для паковки
+ * @param {String} base - полный путь до папки с пакетами
+ * @param themeName
+ * Относительно этой папки будут высчитаны новые пути в ссылках
+ */
+async function nativePackFiles(filesToPack, base, themeName) {
+   if (!filesToPack || !filesToPack.length) {
+      return '';
+   }
+   const results = await pMap(
+      filesToPack,
+      module => commonPackage.promisifyLoader(commonPackage.getLoader(module.plugin), module, base, themeName),
+      { concurrency: 10 }
+   );
+   return results.reduce(function concat(res, modContent) {
+      return res + (res ? '\n' : '') + modContent;
+   }, '');
+}
+
+/**
+ * Пакует переданные css. Делит пакет на пачки по 4000 правил (ie8-9)
+ * @param {Array.<String>} files - пути до файлов
+ * @param {String} root - корень сайта
+ */
+async function packCSS(files, root) {
+   const results = [];
+   await pMap(
+      files,
+      async(filePath) => {
+         if (!fs.pathExists(filePath)) {
+            return;
+         }
+         const content = await fs.readFile(filePath, 'utf8');
+         results.push(cssHelpers.rebaseUrls(root, filePath, content.toString()));
+      },
+      { concurrency: 5 }
+   );
+
+   const cssPackage = cssHelpers.bumpImportsUp(results.join('\n'));
+   return cssHelpers.splitIntoBatches(4000, cssPackage);
+}
+
+/**
+ * Формирует фейковые обертки для css, чтобы не грузить дважды
+ * @param {Array} filesToPack
+ * @param {Array} staticHtmlName
+ * @return {String}
+ */
+function generateFakeModules(filesToPack, themeName, staticHtmlName) {
+   return `(function(){\n${filesToPack
+      .filter(function removeControls(module) {
+         if (
+            themeName ||
+            (!process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1)
+         ) {
+            return !module.fullName.includes('SBIS3.CONTROLS');
+         }
+         return true;
+      })
+      .map(module => `define('${module.fullName}', '');`)
+      .join('\n')}\n})();`;
+}
+
+/**
+ * Формирует пакеты js, css и объект dict с пакетом для каждой локали
+ * @param {Object} orderQueue - развернутый граф, разбитый на js, css, dict (словари локализации) и
+ *    cssForLocale (css-ок для каждой локали)
+ * @param {Array} orderQueue.js
+ * @param {Array} orderQueue.css
+ * @param {Array} orderQueue.dict
+ * @param {Array} orderQueue.cssForLocale
+ * @param {String} applicationRoot - полный путь до корня пакета
+ * @param {String} themeName - название темы
+ * @param {String} staticHtmlName - имя статической html странички
+ */
+async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName) {
+   const isOfflineClient = await checkItIsOfflineClient(applicationRoot);
+   const jsForPack = orderQueue.js.filter((node) => {
+      /** TODO
+       * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
+       * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
+       * не включаем по умолчанию. После доработки статической паковки будем учитывать
+       * модули в бандлах по аналогии с rtpackage
+       */
+      const wsDatareg = /WS\.Data/;
+      if (
+         (node.fullName && node.fullName.match(wsDatareg)) ||
+         (node.moduleYes && node.moduleYes.fullName.match(wsDatareg))
+      ) {
+         return false;
+      }
+
+      return node.amd;
+   });
+   const cssForPack = orderQueue.css
+      .filter(function removeControls(module) {
+         // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
+         if (
+            themeName ||
+            (!process.application && staticHtmlName && HTMLPAGESWITHNOONLINESTYLES.indexOf(staticHtmlName) > -1) ||
+            isOfflineClient
+         ) {
+            // TODO Косытыль чтобы в пакет не попадали css контролов. Необходимо только для PRESTO И CARRY.
+            return !module.fullName.startsWith('css!SBIS3.CONTROLS/') && !module.fullName.startsWith('css!Controls/');
+         }
+         return true;
+      })
+      .map(function onlyPath(module) {
+         return module.fullPath;
+      });
+
+   const [jsResult, cssResult, dictResult, localeCssResult] = await Promise.all([
+      nativePackFiles(jsForPack, applicationRoot, themeName),
+      packCSS(cssForPack, applicationRoot),
+      Promise.all(
+         Object.keys(orderQueue.dict).map(locale => nativePackFiles(orderQueue.dict[locale], applicationRoot))
+      ),
+      Promise.all(
+         Object.keys(orderQueue.cssForLocale).map(locale => packCSS(
+            orderQueue.cssForLocale[locale].map(function onlyPath(module) {
+               return module.fullPath;
+            }),
+            applicationRoot
+         ))
+      )
+   ]);
+
+   return {
+      js: [generateFakeModules(orderQueue.css, themeName, staticHtmlName), jsResult].filter(i => !!i).join('\n'),
+      css: cssResult.filter(i => !!i),
+      dict: dictResult,
+      cssForLocale: localeCssResult
+   };
+}
+
+/**
+ * Формирует объект с пакетами js, css и объект dict с пакетом для каждой локали
+ * @param {DepGraph} dg - граф зависимостей
+ * @param {Array} modArray - массив вершин
+ * @param {String} root - корень сервиса
+ * @param {String} applicationRoot - корень сервиса
+ * @param {String} themeName - имя темы
+ * @param {String} staticHtmlName - имя статической html странички
+ */
+function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName) {
+   let orderQueue;
+
+   orderQueue = dg.getLoadOrder(modArray);
+   orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
+   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
+
+   return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName);
+}
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
    const type2attr = {
-         'js': 'src',
-         'css': 'href'
-      }, type2node = {
-         'js': 'script',
-         'css': 'link'
-      }, type2type = {
-         'js': 'text/javascript',
-         'css': 'text/css'
-      }, options = {
-         'data-pack-name': 'ws-mods-' + type,
-         'type': type2type[type]
-      };
+      js: 'src',
+      css: 'href'
+   };
+   const type2node = {
+      js: 'script',
+      css: 'link'
+   };
+   const type2type = {
+      js: 'text/javascript',
+      css: 'text/css'
+   };
+   const options = {
+      'data-pack-name': `ws-mods-${type}`,
+      type: type2type[type]
+   };
 
    if (insertAfter && filesToPack && filesToPack[type]) {
-      filesToPack = filesToPack[type];
+      const curFilesToPack = filesToPack[type];
 
-      if (filesToPack.length && type in type2attr) {
+      if (curFilesToPack.length && type in type2attr) {
          if (type === 'css') {
             options.rel = 'stylesheet';
          }
          let newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[/packedScripts]');
          insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
-         filesToPack.reverse().filter(function(file) {
-            return file.name;
-         }).forEach(function(file) {
+         curFilesToPack
+            .reverse()
+            .filter(file => file.name)
+            .forEach((file) => {
+               options['data-pack-name'] = file.skip ? 'skip' : `ws-mods-${type}`;
 
-            options['data-pack-name'] = file.skip ? 'skip' : 'ws-mods-' + type;
-
-            options[type2attr[type]] = file.name.replace(/\\/g, '/');
-            newTarget = domHelpers.mkDomNode(insertAfter.ownerDocument, type2node[type], options);
-            insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
-         });
+               options[type2attr[type]] = file.name.replace(/\\/g, '/');
+               newTarget = domHelpers.mkDomNode(insertAfter.ownerDocument, type2node[type], options);
+               insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
+            });
          newTarget = domHelpers.mkCommentNode(insertAfter.ownerDocument, '[packedScripts]');
          insertAfter.parentNode.insertBefore(newTarget, insertAfter.nextSibling);
       }
    }
 }
 
-function generatePackage(extWithoutVersion, grunt, filesToPack, ext, packageTarget, applicationRoot, siteRoot, namePrefix) {
-   if (namePrefix === undefined) {
-      namePrefix = '';
-   }
-
+function generatePackage(
+   extWithoutVersion,
+   filesToPack,
+   ext,
+   packageTarget,
+   applicationRoot,
+   siteRoot,
+   needReplacePaths,
+   resourcesPath,
+   namePrefix = ''
+) {
    if (filesToPack) {
-      if (typeof filesToPack === 'string') {
-         filesToPack = [filesToPack];
+      let filesToPackList = filesToPack;
+      if (typeof filesToPackList === 'string') {
+         filesToPackList = [filesToPackList];
       }
 
-      return filesToPack.map(function(file) {
-         const
-            urlServicePath = grunt.option('url-service-path') ? path.join(siteRoot, grunt.option('url-service-path')) : applicationRoot,
-            packageName = namePrefix + domHelpers.uniqname(file, ext),
+      return filesToPackList.map((text) => {
+         const packageName = namePrefix + domHelpers.uniqname(text, ext),
             packedFileName = path.join(packageTarget, packageName);
 
-         // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с констркуией %{RESOURCE_ROOT} или абсолютный путь.
-         //false - если у нас разделённое ядро и несколько сервисов.
-         //true - если у нас монолитное ядро или один сервис.
-         const replacePath = !(grunt.option('splitted-core') && grunt.option('multi-service'));
-         let packedFilePath = path.normalize(path.join(applicationRoot, packedFileName));
+         const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));
 
-         grunt.file.write(packedFilePath.replace(ext, extWithoutVersion), file);
+         fs.outputFileSync(packedFilePath.replace(ext, extWithoutVersion), text);
 
-         packedFilePath = path.normalize(path.join(urlServicePath, packedFileName));
-
-         if (replacePath) {
-            return {'name': '/' + path.relative(siteRoot, packedFilePath), 'skip': !!namePrefix};
-         } else {
-            return {
-               'name': '%{RESOURCE_ROOT}' + packedFileName.replace(/resources(?:\/|\\)/, ''),
-               'skip': !!namePrefix
-            };
+         let newName = `/${path.relative(siteRoot, packedFilePath)}`;
+         if (!needReplacePaths) {
+            newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
          }
+
+         return {
+            name: newName,
+            skip: !!namePrefix
+         };
       });
-   } else {
-      return {};
    }
+   return {};
 }
 
-function getStartNodeByTemplate(templateName, application) {
+function getStartNodes(divs) {
    let startNodes = [],
-      deps;
-
-   // Если шаблон - новый компонент, ...
-   if (templateName.indexOf('js!') === 0 || !templateName.includes('!')) {
-      // ... просто добавим его как стартовую ноду
-      startNodes.push(templateName);
-   } else {
-      // Иначе получим зависимости для данного шаблона
-      deps = indexer.getDeps(application, templateName);
-
-      // дополним ранее собранные
-      startNodes = startNodes.concat(deps
-         .map(function(dep) {
-            // старый или новый формат описания класса
-            const clsPos = dep.indexOf(':');
-            if (clsPos !== -1) {
-               // Control/Area:AreaAbstract например, возьмем указанное имя класса
-               return dep.substr(clsPos + 1);
-            } else {
-               // Control/Grid например, возьмем последний компонент пути
-               return dep.split('/').pop();
-            }
-         })
-         .map(function addNamespace(dep) {
-            if (dep.indexOf('.') === -1) {
-               return 'js!SBIS3.CORE.' + dep;
-            } else {
-               return 'js!' + dep;
-            }
-         }));
-   }
-
-   return startNodes;
-}
-
-function getStartNodes(grunt, divs, application) {
-   let startNodes = [],
-      div, tmplName;
+      div,
+      tmplName;
 
    for (let i = 0, l = divs.length; i < l; i++) {
       div = divs[i];
       const divClass = div.getAttribute('class');
-      if (divClass && divClass.indexOf('ws-root-template') > -1 && (tmplName = div.getAttribute('data-template-name'))) {
-         logger.debug('Packing inner template \'' + tmplName + '\'');
+      tmplName = div.getAttribute('data-template-name');
+      if (divClass && divClass.indexOf('ws-root-template') > -1 && tmplName) {
+         logger.debug(`Packing inner template '${tmplName}'`);
 
-         startNodes = startNodes.concat(getStartNodeByTemplate(tmplName, application));
-      }
+         if (!tmplName.includes('!')) {
+            startNodes = [...startNodes, tmplName];
+         }
 
-      if (tmplName) {
          if (startNodes.length === 0) {
-            logger.debug('No any dependencies collected for \'' + tmplName + '\'');
+            logger.debug(`No any dependencies collected for '${tmplName}'`);
          } else {
-            logger.debug('Got ' + startNodes.length + ' start nodes for \'' + tmplName + '\': ' + startNodes.join(','));
+            logger.debug(`Got ${startNodes.length} start nodes for '${tmplName}': ${startNodes.join(',')}`);
          }
       }
    }
 
    // сделаем список стартовых вершни уникальным
-   startNodes = startNodes.filter(function(el, idx, arr) {
-      return arr.indexOf(el, idx + 1) === -1;
-   });
+   startNodes = startNodes.filter((el, idx, arr) => arr.indexOf(el, idx + 1) === -1);
 
    return startNodes;
 }
@@ -176,10 +322,10 @@ function getThemeFromWsConfig(wsConfig) {
    let themeName = null;
 
    traverse(ast, {
-      enter: function(node) {
+      enter(node) {
          if (node.type === 'AssignmentExpression' && node.operator === '=') {
             if (node.right && node.right.type === 'ObjectExpression' && node.right.properties) {
-               node.right.properties.forEach(option => {
+               node.right.properties.forEach((option) => {
                   if (option.key.name === 'themeName') {
                      themeName = option.value.value;
                   }
@@ -190,130 +336,164 @@ function getThemeFromWsConfig(wsConfig) {
    });
    return themeName;
 }
+async function packageSingleHtml(
+   filePath,
+   dom,
+   root,
+   packageHome,
+   dg,
+   application,
+   buildNumber,
+   needReplacePaths,
+   resourcesPath
+) {
+   const newDom = dom,
+      divs = newDom.getElementsByTagName('div'),
+      jsTarget = newDom.getElementById('ws-include-components'),
+      cssTarget = newDom.getElementById('ws-include-css'),
+      htmlPath = filePath.split(path.sep),
+      htmlName = htmlPath[htmlPath.length - 1],
+      wsConfig = newDom.getElementById('ws-config'),
+      applicationRoot = path.join(root, application);
 
-function packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
-   logger.debug('Packing dependencies of ' + htmlFileset.length + ' files...');
-   const
-      bundlesOptions = {},
-      buildNumber = grunt.option('versionize');
+   let themeName;
 
-   async.eachLimit(htmlFileset, 1, function(htmlFile, done) {
-      try {
-         logger.debug(htmlFile);
+   if (wsConfig) {
+      themeName = getThemeFromWsConfig(wsConfig);
+   }
 
-         const dom = domHelpers.domify(htmlFile),
-            divs = dom.getElementsByTagName('div'),
-            jsTarget = dom.getElementById('ws-include-components'),
-            cssTarget = dom.getElementById('ws-include-css'),
-            htmlPath = htmlFile.split(path.sep),
-            htmlName = htmlPath[htmlPath.length - 1],
-            wsConfig = dom.getElementById('ws-config'),
-            applicationRoot = path.join(root, application);
+   if (!jsTarget && !cssTarget) {
+      logger.debug(`No any packing target in '${filePath}'`);
+      return newDom;
+   }
 
-         let themeName;
+   const startNodes = getStartNodes(divs);
 
-         if (wsConfig) {
-            themeName = getThemeFromWsConfig(wsConfig);
-         }
+   const filesToPack = await packInOrder(dg, startNodes, root, path.join(root, application), themeName, htmlName);
 
-         if (jsTarget || cssTarget) {
-            const startNodes = getStartNodes(grunt, divs, application);
+   // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
+   // пакеты для каждой локали).
+   // filesToPack = { "css": [], "js": "...", "dict": {"en-US": "", "ru-RU": ""},
+   // "cssForLocale": {"en-US": []}};
+   const attr2ext = {
+         cssForLocale: 'css',
+         dict: 'js'
+      },
+      packages = {
+         css: [],
+         js: []
+      };
 
-            packInOrder(dg, startNodes, root, path.join(root, application), false, {}, function(err, filesToPack) {
-               if (err) {
-                  logger.debug(err); //Имееет ли смысл?
-                  done(err);
-               } else {
-                  // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты + пакеты для каждой локали).
-
-                  // filesToPack = {"css": [], "js": "...", "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []}};
-                  const attr2ext = {'cssForLocale': 'css', 'dict': 'js'},
-                     packages = {'css': [], 'js': []};
-
-                  Object.keys(filesToPack).forEach(function(key) {
-                     if (filesToPack[key] !== null && typeof filesToPack[key] === 'object') {
-                        if (Array.isArray(filesToPack[key])) { // "css": []
-                           filesToPack[key].map(function(content) {
-                              packages[key] = packages[key].concat(generatePackage(key, grunt, content, getKey(buildNumber, key), packageHome, applicationRoot, root));
-                           });
-                        } else { // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
-                           // пакеты для локалей запакуем с data-pack = "skip" чтобы потом на ПП вырезать ненужные из html
-                           Object.keys(filesToPack[key]).forEach(function(locale) {
-                              packages[attr2ext[key]] = packages[attr2ext[key]].concat(generatePackage(attr2ext[key], grunt, filesToPack[key][locale], getKey(buildNumber, attr2ext[key]), packageHome, applicationRoot, root, locale));
-                           });
-                        }
-                     } else { //"js": "..."
-                        const generatedScript = generatePackage(key, grunt, filesToPack[key], getKey(buildNumber, key), packageHome, applicationRoot, root);
-                        packages[key] = packages[key].concat(generatedScript);
-                        if (bundlesOptions.bundlesScripts) {
-                           try {
-                              /**
-                               * пишем по пути статического пакета log-файл для дальнейшей отладки пакетов
-                               * прикладниками, чтобы понимать из-за каких модулей на страницу подтянулся
-                               * их пакет
-                               */
-                              fs.writeFileSync(path.join(root, `${generatedScript[0].name.replace('%{RESOURCE_ROOT}', 'resources/')}.log`), JSON.stringify(bundlesOptions.logs, null, 3));
-                           } catch (e) {
-                              logger.error({
-                                 message: `Ошибка сохранения лога для статического пакета: ${generatedScript[0].name}`,
-                                 error: e
-                              });
-                           }
-                        }
-                     }
-                  });
-                  if (bundlesOptions.bundlesScripts) {
-                     Object.keys(bundlesOptions.bundlesScripts).forEach(function(script) {
-                        packages.js.push({
-                           name: script.replace(/\.js$/, `${buildNumber ? `.v${buildNumber}` : ''}.js`),
-                           skip: false
-                        });
-                     });
-                  }
-
-                  // пропишем в HTML
-                  insertAllDependenciesToDocument(packages, 'js', jsTarget);
-                  insertAllDependenciesToDocument(packages, 'css', cssTarget);
-
-                  grunt.file.write(htmlFile, domHelpers.stringify(dom));
-                  done();
-               }
-            }, themeName, htmlName);
+   for (const key of Object.keys(filesToPack)) {
+      if (filesToPack[key] !== null && typeof filesToPack[key] === 'object') {
+         if (Array.isArray(filesToPack[key])) {
+            // "css": []
+            filesToPack[key].forEach((content) => {
+               packages[key] = packages[key].concat(
+                  generatePackage(
+                     key,
+                     content,
+                     getKey(buildNumber, key),
+                     packageHome,
+                     applicationRoot,
+                     root,
+                     needReplacePaths,
+                     resourcesPath
+                  )
+               );
+            });
          } else {
-            logger.debug('No any packing target in \'' + htmlFile + '\'');
-            done();
+            // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
+            // пакеты для локалей запакуем с data-pack = "skip"
+            // чтобы потом на ПП вырезать ненужные из html
+            Object.keys(filesToPack[key]).forEach((locale) => {
+               packages[attr2ext[key]] = packages[attr2ext[key]].concat(
+                  generatePackage(
+                     attr2ext[key],
+                     filesToPack[key][locale],
+                     getKey(buildNumber, attr2ext[key]),
+                     packageHome,
+                     applicationRoot,
+                     root,
+                     needReplacePaths,
+                     resourcesPath,
+                     locale
+                  )
+               );
+            });
          }
-      } catch (err) {
-         if (typeof err === 'string') {
-            err = new Error(err);
-         }
-         logger.warning({
-            message: 'ERROR! Failed to process HTML',
-            filePath: htmlFile,
-            error: err
-         });
-         done(err);
-      }
-   }, function(err) {
-      if (err) {
-         taskDone(err);
       } else {
-         taskDone();
+         // "js": "..."
+         const generatedScript = generatePackage(
+            key,
+            filesToPack[key],
+            getKey(buildNumber, key),
+            packageHome,
+            applicationRoot,
+            root,
+            needReplacePaths,
+            resourcesPath
+         );
+         packages[key] = packages[key].concat(generatedScript);
       }
-   });
+   }
+
+   // пропишем в HTML
+   insertAllDependenciesToDocument(packages, 'js', jsTarget);
+   insertAllDependenciesToDocument(packages, 'css', cssTarget);
+
+   return newDom;
 }
 
-function packHTML(grunt, dg, htmlFileset, packageHome, root, application, taskDone) {
-   logger.debug('Indexing resources in ' + application);
-   indexer.index(root, application, grunt, dg).addCallbacks(function() {
-      packFiles(grunt, dg, htmlFileset, packageHome, root, application, taskDone);
-   }, function(e) {
-      logger.error({
-         message: 'ERROR! Indexing failed!',
-         error: e
-      });
-      taskDone();
-   });
+async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, application) {
+   logger.debug(`Packing dependencies of ${htmlFileset.length} files...`);
+
+   const buildNumber = grunt.option('versionize');
+   const resourcesPath = grunt.option('url-service-path')
+      ? path.join(root, grunt.option('url-service-path'), 'resources')
+      : path.join(root, application, 'resources');
+
+   // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с конструкцией
+   // %{RESOURCE_ROOT} или абсолютный путь.
+   // false - если у нас разделённое ядро и несколько сервисов.
+   // true - если у нас монолитное ядро или один сервис.
+   const needReplacePaths = !(grunt.option('splitted-core') && grunt.option('multi-service'));
+
+   await pMap(
+      htmlFileset,
+      async(filePath) => {
+         try {
+            logger.debug(filePath);
+
+            let dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
+            dom = await packageSingleHtml(
+               filePath,
+               dom,
+               root,
+               packageHome,
+               dg,
+               application,
+               buildNumber,
+               needReplacePaths,
+               resourcesPath
+            );
+            await fs.outputFile(filePath, domHelpers.stringify(dom));
+         } catch (err) {
+            let newError = err;
+            if (typeof newError === 'string') {
+               newError = new Error(newError);
+            }
+            logger.warning({
+               message: 'ERROR! Failed to process HTML',
+               filePath,
+               error: newError
+            });
+         }
+      },
+      {
+         concurrency: 20
+      }
+   );
 }
 
-module.exports = packHTML;
+module.exports = { gruntPackHTML, packageSingleHtml };

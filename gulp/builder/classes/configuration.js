@@ -1,6 +1,7 @@
 /* eslint-disable no-sync */
 'use strict';
 
+const path = require('path');
 const ConfigurationReader = require('../../helpers/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
@@ -8,35 +9,41 @@ const ConfigurationReader = require('../../helpers/configuration-reader'),
 
 class BuildConfiguration {
    constructor() {
-      //путь до файла конфигурации
+      // путь до файла конфигурации
       this.configFile = '';
 
-      //не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
+      // не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
       this.rawConfig = {};
 
-      //список объектов, содержащий в себе полную информацию о модулях.
+      // список объектов, содержащий в себе полную информацию о модулях.
       this.modules = [];
 
-      //путь до папки с кешем
+      // путь до папки с кешем
       this.cachePath = '';
 
-      //release отличается от debug наличием паковки и минизации
+      // release отличается от debug наличием паковки и минизации
       this.isReleaseMode = false;
 
-      //папка с результатами сборки
+      // папка с результатами сборки
       this.outputPath = '';
 
-      //список поддерживаемых локалей
+      // список поддерживаемых локалей
       this.localizations = [];
 
-      //локаль по умолчанию
+      // локаль по умолчанию
       this.defaultLocalization = '';
 
-      //если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
+      // если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
       this.multiService = false;
 
-      //относительный url текущего сервиса
+      // относительный url текущего сервиса
       this.urlServicePath = '';
+
+      // относительный url текущего сервиса
+      this.version = '';
+
+      // папка, куда сохраняются все логи
+      this.logFolder = '';
    }
 
    loadSync(argv) {
@@ -45,29 +52,41 @@ class BuildConfiguration {
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
-      this.outputPath = this.rawConfig.output;
-      if (!this.outputPath) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+      // version есть только при сборке дистрибутива
+      if (this.rawConfig.hasOwnProperty('version') && typeof this.rawConfig.version === 'string') {
+         this.version = this.rawConfig.version;
       }
-
-      if (!this.rawConfig.hasOwnProperty('mode')) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
-      }
-      const mode = this.rawConfig.mode;
-      if (mode !== 'release' && mode !== 'debug') {
-         throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
-      }
-      this.isReleaseMode = mode === 'release';
 
       this.cachePath = this.rawConfig.cache;
       if (!this.cachePath) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
 
-      //localization может быть списком или false
+      if (!this.rawConfig.output) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+      }
+
+      if (!this.version) {
+         this.outputPath = this.rawConfig.output;
+      } else {
+         // некоторые задачи для сборки дистрибутивак не совместимы с инкрементальной сборкой,
+         // потому собираем в папке кеша, а потом копируем в целевую директорию
+         this.outputPath = path.join(this.cachePath, 'incremental_build');
+      }
+
+      if (!this.rawConfig.hasOwnProperty('mode')) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
+      }
+      const { mode } = this.rawConfig;
+      if (mode !== 'release' && mode !== 'debug') {
+         throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
+      }
+      this.isReleaseMode = mode === 'release';
+
+      // localization может быть списком или false
       const hasLocalizations = this.rawConfig.hasOwnProperty('localization') && !!this.rawConfig.localization;
 
-      //default-localization может быть строкой или false
+      // default-localization может быть строкой или false
       const hasDefaultLocalization =
          this.rawConfig.hasOwnProperty('default-localization') && !!this.rawConfig['default-localization'];
 
@@ -116,6 +135,10 @@ class BuildConfiguration {
 
       if (this.rawConfig.hasOwnProperty('url-service-path')) {
          this.urlServicePath = this.rawConfig['url-service-path'];
+      }
+
+      if (this.rawConfig.hasOwnProperty('logs')) {
+         this.logFolder = this.rawConfig.logs;
       }
    }
 }

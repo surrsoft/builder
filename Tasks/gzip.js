@@ -1,4 +1,4 @@
-/*eslint-disable max-nested-callbacks*/
+/* eslint-disable max-nested-callbacks */
 'use strict';
 
 const path = require('path');
@@ -7,51 +7,57 @@ const helpers = require('../lib/helpers');
 const humanize = require('humanize');
 const logger = require('../lib/logger').logger();
 
-module.exports = function(grunt) {
-   grunt.registerMultiTask('gzip', 'Archive resources', function() {
-      grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача архивации ресурсов.`);
-      const start = Date.now();
-      const
-         done = this.async(),
-         root = this.data.root,
-         application = this.data.application,
-         applicationRoot = path.join(root, application),
-         patterns = this.data.src;
-      let i = 0;
+module.exports = function register(grunt) {
+   grunt.registerMultiTask('gzip', 'Archive resources',
 
-      helpers.recurse(applicationRoot, function(file, callback) {
-         if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
-            fs.readFile(file, (err, text) => {
-               if (err) {
-                  logger.error({
-                     error: err
-                  });
-                  return callback(err);
-               }
+      /** @this grunt */
+      function gzipTask() {
+         grunt.log.ok(`${humanize.date('H:i:s')}: Запускается задача архивации ресурсов.`);
+         const start = Date.now();
+         const done = this.async(),
+            { root, application } = this.data,
+            applicationRoot = path.join(root, application),
+            patterns = this.data.src;
+         let i = 0;
 
-               if (text.byteLength > 1024) {
-                  helpers.writeGzip(`${file}.gz`, text, function() {
-                     if (++i % 1000 === 0) {
-                        logger.debug(`${i} files processed`);
+         helpers.recurse(
+            applicationRoot,
+            (file, callback) => {
+               if (helpers.validateFile(path.relative(applicationRoot, file), patterns)) {
+                  fs.readFile(file, (err, text) => {
+                     if (err) {
+                        logger.error({
+                           error: err
+                        });
+                        callback(err);
+                        return;
                      }
-                     callback();
+
+                     if (text.byteLength > 1024) {
+                        helpers.writeGzip(`${file}.gz`, text, () => {
+                           if (++i % 1000 === 0) {
+                              logger.debug(`${i} files processed`);
+                           }
+                           callback();
+                        });
+                     } else {
+                        callback();
+                     }
                   });
                } else {
                   callback();
                }
-            });
-         } else {
-            callback();
-         }
-      }, function(err) {
-         if (err) {
-            logger.error({
-               error: err
-            });
-         }
+            },
+            (err) => {
+               if (err) {
+                  logger.error({
+                     error: err
+                  });
+               }
 
-         logger.debug(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);
-         done();
+               logger.debug(`Duration: ${(Date.now() - start) / 1000} sec. ${i} files processed`);
+               done();
+            }
+         );
       });
-   });
 };

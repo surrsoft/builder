@@ -1,5 +1,3 @@
-/* eslint-disable no-invalid-this */
-
 'use strict';
 
 const through = require('through2'),
@@ -8,34 +6,43 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(moduleInfo) {
-   return through.obj(function(file, encoding, callback) {
-      callback(null, file);
-   }, function(callback) {
-      try {
-         //подготовим contents.json и contents.js
-         moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
+module.exports = function declarePlugin(config, moduleInfo) {
+   return through.obj(
+      function onTransform(file, encoding, callback) {
+         callback(null, file);
+      },
 
-         const contentsJsFile = new Vinyl({
-            path: 'contents.js',
-            contents: Buffer.from('contents=' + JSON.stringify(helpers.sortObject(moduleInfo.contents))),
-            moduleInfo: moduleInfo
-         });
-         const contentsJsonFile = new Vinyl({
-            path: 'contents.json',
-            contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
-            moduleInfo: moduleInfo
-         });
+      /** @this Stream */
+      function onFlush(callback) {
+         try {
+            // подготовим contents.json и contents.js
+            moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
 
-         this.push(contentsJsFile);
-         this.push(contentsJsonFile);
-      } catch (error) {
-         logger.error({
-            message: 'Ошибка Builder\'а',
-            error: error,
-            moduleInfo: moduleInfo
-         });
+            if (config.version) {
+               moduleInfo.contents.buildnumber = config.version;
+            }
+
+            const contentsJsFile = new Vinyl({
+               path: 'contents.js',
+               contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(moduleInfo.contents))}`),
+               moduleInfo
+            });
+            const contentsJsonFile = new Vinyl({
+               path: 'contents.json',
+               contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
+               moduleInfo
+            });
+
+            this.push(contentsJsFile);
+            this.push(contentsJsonFile);
+         } catch (error) {
+            logger.error({
+               message: 'Ошибка Builder\'а',
+               error,
+               moduleInfo
+            });
+         }
+         callback();
       }
-      callback();
-   });
+   );
 };

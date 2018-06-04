@@ -14,31 +14,40 @@ class ModuleCacheInfo {
    constructor() {
       this.componentsInfo = {};
       this.routesInfo = {};
+      this.markupCache = {};
    }
 }
 
 class StoreInfo {
    constructor() {
-      //в случае изменений параметров запуска проще кеш сбросить, чем потом ошибки на стенде ловить. не сбрасываем только кеш json
+      // в случае изменений параметров запуска проще кеш сбросить,
+      // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
 
-      //если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      this.versionOfBuilder = 'unknown'; //unknown используется далее
+      // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
+      // unknown используется далее
+      this.versionOfBuilder = 'unknown';
 
-      //время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
-      //для сравнения с mtime у файлов
+      // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
+      // для сравнения с mtime у файлов
       this.startBuildTime = 0;
 
-      //запоминаем что было на входе и что породило на выход, чтобы потом можно было
-      //1. отследить восстановленный из корзины файл
-      //2. удалить лишние файлы
+      // запоминаем что было на входе и что породило на выход, чтобы потом можно было
+      // 1. отследить восстановленный из корзины файл
+      // 2. удалить лишние файлы
       this.inputPaths = {};
 
-      //imports из less файлов для инкрементальной сборки
+      // для инкрементальной сборки нужно знать зависимости файлов:
+      // - imports из less файлов
+      // - зависимости js на файлы вёрстки для паковки собственных зависмостей
       this.dependencies = {};
 
-      //нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
+      // нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
       this.modulesCache = {};
+
+      // Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
+      // и подавать их при повторном запуске как изменённые
+      this.filesWithErrors = new Set();
    }
 
    async load(filePath) {
@@ -51,11 +60,12 @@ class StoreInfo {
             this.inputPaths = obj.inputPaths;
             this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
+            this.filesWithErrors = new Set(obj.filesWithErrors);
          }
       } catch (error) {
          logger.warning({
             message: `Не удалось прочитать файл кеша ${filePath}`,
-            error: error
+            error
          });
       }
    }
@@ -69,7 +79,8 @@ class StoreInfo {
             startBuildTime: this.startBuildTime,
             inputPaths: this.inputPaths,
             dependencies: this.dependencies,
-            modulesCache: this.modulesCache
+            modulesCache: this.modulesCache,
+            filesWithErrors: [...this.filesWithErrors]
          },
          {
             spaces: 1
@@ -85,9 +96,16 @@ class ChangesStore {
       this.currentStore = new StoreInfo();
       this.dropCacheForMarkup = false;
 
-      //less файлы инвалидируются с зависимостями
-      //bp
-      this.cacheLessChanges = {};
+      // js и less файлы инвалидируются с зависимостями
+      // less - зависмости через import
+      // js - зависимости на xhtml и tmpl для кастомной паковки
+      this.cacheChanges = {};
+
+      // сохраняем в кеше moduleDependencies для быстрого доступа в паковке, чтобы не читать файлы
+      this.moduleDependencies = {
+         links: {},
+         nodes: {}
+      };
    }
 
    load() {
@@ -109,31 +127,43 @@ class ChangesStore {
    async cacheHasIncompatibleChanges() {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.lastStore.versionOfBuilder === 'unknown') {
-         logger.info('Не удалось обнаружить валидный кеш от предыдущей сборки. ' + finishText);
+         logger.info(`Не удалось обнаружить валидный кеш от предыдущей сборки. ${finishText}`);
          return true;
+      }
+      const lastRunningParameters = Object.assign({}, this.lastStore.runningParameters);
+      const currentRunningParameters = Object.assign({}, this.currentStore.runningParameters);
+
+      // поле version всегда разное
+      if (lastRunningParameters.version !== '' || currentRunningParameters.version !== '') {
+         if (lastRunningParameters.version === '' || currentRunningParameters.version === '') {
+            logger.info(`Параметры запуска builder'а поменялись. ${finishText}`);
+            return true;
+         }
+         lastRunningParameters.version = '';
+         currentRunningParameters.version = '';
       }
       try {
-         assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
+         assert.deepEqual(lastRunningParameters, currentRunningParameters);
       } catch (error) {
-         logger.info("Параметры запуска builder'а поменялись. " + finishText);
+         logger.info(`Параметры запуска builder'а поменялись. ${finishText}`);
          return true;
       }
 
-      //новая версия билдера может быть полностью не совместима
+      // новая версия билдера может быть полностью не совместима
       const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
       if (isNewBuilder) {
-         logger.info("Версия builder'а не соответствует сохранённому значению в кеше. " + finishText);
+         logger.info(`Версия builder'а не соответствует сохранённому значению в кеше. ${finishText}`);
          return true;
       }
 
-      //если нет хотя бы одной папки не оказалось на месте, нужно сбросить кеш
+      // если нет хотя бы одной папки не оказалось на месте, нужно сбросить кеш
       const promisesExists = [];
       for (const moduleInfo of this.config.modules) {
          promisesExists.push(fs.pathExists(moduleInfo.output));
       }
       const resultsExists = await Promise.all(promisesExists);
       if (resultsExists.includes(false)) {
-         logger.info('Как минимум один из результирующих каталогов был удалён. ' + finishText);
+         logger.info(`Как минимум один из результирующих каталогов был удалён. ${finishText}`);
          return true;
       }
       return false;
@@ -144,7 +174,7 @@ class ChangesStore {
       if (await this.cacheHasIncompatibleChanges()) {
          this.lastStore = new StoreInfo();
 
-         //из кеша можно удалить всё кроме .lockfile
+         // из кеша можно удалить всё кроме .lockfile
          if (await fs.pathExists(this.config.cachePath)) {
             for (const fullPath of await fs.readdir(this.config.cachePath)) {
                if (!fullPath.endsWith('.lockfile')) {
@@ -157,6 +187,12 @@ class ChangesStore {
          }
       }
 
+      // если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
+      if (this.config.version) {
+         if (await fs.pathExists(this.config.rawConfig.output)) {
+            removePromises.push(fs.remove(this.config.rawConfig.output));
+         }
+      }
       return Promise.all(removePromises);
    }
 
@@ -166,34 +202,42 @@ class ChangesStore {
       const outputFullPath = path.join(moduleInfo.output, transliterate(relativePath));
       this.currentStore.inputPaths[prettyPath] = [helpers.prettifyPath(outputFullPath)];
 
-      //кеша не было, значит все файлы новые
+      // кеша не было, значит все файлы новые
       if (!this.lastStore.startBuildTime) {
          return true;
       }
 
-      //если сборка с локализацией и свойства компонентов поменялись
+      // если сборка с локализацией и свойства компонентов поменялись
       if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
          return true;
       }
 
-      //новый файл
+      // новый файл
       if (!this.lastStore.inputPaths.hasOwnProperty(prettyPath)) {
          return true;
       }
 
-      //проверка modification time
+      // файл с ошибкой
+      if (this.lastStore.filesWithErrors.has(prettyPath)) {
+         return true;
+      }
+
+      // проверка modification time
       if (fileMTime.getTime() > this.lastStore.startBuildTime) {
-         if (prettyPath.endsWith('.less')) {
-            this.cacheLessChanges[prettyPath] = true;
+         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+            this.cacheChanges[prettyPath] = true;
          }
          return true;
       }
 
-      //вытащим данные из старого кеша в новый кеш
+      // вытащим данные из старого кеша в новый кеш
       const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
       const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
       if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
          currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
+      }
+      if (lastModuleCache.markupCache.hasOwnProperty(prettyPath)) {
+         currentModuleCache.markupCache[prettyPath] = lastModuleCache.markupCache[prettyPath];
       }
       if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
          currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
@@ -202,10 +246,10 @@ class ChangesStore {
          this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
       }
 
-      if (prettyPath.endsWith('.less')) {
+      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
          const dependenciesChanged = await this.isDependenciesChanged(prettyPath);
          const isChanged = dependenciesChanged.length > 0 && dependenciesChanged.some(changed => changed);
-         this.cacheLessChanges[prettyPath] = isChanged;
+         this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
       }
       return false;
@@ -217,6 +261,15 @@ class ChangesStore {
       this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
    }
 
+   getInputPathsByFolder(modulePath) {
+      return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(modulePath));
+   }
+
+   markFileAsFailed(filePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      this.currentStore.filesWithErrors.add(prettyPath);
+   }
+
    addDependencies(filePath, imports) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.dependencies[prettyPath] = imports.map(helpers.prettifyPath);
@@ -225,20 +278,19 @@ class ChangesStore {
    isDependenciesChanged(filePath) {
       return pMap(
          this.getAllDependencies(filePath),
-         async currentPath => {
-            if (this.cacheLessChanges.hasOwnProperty(currentPath)) {
-               return this.cacheLessChanges[currentPath];
-            } else {
-               let isChanged = false;
-               if (await fs.pathExists(currentPath)) {
-                  const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
-                  isChanged = currentMTime > this.lastStore.startBuildTime;
-               } else {
-                  isChanged = true;
-               }
-               this.cacheLessChanges[currentPath] = isChanged;
-               return isChanged;
+         async(currentPath) => {
+            if (this.cacheChanges.hasOwnProperty(currentPath)) {
+               return this.cacheChanges[currentPath];
             }
+            let isChanged = false;
+            if (await fs.pathExists(currentPath)) {
+               const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
+               isChanged = currentMTime > this.lastStore.startBuildTime;
+            } else {
+               isChanged = true;
+            }
+            this.cacheChanges[currentPath] = isChanged;
+            return isChanged;
          },
          {
             concurrency: 20
@@ -268,7 +320,8 @@ class ChangesStore {
    storeComponentInfo(filePath, moduleName, componentInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!componentInfo) {
-         //если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
+         // чтобы ошибка повторилась при повторном запуске
          if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
             delete this.currentStore.inputPaths[prettyPath];
          }
@@ -283,10 +336,22 @@ class ChangesStore {
       return currentModuleCache.componentsInfo;
    }
 
+   storeBuildedMarkup(filePath, moduleName, obj) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      currentModuleCache.markupCache[prettyPath] = obj;
+   }
+
+   getMarkupCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.markupCache;
+   }
+
    storeRouteInfo(filePath, moduleName, routeInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!routeInfo) {
-         //если парсер упал на файле, то нужно выкинуть файл из inputPaths, чтобы ошибка повторилась при повторном запуске
+         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
+         // чтобы ошибка повторилась при повторном запуске
          if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
             delete this.currentStore.inputPaths[prettyPath];
          }
@@ -317,32 +382,30 @@ class ChangesStore {
    async getListForRemoveFromOutputDir() {
       const currentOutputSet = ChangesStore.getOutputFilesSet(this.currentStore.inputPaths);
       const lastOutputSet = ChangesStore.getOutputFilesSet(this.lastStore.inputPaths);
-      const removeFiles = Array.from(lastOutputSet).filter(filePath => {
-         return !currentOutputSet.has(filePath);
-      });
+      const removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));
 
       const results = await pMap(
          removeFiles,
-         async filePath => {
+         async(filePath) => {
             let needRemove = false;
             let stat = null;
             try {
-               //fs.access и fs.pathExists не правильно работают с битым симлинками
-               //поэтому сразу используем fs.lstat
+               // fs.access и fs.pathExists не правильно работают с битым симлинками
+               // поэтому сразу используем fs.lstat
                stat = await fs.lstat(filePath);
             } catch (e) {
-               //ничего нелать не нужно
+               // ничего нелать не нужно
             }
 
-            //если файл не менялся в текущей сборке, то его нужно удалить
-            //файл может менятся в случае если это, например, пакет из нескольких файлов
+            // если файл не менялся в текущей сборке, то его нужно удалить
+            // файл может менятся в случае если это, например, пакет из нескольких файлов
             if (stat) {
                needRemove = stat.mtime.getTime() < this.currentStore.startBuildTime;
             }
 
             return {
-               filePath: filePath,
-               needRemove: needRemove
+               filePath,
+               needRemove
             };
          },
          {
@@ -350,7 +413,7 @@ class ChangesStore {
          }
       );
       return results
-         .map(obj => {
+         .map((obj) => {
             if (obj.needRemove) {
                return obj.filePath;
             }
@@ -361,6 +424,17 @@ class ChangesStore {
 
    setDropCacheForMarkup() {
       this.dropCacheForMarkup = true;
+   }
+
+   storeLocalModuleDependencies(obj) {
+      this.moduleDependencies = {
+         links: { ...this.moduleDependencies.links, ...obj.links },
+         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes }
+      };
+   }
+
+   getModuleDependencies() {
+      return this.moduleDependencies;
    }
 }
 

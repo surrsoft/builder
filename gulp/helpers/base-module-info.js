@@ -19,7 +19,6 @@ class ModuleInfo {
    get folderName() {
       return path.basename(this.path);
    }
-
 }
 
 module.exports = ModuleInfo;

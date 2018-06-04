@@ -9,8 +9,8 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
-   return through.obj(async function(file, encoding, callback) {
+module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
+   return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (!file.path.endsWith('.less')) {
             callback(null, file);
@@ -28,13 +28,14 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
 
          const cssInSources = file.history[0].replace(/\.less$/, '.css');
          if (await fs.pathExists(cssInSources)) {
+            changesStore.markFileAsFailed(file.history[0]);
             const message =
                `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                'Необходимо удалить лишний CSS-файл';
             logger.warning({
-               message: message,
+               message,
                filePath: cssInSources,
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -48,12 +49,13 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                moduleInfo.path,
                sbis3ControlsPath,
                pathsForImport
-            ]);
+            ]).timeout(60000);
          } catch (error) {
+            changesStore.markFileAsFailed(file.history[0]);
             logger.warning({
-               error: error,
+               error,
                filePath: file.history[0],
-               moduleInfo: moduleInfo
+               moduleInfo
             });
             callback(null, file);
             return;
@@ -68,15 +70,17 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                new Vinyl({
                   base: moduleInfo.output,
                   path: outputPath,
-                  contents: Buffer.from(result.text)
+                  contents: Buffer.from(result.text),
+                  history: [...file.history]
                })
             );
          }
       } catch (error) {
+         changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: "Ошибка builder'а при компиляции less",
-            error: error,
-            moduleInfo: moduleInfo,
+            message: 'Ошибка builder\'а при компиляции less',
+            error,
+            moduleInfo,
             filePath: file.history[0]
          });
       }

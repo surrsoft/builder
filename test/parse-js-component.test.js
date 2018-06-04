@@ -5,9 +5,9 @@ require('./init-test');
 const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
 
-const expect = chai.expect;
+const { expect } = chai;
 
-describe('parse js component', function() {
+describe('parse js component', () => {
    it('empty file', () => {
       const result = parseJsComponent('');
       Object.getOwnPropertyNames(result).length.should.equal(0);
@@ -28,38 +28,42 @@ describe('parse js component', function() {
       result.hasOwnProperty('isNavigation').should.equal(false);
    });
    it('declare object webpage', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {' +
-         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   title: "TestTitle",' +
-         '   outFileName: "ca_stub",' +
-         '   trash:"trash"' +
-         '};' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {' +
+            '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+            '   title: "TestTitle",' +
+            '   outFileName: "ca_stub",' +
+            '   trash:"trash"' +
+            '};' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
       webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
       webPage.outFileName.should.equal('ca_stub');
    });
 
    it('declare title and web page', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {' +
-         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   outFileName: "ca_stub",' +
-         '   trash:"trash"' +
-         '};' +
-         'module.title = "TestTitle";' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {' +
+            '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+            '   outFileName: "ca_stub",' +
+            '   trash:"trash"' +
+            '};' +
+            'module.title = "TestTitle";' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
       Object.getOwnPropertyNames(webPage).length.should.equal(3);
       webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
       webPage.title.should.equal('TestTitle');
@@ -67,19 +71,21 @@ describe('parse js component', function() {
    });
 
    it('declare tricky web page', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {};' +
-         'module.webPage.htmlTemplate = "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html";' +
-         'module.webPage.title = "Пожалуйста, подождите...";' +
-         'module.webPage.outFileName = "ca_stub";' +
-         'return module;});');
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+            'let module;' +
+            'module.webPage = {};' +
+            'module.webPage.htmlTemplate = "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html";' +
+            'module.webPage.title = "Пожалуйста, подождите...";' +
+            'module.webPage.outFileName = "ca_stub";' +
+            'return module;});'
+      );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
       result.hasOwnProperty('isNavigation').should.equal(false);
-      const webPage = result.webPage;
+      const { webPage } = result;
 
-      //теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
+      // теоритически это должно работать. но мы сознательно это не поддерживаем сейчас, поэтому webPage - пустой
       Object.getOwnPropertyNames(webPage).length.should.equal(0);
    });
 
@@ -121,9 +127,10 @@ describe('parse js component', function() {
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
 
-      result = parseJsComponent('define("My.Module/Name", ["optional!Navigation/NavigationController"], function(){});');
+      result = parseJsComponent(
+         'define("My.Module/Name", ["optional!Navigation/NavigationController"], function(){});'
+      );
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
-
    });
 });

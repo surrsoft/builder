@@ -1,21 +1,21 @@
-/* eslint-disable filenames/match-regex*/
+/* eslint-disable filenames/match-regex, global-require */
 'use strict';
 
 const path = require('path');
 const dblSlashes = /\\/g;
 
-module.exports = function(grunt) {
+module.exports = function gruntMain(grunt) {
    try {
       const ver = process.versions.node;
 
       if (ver.split('.')[0] < 8) {
-         //eslint-disable-next-line no-console
+         // eslint-disable-next-line no-console
          console.error('nodejs >= v8.x required');
          process.exit(1);
       }
 
       process.on('unhandledRejection', (reason, p) => {
-         //eslint-disable-next-line no-console
+         // eslint-disable-next-line no-console
          console.log(
             "[ERROR] Критическая ошибка в работе builder'а. ",
             'Unhandled Rejection at:\n',
@@ -46,11 +46,14 @@ module.exports = function(grunt) {
       require('./packer/lib/node-ws')();
 
       // Load tasks
-      //для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
+      // для загрузки задач включаем verbose, чтобы видел stack ошибки, если вознкнет при require
       const oldVerbose = grunt.option('verbose');
       grunt.option('verbose', true);
-      grunt.loadNpmTasks('grunt-text-replace'); //используется как задача "replace:что-то"
+
+      // используется как задача "replace:что-то"
+      grunt.loadNpmTasks('grunt-text-replace');
       grunt.loadTasks('Tasks');
+      grunt.loadTasks('Tasks/pack');
       grunt.loadTasks('packer/tasks');
 
       grunt.option('verbose', oldVerbose);
@@ -68,7 +71,7 @@ module.exports = function(grunt) {
 
       defaultTasks.push('i18n', 'collect-dependencies', 'routsearch');
 
-      //таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
+      // таска replace:html, реализующая версионирование для html и tmpl, должна выполняться перед таской owndepspack
       if (packaging) {
          defaultTasks.push('cssmin', 'xhtmlmin', 'tmplmin', 'tmpl-build', 'xhtml-build');
          if (versionize && typeof versionize === 'string') {
@@ -78,8 +81,9 @@ module.exports = function(grunt) {
          /**
           * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
           * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
+          * packjs и packcss работают с *.min.* файлами
           */
-         defaultTasks.push('packjs', 'packcss', 'owndepspack', 'uglify', 'custompack', 'packwsmod', 'gzip');
+         defaultTasks.push('packcss', 'owndepspack', 'uglify', 'packjs', 'custompack', 'packwsmod', 'gzip');
       }
 
       if (!packaging && versionize && typeof versionize === 'string') {
@@ -91,15 +95,15 @@ module.exports = function(grunt) {
 
       grunt.registerTask('default', defaultTasks);
 
-      grunt.log.ok('SBIS3 Builder v' + require(path.join(__dirname, 'package.json')).version);
+      grunt.log.ok(`SBIS3 Builder v${require(path.join(__dirname, 'package.json')).version}`);
    } catch (error) {
-      //eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console
       console.log("[ERROR] Критическая ошибка в работе builder'а: ", error.stack);
       process.exit(1);
    }
 };
 
 if (require.main === module) {
-   //eslint-disable-next-line no-console
-   console.log(require(require('path').join(__dirname, 'package.json')).version.split('-')[0]);
+   // eslint-disable-next-line no-console
+   console.log(require(path.join(__dirname, 'package.json')).version.split('-')[0]);
 }

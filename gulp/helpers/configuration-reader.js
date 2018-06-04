@@ -1,11 +1,10 @@
 /* eslint-disable no-sync */
 'use strict';
 
-const
-   fs = require('fs-extra');
+const fs = require('fs-extra');
 
 function getConfigPath(argv) {
-   //для получения 1 параметра --config не нужна сторонняя библиотека
+   // для получения 1 параметра --config не нужна сторонняя библиотека
    for (const argument of argv) {
       if (argument.startsWith('--config=')) {
          return argument.replace('--config=', '').replace(/"/g, '');
@@ -27,7 +26,9 @@ function readConfigFile(configPath) {
    try {
       rawConfig = fs.readJSONSync(configPath);
    } catch (e) {
-      e.message = `Файл конфигурации ${configPath} не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${e.message}`;
+      e.message = `Файл конфигурации ${configPath} не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
+         e.message
+      }`;
       throw e;
    }
    checkModules(rawConfig);
@@ -52,10 +53,9 @@ function checkModules(rawConfig) {
          throw new Error(`Директория ${module.path} не существует`);
       }
    }
-
 }
 
 module.exports = {
-   getConfigPath: getConfigPath,
+   getConfigPath,
    readConfigFileSync: readConfigFile
 };
