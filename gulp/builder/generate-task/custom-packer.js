@@ -2,7 +2,6 @@
 const gulp = require('gulp'),
    path = require('path'),
    generatePackageJson = require('../plugins/custom-packer'),
-   getModuleMDeps = require('../plugins/read-module-mdeps'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependencyGraph'),
    plumber = require('gulp-plumber'),
@@ -15,7 +14,30 @@ function generateSaveResultsTask(config, results, applicationRoot, splittedCore)
    };
 }
 
-function generateTaskForCustomPack(config) {
+function generateDepsGraphTask(depsTree, changesStore) {
+   return function generateDepsGraph(done) {
+      const
+         moduleDeps = changesStore.getModuleDependencies(),
+         currentNodes = Object.keys(moduleDeps.nodes),
+         currentLinks = Object.keys(moduleDeps.links);
+
+      if (currentLinks.length > 0) {
+         currentLinks.forEach((link) => {
+            depsTree.setLink(link, moduleDeps.links[link]);
+         });
+      }
+      if (currentNodes.length > 0) {
+         currentNodes.forEach((node) => {
+            const currentNode = moduleDeps.nodes[node];
+            currentNode.path = currentNode.path.replace(/^resources\//, '');
+            depsTree.setNode(node, currentNode);
+         });
+      }
+      done();
+   };
+}
+
+function generateTaskForCustomPack(changesStore, config) {
    const applicationRoot = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
@@ -29,28 +51,6 @@ function generateTaskForCustomPack(config) {
          done();
       };
    }
-
-   const getMDepsTasks = config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(applicationRoot, path.basename(moduleInfo.output));
-      const input = path.join(moduleOutput, 'module-dependencies.json');
-      return function getModuleDeps() {
-         return gulp
-            .src(input, { dot: false, nodir: true })
-            .pipe(
-               plumber({
-                  errorHandler(err) {
-                     logger.error({
-                        message: 'Задача getModuleDeps завершилась с ошибкой',
-                        error: err,
-                        moduleInfo
-                     });
-                     this.emit('end');
-                  }
-               })
-            )
-            .pipe(getModuleMDeps(depsTree));
-      };
-   });
 
    const generatePackagesTasks = config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(applicationRoot, path.basename(moduleInfo.output));
@@ -75,7 +75,7 @@ function generateTaskForCustomPack(config) {
    });
 
    return gulp.series(
-      gulp.parallel(getMDepsTasks),
+      generateDepsGraphTask(depsTree, changesStore),
       gulp.parallel(generatePackagesTasks),
       generateSaveResultsTask(config, results, applicationRoot, splittedCore)
    );

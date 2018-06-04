@@ -83,7 +83,7 @@ function generateWorkflow(processArgv) {
       ),
       generateTaskForFinalizeDistrib(config, pool, localizationEnable),
       generateTaskForPackHtml(changesStore, config, pool),
-      generateTaskForCustomPack(config),
+      generateTaskForCustomPack(changesStore, config),
       generateTaskForTerminatePool(pool),
       generateTaskForSaveLoggerReport(config),
 
