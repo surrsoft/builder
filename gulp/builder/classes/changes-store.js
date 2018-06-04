@@ -51,19 +51,23 @@ class StoreInfo {
    }
 
    async load(filePath) {
+      logger.debug(`Читаем файл кеша ${filePath}`);
+
       try {
          if (await fs.pathExists(filePath)) {
             const obj = await fs.readJSON(filePath);
             this.runningParameters = obj.runningParameters;
             this.versionOfBuilder = obj.versionOfBuilder;
+            logger.debug(`В кеше versionOfBuilder: ${this.versionOfBuilder}`);
             this.startBuildTime = obj.startBuildTime;
+            logger.debug(`В кеше startBuildTime: ${this.startBuildTime}`);
             this.inputPaths = obj.inputPaths;
             this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
             this.filesWithErrors = new Set(obj.filesWithErrors);
          }
       } catch (error) {
-         logger.warning({
+         logger.info({
             message: `Не удалось прочитать файл кеша ${filePath}`,
             error
          });
