@@ -35,7 +35,9 @@ module.exports = function declarePlugin(config, moduleInfo) {
          }
          callback(null, file);
       },
-      (callback) => {
+
+      /** @this Stream */
+      function onFlush(callback) {
          try {
             for (const locale of config.localizations) {
                const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, locale);
