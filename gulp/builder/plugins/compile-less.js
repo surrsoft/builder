@@ -50,7 +50,7 @@ module.exports = function(changesStore, moduleInfo, pool, sbis3ControlsPath, pat
                pathsForImport
             ]);
          } catch (error) {
-            logger.warning({
+            logger.error({
                error: error,
                filePath: file.history[0],
                moduleInfo: moduleInfo
