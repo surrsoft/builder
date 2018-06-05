@@ -155,14 +155,37 @@ async function packageSingleFile(
       // Remove initial collection from DOM
       removeDomCollection(result.nodes);
 
+      let cssTarget, parentTargetNode, openComment, closeComment;
+      if (ext === 'css') {
+         cssTarget = dom.getElementById('ws-include-css');
+
+         // залоггируем статические html, которые не имеют линки с атрибутом ws-include-css
+         if (!cssTarget) {
+            logger.info(`location: ${htmlFilePath}. Для данной html не прописана линка с атрибутом ws-include-css.` +
+               'Стили будут вставлены в конце head, что может привести к изменению порядка подгрузки стилей.');
+            cssTarget = dom.getElementsByTagName('head')[0].lastChild;
+         }
+
+         parentTargetNode = cssTarget.parentNode;
+         openComment = mkCommentNode(cssTarget.ownerDocument, '[packedScripts]');
+         closeComment = mkCommentNode(cssTarget.ownerDocument, '[/packedScripts]');
+         parentTargetNode.insertBefore(openComment, cssTarget);
+      }
+
       // For each packed file create new DOM node and attach it to document
       for (const aSingleFile of packedFiles) {
          const newNode = nodeProducer(dom, path.relative(root, aSingleFile), buildNumber);
-         if (result.before) {
+         if (cssTarget) {
+            parentTargetNode.insertBefore(newNode, cssTarget);
+         } else if (result.before) {
             result.before.parentNode.insertBefore(newNode, result.before);
          } else {
             dom.getElementsByTagName('head')[0].appendChild(newNode);
          }
+      }
+
+      if (ext === 'css') {
+         parentTargetNode.insertBefore(closeComment, cssTarget);
       }
    }
    return dom;
