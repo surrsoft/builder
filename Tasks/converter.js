@@ -63,7 +63,7 @@ async function compileLess(lessFilePath, modulePath, sbis3ControlsPath, resource
          logger.debug(`file ${resultCssPath} successfully compiled`);
       }
    } catch (error) {
-      logger.warning({
+      logger.error({
          message: 'Ошибка при компиляции less файла',
          error: error,
          filePath: lessFilePath
