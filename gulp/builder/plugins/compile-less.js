@@ -52,7 +52,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             ]).timeout(60000);
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
-            logger.warning({
+            logger.error({
                error,
                filePath: file.history[0],
                moduleInfo
