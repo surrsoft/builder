@@ -1,0 +1,11 @@
+{
+  "links": {
+
+  },
+  "nodes": {
+    "InterfaceModule1/amdModule": {
+      "amd": true,
+      "path": "InterfaceModule1\\amdModule.js"
+    }
+  }
+}
