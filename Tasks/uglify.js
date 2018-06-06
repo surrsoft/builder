@@ -95,7 +95,7 @@ module.exports = function uglifyJsTask(grunt) {
                currentEXTString = currentEXT.toString(),
                currentNodePath = helpers.prettifyPath(helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')),
                currentNode = nodes.filter(function(node) {
-                  return mDeps.nodes[node].path === currentNodePath;
+                  return helpers.prettifyPath(mDeps.nodes[node].path) === currentNodePath;
                }),
                sourceMapUrl, minModulePath, minMapPath;
 
