@@ -107,7 +107,7 @@ module.exports = function register(grunt) {
                   };
                   await writeTemplate(templateOptions, nodes, splittedCore);
                } catch (error) {
-                  logger.warning({
+                  logger.error({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
                      error
@@ -178,7 +178,7 @@ module.exports = function register(grunt) {
 
                   await writeTemplate(templateOptions, nodes, splittedCore);
                } catch (error) {
-                  logger.warning({
+                  logger.error({
                      message: 'An ERROR occurred while building template',
                      filePath: fullPath,
                      error

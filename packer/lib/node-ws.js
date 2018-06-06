@@ -45,17 +45,29 @@ function removeLeadingSlash(filePath) {
    return newFilePath;
 }
 
+const formatMessage = function(message) {
+   if (typeof message === 'string') {
+      return message;
+   }
+   return JSON.stringify(message);
+};
+
 const wsLogger = {
-   error(tag, msg) {
-      logger.info(`WS error: ${tag}::${msg}`);
+   error(tag, msg, err) {
+      let stack = '';
+      if (err && err.hasOwnProperty('stack')) {
+         stack = `: ${err.stack}`;
+      }
+      logger.info(`WS error: ${tag}::${formatMessage(msg)}${stack}`);
    },
    info(tag, msg) {
-      logger.debug(`WS info: ${tag}::${msg}`);
+      logger.debug(`WS info: ${tag}::${formatMessage(msg)}`);
    },
    log(tag, msg) {
-      logger.debug(`WS log: ${tag}::${msg}`);
+      logger.debug(`WS log: ${tag}::${formatMessage(msg)}`);
    }
 };
+
 
 let isInit = false;
 module.exports = function initWs() {
