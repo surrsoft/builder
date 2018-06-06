@@ -14,19 +14,26 @@ const appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '
    wsRoot = '/sbis3-ws/ws/',
    resourceRoot = '/';
 
+const formatMessage = function(message) {
+   if (typeof message === 'string') {
+      return message;
+   }
+   return JSON.stringify(message);
+};
+
 const wsLogger = {
-   error: function(tag, msg, err) {
+   error(tag, msg, err) {
       let stack = '';
       if (err && err.hasOwnProperty('stack')) {
-         stack = ': ' + err.stack;
+         stack = `: ${err.stack}`;
       }
-      logger.info(`WS error: ${tag}::${msg}${stack}`);
+      logger.info(`WS error: ${tag}::${formatMessage(msg)}${stack}`);
    },
-   info: function(tag, msg) {
-      logger.debug(`WS info: ${tag}::${msg}`);
+   info(tag, msg) {
+      logger.debug(`WS info: ${tag}::${formatMessage(msg)}`);
    },
-   log: function(tag, msg) {
-      logger.debug(`WS log: ${tag}::${msg}`);
+   log(tag, msg) {
+      logger.debug(`WS log: ${tag}::${formatMessage(msg)}`);
    }
 };
 
