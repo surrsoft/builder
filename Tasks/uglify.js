@@ -97,7 +97,9 @@ module.exports = function register(grunt) {
                   const currentNodePath = helpers.prettifyPath(
                         helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')
                      ),
-                     currentNode = nodes.filter(node => mDeps.nodes[node].path === currentNodePath);
+                     currentNode = nodes.filter(
+                        node => helpers.prettifyPath(mDeps.nodes[node].path) === currentNodePath
+                     );
 
                   let currentEXTString = currentEXT.toString(),
                      sourceMapUrl,
