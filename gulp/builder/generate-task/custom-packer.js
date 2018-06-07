@@ -38,7 +38,7 @@ function generateDepsGraphTask(depsTree, changesStore) {
 }
 
 function generateTaskForCustomPack(changesStore, config) {
-   const applicationRoot = config.rawConfig.output,
+   const root = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
       results = {
@@ -53,12 +53,12 @@ function generateTaskForCustomPack(changesStore, config) {
    }
 
    const generatePackagesTasks = config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(applicationRoot, path.basename(moduleInfo.output));
+      const moduleOutput = path.join(root, path.basename(moduleInfo.output));
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function custompack() {
          return gulp
             .src(input, { dot: false, nodir: true })
-            .pipe(generatePackageJson(depsTree, results, applicationRoot, splittedCore))
+            .pipe(generatePackageJson(depsTree, results, root, '/', splittedCore))
             .pipe(
                plumber({
                   errorHandler(err) {
@@ -77,7 +77,7 @@ function generateTaskForCustomPack(changesStore, config) {
    return gulp.series(
       generateDepsGraphTask(depsTree, changesStore),
       gulp.parallel(generatePackagesTasks),
-      generateSaveResultsTask(config, results, applicationRoot, splittedCore)
+      generateSaveResultsTask(config, results, root, splittedCore)
    );
 }
 
