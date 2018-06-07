@@ -16,6 +16,7 @@ module.exports = function register(grunt) {
       );
       try {
          const self = this,
+            coreConstants = global.requirejs('Core/constants'),
             bundlesOptions = {
                bundles: {},
                modulesInBundles: {},
@@ -48,7 +49,8 @@ module.exports = function register(grunt) {
             depsTree,
             configsArray,
             applicationRoot,
-            bundlesOptions.splittedCore
+            bundlesOptions.splittedCore,
+            Object.keys(coreConstants.availableLanguage)
          );
          results.bundlesJson = results.bundles;
          await customPacker.saveCustomPackResults(results, applicationRoot, bundlesOptions.splittedCore);

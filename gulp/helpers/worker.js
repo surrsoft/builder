@@ -1,10 +1,11 @@
 'use strict';
 
 // логгер - прежде всего
-require('../../lib/logger').setGulpLogger();
+const logger = require('../../lib/logger').setWorkerLogger();
 
 // ws должен быть вызван раньше чем первый global.requirejs
-require('../helpers/node-ws').init();
+const nodeWS = require('../helpers/node-ws');
+nodeWS.init();
 
 const fs = require('fs-extra'),
    workerPool = require('workerpool'),
@@ -14,10 +15,11 @@ const fs = require('fs-extra'),
    parseJsComponent = require('../../lib/parse-js-component'),
    processingRoutes = require('../../lib/processing-routes'),
    prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
-   { buildXhtml } = require('../../lib/processing-xhtml'),
+   buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml,
    runMinifyCss = require('../../lib/run-minify-css'),
    runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
-   uglifyJs = require('../../lib/run-uglify-js');
+   uglifyJs = require('../../lib/run-uglify-js'),
+   collectWordsPrimitive = require('../../lib/i18n/collect-words');
 
 let componentsProperties;
 
@@ -46,7 +48,7 @@ async function readComponentsProperties(componentsPropertiesFilePath) {
 
 async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
    return processingTmpl.buildTmpl(
-      text,
+      processingTmpl.minifyTmpl(text),
       relativeFilePath,
       await readComponentsProperties(componentsPropertiesFilePath)
    );
@@ -65,16 +67,43 @@ async function prepareXHTML(text, componentsPropertiesFilePath) {
    return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
+async function buildXhtml(text) {
+   return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text));
+}
+async function collectWords(modulePath, filePath, componentsPropertiesFilePath) {
+   if (!componentsProperties) {
+      componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
+   }
+   const text = await fs.readFile(filePath);
+   return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
+}
+
+function wrapFunction(func) {
+   return async(funcArgs, filePath = null, moduleInfo = null) => {
+      logger.setInfo(filePath, moduleInfo);
+      let result;
+      try {
+         result = func(...funcArgs);
+         if (result instanceof Promise) {
+            result = await result;
+         }
+      } catch (error) {
+         return [{ message: error.message, stack: error.stack }, null, logger.getMessageForReport()];
+      }
+      return [null, result, logger.getMessageForReport()];
+   };
+}
 workerPool.worker({
-   parseJsComponent,
-   parseRoutes: processingRoutes.parseRoutes,
-   buildLess,
-   buildTmpl,
-   buildHtmlTmpl,
-   prepareXHTML,
-   buildXhtml,
-   minifyCss: runMinifyCss,
-   minifyXhtmlAndHtml: runMinifyXhtmlAndHtml,
-   uglifyJs,
-   gzip: helpers.gzip
+   parseJsComponent: wrapFunction(parseJsComponent),
+   parseRoutes: wrapFunction(processingRoutes.parseRoutes),
+   buildLess: wrapFunction(buildLess),
+   buildTmpl: wrapFunction(buildTmpl),
+   buildHtmlTmpl: wrapFunction(buildHtmlTmpl),
+   prepareXHTML: wrapFunction(prepareXHTML),
+   buildXhtml: wrapFunction(buildXhtml),
+   minifyCss: wrapFunction(runMinifyCss),
+   minifyXhtmlAndHtml: wrapFunction(runMinifyXhtmlAndHtml),
+   uglifyJs: wrapFunction(uglifyJs),
+   gzip: wrapFunction(helpers.gzip),
+   collectWords: wrapFunction(collectWords)
 });

@@ -5,11 +5,11 @@ const through = require('through2'),
    path = require('path'),
    transliterate = require('../../../lib/transliterate'),
    helpers = require('../../../lib/helpers'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   execInPool = require('../../helpers/exec-in-pool');
 
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-
 
    return through.obj(
 
@@ -26,31 +26,44 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                path.join(path.basename(moduleInfo.path), relativeTmplPath)
             );
 
-            const result = await pool.exec('buildHtmlTmpl', [
-               file.contents.toString(),
+            const [error, result] = await execInPool(
+               pool,
+               'buildHtmlTmpl',
+               [
+                  file.contents.toString(),
+                  file.history[0],
+                  relativeTmplPathWithModuleName,
+                  componentsPropertiesFilePath
+               ],
                file.history[0],
-               relativeTmplPathWithModuleName,
-               componentsPropertiesFilePath
-            ]).timeout(60000);
-            const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
-            changesStore.addOutputFile(file.history[0], outputPath);
-            this.push(
-               new Vinyl({
-                  base: moduleInfo.output,
-                  path: outputPath,
-                  contents: Buffer.from(result)
-               })
+               moduleInfo
             );
+            if (error) {
+               changesStore.markFileAsFailed(file.history[0]);
+               logger.error({
+                  message: 'Ошибка при обработке html-tmpl шаблона',
+                  error,
+                  moduleInfo,
+                  filePath: file.history[0]
+               });
+            } else {
+               const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
+               changesStore.addOutputFile(file.history[0], outputPath);
+               this.push(
+                  new Vinyl({
+                     base: moduleInfo.output,
+                     path: outputPath,
+                     contents: Buffer.from(result)
+                  })
+               );
 
-            moduleInfo.staticTemplates[path.basename(outputPath)] = relativeTmplPathWithModuleName.replace('.tmpl', '');
+               moduleInfo.staticTemplates[path.basename(outputPath)] = relativeTmplPathWithModuleName.replace(
+                  '.tmpl',
+                  ''
+               );
+            }
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
-            logger.error({
-               message: 'Ошибка при обработке html-tmpl шаблона',
-               error,
-               moduleInfo,
-               filePath: file.history[0]
-            });
+            logger.error({ error });
          }
          callback(null, file);
       }

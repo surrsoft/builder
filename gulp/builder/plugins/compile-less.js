@@ -7,7 +7,8 @@ const through = require('through2'),
    fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
    return through.obj(async function onTransform(file, encoding, callback) {
@@ -41,16 +42,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             return;
          }
 
-         let result;
-         try {
-            result = await pool.exec('buildLess', [
-               file.history[0],
-               file.contents.toString(),
-               moduleInfo.path,
-               sbis3ControlsPath,
-               pathsForImport
-            ]).timeout(60000);
-         } catch (error) {
+         const [error, result] = await execInPool(
+            pool,
+            'buildLess',
+            [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, pathsForImport],
+            file.history[0],
+            moduleInfo
+         );
+         if (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                error,
@@ -78,7 +77,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при компиляции less',
+            message: "Ошибка builder'а при компиляции less",
             error,
             moduleInfo,
             filePath: file.history[0]

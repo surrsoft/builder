@@ -26,7 +26,12 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             const nodenameToMarkup = new Map();
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
-               nodenameToMarkup.set(markupObj.nodeName, { text: markupObj.text, filePath });
+               if (markupObj) {
+                  nodenameToMarkup.set(markupObj.nodeName, {
+                     text: markupObj.text,
+                     filePath
+                  });
+               }
             }
             const getFullPathInSource = (dep) => {
                const moduleNameOutput = path.basename(moduleInfo.output);

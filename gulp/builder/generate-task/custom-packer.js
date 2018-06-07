@@ -16,8 +16,7 @@ function generateSaveResultsTask(config, results, applicationRoot, splittedCore)
 
 function generateDepsGraphTask(depsTree, changesStore) {
    return function generateDepsGraph(done) {
-      const
-         moduleDeps = changesStore.getModuleDependencies(),
+      const moduleDeps = changesStore.getModuleDependencies(),
          currentNodes = Object.keys(moduleDeps.nodes),
          currentLinks = Object.keys(moduleDeps.links);
 
@@ -58,7 +57,7 @@ function generateTaskForCustomPack(changesStore, config) {
       return function custompack() {
          return gulp
             .src(input, { dot: false, nodir: true })
-            .pipe(generatePackageJson(depsTree, results, applicationRoot, splittedCore))
+            .pipe(generatePackageJson(config, depsTree, results, applicationRoot, splittedCore))
             .pipe(
                plumber({
                   errorHandler(err) {

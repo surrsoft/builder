@@ -15,7 +15,8 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    generateTaskForSaveLoggerReport = require('../helpers/generate-task/save-logger-report'),
    ChangesStore = require('./classes/changes-store'),
-   Configuration = require('./classes/configuration.js');
+   Configuration = require('./classes/configuration.js'),
+   logger = require('../../lib/logger').logger();
 
 function generateTaskForTerminatePool(pool) {
    return function terminatePool() {
@@ -57,7 +58,7 @@ function generateWorkflow(processArgv) {
 
    const changesStore = new ChangesStore(config);
 
-   const pool = workerPool.pool(path.join(__dirname, './worker.js'), {
+   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       maxWorkers: os.cpus().length - 1 || 1

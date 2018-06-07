@@ -151,7 +151,7 @@ function deleteOldDepI18n(deps) {
 function getAvailableLanguageModule(availableLanguage, nameModule, applicationRoot) {
    const availableLang = {};
 
-   Object.keys(availableLanguage).forEach((lang) => {
+   availableLanguage.forEach((lang) => {
       if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot))) {
          availableLang[lang] = true;
       }
@@ -166,7 +166,7 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Array}
  */
-async function packCustomDict(modules, applicationRoot, depsTree) {
+async function packCustomDict(modules, applicationRoot, depsTree, availableLanguage) {
    let resultPackage = [];
    let modDepend;
    if (depsTree) {
@@ -180,7 +180,6 @@ async function packCustomDict(modules, applicationRoot, depsTree) {
 
    try {
       const modulesI18n = {},
-         coreConstants = global.requirejs('Core/constants'),
          linkModules = modDepend.links;
       let moduleName;
       await pMap(
@@ -215,7 +214,7 @@ async function packCustomDict(modules, applicationRoot, depsTree) {
             continue;
          }
          modulesI18n[name].availableDict = getAvailableLanguageModule(
-            coreConstants.availableLanguage,
+            availableLanguage,
             name,
             applicationRoot
          );

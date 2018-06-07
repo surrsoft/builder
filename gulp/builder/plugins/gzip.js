@@ -2,7 +2,8 @@
 
 const through = require('through2'),
    Vinyl = require('vinyl'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   execInPool = require('../../helpers/exec-in-pool');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
@@ -40,15 +41,24 @@ module.exports = function declarePlugin(moduleInfo, pool) {
                }
             }
 
-            const gzipContent = await pool.exec('gzip', [file.contents.toString()]).timeout(60000);
-            this.push(
-               new Vinyl({
-                  base: file.base,
-                  path: `${file.path}.gz`,
-                  contents: Buffer.from(gzipContent),
-                  history: [...file.history]
-               })
-            );
+            const [error, gzipContent] = await execInPool(pool, 'gzip', [file.contents.toString()]);
+            if (error) {
+               logger.error({
+                  message: "Ошибка builder'а при архивации",
+                  error,
+                  moduleInfo,
+                  filePath: file.path
+               });
+            } else {
+               this.push(
+                  new Vinyl({
+                     base: file.base,
+                     path: `${file.path}.gz`,
+                     contents: Buffer.from(gzipContent),
+                     history: [...file.history]
+                  })
+               );
+            }
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",

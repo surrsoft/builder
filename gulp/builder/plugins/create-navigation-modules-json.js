@@ -22,7 +22,7 @@ module.exports = function declarePlugin(moduleInfo) {
             );
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

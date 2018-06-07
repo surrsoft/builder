@@ -4,8 +4,7 @@ const through = require('through2');
 
 module.exports = function readModuleMDeps(depsTree) {
    return through.obj(function onTransform(file, encoding, callback) {
-      const
-         moduleMDeps = JSON.parse(file.contents),
+      const moduleMDeps = JSON.parse(file.contents),
          currentNodes = Object.keys(moduleMDeps.nodes),
          currentLinks = Object.keys(moduleMDeps.links);
       if (currentLinks.length > 0) {
