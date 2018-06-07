@@ -7,7 +7,7 @@ const
    customPacker = require('../../../lib/pack/custom-packer'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function generatePackageJson(depsTree, results, applicationRoot, splittedCore) {
+module.exports = function generatePackageJson(depsTree, results, root, application, splittedCore) {
    return through.obj(async function onTransform(file, encoding, callback) {
       let currentConfig;
       try {
@@ -19,14 +19,15 @@ module.exports = function generatePackageJson(depsTree, results, applicationRoot
          });
       }
       const configsArray = packHelpers.getConfigsFromPackageJson(
-         file.path.replace(path.normalize(`${applicationRoot}/`), ''),
-         applicationRoot,
+         file.path.replace(path.normalize(`${root}/`), ''),
+         root,
          currentConfig
       );
       const currentResult = await customPacker.generatePackageJsonConfigs(
          depsTree,
          configsArray,
-         applicationRoot,
+         root,
+         application,
          splittedCore,
          true
       );
