@@ -1,10 +1,13 @@
+/* eslint-disable id-match */
 'use strict';
 
 require('./init-test');
 
 const
    path = require('path'),
-   applicationRoot = path.join(__dirname, 'fixture/custompack'),
+   root = __dirname,
+   application = 'fixture/custompack',
+   applicationRoot = path.join(root, application),
    fs = require('fs-extra'),
    packHelpers = require('../lib/pack/helpers/custompack'),
    customPacker = require('../lib/pack/custom-packer'),
@@ -41,7 +44,8 @@ describe('custompack', () => {
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
-            applicationRoot,
+            root,
+            application,
             configsArray[0],
             true,
             true,

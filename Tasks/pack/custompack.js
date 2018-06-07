@@ -48,7 +48,8 @@ module.exports = function register(grunt) {
          const results = await customPacker.generatePackageJsonConfigs(
             depsTree,
             configsArray,
-            applicationRoot,
+            self.data.root,
+            self.data.application,
             bundlesOptions.splittedCore,
             Object.keys(coreConstants.availableLanguage)
          );
