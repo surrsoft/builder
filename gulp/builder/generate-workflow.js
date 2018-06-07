@@ -15,8 +15,7 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
    generateTaskForSaveLoggerReport = require('../helpers/generate-task/save-logger-report'),
    ChangesStore = require('./classes/changes-store'),
-   Configuration = require('./classes/configuration.js'),
-   logger = require('../../lib/logger').logger();
+   Configuration = require('./classes/configuration.js');
 
 function generateTaskForTerminatePool(pool) {
    return function terminatePool() {
