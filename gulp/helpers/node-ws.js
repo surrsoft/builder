@@ -39,16 +39,10 @@ const wsLogger = {
       });
    },
    info(tag, msg) {
-      logger.warning({
-
-         message: `WS::${tag}::${formatMessage(msg)}`
-      });
+      logger.info(`WS::${tag}::${formatMessage(msg)}`);
    },
    log(tag, msg) {
-      logMessages.push({
-         level: 'debug',
-         message: `WS::${tag}::${formatMessage(msg)}`
-      });
+      logger.debug(`WS::${tag}::${formatMessage(msg)}`);
    }
 };
 
