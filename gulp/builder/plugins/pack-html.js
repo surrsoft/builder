@@ -54,7 +54,8 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                '',
                config.version,
                replacePath,
-               path.join(config.rawConfig.output, config.urlServicePath)
+               path.join(config.rawConfig.output, config.urlServicePath),
+               config.localizations
             );
 
             file.contents = Buffer.from(domHelpers.stringify(dom));

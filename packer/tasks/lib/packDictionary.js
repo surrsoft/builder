@@ -236,15 +236,14 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Object}
  */
-function packDictClassic(modules, applicationRoot) {
+function packDictClassic(modules, applicationRoot, availableLanguage) {
    const dictPack = {};
 
    try {
-      const coreConstants = global.requirejs('Core/constants'),
-         isPackedDict = {};
+      const isPackedDict = {};
 
       let dictJsModule, dictTextModule, nameModule;
-      Object.keys(coreConstants.availableLanguage).forEach((lang) => {
+      availableLanguage.forEach((lang) => {
          dictPack[lang] = [];
       });
 

@@ -63,6 +63,7 @@ function gruntPackModulesTask(grunt) {
          grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки зависимостей.`);
 
          const { root, application } = this.data,
+            coreConstants = global.requirejs('Core/constants'),
             applicationRoot = path.join(root, application),
             done = this.async(),
             htmlFiles = [];
@@ -83,7 +84,15 @@ function gruntPackModulesTask(grunt) {
             htmlFiles.push(path.join(applicationRoot, pathToSource));
          });
 
-         await gruntPackHTML(grunt, dg, htmlFiles, this.data.packages, root, application);
+         await gruntPackHTML(
+            grunt,
+            dg,
+            htmlFiles,
+            this.data.packages,
+            root,
+            application,
+            Object.keys(coreConstants.availableLanguage)
+         );
          taskDone();
       } catch (error) {
          logger.error({ error });
