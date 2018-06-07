@@ -5,6 +5,7 @@ const cssHelpers = require('./../../lib/cssHelpers');
 const fs = require('fs-extra');
 const pMap = require('p-map');
 const helpers = require('../../../lib/helpers');
+const path = require('path');
 
 function cssCollector(dom) {
    const links = dom.getElementsByTagName('link'),
@@ -87,13 +88,19 @@ module.exports = {
       );
    },
 
-   promisedPackCSS: async(files, applicationRoot) => {
+   promisedPackCSS: async(files, applicationRoot, isGulp) => {
       const results = await pMap(
          files,
          async(css) => {
             if (await fs.pathExists(css)) {
                const content = await fs.readFile(css);
-               return cssHelpers.rebaseUrls(applicationRoot, css, content.toString());
+               let rebaseRoot;
+               if (isGulp) {
+                  rebaseRoot = `${helpers.prettifyPath(path.join(applicationRoot, 'resources/'))}`;
+               } else {
+                  rebaseRoot = applicationRoot;
+               }
+               return cssHelpers.rebaseUrls(rebaseRoot, css, content.toString());
             }
             return '';
          },
