@@ -317,6 +317,7 @@ function gruntCustomPack(grunt) {
       }
 
       bundlesOptions.splittedCore = this.data.splittedCore;
+      bundlesOptions.root = root;
       customPackage.collectDepsAndIntersects(dg, configsArray, applicationRoot, wsRoot, bundlesOptions, collectDepsAndIntersectsDone);
    };
 }
