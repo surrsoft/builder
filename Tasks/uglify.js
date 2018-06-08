@@ -97,7 +97,7 @@ module.exports = function uglifyJsTask(grunt) {
                currentNode = nodes.filter(function(node) {
                   return helpers.prettifyPath(mDeps.nodes[node].path) === currentNodePath;
                }),
-               sourceMapUrl, minModulePath, minMapPath;
+               sourceMapUrl, minModulePath, minMapPath, timeBeforeUglify;
 
             currentEXTString = currentEXTString.match(/\.js$/) ? currentEXTString : currentEXTString.slice(2, currentEXTString.length - 2);
 
@@ -145,6 +145,7 @@ module.exports = function uglifyJsTask(grunt) {
                      });
                   }
                } else {
+                  timeBeforeUglify = new Date();
                   /**
                    * для остальных модулей выполняем стандартную минификацию
                    */
@@ -169,7 +170,17 @@ module.exports = function uglifyJsTask(grunt) {
                });
                fs.writeFileSync(targetPath, originalText);
             }
+            const
+               timeAfterUglify = new Date(),
+               difference = timeAfterUglify - timeBeforeUglify;
 
+            // если минификация длится больше 5 секунд, предупреждаем об этом
+            if (difference >= 5000) {
+               logger.warning({
+                  message: `Долгий процесс минификации для файла: ${difference / 1000} секунд`,
+                  filePath: file
+               });
+            }
          });
 
          /**
