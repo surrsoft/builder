@@ -182,12 +182,12 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
  * @param {String} themeName - имя темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName) {
+function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName, availableLanguage) {
    let orderQueue;
 
    orderQueue = dg.getLoadOrder(modArray);
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
-   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot);
+   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot, availableLanguage);
 
    return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName);
 }
@@ -345,7 +345,8 @@ async function packageSingleHtml(
    application,
    buildNumber,
    needReplacePaths,
-   resourcesPath
+   resourcesPath,
+   availableLanguage
 ) {
    const newDom = dom,
       divs = newDom.getElementsByTagName('div'),
@@ -369,7 +370,15 @@ async function packageSingleHtml(
 
    const startNodes = getStartNodes(divs);
 
-   const filesToPack = await packInOrder(dg, startNodes, root, path.join(root, application), themeName, htmlName);
+   const filesToPack = await packInOrder(
+      dg,
+      startNodes,
+      root,
+      path.join(root, application),
+      themeName,
+      htmlName,
+      availableLanguage
+   );
 
    // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
    // пакеты для каждой локали).
@@ -445,7 +454,7 @@ async function packageSingleHtml(
    return newDom;
 }
 
-async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, application) {
+async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, application, availableLanguage) {
    logger.debug(`Packing dependencies of ${htmlFileset.length} files...`);
 
    const buildNumber = grunt.option('versionize');
@@ -475,7 +484,8 @@ async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, applicat
                application,
                buildNumber,
                needReplacePaths,
-               resourcesPath
+               resourcesPath,
+               availableLanguage
             );
             await fs.outputFile(filePath, domHelpers.stringify(dom));
          } catch (err) {

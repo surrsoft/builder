@@ -28,7 +28,7 @@ module.exports = function declarePlugin(moduleInfo) {
             }
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });
@@ -40,15 +40,17 @@ module.exports = function declarePlugin(moduleInfo) {
       function onFlush(callback) {
          try {
             if (preloadUrls.length > 0) {
-               this.push(new Vinyl({
-                  path: 'preload_urls.json',
-                  contents: Buffer.from(JSON.stringify(preloadUrls.sort(), null, 2)),
-                  moduleInfo
-               }));
+               this.push(
+                  new Vinyl({
+                     path: 'preload_urls.json',
+                     contents: Buffer.from(JSON.stringify(preloadUrls.sort(), null, 2)),
+                     moduleInfo
+                  })
+               );
             }
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

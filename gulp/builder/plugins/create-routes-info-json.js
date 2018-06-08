@@ -6,7 +6,8 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
-   processingRoutes = require('../../../lib/processing-routes');
+   processingRoutes = require('../../../lib/processing-routes'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
@@ -20,10 +21,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             return;
          }
 
-         let routeInfo;
-         try {
-            routeInfo = await pool.exec('parseRoutes', [file.contents.toString()]).timeout(60000);
-         } catch (error) {
+         const [error, routeInfo] = await execInPool(pool, 'parseRoutes', [file.contents.toString()]);
+         if (error) {
             logger.error({
                message: 'Ошибка при обработке файла роутинга',
                filePath: file.history[0],

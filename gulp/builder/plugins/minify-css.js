@@ -4,7 +4,8 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 const excludeRegexes = [/.*\.min\.css$/, /\/node_modules\/.*/, /\/design\/.*/, /\/service\/.*/];
 
@@ -28,9 +29,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                }
             }
 
-            const relativePath = path
-               .relative(moduleInfo.path, file.history[0])
-               .replace(/(\.css|\.less)$/, '.min.css');
+            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/(\.css|\.less)$/, '.min.css');
 
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
@@ -47,19 +46,19 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
 
             // если файл не возможно минифицировать, то запишем оригинал
             let newText = file.contents.toString();
-            try {
-               const minified = await pool.exec('minifyCss', [newText]).timeout(60000);
-               newText = minified.styles;
-               if (minified.errors.length > 0) {
-                  changesStore.markFileAsFailed(file.history[0]);
-                  const errors = minified.errors.toString();
-                  logger.warning({
-                     message: `Ошибки минификации файла: ${errors.split('; ')}`,
-                     moduleInfo,
-                     filePath: file.path
-                  });
-               }
-            } catch (error) {
+
+            const [error, minified] = await execInPool(pool, 'minifyCss', [newText]);
+            newText = minified.styles;
+            if (minified.errors.length > 0) {
+               changesStore.markFileAsFailed(file.history[0]);
+               const errors = minified.errors.toString();
+               logger.warning({
+                  message: `Ошибки минификации файла: ${errors.split('; ')}`,
+                  moduleInfo,
+                  filePath: file.path
+               });
+            }
+            if (error) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации файла',

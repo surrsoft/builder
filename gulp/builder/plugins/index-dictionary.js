@@ -27,7 +27,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
             }
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo,
                filePath: file.path
@@ -67,7 +67,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
             moduleInfo.contents.dictionary = indexer.getDictionaryForContents();
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

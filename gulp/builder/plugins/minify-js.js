@@ -4,7 +4,8 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 const excludeRegexes = [
    /.*\.min\.js$/,
@@ -16,15 +17,6 @@ const excludeRegexes = [
    // https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4
    /.*\/EDO2\/Route\/.*/
 ];
-
-function to(promise) {
-   return (
-      promise
-         // eslint-disable-next-line promise/prefer-await-to-then
-         .then(data => [null, data])
-         .catch(err => [err])
-   );
-}
 
 /*
  * JS с учётом паковки собственных зависимостей и минификации может быть представлен тремя или пятью файлами.
@@ -74,11 +66,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             }
 
             if (!file.modulepack) {
-            // если файл не возможно минифицировать, то запишем оригинал
+               // если файл не возможно минифицировать, то запишем оригинал
                let minText = file.contents.toString();
-               const [error, minified] = await to(
-                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsFile)]).timeout(60000)
-               );
+               const [error, minified] = await execInPool(pool, 'uglifyJs', [
+                  file.path,
+                  minText,
+                  false,
+                  path.basename(outputMinJsFile)
+               ]);
                if (error) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({
@@ -109,12 +104,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                );
                changesStore.addOutputFile(file.history[0], outputMinJsFile);
             } else {
-            // минимизируем оригинальный JS
-            // если файл не возможно минифицировать, то запишем оригинал
+               // минимизируем оригинальный JS
+               // если файл не возможно минифицировать, то запишем оригинал
                let minOriginalText = file.contents.toString();
-               const [errorOriginal, minifiedOriginal] = await to(
-                  pool.exec('uglifyJs', [file.path, minOriginalText, false]).timeout(60000)
-               );
+               const [errorOriginal, minifiedOriginal] = await execInPool(pool, 'uglifyJs', [
+                  file.path,
+                  minOriginalText,
+                  false
+               ]);
                if (errorOriginal) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({
@@ -146,9 +143,12 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   })
                );
 
-               const [error, minified] = await to(
-                  pool.exec('uglifyJs', [file.path, minText, false, path.basename(outputMinJsMapFile)]).timeout(60000)
-               );
+               const [error, minified] = await execInPool(pool, 'uglifyJs', [
+                  file.path,
+                  minText,
+                  false,
+                  path.basename(outputMinJsMapFile)
+               ]);
                if (error) {
                   changesStore.markFileAsFailed(file.history[0]);
                   logger.error({

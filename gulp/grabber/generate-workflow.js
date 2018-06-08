@@ -70,7 +70,10 @@ function generateTaskForGrabModules(changesStore, config, pool) {
 
    for (const moduleInfo of config.modules) {
       tasks.push(
-         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool), printPercentComplete)
+         gulp.series(
+            generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool),
+            printPercentComplete
+         )
       );
    }
    return gulp.parallel(tasks);
@@ -90,7 +93,7 @@ function generateWorkflow(processArgv) {
 
    const cache = new Cache(config);
 
-   const pool = workerPool.pool(path.join(__dirname, './worker.js'), {
+   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       maxWorkers: os.cpus().length - 1 || 1

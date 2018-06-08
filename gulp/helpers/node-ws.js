@@ -6,7 +6,7 @@
 
 const path = require('path'),
    requireJS = require('requirejs'),
-   logger = require('./../../lib/logger').logger();
+   logger = require('../../lib/logger').logger();
 
 const dblSlashes = /\\/g;
 
@@ -21,19 +21,28 @@ const formatMessage = function(message) {
    return JSON.stringify(message);
 };
 
+let logMessages = [];
 const wsLogger = {
    error(tag, msg, err) {
-      let stack = '';
-      if (err && err.hasOwnProperty('stack')) {
-         stack = `: ${err.stack}`;
-      }
-      logger.info(`WS error: ${tag}::${formatMessage(msg)}${stack}`);
+      // ошибки от ядра выводим пока как warning.
+      // сначала нужно проверить, что сообщения от WS могут быть полезны в принципе.
+      // не роняем сборку, а аккуратно и постепенно вычищаем от ошибок.
+      logger.warning({
+         error: err,
+         message: `WS error::${tag}::${formatMessage(msg)}`
+      });
+   },
+   warn(tag, msg, err) {
+      logger.warning({
+         error: err,
+         message: `WS warning::${tag}::${formatMessage(msg)}`
+      });
    },
    info(tag, msg) {
-      logger.debug(`WS info: ${tag}::${formatMessage(msg)}`);
+      logger.info(`WS::${tag}::${formatMessage(msg)}`);
    },
    log(tag, msg) {
-      logger.debug(`WS log: ${tag}::${formatMessage(msg)}`);
+      logger.debug(`WS::${tag}::${formatMessage(msg)}`);
    }
 };
 
@@ -112,5 +121,11 @@ module.exports = {
          e.message = `Ошибка инициализации ядра платформы WS: ${e.message}`;
          throw e;
       }
+   },
+   getWSLogMessages() {
+      return [...logMessages];
+   },
+   resetWSLogMessages() {
+      logMessages = [];
    }
 };

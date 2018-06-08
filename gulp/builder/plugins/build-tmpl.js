@@ -5,8 +5,8 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   { minifyTmpl } = require('../../../lib/processing-tmpl'),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
@@ -34,28 +34,15 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
          let newText = file.contents.toString();
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
-         try {
-            newText = minifyTmpl(newText);
-            const result = await pool.exec('buildTmpl', [newText, relativeFilePath, componentsPropertiesFilePath]);
-            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
-            newText = result.text;
 
-            if (config.isReleaseMode) {
-               // если tmpl не возможно минифицировать, то запишем оригинал
-               try {
-                  const obj = await pool.exec('uglifyJs', [file.path, newText, true]).timeout(60000);
-                  newText = obj.code;
-               } catch (error) {
-                  changesStore.markFileAsFailed(file.history[0]);
-                  logger.error({
-                     message: 'Ошибка минификации скомпилированного TMPL',
-                     error,
-                     moduleInfo,
-                     filePath: relativeFilePath.replace('.tmpl', '.min.tmpl')
-                  });
-               }
-            }
-         } catch (error) {
+         const [error, result] = await execInPool(
+            pool,
+            'buildTmpl',
+            [newText, relativeFilePath, componentsPropertiesFilePath],
+            relativeFilePath,
+            moduleInfo
+         );
+         if (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка компиляции TMPL',
@@ -63,6 +50,32 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                moduleInfo,
                filePath: relativeFilePath
             });
+         } else {
+            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
+            newText = result.text;
+
+            if (config.isReleaseMode) {
+               // если tmpl не возможно минифицировать, то запишем оригинал
+
+               const [errorUglify, obj] = await execInPool(
+                  pool,
+                  'uglifyJs',
+                  [file.path, newText, true],
+                  relativeFilePath.replace('.tmpl', '.min.tmpl'),
+                  moduleInfo
+               );
+               if (errorUglify) {
+                  changesStore.markFileAsFailed(file.history[0]);
+                  logger.error({
+                     message: 'Ошибка минификации скомпилированного TMPL',
+                     errorUglify,
+                     moduleInfo,
+                     filePath: relativeFilePath.replace('.tmpl', '.min.tmpl')
+                  });
+               } else {
+                  newText = obj.code;
+               }
+            }
          }
 
          if (outputMinFile) {
@@ -81,7 +94,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при компиляции TMPL',
+            message: "Ошибка builder'а при компиляции TMPL",
             error,
             moduleInfo,
             filePath: file.path

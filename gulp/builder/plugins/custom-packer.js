@@ -1,13 +1,12 @@
 'use strict';
 
-const
-   path = require('path'),
+const path = require('path'),
    through = require('through2'),
    packHelpers = require('../../../lib/pack/helpers/custompack'),
    customPacker = require('../../../lib/pack/custom-packer'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function generatePackageJson(depsTree, results, root, application, splittedCore) {
+module.exports = function generatePackageJson(config, depsTree, results, root, application, splittedCore) {
    return through.obj(async function onTransform(file, encoding, callback) {
       let currentConfig;
       try {
@@ -29,7 +28,8 @@ module.exports = function generatePackageJson(depsTree, results, root, applicati
          root,
          application,
          splittedCore,
-         true
+         true,
+         config.localizations
       );
 
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundles');

@@ -37,7 +37,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
             this.push(contentsJsonFile);
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });

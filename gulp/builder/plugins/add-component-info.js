@@ -4,7 +4,8 @@ const through = require('through2'),
    path = require('path'),
    helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../helpers/exec-in-pool');
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
@@ -31,10 +32,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             callback(null, file);
             return;
          }
-         let componentInfo;
-         try {
-            componentInfo = await pool.exec('parseJsComponent', [file.contents.toString()]).timeout(60000);
-         } catch (error) {
+
+         const [error, componentInfo] = await execInPool(
+            pool,
+            'parseJsComponent',
+            [file.contents.toString()],
+            file.history[0],
+            moduleInfo
+         );
+         if (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка при обработке JS компонента',

@@ -48,7 +48,8 @@ describe('custompack', () => {
             application,
             configsArray[0],
             true,
-            true
+            true,
+            []
          );
          result = currentResult;
       } catch (err) {

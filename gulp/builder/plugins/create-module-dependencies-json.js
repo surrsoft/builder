@@ -96,13 +96,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             const markupCache = changesStore.getMarkupCache(moduleInfo.name);
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
-               if (markupObj.nodeName.startsWith('tmpl!')) {
-                  json.links[markupObj.nodeName] = markupObj.dependencies || [];
+               if (markupObj) {
+                  if (markupObj.nodeName.startsWith('tmpl!')) {
+                     json.links[markupObj.nodeName] = markupObj.dependencies || [];
+                  }
+                  json.nodes[markupObj.nodeName] = {
+                     amd: true,
+                     path: filePathToRelativeInResources(filePath)
+                  };
                }
-               json.nodes[markupObj.nodeName] = {
-                  amd: true,
-                  path: filePathToRelativeInResources(filePath)
-               };
             }
 
             const cssFiles = changesStore
@@ -128,7 +130,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             changesStore.storeLocalModuleDependencies(json);
          } catch (error) {
             logger.error({
-               message: 'Ошибка Builder\'а',
+               message: "Ошибка Builder'а",
                error,
                moduleInfo
             });
