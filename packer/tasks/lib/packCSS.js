@@ -53,7 +53,9 @@ function cssPacker(filesToPack, currentRoot) {
    return cssHelpers.splitIntoBatches(
       4000,
       cssHelpers.bumpImportsUp(
-         Object.keys(filesToPack).map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath])).join('\n')
+         Object.keys(filesToPack)
+            .map(filePath => cssHelpers.rebaseUrls(currentRoot, filePath, filesToPack[filePath]))
+            .join('\n')
       )
    );
 }
@@ -69,9 +71,19 @@ function cssGetTargetNode(dom, filePath, buildNumber) {
    });
 }
 
-
-function packageSingleCss(filePath, dom, root, packageHome, buildNumber) {
-   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, buildNumber, cssCollector, cssPacker, cssGetTargetNode, 'css');
+function packageSingleCss(filePath, dom, root, packageHome, buildNumber, gulp) {
+   return domHelpers.packageSingleFile(
+      filePath,
+      dom,
+      root,
+      packageHome,
+      buildNumber,
+      cssCollector,
+      cssPacker,
+      cssGetTargetNode,
+      'css',
+      gulp
+   );
 }
 
 module.exports = {
@@ -81,7 +93,7 @@ module.exports = {
          htmlFiles,
          async(filePath) => {
             const dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
-            const newDom = await packageSingleCss(filePath, dom, root, packageHome, buildNumber);
+            const newDom = await packageSingleCss(filePath, dom, root, packageHome, buildNumber, false);
             await fs.writeFile(filePath, domHelpers.stringify(newDom));
          },
          { concurrency: 20 }

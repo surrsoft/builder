@@ -85,7 +85,7 @@ async function checkFiles(root, sourceFile, result) {
    const filesNotFound = [];
    for (const packItem of result.files) {
       const fullPath = path.join(root, packItem);
-      if (!await fs.pathExists(fullPath)) {
+      if (!(await fs.pathExists(fullPath))) {
          filesNotFound.push(packItem);
       }
    }
@@ -102,18 +102,27 @@ async function packageSingleFile(
    collector,
    packer,
    nodeProducer,
-   ext
+   ext,
+   gulp
 ) {
-   const
-      results = collector(dom).filter(result => result.files.length > 1);
+   const results = collector(dom).filter(result => result.files.length > 1);
 
    for (const result of results) {
       // убираем версию из линка, чтобы не возникало проблем с чтением fs-либой
-      result.files = result.files.map(filePath => filePath.replace(/\.v.+?(\.css|\.js)$/, '.min$1'));
+      result.files = result.files.map((filePath) => {
+         let newFilePath = filePath.replace(/\.v.+?(\.css|\.js)$/, '.min$1');
+         newFilePath = newFilePath.replace('%{RESOURCE_ROOT}', '/resources/');
+         newFilePath = newFilePath.replace(
+            '%{WI.SBIS_ROOT}',
+            gulp ? '/resources/WS.Core/' : '/ws/'
+         );
+         return newFilePath;
+      });
+
       const filesNotFound = await checkFiles(root, htmlFilePath, result);
       if (filesNotFound !== '') {
          logger.warning({
-            message: `Can't find files for pack: ${filesNotFound}`,
+            message: `Не нашли файлы для паковки: ${filesNotFound}`,
             filePath: htmlFilePath
          });
          continue;
@@ -125,20 +134,21 @@ async function packageSingleFile(
             const prettyFilename = filename;
             return !(
                prettyFilename.includes('resources/Controls') ||
-                     (prettyFilename.includes('resources/SBIS3.CONTROLS') &&
-                        !prettyFilename.includes('resources/SBIS3.CONTROLS/themes'))
+               (prettyFilename.includes('resources/SBIS3.CONTROLS') &&
+                  !prettyFilename.includes('resources/SBIS3.CONTROLS/themes'))
             );
          });
       }
       const filesToPack = {};
-      await pMap(filesPathsToPack, async(filePath) => {
-         filesToPack[filePath] = await fs.readFile(filePath, 'utf8');
-      }, { concurrency: 5 });
-
-      const packedContent = packer(
-         filesToPack,
-         root
+      await pMap(
+         filesPathsToPack,
+         async(filePath) => {
+            filesToPack[filePath] = await fs.readFile(filePath, 'utf8');
+         },
+         { concurrency: 5 }
       );
+
+      const packedContent = packer(filesToPack, root);
 
       const packedFiles = [];
       let idx = 0;
@@ -161,8 +171,10 @@ async function packageSingleFile(
 
          // залоггируем статические html, которые не имеют линки с атрибутом ws-include-css
          if (!cssTarget) {
-            logger.info(`location: ${htmlFilePath}. Для данной html не прописана линка с атрибутом ws-include-css.` +
-               'Стили будут вставлены в конце head, что может привести к изменению порядка подгрузки стилей.');
+            logger.info(
+               `location: ${htmlFilePath}. Для данной html не прописана линка с атрибутом ws-include-css.` +
+                  'Стили будут вставлены в конце head, что может привести к изменению порядка подгрузки стилей.'
+            );
             cssTarget = dom.getElementsByTagName('head')[0].lastChild;
          }
 

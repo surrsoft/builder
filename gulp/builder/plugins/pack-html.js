@@ -28,23 +28,26 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
          } else {
             let dom = domHelpers.domify(text);
             const root = path.dirname(config.rawConfig.output),
-               buildNumber = config.version;
+               buildNumber = config.version,
+               replacePath = !config.multiService;
 
             dom = await packCss.packageSingleCss(
                file.path,
                dom,
                root,
                path.join(config.rawConfig.output, 'WI.SBIS/packer/css'),
-               buildNumber
+               buildNumber,
+               true
             );
             dom = await packJs.packageSingleJs(
                file.path,
                dom,
                root,
                path.join(config.rawConfig.output, 'WI.SBIS/packer/js'),
-               buildNumber
+               buildNumber,
+               true
             );
-            const replacePath = !config.multiService;
+
             dom = await packHtml.packageSingleHtml(
                file.path,
                dom,
@@ -54,7 +57,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                '',
                config.version,
                replacePath,
-               path.join(config.rawConfig.output, config.urlServicePath),
+               config.rawConfig.output,
                config.localizations
             );
 

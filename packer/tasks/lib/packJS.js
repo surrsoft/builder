@@ -5,8 +5,7 @@ const domHelpers = require('./../../lib/domHelpers');
 const pMap = require('p-map');
 
 function jsCollector(dom) {
-   const
-      scripts = dom.getElementsByTagName('script'),
+   const scripts = dom.getElementsByTagName('script'),
       packs = {};
 
    let defId = 0,
@@ -78,21 +77,31 @@ function jsNodeProducer(dom, path, buildNumber) {
    return script;
 }
 
-function packageSingleJs(filePath, dom, root, packageHome, buildNumber) {
-   return domHelpers.packageSingleFile(filePath, dom, root, packageHome, buildNumber, jsCollector, jsPacker, jsNodeProducer, 'js');
+function packageSingleJs(filePath, dom, root, packageHome, buildNumber, gulp) {
+   return domHelpers.packageSingleFile(
+      filePath,
+      dom,
+      root,
+      packageHome,
+      buildNumber,
+      jsCollector,
+      jsPacker,
+      jsNodeProducer,
+      'js',
+      gulp
+   );
 }
 function gruntPackJS(htmlFiles, root, packageHome, buildNumber) {
    return pMap(
       htmlFiles,
       async(filePath) => {
          const dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
-         const newDom = await packageSingleJs(filePath, dom, root, packageHome, buildNumber);
+         const newDom = await packageSingleJs(filePath, dom, root, packageHome, buildNumber, false);
          await fs.writeFile(filePath, domHelpers.stringify(newDom));
       },
       { concurrency: 20 }
    );
 }
-
 
 module.exports = {
    packageSingleJs,
