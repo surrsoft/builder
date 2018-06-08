@@ -197,7 +197,9 @@ class ChangesStore {
             removePromises.push(fs.remove(this.config.rawConfig.output));
          }
       }
-      return Promise.all(removePromises);
+      logger.info('Запускается очистка кэша');
+      await Promise.all(removePromises);
+      logger.info('Очистка кэша завершена');
    }
 
    async isFileChanged(filePath, fileMTime, moduleInfo) {
