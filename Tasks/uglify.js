@@ -89,7 +89,8 @@ module.exports = function uglifyJsTask(grunt) {
                currentPath = path.normalize(file),
                originalText = fs.readFileSync(currentPath, 'utf8'),
                isMarkup = originalText.match(/define\("(tmpl!|html!)/),
-               currentEXT = getCurrentEXT(currentPath);
+               currentEXT = getCurrentEXT(currentPath),
+               timeBeforeUglify = new Date();
 
             let
                currentEXTString = currentEXT.toString(),
@@ -97,7 +98,7 @@ module.exports = function uglifyJsTask(grunt) {
                currentNode = nodes.filter(function(node) {
                   return helpers.prettifyPath(mDeps.nodes[node].path) === currentNodePath;
                }),
-               sourceMapUrl, minModulePath, minMapPath, timeBeforeUglify;
+               sourceMapUrl, minModulePath, minMapPath;
 
             currentEXTString = currentEXTString.match(/\.js$/) ? currentEXTString : currentEXTString.slice(2, currentEXTString.length - 2);
 
@@ -145,8 +146,6 @@ module.exports = function uglifyJsTask(grunt) {
                      });
                   }
                } else {
-                  timeBeforeUglify = new Date();
-
                   /**
                    * для остальных модулей выполняем стандартную минификацию
                    */
