@@ -51,6 +51,7 @@ module.exports = function register(grunt) {
             self.data.root,
             self.data.application,
             bundlesOptions.splittedCore,
+            false,
             Object.keys(coreConstants.availableLanguage)
          );
          results.bundlesJson = results.bundles;
