@@ -19,7 +19,7 @@
       "test": "node ./node_modules/mocha/bin/mocha --timeout 120000 -R xunit --reporter-options output=xunit-result.xml > xunit.log",
       "lint": "node ./node_modules/eslint/bin/eslint --no-color --no-eslintrc -c=.eslintrc -f=stylish .",
       "fix": "node ./node_modules/eslint/bin/eslint --no-eslintrc -c=.eslintrc --fix .",
-      "coverage": "node ./node_modules/nyc/bin/nyc --reporter=html --all ./node_modules/.bin/mocha --timeout 60000 -R xunit --reporter-options output=xunit-result.xml > xunit.log"
+      "coverage": "node ./node_modules/nyc/bin/nyc --reporter=html --all ./node_modules/.bin/mocha --timeout 120000 -R xunit --reporter-options output=xunit-result.xml > xunit.log"
    },
    "dependencies": {
       "async": "2.6.1",
