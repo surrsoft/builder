@@ -92,7 +92,8 @@ module.exports = function register(grunt) {
                   const currentPath = path.normalize(file),
                      originalText = fs.readFileSync(currentPath, 'utf8'),
                      isMarkup = originalText.match(/define\("(tmpl!|html!)/),
-                     currentEXT = getCurrentEXT(currentPath);
+                     currentEXT = getCurrentEXT(currentPath),
+                     timeBeforeUglify = new Date();
 
                   const currentNodePath = helpers.prettifyPath(
                         helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')
@@ -179,6 +180,18 @@ module.exports = function register(grunt) {
                         filePath: currentPath
                      });
                      fs.writeFileSync(targetPath, originalText);
+                  }
+
+                  const
+                     timeAfterUglify = new Date(),
+                     difference = timeAfterUglify - timeBeforeUglify;
+
+                  // если минификация длится больше 5 секунд, предупреждаем об этом
+                  if (difference >= 5000) {
+                     logger.warning({
+                        message: `Долгий процесс минификации для файла: ${difference / 1000} секунд`,
+                        filePath: file
+                     });
                   }
                });
 
