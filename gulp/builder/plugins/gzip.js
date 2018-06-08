@@ -11,16 +11,16 @@ const excludeRegexes = [
    /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
-   /\/node_modules\/.*/,
-   /\/ServerEvent\/worker\/.*/,
+   /[/\\]node_modules[/\\].*/,
+   /[/\\]ServerEvent[/\\]worker[/\\].*/,
    /.*\.routes\.js$/,
    /.*\.original\.js$/,
    /.*\.modulepack\.js$/,
    /.*\.test\.js$/,
    /.*\.esp\.json$/,
-   /.*\/data-providers\/.*\.js$/,
-   /.*\/design\/.*\.js$/,
-   /.*\/node_modules\/.*\.js$/
+   /.*[/\\]data-providers[/\\].*\.js$/,
+   /.*[/\\]design[/\\].*\.js$/,
+   /.*[/\\]node_modules[/\\].*\.js$/
 ];
 
 module.exports = function declarePlugin(moduleInfo, pool) {

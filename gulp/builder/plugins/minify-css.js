@@ -7,7 +7,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
-const excludeRegexes = [/.*\.min\.css$/, /\/node_modules\/.*/, /\/design\/.*/, /\/service\/.*/];
+const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
 
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
