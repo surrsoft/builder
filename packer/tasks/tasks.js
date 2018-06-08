@@ -6,8 +6,6 @@ const modDeps = require('./../lib/moduleDependencies');
 const { gruntPackHTML } = require('./lib/packHTML');
 const packOwnDeps = require('./lib/pack-own-deps');
 const makeDependenciesGraph = require('./lib/collectDependencies');
-const { gruntPackCSS } = require('./lib/packCSS');
-const packJS = require('./lib/packJS').gruntPackJS;
 const logger = require('../../lib/logger').logger();
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;
@@ -129,62 +127,8 @@ function gruntPackOwnDependenciesTask() {
    };
 }
 
-function gruntPackCSSTask(grunt) {
-   return async function packCss() {
-      try {
-         logger.debug('Запускается задача паковки css.');
-
-         const { root } = this.data,
-            done = this.async(),
-            applicationRoot = path.join(root, this.data.application),
-            htmlFiles = [],
-            buildNumber = grunt.option('versionize');
-
-         const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
-         sourceFiles.forEach((pathToSource) => {
-            htmlFiles.push(path.join(applicationRoot, pathToSource));
-         });
-
-         await gruntPackCSS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildNumber);
-
-         logger.debug('Задача паковки css выполнена.');
-         done();
-      } catch (error) {
-         logger.error({ error });
-      }
-   };
-}
-
-function gruntPackJSTask(grunt) {
-   return async function packJs() {
-      try {
-         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Запускается задача паковки js.`);
-
-         const { root } = this.data,
-            done = this.async(),
-            applicationRoot = path.join(root, this.data.application),
-            htmlFiles = [],
-            buildNumber = grunt.option('versionize');
-
-         const sourceFiles = grunt.file.expand({ cwd: applicationRoot }, this.data.src);
-         sourceFiles.forEach((pathToSource) => {
-            htmlFiles.push(path.join(applicationRoot, pathToSource));
-         });
-
-         await packJS(htmlFiles, root, path.join(applicationRoot, this.data.packages), buildNumber);
-
-         grunt.log.ok(`${grunt.template.today('hh:MM:ss')}: Задача паковки js выполнена.`);
-         done();
-      } catch (error) {
-         logger.error({ error });
-      }
-   };
-}
-
 module.exports = function registerTasks(grunt) {
    grunt.registerMultiTask('packwsmod', 'TODO', gruntPackModulesTask(grunt));
    grunt.registerMultiTask('owndepspack', 'TODO', gruntPackOwnDependenciesTask(grunt));
    grunt.registerMultiTask('collect-dependencies', 'TODO', gruntCollectDependenciesTask(grunt));
-   grunt.registerMultiTask('packcss', 'TODO', gruntPackCSSTask(grunt));
-   grunt.registerMultiTask('packjs', 'TODO', gruntPackJSTask(grunt));
 };

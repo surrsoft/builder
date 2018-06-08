@@ -10,9 +10,6 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
-/*
- * сами less не должны попадать в стенд или дистрибутив
- */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
@@ -26,7 +23,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
 
          if (file.cached) {
             changesStore.addOutputFile(file.history[0], outputPath);
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -41,7 +38,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                filePath: cssInSources,
                moduleInfo
             });
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -59,7 +56,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                filePath: file.history[0],
                moduleInfo
             });
-            callback();
+            callback(null, file);
             return;
          }
 
@@ -86,6 +83,6 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             filePath: file.history[0]
          });
       }
-      callback();
+      callback(null, file);
    });
 };
