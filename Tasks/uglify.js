@@ -146,6 +146,7 @@ module.exports = function uglifyJsTask(grunt) {
                   }
                } else {
                   timeBeforeUglify = new Date();
+
                   /**
                    * для остальных модулей выполняем стандартную минификацию
                    */
