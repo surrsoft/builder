@@ -4,8 +4,6 @@ const through = require('through2'),
    path = require('path'),
    domHelpers = require('../../../packer/lib/domHelpers'),
    logger = require('../../../lib/logger').logger(),
-   packCss = require('../../../packer/tasks/lib/packCSS'),
-   packJs = require('../../../packer/tasks/lib/packJS'),
    packHtml = require('../../../packer/tasks/lib/packHTML'),
    execInPool = require('../../helpers/exec-in-pool');
 
@@ -28,25 +26,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
          } else {
             let dom = domHelpers.domify(text);
             const root = path.dirname(config.rawConfig.output),
-               buildNumber = config.version,
                replacePath = !config.multiService;
-
-            dom = await packCss.packageSingleCss(
-               file.path,
-               dom,
-               root,
-               path.join(config.rawConfig.output, 'WI.SBIS/packer/css'),
-               buildNumber,
-               true
-            );
-            dom = await packJs.packageSingleJs(
-               file.path,
-               dom,
-               root,
-               path.join(config.rawConfig.output, 'WI.SBIS/packer/js'),
-               buildNumber,
-               true
-            );
 
             dom = await packHtml.packageSingleHtml(
                file.path,

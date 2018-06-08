@@ -83,7 +83,7 @@ module.exports = function gruntMain(grunt) {
           * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
           * packjs и packcss работают с *.min.* файлами
           */
-         defaultTasks.push('packcss', 'owndepspack', 'uglify', 'packjs', 'custompack', 'packwsmod', 'gzip');
+         defaultTasks.push('owndepspack', 'uglify', 'custompack', 'packwsmod', 'gzip');
       }
 
       if (!packaging && versionize && typeof versionize === 'string') {
