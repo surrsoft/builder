@@ -135,7 +135,7 @@ const helpers = {
                   // Remove initial collection from DOM
                   removeDomCollection(result.nodes);
 
-                  let cssTarget, parentTargetNode, openComment, closeComment;
+                  let cssTarget, parentTargetNode;
                   if (ext === 'css') {
                      cssTarget = dom.getElementById('ws-include-css');
 
@@ -147,9 +147,6 @@ const helpers = {
                      }
 
                      parentTargetNode = cssTarget.parentNode;
-                     openComment = mkCommentNode(cssTarget.ownerDocument, '[packedScripts]');
-                     closeComment = mkCommentNode(cssTarget.ownerDocument, '[/packedScripts]');
-                     parentTargetNode.insertBefore(openComment, cssTarget);
                   }
 
                   // For each packed file create new DOM node and attach it to document
@@ -163,10 +160,6 @@ const helpers = {
                         dom.getElementsByTagName('head')[0].appendChild(newNode);
                      }
                   });
-
-                  if (ext === 'css') {
-                     parentTargetNode.insertBefore(closeComment, cssTarget);
-                  }
 
                   // update HTML
                   fs.writeFileSync(f, stringify(dom));
