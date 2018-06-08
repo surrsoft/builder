@@ -155,7 +155,7 @@ async function packageSingleFile(
       // Remove initial collection from DOM
       removeDomCollection(result.nodes);
 
-      let cssTarget, parentTargetNode, openComment, closeComment;
+      let cssTarget, parentTargetNode;
       if (ext === 'css') {
          cssTarget = dom.getElementById('ws-include-css');
 
@@ -167,9 +167,6 @@ async function packageSingleFile(
          }
 
          parentTargetNode = cssTarget.parentNode;
-         openComment = mkCommentNode(cssTarget.ownerDocument, '[packedScripts]');
-         closeComment = mkCommentNode(cssTarget.ownerDocument, '[/packedScripts]');
-         parentTargetNode.insertBefore(openComment, cssTarget);
       }
 
       // For each packed file create new DOM node and attach it to document
@@ -182,10 +179,6 @@ async function packageSingleFile(
          } else {
             dom.getElementsByTagName('head')[0].appendChild(newNode);
          }
-      }
-
-      if (ext === 'css') {
-         parentTargetNode.insertBefore(closeComment, cssTarget);
       }
    }
    return dom;
