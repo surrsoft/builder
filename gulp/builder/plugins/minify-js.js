@@ -11,11 +11,11 @@ const excludeRegexes = [
    /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
-   /.*\/node_modules\/.*/,
-   /.*\/ServerEvent\/worker\/.*/,
+   /.*[/\\]node_modules[/\\].*/,
+   /.*[/\\]ServerEvent[/\\]worker[/\\].*/,
 
    // https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4
-   /.*\/EDO2\/Route\/.*/
+   /.*[/\\]EDO2[/\\]Route[/\\].*/
 ];
 
 /*

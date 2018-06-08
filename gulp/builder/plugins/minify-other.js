@@ -8,7 +8,7 @@ const through = require('through2'),
 
 const includeExts = ['.jstpl', '.json'];
 
-const excludeRegexes = [/.*\.package\.json$/, /\/node_modules\/.*/];
+const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
 
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
