@@ -92,7 +92,8 @@ module.exports = function register(grunt) {
                   const currentPath = path.normalize(file),
                      originalText = fs.readFileSync(currentPath, 'utf8'),
                      isMarkup = originalText.match(/define\("(tmpl!|html!)/),
-                     currentEXT = getCurrentEXT(currentPath);
+                     currentEXT = getCurrentEXT(currentPath),
+                     timeBeforeUglify = new Date();
 
                   const currentNodePath = helpers.prettifyPath(
                         helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')
@@ -104,8 +105,7 @@ module.exports = function register(grunt) {
                   let currentEXTString = currentEXT.toString(),
                      sourceMapUrl,
                      minModulePath,
-                     minMapPath,
-                     timeBeforeUglify;
+                     minMapPath;
 
                   currentEXTString = currentEXTString.match(/\.js$/)
                      ? currentEXTString
@@ -157,8 +157,6 @@ module.exports = function register(grunt) {
                            });
                         }
                      } else {
-                        timeBeforeUglify = new Date();
-
                         /**
                          * для остальных модулей выполняем стандартную минификацию
                          */
