@@ -84,29 +84,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'Error.less',
          'ForChange.css',
-         'ForChange.less',
          'ForRename_old.css',
-         'ForRename_old.less',
          'Stable.css',
-         'Stable.less',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
-
-      // запомним время модификации незменяемого файла и изменяемого в "стенде"
-      const stableCssOutputPath = path.join(moduleOutputFolder, 'Stable.less');
-      const stableLessOutputPath = path.join(moduleOutputFolder, 'Stable.less');
-      const forChangeCssOutputPath = path.join(moduleOutputFolder, 'ForChange.less');
-      const forChangeLessOutputPath = path.join(moduleOutputFolder, 'ForChange.less');
-      const mTimeStableCss = await getMTime(stableCssOutputPath);
-      const mTimeStableLess = await getMTime(stableLessOutputPath);
-      const mTimeForChangeCss = await getMTime(forChangeCssOutputPath);
-      const mTimeChangeLess = await getMTime(forChangeLessOutputPath);
 
       // изменим "исходники"
       await timeoutForMacOS();
@@ -124,25 +110,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'Error.less',
          'ForChange.css',
-         'ForChange.less',
          'ForRename_new.css',
-         'ForRename_new.less',
          'Stable.css',
-         'Stable.less',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
-
-      // проверим время модификации незменяемого файла и изменяемого в "стенде"
-      (await getMTime(stableCssOutputPath)).should.equal(mTimeStableCss);
-      (await getMTime(stableLessOutputPath)).should.equal(mTimeStableLess);
-      (await getMTime(forChangeCssOutputPath)).should.not.equal(mTimeForChangeCss);
-      (await getMTime(forChangeLessOutputPath)).should.not.equal(mTimeChangeLess);
 
       await clearWorkspace();
    });
@@ -670,7 +646,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          // файлы из исходников
          (await isSymlink('template.html')).should.equal(true);
          (await isSymlink('TestHtmlTmpl.html.tmpl')).should.equal(true);
-         (await isSymlink('TestLess.less')).should.equal(true);
          (await isSymlink('TestStaticHtml.js')).should.equal(true);
 
          // генерируемые файлы из исходников
