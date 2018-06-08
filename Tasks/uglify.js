@@ -104,7 +104,8 @@ module.exports = function register(grunt) {
                   let currentEXTString = currentEXT.toString(),
                      sourceMapUrl,
                      minModulePath,
-                     minMapPath;
+                     minMapPath,
+                     timeBeforeUglify;
 
                   currentEXTString = currentEXTString.match(/\.js$/)
                      ? currentEXTString
@@ -156,6 +157,8 @@ module.exports = function register(grunt) {
                            });
                         }
                      } else {
+                        timeBeforeUglify = new Date();
+
                         /**
                          * для остальных модулей выполняем стандартную минификацию
                          */
@@ -179,6 +182,18 @@ module.exports = function register(grunt) {
                         filePath: currentPath
                      });
                      fs.writeFileSync(targetPath, originalText);
+                  }
+
+                  const
+                     timeAfterUglify = new Date(),
+                     difference = timeAfterUglify - timeBeforeUglify;
+
+                  // если минификация длится больше 5 секунд, предупреждаем об этом
+                  if (difference >= 5000) {
+                     logger.warning({
+                        message: `Долгий процесс минификации для файла: ${difference / 1000} секунд`,
+                        filePath: file
+                     });
                   }
                });
 
