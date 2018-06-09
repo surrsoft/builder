@@ -77,6 +77,11 @@ module.exports = function uglifyJsTask(grunt) {
          mDeps = JSON.parse(fs.readFileSync(path.join(applicationRoot, 'resources', 'module-dependencies.json'))),
          nodes = Object.keys(mDeps.nodes);
 
+      nodes.forEach((node) => {
+         const modulePath = mDeps.nodes[node].path.replace(/\\/g, '/');
+         mDeps.nodes[node].path = modulePath;
+      });
+
       // Iterate over all src-dest file pairs.
       async.eachSeries(this.files, function(currentFile, done) {
          const availableFiles = getAvailableFiles(currentFile.src);
@@ -96,7 +101,7 @@ module.exports = function uglifyJsTask(grunt) {
                currentEXTString = currentEXT.toString(),
                currentNodePath = helpers.prettifyPath(helpers.removeLeadingSlash(currentPath.replace(applicationRoot, '')).replace('.modulepack', '')),
                currentNode = nodes.filter(function(node) {
-                  return helpers.prettifyPath(mDeps.nodes[node].path) === currentNodePath;
+                  return mDeps.nodes[node].path === currentNodePath;
                }),
                sourceMapUrl, minModulePath, minMapPath;
 
