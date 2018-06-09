@@ -79,7 +79,7 @@ module.exports = function(grunt) {
           * выполняем задачу минификации до какой-либо паковки. Минификатор физически не вывозит столь огромный объём
           * js-кода и сваливается через долгое время по таймауту, причём без ошибок.
           */
-         defaultTasks.push('packjs', 'packcss', 'owndepspack', 'uglify', 'custompack', 'packwsmod', 'gzip');
+         defaultTasks.push('owndepspack', 'uglify', 'custompack', 'packwsmod', 'gzip');
       }
 
       if (!packaging && versionize && typeof versionize === 'string') {
