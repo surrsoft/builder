@@ -24,7 +24,6 @@
    "dependencies": {
       "async": "2.6.1",
       "autoprefixer": "8.5.1",
-      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
       "clean-css": "4.1.11",
       "escodegen": "1.9.1",
       "esprima": "4.0.0",
@@ -41,11 +40,12 @@
       "humanize": "0.0.9",
       "less": "3.0.4",
       "minimatch": "3.0.4",
+      "p-map": "1.2.0",
       "postcss": "6.0.22",
       "postcss-safe-parser": "3.0.1",
       "postcss-url": "7.3.2",
       "requirejs": "2.3.5",
-      "p-map": "1.2.0",
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.350",
       "strip-bom": "3.0.0",
       "tensor-xmldom": "0.2.0-b9",
@@ -56,6 +56,7 @@
       "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.350"
    },
    "devDependencies": {
+      "@tensor-corp/eslint-config": "2.0.1",
       "chai": "4.1.2",
       "chai-as-promised": "7.1.1",
       "eslint": "4.19.1",
@@ -65,8 +66,7 @@
       "eslint-plugin-promise": "3.8.0",
       "mocha": "5.2.0",
       "nyc": "11.8.0",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350",
-      "@tensor-corp/eslint-config": "2.0.1"
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350"
    },
    "engines": {
       "node": ">=8.9.3"

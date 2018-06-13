@@ -149,19 +149,24 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
          return module.fullPath;
       });
 
-   const [jsResult, cssResult, dictResult, localeCssResult] = await Promise.all([
+   const dictResult = {}, localeCssResult = {};
+   const [jsResult, cssResult] = await Promise.all([
       nativePackFiles(jsForPack, applicationRoot, themeName),
       packCSS(cssForPack, applicationRoot),
       Promise.all(
-         Object.keys(orderQueue.dict).map(locale => nativePackFiles(orderQueue.dict[locale], applicationRoot))
+         Object.keys(orderQueue.dict).map(async(locale) => {
+            dictResult[locale] = await nativePackFiles(orderQueue.dict[locale], applicationRoot);
+         })
       ),
       Promise.all(
-         Object.keys(orderQueue.cssForLocale).map(locale => packCSS(
-            orderQueue.cssForLocale[locale].map(function onlyPath(module) {
-               return module.fullPath;
-            }),
-            applicationRoot
-         ))
+         Object.keys(orderQueue.cssForLocale).map(async(locale) => {
+            localeCssResult[locale] = await packCSS(
+               orderQueue.cssForLocale[locale].map(function onlyPath(module) {
+                  return module.fullPath;
+               }),
+               applicationRoot
+            );
+         })
       )
    ]);
 
