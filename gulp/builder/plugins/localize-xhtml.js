@@ -17,12 +17,22 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             return;
          }
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-         const newText = await execInPool(pool, 'prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
-         file.contents = Buffer.from(newText);
+         const [error, newText] = await execInPool(pool, 'prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
+         if (error) {
+            changesStore.markFileAsFailed(file.history[0]);
+            logger.error({
+               message: 'Ошибка при локализации XHTML',
+               error,
+               moduleInfo,
+               filePath: file.path
+            });
+         } else {
+            file.contents = Buffer.from(newText);
+         }
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка при локализации XHTML',
+            message: 'Ошибка builder\'а при локализации XHTML',
             error,
             moduleInfo,
             filePath: file.path
