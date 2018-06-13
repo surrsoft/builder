@@ -24,6 +24,11 @@ try {
    // логгер - прежде всего
    const logger = require('./lib/logger').setGulpLogger();
 
+   // важно вернуть правильный код при выходе. сборка должна падать, если есть ошибки
+   process.on('exit', () => {
+      logger.correctExitCode();
+   });
+
    const gulp = require('gulp');
    logger.debug(`Параметры запуска: ${JSON.stringify(process.argv)}`);
 
