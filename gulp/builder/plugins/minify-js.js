@@ -11,6 +11,7 @@ const excludeRegexes = [
    /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
+   /.*\.worker\.js$/,
    /.*[/\\]node_modules[/\\].*/,
    /.*[/\\]ServerEvent[/\\]worker[/\\].*/,
 
