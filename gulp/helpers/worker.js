@@ -67,8 +67,8 @@ async function prepareXHTML(text, componentsPropertiesFilePath) {
    return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
-async function buildXhtml(text) {
-   return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text));
+async function buildXhtml(text, relativeFilePath) {
+   return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
 }
 async function collectWords(modulePath, filePath, componentsPropertiesFilePath) {
    if (!componentsProperties) {
