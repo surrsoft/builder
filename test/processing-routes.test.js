@@ -64,7 +64,10 @@ describe('processing routes.js', () => {
 
          expect(() => {
             processingRoutes.parseRoutes(text);
-         }).to.throw('Не удалось найти ни одного корректного роутинга в объекте');
+         }).to.throw(
+            'Некоторые роутинги не являются корректными. ' +
+            'Роутинг должен задаваться строкой, которая начинается с символа "/". Список некорректных роутингов: test_1'
+         );
       });
       it('return string', () => {
          const text = 'module.exports = "TEST";';
