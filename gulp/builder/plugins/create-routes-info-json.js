@@ -21,16 +21,24 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             return;
          }
 
-         const [error, routeInfo] = await execInPool(pool, 'parseRoutes', [file.contents.toString()]);
+         const [error, routeInfo] = await execInPool(
+            pool,
+            'parseRoutes',
+            [file.contents.toString()],
+            file.history[0],
+            moduleInfo
+         );
          if (error) {
+            changesStore.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка при обработке файла роутинга',
                filePath: file.history[0],
                error,
                moduleInfo
             });
+         } else {
+            changesStore.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
          }
-         changesStore.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
          callback(null, file);
       },
 
