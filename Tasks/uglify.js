@@ -191,7 +191,7 @@ module.exports = function register(grunt) {
 
                   // если минификация длится больше 5 секунд, предупреждаем об этом
                   if (difference >= 5000) {
-                     logger.warning({
+                     logger.info({
                         message: `Долгий процесс минификации для файла: ${difference / 1000} секунд`,
                         filePath: file
                      });
