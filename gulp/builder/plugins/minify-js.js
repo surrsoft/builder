@@ -16,7 +16,11 @@ const excludeRegexes = [
    /.*[/\\]ServerEvent[/\\]worker[/\\].*/,
 
    // https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4
-   /.*[/\\]EDO2[/\\]Route[/\\].*/
+   /.*[/\\]EDO2[/\\]Route[/\\].*/,
+
+   // файлы require минимизировать не нужно, а плагины нужно
+   // https://online.sbis.ru/opendoc.html?guid=c0654d14-b6b6-4dd4-b1ba-e89fb0d24b91
+   /.*[/\\]WS\.Core[/\\]ext[/\\]requirejs[/\\][^/\\]*\.js/
 ];
 
 /*
