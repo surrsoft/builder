@@ -24,7 +24,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
          }
          if (file.cached) {
             if (outputMinFile) {
-               changesStore.addOutputFile(file.history[0], outputMinFile);
+               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
             }
             callback(null, file);
             return;
@@ -87,7 +87,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                   history: [...file.history]
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile);
+            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } else {
             file.contents = Buffer.from(newText);
          }

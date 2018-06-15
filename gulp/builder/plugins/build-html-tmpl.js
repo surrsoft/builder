@@ -48,7 +48,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                });
             } else {
                const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
-               changesStore.addOutputFile(file.history[0], outputPath);
+               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
                this.push(
                   new Vinyl({
                      base: moduleInfo.output,

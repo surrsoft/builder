@@ -58,7 +58,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, module
                   const folderName = transliterate(moduleInfo.folderName);
                   moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
                   const outputPath = path.join(moduleInfo.output, result.outFileName);
-                  changesStore.addOutputFile(result.source, outputPath);
+                  changesStore.addOutputFile(result.source, outputPath, moduleInfo);
                   this.push(
                      new Vinyl({
                         base: moduleInfo.output,

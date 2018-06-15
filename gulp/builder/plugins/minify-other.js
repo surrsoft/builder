@@ -34,7 +34,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinFile);
+               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -67,7 +67,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                   contents: Buffer.from(newText)
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile);
+            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
