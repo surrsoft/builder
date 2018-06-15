@@ -50,6 +50,15 @@ function generateTaskForRemoveFiles(changesStore) {
    };
 }
 
+function getDirnameForModule(modules, moduleName) {
+   for (const module of modules) {
+      if (module.name === moduleName) {
+         return module.path;
+      }
+   }
+   return '';
+}
+
 function generateWorkflow(processArgv) {
    // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
@@ -60,7 +69,12 @@ function generateWorkflow(processArgv) {
    const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
+      maxWorkers: os.cpus().length - 1 || 1,
+      forkOpts: {
+         env: {
+            'ws-core-path': getDirnameForModule(config.rawConfig.modules, 'WS.Core')
+         }
+      }
    });
 
    const localizationEnable = config.localizations.length > 0;
