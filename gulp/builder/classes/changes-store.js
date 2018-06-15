@@ -118,6 +118,7 @@ class ChangesStore {
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
          this.currentStore.modulesCache[moduleInfo.name] = new ModuleCacheInfo();
+         this.currentStore.inputPaths[moduleInfo.path] = [];
       }
 
       this.filePath = path.join(this.config.cachePath, 'store.json');
@@ -261,10 +262,14 @@ class ChangesStore {
       return false;
    }
 
-   addOutputFile(filePath, outputFilePath) {
-      const prettyPath = helpers.prettifyPath(filePath);
+   addOutputFile(filePath, outputFilePath, moduleInfo) {
+      const prettyFilePath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
-      this.currentStore.inputPaths[prettyPath].push(outputPrettyPath);
+      if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
+         this.currentStore.inputPaths[prettyFilePath].push(outputPrettyPath);
+      } else {
+         this.currentStore.inputPaths[moduleInfo.path].push(outputPrettyPath);
+      }
    }
 
    getInputPathsByFolder(modulePath) {

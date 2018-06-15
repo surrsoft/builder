@@ -22,7 +22,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
          const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
 
          if (file.cached) {
-            changesStore.addOutputFile(file.history[0], outputPath);
+            changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
             callback(null, file);
             return;
          }
@@ -63,7 +63,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
          if (result.ignoreMessage) {
             logger.debug(result.ignoreMessage);
          } else {
-            changesStore.addOutputFile(file.history[0], outputPath);
+            changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
             changesStore.addDependencies(file.history[0], result.imports);
             this.push(
                new Vinyl({

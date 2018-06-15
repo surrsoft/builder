@@ -58,10 +58,10 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const outputModulepackJsFile = `${outputFileWoExt}.modulepack.js`;
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinJsFile);
-               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile);
-               changesStore.addOutputFile(file.history[0], outputMinJsMapFile);
-               changesStore.addOutputFile(file.history[0], outputModulepackJsFile);
+               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+               changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
+               changesStore.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -93,7 +93,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                            contents: Buffer.from(minified.map)
                         })
                      );
-                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile);
+                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                   }
                }
                this.push(
@@ -103,7 +103,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile);
+               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             } else {
                // минимизируем оригинальный JS
                // если файл не возможно минифицировать, то запишем оригинал
@@ -131,7 +131,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minOriginalText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile);
+               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
 
                // минимизируем JS c пакованными зависимостями
                // если файл не возможно минифицировать, то запишем оригинал
@@ -168,7 +168,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                            contents: Buffer.from(minified.map)
                         })
                      );
-                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile);
+                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                   }
                }
                this.push(
@@ -178,7 +178,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile);
+               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             }
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
