@@ -21,9 +21,9 @@ module.exports = function declarePlugin(config, moduleInfo) {
                return;
             }
             if (file.extname === '.json') {
-               indexer.addLocalizationJson(moduleInfo.output, file.path, locale);
+               indexer.addLocalizationJson(moduleInfo.path, file.path, locale);
             } else if (file.extname === '.css') {
-               indexer.addLocalizationCSS(moduleInfo.output, file.path, locale, file.contents.toString());
+               indexer.addLocalizationCSS(moduleInfo.path, file.path, locale, file.contents.toString());
             }
          } catch (error) {
             logger.error({

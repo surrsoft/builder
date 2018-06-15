@@ -16,6 +16,24 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль'),
    themesSourceFolder = path.join(sourceFolder, 'Тема Скрепка');
 
+const isSymlink = async(filePath) => {
+   const fullPath = path.join(moduleOutputFolder, filePath);
+   if (!(await fs.pathExists(fullPath))) {
+      return false;
+   }
+   const stat = await fs.lstat(fullPath);
+   return stat.isSymbolicLink();
+};
+
+const isRegularFile = async(filePath) => {
+   const fullPath = path.join(moduleOutputFolder, filePath);
+   if (!(await fs.pathExists(fullPath))) {
+      return false;
+   }
+   const stat = await fs.lstat(fullPath);
+   return !stat.isSymbolicLink() && stat.isFile();
+};
+
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
 };
@@ -621,24 +639,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      const isSymlink = async(filePath) => {
-         const fullPath = path.join(moduleOutputFolder, filePath);
-         if (!(await fs.pathExists(fullPath))) {
-            return false;
-         }
-         const stat = await fs.lstat(fullPath);
-         return stat.isSymbolicLink();
-      };
-
-      const isRegularFile = async(filePath) => {
-         const fullPath = path.join(moduleOutputFolder, filePath);
-         if (!(await fs.pathExists(fullPath))) {
-            return false;
-         }
-         const stat = await fs.lstat(fullPath);
-         return !stat.isSymbolicLink() && stat.isFile();
-      };
-
       const check = async() => {
          // запустим таску
          await runWorkflow();
@@ -659,6 +659,46 @@ describe('gulp/builder/generate-workflow.js', () => {
          (await isRegularFile('navigation-modules.json')).should.equal(true);
          (await isRegularFile('routes-info.json')).should.equal(true);
          (await isRegularFile('static_templates.json')).should.equal(true);
+      };
+
+      await check();
+
+      // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
+      await check();
+
+      await clearWorkspace();
+   });
+
+   // проверим, что js локализации корректно создаются. и что en-US.less попадает в lang/en-US/en-US.css
+   it('localization dictionary and style', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/localization');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         localization: ['en-US', 'ru-RU'],
+         'default-localization': 'ru-RU',
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      const check = async() => {
+         // запустим таску
+         await runWorkflow();
+
+         (await isRegularFile('lang/en-US/en-US.css')).should.equal(true);
+         (await isRegularFile('lang/en-US/en-US.js')).should.equal(true);
+         (await isRegularFile('lang/ru-RU/ru-RU.js')).should.equal(true);
+
+
+         (await isSymlink('lang/ru-RU/ru-RU.json')).should.equal(true);
       };
 
       await check();

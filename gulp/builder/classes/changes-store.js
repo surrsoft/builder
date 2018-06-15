@@ -268,6 +268,7 @@ class ChangesStore {
       if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
          this.currentStore.inputPaths[prettyFilePath].push(outputPrettyPath);
       } else {
+         // некоторые файлы являются производными от всего модуля. например en-US.js, en-US.css
          this.currentStore.inputPaths[moduleInfo.path].push(outputPrettyPath);
       }
    }
