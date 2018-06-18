@@ -8,91 +8,14 @@ const path = require('path'),
 const helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
    packageJson = require('../../../package.json'),
+   StoreInfo = require('./store-info'),
    logger = require('../../../lib/logger').logger();
 
-class ModuleCacheInfo {
-   constructor() {
-      this.componentsInfo = {};
-      this.routesInfo = {};
-      this.markupCache = {};
-   }
-}
-
-class StoreInfo {
-   constructor() {
-      // в случае изменений параметров запуска проще кеш сбросить,
-      // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
-      this.runningParameters = {};
-
-      // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      // unknown используется далее
-      this.versionOfBuilder = 'unknown';
-
-      // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
-      // для сравнения с mtime у файлов
-      this.startBuildTime = 0;
-
-      // запоминаем что было на входе и что породило на выход, чтобы потом можно было
-      // 1. отследить восстановленный из корзины файл
-      // 2. удалить лишние файлы
-      this.inputPaths = {};
-
-      // для инкрементальной сборки нужно знать зависимости файлов:
-      // - imports из less файлов
-      // - зависимости js на файлы вёрстки для паковки собственных зависмостей
-      this.dependencies = {};
-
-      // нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
-      this.modulesCache = {};
-
-      // Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
-      // и подавать их при повторном запуске как изменённые
-      this.filesWithErrors = new Set();
-   }
-
-   async load(filePath) {
-      logger.debug(`Читаем файл кеша ${filePath}`);
-
-      try {
-         if (await fs.pathExists(filePath)) {
-            const obj = await fs.readJSON(filePath);
-            this.runningParameters = obj.runningParameters;
-            this.versionOfBuilder = obj.versionOfBuilder;
-            logger.debug(`В кеше versionOfBuilder: ${this.versionOfBuilder}`);
-            this.startBuildTime = obj.startBuildTime;
-            logger.debug(`В кеше startBuildTime: ${this.startBuildTime}`);
-            this.inputPaths = obj.inputPaths;
-            this.dependencies = obj.dependencies;
-            this.modulesCache = obj.modulesCache;
-            this.filesWithErrors = new Set(obj.filesWithErrors);
-         }
-      } catch (error) {
-         logger.info({
-            message: `Не удалось прочитать файл кеша ${filePath}`,
-            error
-         });
-      }
-   }
-
-   save(filePath) {
-      return fs.outputJson(
-         filePath,
-         {
-            runningParameters: this.runningParameters,
-            versionOfBuilder: this.versionOfBuilder,
-            startBuildTime: this.startBuildTime,
-            inputPaths: this.inputPaths,
-            dependencies: this.dependencies,
-            modulesCache: this.modulesCache,
-            filesWithErrors: [...this.filesWithErrors]
-         },
-         {
-            spaces: 1
-         }
-      );
-   }
-}
-
+/**
+ * Класс кеша для реализации инкрементальной сборки.
+ * Использует результаты работы предыдущей сборки, чтобы не делать повторную работу.
+ * @author Бегунов Ал. В.
+ */
 class ChangesStore {
    constructor(config) {
       this.config = config;
@@ -117,7 +40,11 @@ class ChangesStore {
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
-         this.currentStore.modulesCache[moduleInfo.name] = new ModuleCacheInfo();
+         this.currentStore.modulesCache[moduleInfo.name] = {
+            componentsInfo: {},
+            routesInfo: {},
+            markupCache: {}
+         };
          this.currentStore.inputPaths[moduleInfo.path] = [];
       }
 
@@ -129,6 +56,10 @@ class ChangesStore {
       return this.currentStore.save(this.filePath);
    }
 
+   /**
+    * Проверяет есть ли несовместимые изменения в проекте, из-за которых нужно очистить кеш.
+    * @returns {Promise<boolean>}
+    */
    async cacheHasIncompatibleChanges() {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.lastStore.versionOfBuilder === 'unknown') {
@@ -174,6 +105,10 @@ class ChangesStore {
       return false;
    }
 
+   /**
+    * Чистит кеш, если инкрементальная сборка невозможна.
+    * @returns {Promise<void>}
+    */
    async clearCacheIfNeeded() {
       const removePromises = [];
       if (await this.cacheHasIncompatibleChanges()) {
@@ -203,6 +138,13 @@ class ChangesStore {
       logger.info('Очистка кэша завершена');
    }
 
+   /**
+    * Проверяет нужно ли заново обрабатывать файл или можно ничего не делать.
+    * @param {string}filePath путь до файла
+    * @param {Date} fileMTime время модификации файла
+    * @param {ModuleInfo} moduleInfo информация о модуле.
+    * @returns {Promise<boolean>}
+    */
    async isFileChanged(filePath, fileMTime, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       const relativePath = path.relative(moduleInfo.path, filePath);
@@ -254,14 +196,20 @@ class ChangesStore {
       }
 
       if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
-         const dependenciesChanged = await this.isDependenciesChanged(prettyPath);
-         const isChanged = dependenciesChanged.length > 0 && dependenciesChanged.some(changed => changed);
+         const isChanged = await this.isDependenciesChanged(prettyPath);
          this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
       }
       return false;
    }
 
+   /**
+    * Добавляет в кеш информацию о дополнительных генерируемых файлах.
+    * Это нужно, чтобы в финале инкрементальной сборки удалить только не актуальные файлы.
+    * @param {string} filePath путь до файла
+    * @param {string} outputFilePath путь до генерируемого файла.
+    * @param {ModuleInfo} moduleInfo информация о модуле.
+    */
    addOutputFile(filePath, outputFilePath, moduleInfo) {
       const prettyFilePath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
@@ -273,23 +221,48 @@ class ChangesStore {
       }
    }
 
+   /**
+    * Получить список файлов из исходников, которые относятся к конкретному модулю
+    * @param {string} modulePath путь до модуля
+    * @returns {string[]}
+    */
    getInputPathsByFolder(modulePath) {
       return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(modulePath));
    }
 
+   /**
+    * Пометить файл как ошибочный, чтобы при инкрементальной сборке обработать его заново.
+    * Что-то могло поменятся. Например, в less может поменятся файл, который импортируем.
+    * @param {string} filePath путь до исходного файла
+    */
    markFileAsFailed(filePath) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.filesWithErrors.add(prettyPath);
    }
 
+   /**
+    * Добавить информацию о зависимостях файла. Это нужно для инкрементальной сборки, чтобы
+    * при изменении файла обрабатывать другие файлы, которые зависят от текущего.
+    * @param {string} filePath путь до исходного файла
+    * @param {string} imports список зависимостей (пути до исходников)
+    */
    addDependencies(filePath, imports) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.dependencies[prettyPath] = imports.map(helpers.prettifyPath);
    }
 
-   isDependenciesChanged(filePath) {
-      return pMap(
-         this.getAllDependencies(filePath),
+   /**
+    * Проверить изменились ли зависимости текущего файла
+    * @param {string} filePath путь до файла
+    * @returns {Promise<boolean>}
+    */
+   async isDependenciesChanged(filePath) {
+      const dependencies = this.getAllDependencies(filePath);
+      if (dependencies.length === 0) {
+         return false;
+      }
+      const listChangedDeps = await pMap(
+         dependencies,
          async(currentPath) => {
             if (this.cacheChanges.hasOwnProperty(currentPath)) {
                return this.cacheChanges[currentPath];
@@ -308,8 +281,14 @@ class ChangesStore {
             concurrency: 20
          }
       );
+      return listChangedDeps.some(changed => changed);
    }
 
+   /**
+    * Получить все зависмости файла
+    * @param {string} filePath путь до файла
+    * @returns {string[]}
+    */
    getAllDependencies(filePath) {
       const prettyPath = helpers.prettifyPath(filePath);
       const results = new Set();
@@ -329,6 +308,12 @@ class ChangesStore {
       return Array.from(results);
    }
 
+   /**
+    * Сохранить информацию о js компоненте после парсинга для использования в повторной сборке.
+    * @param {string} filePath путь до файла
+    * @param {string} moduleName имя модуля, в котором расположен файл
+    * @param {Object} componentInfo объект с информацией о компоненте
+    */
    storeComponentInfo(filePath, moduleName, componentInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!componentInfo) {
@@ -343,22 +328,54 @@ class ChangesStore {
       }
    }
 
+   /**
+    * Получить информацию о JS компонентах модуля
+    * @param {string} moduleName имя модуля
+    * @returns {Object<string,Object>} Информация о JS компонентах модуля в виде
+    *    {
+    *       <путь до файла>: <информация о компоненте>
+    *    }
+    */
    getComponentsInfo(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.componentsInfo;
    }
 
+   /**
+    * Сохранить в кеше скомпилированную верстку xhtml или tmpl. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {Object} obj Объект с полями text, nodeName (имя файла для require) и dependencies
+    */
    storeBuildedMarkup(filePath, moduleName, obj) {
       const prettyPath = helpers.prettifyPath(filePath);
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       currentModuleCache.markupCache[prettyPath] = obj;
    }
 
+   /**
+    * Получить всю скомпилированную верстку для конкретного модуля
+    * @param {string} moduleName имя модуля
+    * @returns {Object} Информация о скомпилированной верстки модуля в виде
+    *    {
+    *       <путь до файла>: {
+    *          text: <js код>
+    *          nodeName: <имя файла для require>,
+    *          dependencies: [...<зависимости>]
+    *       }
+    *    }
+    */
    getMarkupCache(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.markupCache;
    }
 
+   /**
+    * Сохранить информацию о роутинге после парсинга для использования в повторной сборке.
+    * @param {string} filePath путь до файла
+    * @param {string} moduleName имя модуля
+    * @param {Object} routeInfo объект с информацией о роутинге
+    */
    storeRouteInfo(filePath, moduleName, routeInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
       if (!routeInfo) {
@@ -373,27 +390,26 @@ class ChangesStore {
       }
    }
 
+   /**
+    * Получить всю информацию о роутингах для конкретного модуля
+    * @param {string} moduleName имя модуля
+    * @returns {Object} Информация о роутингах модуля в виде
+    *    {
+    *       <путь до файла>: {...<роунги файла>}
+    *    }
+    */
    getRoutesInfo(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.routesInfo;
    }
 
-   static getOutputFilesSet(inputPaths) {
-      const resultSet = new Set();
-      for (const filePath in inputPaths) {
-         if (!inputPaths.hasOwnProperty(filePath)) {
-            continue;
-         }
-         for (const outputFilePath of inputPaths[filePath]) {
-            resultSet.add(outputFilePath);
-         }
-      }
-      return resultSet;
-   }
-
+   /**
+    * Получить список файлов, которые нужно удалить из целевой директории после инкрементальной сборки
+    * @returns {Promise<string[]>}
+    */
    async getListForRemoveFromOutputDir() {
-      const currentOutputSet = ChangesStore.getOutputFilesSet(this.currentStore.inputPaths);
-      const lastOutputSet = ChangesStore.getOutputFilesSet(this.lastStore.inputPaths);
+      const currentOutputSet = this.currentStore.getOutputFilesSet();
+      const lastOutputSet = this.lastStore.getOutputFilesSet();
       const removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));
 
       const results = await pMap(
@@ -434,10 +450,18 @@ class ChangesStore {
          .filter(filePath => !!filePath);
    }
 
+   /**
+    * Установить признак того, что верстку нужно скомпилировать заново.
+    * Это случается, если включена локализация и какой-либо класс в jsdoc поменялся.
+    */
    setDropCacheForMarkup() {
       this.dropCacheForMarkup = true;
    }
 
+   /**
+    * Сохраняем moduleDependencies конкретного модуля в общий для проекта moduleDependencies
+    * @param {{links: {}, nodes: {}}} obj Объект moduleDependencies конкретного модуля
+    */
    storeLocalModuleDependencies(obj) {
       this.moduleDependencies = {
          links: { ...this.moduleDependencies.links, ...obj.links },
@@ -445,6 +469,10 @@ class ChangesStore {
       };
    }
 
+   /**
+    * Получить общий для проекта moduleDependencies
+    * @returns {{links: {}, nodes: {}}}
+    */
    getModuleDependencies() {
       return this.moduleDependencies;
    }
