@@ -29,8 +29,8 @@ const excludeRegexes = [
  *   - Simple.js - оригинал
  *   - Simple.modulepack.js - файл с пакованными зависимостями вёрстки
  *   - Simple.min.original.js - минифицированный файл по Simple.js. Для rt паковки.
- *   - Simple.min.js - минифицированный файл по Simple.min.modulepack.js
- *   - Simple.min.js.map - source map для Simple.min.js по Simple.min.modulepack.js
+ *   - Simple.min.js - минифицированный файл по Simple.modulepack.js
+ *   - Simple.min.js.map - source map для Simple.min.js по Simple.modulepack.js
  */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
