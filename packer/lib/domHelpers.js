@@ -21,26 +21,33 @@ function uniqname(names, ext) {
 }
 
 function domify(text) {
-   const errors = [];
-   wrap(console, 'log', (m) => {
-      errors.push(m);
+   wrap(console, 'log', () => {
+      // ничего не делаем
    });
-   wrap(console, 'warn', (m) => {
-      errors.push(m);
+   wrap(console, 'warn', () => {
+      // ничего не делаем
    });
-   wrap(console, 'error', (m) => {
-      errors.push(m);
+   wrap(console, 'error', () => {
+      // ничего не делаем
    });
-   const result = parser.parseFromString(text, 'text/html');
+   let result;
+   try {
+      result = parser.parseFromString(text, 'text/html');
+   } catch (e) {
+      if (typeof e === 'string') {
+         throw new Error(e);
+      }
+      throw e;
+   } finally {
+      // eslint-disable-next-line no-console
+      console.log.restore();
 
-   // eslint-disable-next-line no-console
-   console.log.restore();
+      // eslint-disable-next-line no-console
+      console.warn.restore();
 
-   // eslint-disable-next-line no-console
-   console.warn.restore();
-
-   // eslint-disable-next-line no-console
-   console.error.restore();
+      // eslint-disable-next-line no-console
+      console.error.restore();
+   }
 
    return result;
 }
