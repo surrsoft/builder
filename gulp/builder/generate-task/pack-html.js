@@ -5,7 +5,8 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    DepGraph = require('../../../packer/lib/dependencyGraph'),
-   pluginPackHtml = require('../plugins/pack-html');
+   pluginPackHtml = require('../plugins/pack-html'),
+   gzip = require('../plugins/gzip');
 
 function generateTaskForLoadDG(changesStore, depGraph) {
    return function load(done) {
@@ -13,6 +14,30 @@ function generateTaskForLoadDG(changesStore, depGraph) {
       done();
    };
 }
+
+function generateTaskForGzip(config, pool) {
+   return function gzipPackageForHtml() {
+      const output = path.join(config.rawConfig.output, 'WI.SBIS/packer/modules');
+      const input = path.join(output, '/*.*');
+
+      return gulp
+         .src(input, { dot: false, nodir: true })
+         .pipe(
+            plumber({
+               errorHandler(err) {
+                  logger.error({
+                     message: 'Задача gzip для packHTML завершилась с ошибкой',
+                     error: err
+                  });
+                  this.emit('end');
+               }
+            })
+         )
+         .pipe(gzip(pool))
+         .pipe(gulp.dest(output));
+   };
+}
+
 function generateTaskForPackHtml(changesStore, config, pool) {
    if (!config.isReleaseMode) {
       return function skipPackHtml(done) {
@@ -46,7 +71,11 @@ function generateTaskForPackHtml(changesStore, config, pool) {
       };
    });
 
-   return gulp.series(generateTaskForLoadDG(changesStore, depGraph), gulp.parallel(tasks));
+   return gulp.series(
+      generateTaskForLoadDG(changesStore, depGraph),
+      gulp.parallel(tasks),
+      generateTaskForGzip(config, pool)
+   );
 }
 
 module.exports = generateTaskForPackHtml;

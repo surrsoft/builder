@@ -8,7 +8,6 @@ const through = require('through2'),
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
 const excludeRegexes = [
-   /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
    /[/\\]node_modules[/\\].*/,
@@ -23,7 +22,7 @@ const excludeRegexes = [
    /.*[/\\]node_modules[/\\].*\.js$/
 ];
 
-module.exports = function declarePlugin(moduleInfo, pool) {
+module.exports = function declarePlugin(pool, moduleInfo = null) {
    return through.obj(
 
       /** @this Stream */
@@ -40,7 +39,6 @@ module.exports = function declarePlugin(moduleInfo, pool) {
                   return;
                }
             }
-
             const [error, gzipContent] = await execInPool(pool, 'gzip', [file.contents.toString()]);
             if (error) {
                logger.error({

@@ -5,6 +5,7 @@ const gulp = require('gulp'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependencyGraph'),
    plumber = require('gulp-plumber'),
+   gzip = require('../plugins/gzip'),
    { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
 function generateSaveResultsTask(config, results, applicationRoot, splittedCore) {
@@ -36,7 +37,7 @@ function generateDepsGraphTask(depsTree, changesStore) {
    };
 }
 
-function generateTaskForCustomPack(changesStore, config) {
+function generateTaskForCustomPack(changesStore, config, pool) {
    const root = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
@@ -57,7 +58,6 @@ function generateTaskForCustomPack(changesStore, config) {
       return function custompack() {
          return gulp
             .src(input, { dot: false, nodir: true })
-            .pipe(generatePackageJson(config, depsTree, results, root, '/', splittedCore))
             .pipe(
                plumber({
                   errorHandler(err) {
@@ -69,13 +69,39 @@ function generateTaskForCustomPack(changesStore, config) {
                      this.emit('end');
                   }
                })
-            );
+            )
+            .pipe(generatePackageJson(config, depsTree, results, root, '/', splittedCore));
+      };
+   });
+
+   const generateGzipTasks = config.modules.map((moduleInfo) => {
+      const moduleOutput = path.join(root, path.basename(moduleInfo.output));
+      const inputJs = path.join(moduleOutput, '/**/*.package.min.js');
+      const inputCss = path.join(moduleOutput, '/**/*.package.min.css');
+      return function gzipForCustompack() {
+         return gulp
+            .src([inputJs, inputCss], { dot: false, nodir: true, base: moduleOutput })
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача gzip для custompack завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            )
+            .pipe(gzip(pool, moduleInfo))
+            .pipe(gulp.dest(moduleOutput));
       };
    });
 
    return gulp.series(
       generateDepsGraphTask(depsTree, changesStore),
       gulp.parallel(generatePackagesTasks),
+      gulp.parallel(generateGzipTasks),
       generateSaveResultsTask(config, results, root, splittedCore)
    );
 }
