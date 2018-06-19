@@ -1,10 +1,9 @@
 /**
+ * Подключение ws для gulp. Использовать ТОЛЬКО в пуле воркеров.
  * @author Бегунов Ал. В.
  */
 
 'use strict';
-
-// подключение ws для gulp.
 
 const path = require('path'),
    requireJS = require('requirejs'),
@@ -139,6 +138,10 @@ function initWs() {
 
 let initialized = false;
 module.exports = {
+
+   /**
+    * Инициализация ядра платформы WS.
+    */
    init() {
       try {
          if (!initialized) {

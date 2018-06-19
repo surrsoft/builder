@@ -1,4 +1,5 @@
 /**
+ * Плагин для минификации css
  * @author Бегунов Ал. В.
  */
 
@@ -13,6 +14,13 @@ const through = require('through2'),
 
 const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
 

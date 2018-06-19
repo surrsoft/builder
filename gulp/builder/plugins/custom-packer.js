@@ -1,4 +1,5 @@
 /**
+ * Плагин для кастомной паковки. Ищет файлы *.package.json, формирует пакеты согласно опциям в этих json.
  * @author Колбешин Ф.А.
  */
 
@@ -10,7 +11,15 @@ const path = require('path'),
    customPacker = require('../../../lib/pack/custom-packer'),
    logger = require('../../../lib/logger').logger();
 
-module.exports = function generatePackageJson(config, depsTree, results, root, application, splittedCore) {
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {DependencyGraph} depsTree граф зависимостей
+ * @param {{bundles:{}, bundlesRoute:{}}} results результаты паковки для конкретного конфига
+ * @param {string} root корень развернутого приложения
+ * @returns {*}
+ */
+module.exports = function generatePackageJson(config, depsTree, results, root) {
    return through.obj(async function onTransform(file, encoding, callback) {
       let currentConfig;
       try {
@@ -30,8 +39,14 @@ module.exports = function generatePackageJson(config, depsTree, results, root, a
          depsTree,
          configsArray,
          root,
-         application,
-         splittedCore,
+
+         // application
+         '/',
+
+         // splittedCore
+         true,
+
+         // isGulp
          true,
          config.localizations
       );

@@ -1,4 +1,5 @@
 /**
+ * Плагин для генерации статических html по *.html.tmpl файлам.
  * @author Бегунов Ал. В.
  */
 
@@ -12,6 +13,14 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 

@@ -1,4 +1,5 @@
 /**
+ * Генерирует поток выполнения сборки статики
  * @author Бегунов Ал. В.
  */
 
@@ -21,48 +22,11 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js');
 
-function generateTaskForTerminatePool(pool) {
-   return function terminatePool() {
-      return pool.terminate();
-   };
-}
-
-function generateTaskForLoadChangesStore(changesStore) {
-   return function loadChangesStore() {
-      return changesStore.load();
-   };
-}
-
-function generateTaskForClearCache(changesStore) {
-   return function clearCache() {
-      return changesStore.clearCacheIfNeeded();
-   };
-}
-
-function generateTaskForSaveChangesStore(changesStore) {
-   return function saveChangesStore() {
-      return changesStore.save();
-   };
-}
-
-function generateTaskForRemoveFiles(changesStore) {
-   return async function removeOutdatedFiles() {
-      const filesForRemove = await changesStore.getListForRemoveFromOutputDir();
-      return pMap(filesForRemove, filePath => fs.remove(filePath), {
-         concurrency: 20
-      });
-   };
-}
-
-function getDirnameForModule(modules, moduleName) {
-   for (const module of modules) {
-      if (module.name === moduleName) {
-         return module.path;
-      }
-   }
-   return '';
-}
-
+/**
+ * Генерирует поток выполнения сборки статики
+ * @param {string[]} processArgv массив аргументов запуска утилиты
+ * @returns {Undertaker.TaskFunction} gulp задача
+ */
 function generateWorkflow(processArgv) {
    // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
    const config = new Configuration();
@@ -108,6 +72,48 @@ function generateWorkflow(processArgv) {
       // generateTaskForUnlock после всего
       guardSingleProcess.generateTaskForUnlock()
    );
+}
+
+function generateTaskForTerminatePool(pool) {
+   return function terminatePool() {
+      return pool.terminate();
+   };
+}
+
+function generateTaskForLoadChangesStore(changesStore) {
+   return function loadChangesStore() {
+      return changesStore.load();
+   };
+}
+
+function generateTaskForClearCache(changesStore) {
+   return function clearCache() {
+      return changesStore.clearCacheIfNeeded();
+   };
+}
+
+function generateTaskForSaveChangesStore(changesStore) {
+   return function saveChangesStore() {
+      return changesStore.save();
+   };
+}
+
+function generateTaskForRemoveFiles(changesStore) {
+   return async function removeOutdatedFiles() {
+      const filesForRemove = await changesStore.getListForRemoveFromOutputDir();
+      return pMap(filesForRemove, filePath => fs.remove(filePath), {
+         concurrency: 20
+      });
+   };
+}
+
+function getDirnameForModule(modules, moduleName) {
+   for (const module of modules) {
+      if (module.name === moduleName) {
+         return module.path;
+      }
+   }
+   return '';
 }
 
 module.exports = generateWorkflow;

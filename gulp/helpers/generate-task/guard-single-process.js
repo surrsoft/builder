@@ -1,16 +1,22 @@
 /**
+ * Генерация задач для предотвращения множественного запуска builder'а на одном кеше.
+ * Необходимо для предсказуемого результата.
  * @author Бегунов Ал. В.
  */
 
 'use strict';
 
-// предотвращение множественного запуска builder'а на одном кеше для предсказуемого результата.
 const logger = require('../../../lib/logger').logger(),
    path = require('path'),
    fs = require('fs-extra');
 
 let lockFile;
 
+/**
+ * Геренация задачи блокировки. Обязательно должна выполнятся перед всеми другими задачами.
+ * @param {string} cachePath путь до кеша
+ * @returns {function(): (Promise)}
+ */
 function generateTaskForLock(cachePath) {
    return function lock() {
       return new Promise(async(resolve, reject) => {
@@ -34,6 +40,10 @@ function generateTaskForLock(cachePath) {
    };
 }
 
+/**
+ * Геренация задачи разблокировки. Обязательно должна выполнятся после всех других задач.
+ * @returns {function(): (Promise)}
+ */
 function generateTaskForUnlock() {
    return function unlock() {
       return new Promise(async(resolve, reject) => {

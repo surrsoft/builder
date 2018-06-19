@@ -1,4 +1,5 @@
 /**
+ * Плагин для создания contents.json и contents.js (информация для require, описание локализации и т.д.)
  * @author Бегунов Ал. В.
  */
 
@@ -10,6 +11,12 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate');
 
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {

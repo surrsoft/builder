@@ -6,6 +6,9 @@
 
 const path = require('path');
 
+/**
+ * Класс с базовой информацией о модуле. Используется как база для сборки статики и для сбора фраз локализации.
+ */
 class ModuleInfo {
    constructor(moduleName, moduleResponsible, modulePath) {
       this.name = moduleName;

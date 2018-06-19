@@ -1,4 +1,5 @@
 /**
+ * Воркер для пула воркеров. Используется для сборки статики и сбора локализуемых фраз.
  * @author Бегунов Ал. В.
  */
 
@@ -39,6 +40,11 @@ process.on('unhandledRejection', (reason, p) => {
    process.exit(1);
 });
 
+/**
+ * Прочитать описание компонетов из json для локализации. Или взять прочитанное ранее.
+ * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @returns {Promise<Object>}
+ */
 async function readComponentsProperties(componentsPropertiesFilePath) {
    if (!componentsProperties) {
       if (await fs.pathExists(componentsPropertiesFilePath)) {
@@ -50,6 +56,13 @@ async function readComponentsProperties(componentsPropertiesFilePath) {
    return componentsProperties;
 }
 
+/**
+ * Компиляция tmpl файлов
+ * @param {string} text содержимое файла
+ * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
+ * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @returns {Promise<{text, nodeName, dependencies}>}
+ */
 async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
    return processingTmpl.buildTmpl(
       processingTmpl.minifyTmpl(text),
@@ -58,6 +71,14 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
    );
 }
 
+/**
+ * Компиляция html.tmpl файлов
+ * @param {string} text содержимое файла
+ * @param {string} fullPath полный путь до файла
+ * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
+ * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @returns {Promise<string>}
+ */
 async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropertiesFilePath) {
    return processingTmpl.buildHtmlTmpl(
       text,
@@ -67,13 +88,34 @@ async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropert
    );
 }
 
+/**
+ * Для xhtml В XML формате расставляются скобки {[]} - аналог rk - для локализцемых фраз
+ * (строки в разметке и переводимые опции).
+ * @param {string} text содержимое файла
+ * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @returns {Promise<String>}
+ */
 async function prepareXHTML(text, componentsPropertiesFilePath) {
    return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
 }
 
+/**
+ * Компиляция xhtml в js
+ * @param {string} text содержимое файла
+ * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
+ * @returns {Promise<{nodeName, text}>}
+ */
 async function buildXhtml(text, relativeFilePath) {
    return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
 }
+
+/**
+ * Сбор локализуемых фрах для конкретного файла
+ * @param {string} modulePath путь до модуля
+ * @param {string} filePath путь до файла
+ * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @returns {Promise<string[]>}
+ */
 async function collectWords(modulePath, filePath, componentsPropertiesFilePath) {
    if (!componentsProperties) {
       componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
@@ -82,6 +124,12 @@ async function collectWords(modulePath, filePath, componentsPropertiesFilePath) 
    return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
 }
 
+/**
+ * Оборачивает функцию, чтобы была возможность вернуть ошибки и варнинги от WS.
+ * Работает в тандеме с gulp/helpers/exec-in-pool.js
+ * @param {Function} func функция, которую оборачиваем
+ * @returns {Function}
+ */
 function wrapFunction(func) {
    return async(funcArgs, filePath = null, moduleInfo = null) => {
       logger.setInfo(filePath, moduleInfo);

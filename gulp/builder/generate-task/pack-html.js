@@ -1,4 +1,5 @@
 /**
+ * Генерация задачи паковки для статических html.
  * @author Бегунов Ал. В.
  */
 
@@ -12,36 +13,13 @@ const logger = require('../../../lib/logger').logger(),
    pluginPackHtml = require('../plugins/pack-html'),
    gzip = require('../plugins/gzip');
 
-function generateTaskForLoadDG(changesStore, depGraph) {
-   return function load(done) {
-      depGraph.fromJSON(changesStore.getModuleDependencies());
-      done();
-   };
-}
-
-function generateTaskForGzip(config, pool) {
-   return function gzipPackageForHtml() {
-      const output = path.join(config.rawConfig.output, 'WI.SBIS/packer/modules');
-      const input = path.join(output, '/*.*');
-
-      return gulp
-         .src(input, { dot: false, nodir: true })
-         .pipe(
-            plumber({
-               errorHandler(err) {
-                  logger.error({
-                     message: 'Задача gzip для packHTML завершилась с ошибкой',
-                     error: err
-                  });
-                  this.emit('end');
-               }
-            })
-         )
-         .pipe(gzip(pool))
-         .pipe(gulp.dest(output));
-   };
-}
-
+/**
+ * Генерация задачи паковки для статических html.
+ * @param {ChangesStore} changesStore кеш
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {Pool} pool пул воркеров
+ * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
+ */
 function generateTaskForPackHtml(changesStore, config, pool) {
    if (!config.isReleaseMode) {
       return function skipPackHtml(done) {
@@ -80,6 +58,36 @@ function generateTaskForPackHtml(changesStore, config, pool) {
       gulp.parallel(tasks),
       generateTaskForGzip(config, pool)
    );
+}
+
+function generateTaskForLoadDG(changesStore, depGraph) {
+   return function load(done) {
+      depGraph.fromJSON(changesStore.getModuleDependencies());
+      done();
+   };
+}
+
+function generateTaskForGzip(config, pool) {
+   return function gzipPackageForHtml() {
+      const output = path.join(config.rawConfig.output, 'WI.SBIS/packer/modules');
+      const input = path.join(output, '/*.*');
+
+      return gulp
+         .src(input, { dot: false, nodir: true })
+         .pipe(
+            plumber({
+               errorHandler(err) {
+                  logger.error({
+                     message: 'Задача gzip для packHTML завершилась с ошибкой',
+                     error: err
+                  });
+                  this.emit('end');
+               }
+            })
+         )
+         .pipe(gzip(pool))
+         .pipe(gulp.dest(output));
+   };
 }
 
 module.exports = generateTaskForPackHtml;

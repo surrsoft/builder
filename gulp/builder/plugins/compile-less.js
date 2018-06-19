@@ -1,6 +1,7 @@
 /* eslint-disable no-invalid-this */
 
 /**
+ * Плагин для компиляции less.
  * @author Бегунов Ал. В.
  */
 
@@ -14,6 +15,15 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @param {string} sbis3ControlsPath путь до модуля SBIS3.CONTROLS. нужно для поиска тем
+ * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {

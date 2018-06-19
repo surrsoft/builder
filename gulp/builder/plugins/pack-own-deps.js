@@ -1,4 +1,7 @@
 /**
+ * Плагин для паковки собственных зависимостей.
+ * В js компоненты добавляется код собранных tmpl и xhtml из зависимостей.
+ * Сильно влияет на плагин minify-js
  * @author Бегунов Ал. В.
  */
 
@@ -8,6 +11,12 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger();
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    // js файлы можно паковать только после сборки xhtml и tmpl файлов.
    // поэтому переместим обработку в самый конец

@@ -1,4 +1,5 @@
 /**
+ * Генерирует поток выполнения сбора локализуемых фраз
  * @author Бегунов Ал. В.
  */
 
@@ -19,6 +20,44 @@ const guardSingleProcess = require('../helpers/generate-task/guard-single-proces
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
    logger = require('../../lib/logger').logger();
+
+/**
+ * Генерирует поток выполнения сбора локализуемых фраз
+ * @param {string[]} processArgv массив аргументов запуска утилиты
+ * @returns {Undertaker.TaskFunction} gulp задача
+ */
+function generateWorkflow(processArgv) {
+   // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
+   const config = new Configuration();
+   config.loadSync(processArgv); // eslint-disable-line no-sync
+
+   const cache = new Cache(config);
+
+   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
+
+      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
+      maxWorkers: os.cpus().length - 1 || 1
+   });
+
+   return gulp.series(
+
+      //  generateTaskForLock прежде всего
+      guardSingleProcess.generateTaskForLock(config.cachePath),
+      generateTaskForLoadCache(cache),
+      generateTaskForGenerateJson(cache, config),
+      generateTaskForGrabModules(cache, config, pool),
+      gulp.parallel(
+
+         // завершающие задачи
+         generateTaskForSaveCache(cache),
+         generateTaskForSaveOutputJson(cache, config),
+         generateTaskForTerminatePool(pool)
+      ),
+
+      // generateTaskForUnlock после всего
+      guardSingleProcess.generateTaskForUnlock()
+   );
+}
 
 function generateTaskForTerminatePool(pool) {
    return function terminatePool() {
@@ -74,10 +113,7 @@ function generateTaskForGrabModules(changesStore, config, pool) {
 
    for (const moduleInfo of config.modules) {
       tasks.push(
-         gulp.series(
-            generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool),
-            printPercentComplete
-         )
+         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool), printPercentComplete)
       );
    }
    return gulp.parallel(tasks);
@@ -88,39 +124,6 @@ function generateTaskForSaveOutputJson(cache, config) {
       const result = Object.values(cache.getCachedFiles()).reduce((a, b) => a.concat(b));
       await fs.writeJSON(config.outputPath, result, { spaces: 1 });
    };
-}
-
-function generateWorkflow(processArgv) {
-   // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
-   const config = new Configuration();
-   config.loadSync(processArgv); // eslint-disable-line no-sync
-
-   const cache = new Cache(config);
-
-   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
-
-      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
-   });
-
-   return gulp.series(
-
-      //  generateTaskForLock прежде всего
-      guardSingleProcess.generateTaskForLock(config.cachePath),
-      generateTaskForLoadCache(cache),
-      generateTaskForGenerateJson(cache, config),
-      generateTaskForGrabModules(cache, config, pool),
-      gulp.parallel(
-
-         // завершающие задачи
-         generateTaskForSaveCache(cache),
-         generateTaskForSaveOutputJson(cache, config),
-         generateTaskForTerminatePool(pool)
-      ),
-
-      // generateTaskForUnlock после всего
-      guardSingleProcess.generateTaskForUnlock()
-   );
 }
 
 module.exports = generateWorkflow;

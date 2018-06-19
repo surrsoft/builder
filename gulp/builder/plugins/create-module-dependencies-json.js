@@ -1,4 +1,5 @@
 /**
+ * Плагин для создания module-dependencies.json (зависимости компонентов и их расположение. для runtime паковка)
  * @author Бегунов Ал. В.
  */
 
@@ -48,6 +49,13 @@ const parsePlugins = dep => [
          })
    )
 ];
+
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {

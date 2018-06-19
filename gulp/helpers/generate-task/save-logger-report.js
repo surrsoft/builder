@@ -1,4 +1,7 @@
 /**
+ * Генерация задачи сохранения отчета об ошибках в json формате.
+ * Нужно прежде всего для сотрудников отдела сборки,
+ * чтобы оперативно реагировать на ошибки и предупреждения.
  * @author Бегунов Ал. В.
  */
 
@@ -8,6 +11,11 @@ const logger = require('../../../lib/logger').logger(),
    path = require('path'),
    fs = require('fs-extra');
 
+/**
+ * Генерация задачи сохранения отчета об ошибках в json формате.
+ * @param {BuildConfiguration} config конфигурация сборки статики
+ * @returns {function(): (Promise)}
+ */
 module.exports = function generateTaskForSaveLoggerReport(config) {
    return function saveReport() {
       return new Promise(async(resolve, reject) => {

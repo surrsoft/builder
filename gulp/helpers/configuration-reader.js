@@ -1,6 +1,7 @@
 /* eslint-disable no-sync */
 
 /**
+ * Общие для сборок методы работы с файлом конфигурации
  * @author Бегунов Ал. В.
  */
 
@@ -8,8 +9,13 @@
 
 const fs = require('fs-extra');
 
+/**
+ * Получить путь до файла конфигурации из параметров запуска утилиты.
+ * Для получения 1 параметра --config не нужна сторонняя библиотека.
+ * @param {string[]} argv спискок аргументов запуска утилиты
+ * @returns {*}
+ */
 function getConfigPath(argv) {
-   // для получения 1 параметра --config не нужна сторонняя библиотека
    for (const argument of argv) {
       if (argument.startsWith('--config=')) {
          return argument.replace('--config=', '').replace(/"/g, '');
@@ -18,7 +24,12 @@ function getConfigPath(argv) {
    return '';
 }
 
-function readConfigFile(configPath) {
+/**
+ * Прочитать файл конфигурации синхронно.
+ * @param {string} configPath путь до файла конфигурации
+ * @returns {Object} конфигурация в виде объекта
+ */
+function readConfigFileSync(configPath) {
    if (!configPath) {
       throw new Error('Файл конфигурации не задан.');
    }
@@ -62,5 +73,5 @@ function checkModules(rawConfig) {
 
 module.exports = {
    getConfigPath,
-   readConfigFileSync: readConfigFile
+   readConfigFileSync
 };

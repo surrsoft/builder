@@ -1,6 +1,9 @@
 /* eslint-disable no-invalid-this */
 
 /**
+ * Плагин для компиляции xml из *.tmpl файлов в js.
+ * В debug (при локализации) заменяет оригинальный файл.
+ * В release создаёт новый файл *.min.tmpl.
  * @author Бегунов Ал. В.
  */
 
@@ -13,6 +16,14 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 

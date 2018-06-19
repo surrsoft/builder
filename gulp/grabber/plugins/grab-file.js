@@ -10,6 +10,15 @@ const through = require('through2'),
    execInPool = require('../../helpers/exec-in-pool');
 
 const supportExtensions = ['.js', '.xhtml', '.tmpl'];
+
+/**
+ * Объявление плагина
+ * @param {GrabberConfiguration} config конфигурация сбора фраз локализации
+ * @param {Cache} cache кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
    return through.obj(async(file, encoding, callback) => {
       try {
@@ -22,7 +31,6 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
             callback();
             return;
          }
-
 
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
@@ -45,7 +53,7 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
          }
       } catch (error) {
          logger.warning({
-            message: 'Ошибка builder\'а при обработке файла',
+            message: "Ошибка builder'а при обработке файла",
             filePath: file.path,
             error,
             moduleInfo

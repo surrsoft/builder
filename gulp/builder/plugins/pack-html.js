@@ -1,4 +1,6 @@
 /**
+ * Плагин для паковки в HTML.
+ * Берёт корневой элемент и все зависимости пакует.
  * @author Бегунов Ал. В.
  */
 
@@ -11,6 +13,14 @@ const through = require('through2'),
    packHtml = require('../../../packer/tasks/lib/packHTML'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {DepGraph} gd граф зависмостей
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {

@@ -1,4 +1,9 @@
 /**
+ * Плагин для обработки ресурсов локализации (словари и стили).
+ * Если есть ресурсы локализации, то нужно записать <локаль>.js файл
+ * в папку "lang/<локаль>" и занести данные в contents.json
+ * Объединеям стили локализации в единый файл "lang/<локаль>/<локаль>.css".
+ * Стили локализации могут быть в less.
  * @author Бегунов Ал. В.
  */
 
@@ -10,9 +15,12 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    DictionaryIndexer = require('../../../lib/i18n/dictionary-indexer');
 
-// если есть ресурсы локализации, то нужно записать <локаль>.js файл
-// в папку "lang/<локаль>" и занести данные в contents.json
-// + css локализации нужно объединить
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, moduleInfo) {
    const indexer = new DictionaryIndexer(config.localizations);
    return through.obj(

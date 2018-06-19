@@ -1,4 +1,5 @@
 /**
+ * Плагин архивации файлов с помощью gzip
  * @author Бегунов Ал. В.
  */
 
@@ -26,6 +27,12 @@ const excludeRegexes = [
    /.*[/\\]node_modules[/\\].*\.js$/
 ];
 
+/**
+ * Объявление плагина
+ * @param {Pool} pool пул воркеров
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(pool, moduleInfo = null) {
    return through.obj(
 

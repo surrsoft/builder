@@ -1,4 +1,7 @@
 /**
+ * Плагин для минификации простейших случаев: *.json, *.jstpl
+ * Заводить для каждого из них отдельный плагин - лишняя работа.
+ * Включать в minify-js - значит усложнить и без того сложный плагин.
  * @author Бегунов Ал. В.
  */
 
@@ -14,6 +17,12 @@ const includeExts = ['.jstpl', '.json'];
 
 const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
 

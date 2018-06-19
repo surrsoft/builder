@@ -1,4 +1,5 @@
 /**
+ * Плагин для создания preload_urls.json (url'ы для прогрева при старте сервиса представлений)
  * @author Бегунов Ал. В.
  */
 
@@ -8,6 +9,11 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger();
 
+/**
+ *
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(moduleInfo) {
    const preloadUrls = [];
    return through.obj(
