@@ -35,7 +35,11 @@ module.exports = function gruntMain(grunt) {
       // Init environment
       const target = path.resolve(root);
       const application = path.join('/', app, '/').replace(dblSlashes, '/');
-      require('./lib/logger').setGruntLogger(grunt);
+      const logger = require('./lib/logger').setGruntLogger(grunt);
+      logger.warning('Обнаружено использование Grunt. ' +
+         'Чтобы перейти на Gulp, нужно удалить в проекте слой "Приложения" (s3app). ' +
+         'Для облачных решений это означает переход на Сервис Представлений. ' +
+         'Для desktop решений это просто отказ от ненужной сущности.');
 
       const configBuilder = require('./lib/config-builder.js');
 
