@@ -12,7 +12,7 @@ const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]desig
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             // Нужно вызвать changesStore.addOutputFile для less, чтобы не удалился *.min.css файл.

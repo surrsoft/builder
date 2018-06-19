@@ -10,7 +10,7 @@ const through = require('through2'),
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (file.extname !== '.xhtml') {

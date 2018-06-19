@@ -13,7 +13,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
 
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (!file.path.endsWith('.html.tmpl')) {

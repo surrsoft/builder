@@ -11,7 +11,7 @@ module.exports = function declarePlugin(moduleInfo) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.

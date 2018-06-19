@@ -18,7 +18,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
          }
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);

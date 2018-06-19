@@ -50,7 +50,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             const json = {

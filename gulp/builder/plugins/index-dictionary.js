@@ -36,7 +36,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             for (const locale of config.localizations) {

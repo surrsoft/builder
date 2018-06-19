@@ -12,7 +12,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             // подготовим contents.json и contents.js

@@ -25,7 +25,7 @@ const excludeRegexes = [
 module.exports = function declarePlugin(pool, moduleInfo = null) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (!includeExts.includes(file.extname)) {

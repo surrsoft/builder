@@ -107,7 +107,6 @@ class ChangesStore {
 
    /**
     * Чистит кеш, если инкрементальная сборка невозможна.
-    * @returns {Promise<void>}
     */
    async clearCacheIfNeeded() {
       const removePromises = [];

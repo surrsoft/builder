@@ -13,7 +13,7 @@ const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       function onTransform(file, encoding, callback) {
          try {
             if (!includeExts.includes(file.extname)) {

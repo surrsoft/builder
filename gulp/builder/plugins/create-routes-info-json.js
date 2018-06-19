@@ -42,7 +42,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.
