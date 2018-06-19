@@ -5,12 +5,11 @@ const postcss = require('postcss');
 const postcssUrl = require('postcss-url');
 const safe = require('postcss-safe-parser');
 const logger = require('../../lib/logger').logger();
-
+const helpers = require('../../lib/helpers');
 const invalidUrl = /^(\/|#|data:|[a-z]+:\/\/)(?=.*)/i;
 const importCss = /@import[^;]+;/gi;
-const dblSlashes = /\\/g;
 
-function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
+function rebaseUrlsToAbsolutePath(root, sourceFile, css, resourceRoot) {
    let result;
    try {
       result = postcss()
@@ -21,8 +20,7 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css) {
                   if (invalidUrl.test(asset.url)) {
                      return asset.url;
                   }
-
-                  return `/${path.relative(dir.to, path.join(dir.from, asset.url)).replace(dblSlashes, '/')}`;
+                  return `${helpers.prettifyPath(path.join('/', resourceRoot, path.relative(dir.to, path.join(dir.from, asset.url))))}`;
                }
             })
          )

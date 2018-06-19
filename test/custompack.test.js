@@ -11,8 +11,12 @@ const
    fs = require('fs-extra'),
    packHelpers = require('../lib/pack/helpers/custompack'),
    customPacker = require('../lib/pack/custom-packer'),
+   { rebaseCSS } = require('../lib/pack/custom-packer'),
    DependencyGraph = require('../packer/lib/dependencyGraph');
 
+const removeAllNewLines = function(str) {
+   return str.replace(/\n/g, '');
+};
 
 describe('custompack', () => {
    let result;
@@ -58,5 +62,30 @@ describe('custompack', () => {
 
       (result instanceof Error).should.equal(true);
       result.message.should.equal('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.');
+   });
+   const testCssPath = path.join(applicationRoot, 'packcss/testRebaseURL.css');
+   it('rebaseUrl correct path without url-service-path', async() => {
+      const urlServicePath = '/';
+      const resultCSS = await rebaseCSS(
+         testCssPath,
+         applicationRoot,
+         urlServicePath,
+
+         // isGulp
+         true
+      );
+      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}');
+   });
+   it('rebaseUrl correct path with url-service-path', async() => {
+      const urlServicePath = '/someTestPath/';
+      const resultCSS = await rebaseCSS(
+         testCssPath,
+         applicationRoot,
+         urlServicePath,
+
+         // isGulp
+         true
+      );
+      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}');
    });
 });
