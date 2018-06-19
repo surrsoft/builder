@@ -2,6 +2,10 @@
    "extends": ["@tensor-corp/eslint-config/node"],
    "plugins": ["filenames", "node", "promise", "eslint-comments"],
    "rules": {
+      "valid-jsdoc": ["warn", {
+         "requireReturnDescription": false,
+         "requireReturn": false
+      }],
       "filenames/match-regex": ["warn", "^[0-9a-z\\-.]+$", true],
       "node/no-extraneous-require": "error",
       "node/no-extraneous-import": "error",

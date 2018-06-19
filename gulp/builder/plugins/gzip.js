@@ -1,3 +1,8 @@
+/**
+ * Плагин архивации файлов с помощью gzip
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -22,10 +27,16 @@ const excludeRegexes = [
    /.*[/\\]node_modules[/\\].*\.js$/
 ];
 
+/**
+ * Объявление плагина
+ * @param {Pool} pool пул воркеров
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(pool, moduleInfo = null) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (!includeExts.includes(file.extname)) {

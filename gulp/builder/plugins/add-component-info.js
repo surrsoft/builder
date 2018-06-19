@@ -1,3 +1,10 @@
+/**
+ * Плагин для парсинга js компонентов и получения из них всей необходимой для сборки информации.
+ * Больше js компоненты парсится не должны нигде.
+ * Результат кешируется.
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -7,6 +14,13 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
       async function onTransform(file, encoding, callback) {

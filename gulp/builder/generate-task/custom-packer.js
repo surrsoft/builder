@@ -1,3 +1,8 @@
+/**
+ * Генерация задачи кастомной паковки.
+ * @author Колбешин Ф.А.
+ */
+
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
@@ -8,35 +13,13 @@ const gulp = require('gulp'),
    gzip = require('../plugins/gzip'),
    { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
-function generateSaveResultsTask(config, results, applicationRoot, splittedCore) {
-   return function saveCustomPackerResults() {
-      results.bundlesJson = results.bundles;
-      return saveCustomPackResults(results, applicationRoot, splittedCore, true);
-   };
-}
-
-function generateDepsGraphTask(depsTree, changesStore) {
-   return function generateDepsGraph(done) {
-      const moduleDeps = changesStore.getModuleDependencies(),
-         currentNodes = Object.keys(moduleDeps.nodes),
-         currentLinks = Object.keys(moduleDeps.links);
-
-      if (currentLinks.length > 0) {
-         currentLinks.forEach((link) => {
-            depsTree.setLink(link, moduleDeps.links[link]);
-         });
-      }
-      if (currentNodes.length > 0) {
-         currentNodes.forEach((node) => {
-            const currentNode = moduleDeps.nodes[node];
-            currentNode.path = currentNode.path.replace(/^resources\//, '');
-            depsTree.setNode(node, currentNode);
-         });
-      }
-      done();
-   };
-}
-
+/**
+ * Генерация задачи кастомной паковки.
+ * @param {ChangesStore} changesStore кеш
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {Pool} pool пул воркеров
+ * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
+ */
 function generateTaskForCustomPack(changesStore, config, pool) {
    const root = config.rawConfig.output,
       splittedCore = true,
@@ -70,7 +53,7 @@ function generateTaskForCustomPack(changesStore, config, pool) {
                   }
                })
             )
-            .pipe(generatePackageJson(config, depsTree, results, root, '/', splittedCore));
+            .pipe(generatePackageJson(config, depsTree, results, root));
       };
    });
 
@@ -104,6 +87,35 @@ function generateTaskForCustomPack(changesStore, config, pool) {
       gulp.parallel(generateGzipTasks),
       generateSaveResultsTask(config, results, root, splittedCore)
    );
+}
+
+function generateSaveResultsTask(config, results, applicationRoot, splittedCore) {
+   return function saveCustomPackerResults() {
+      results.bundlesJson = results.bundles;
+      return saveCustomPackResults(results, applicationRoot, splittedCore, true);
+   };
+}
+
+function generateDepsGraphTask(depsTree, changesStore) {
+   return function generateDepsGraph(done) {
+      const moduleDeps = changesStore.getModuleDependencies(),
+         currentNodes = Object.keys(moduleDeps.nodes),
+         currentLinks = Object.keys(moduleDeps.links);
+
+      if (currentLinks.length > 0) {
+         currentLinks.forEach((link) => {
+            depsTree.setLink(link, moduleDeps.links[link]);
+         });
+      }
+      if (currentNodes.length > 0) {
+         currentNodes.forEach((node) => {
+            const currentNode = moduleDeps.nodes[node];
+            currentNode.path = currentNode.path.replace(/^resources\//, '');
+            depsTree.setNode(node, currentNode);
+         });
+      }
+      done();
+   };
 }
 
 module.exports = generateTaskForCustomPack;

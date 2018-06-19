@@ -1,3 +1,9 @@
+/**
+ * Плагин для версионирования в процессе инкрементальной сборки. В места, где должна быть версия, добавляет заглушку.
+ * Связан с versionize-finish
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -7,6 +13,13 @@ const VERSION_STUB = '.vBUILDER_VERSION_STUB';
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
+/**
+ *
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, changesStore, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {

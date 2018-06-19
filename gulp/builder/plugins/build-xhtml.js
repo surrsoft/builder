@@ -1,3 +1,9 @@
+/**
+ * Плагин для компиляции xml из *.xhtml файлов в js для release режима.
+ * Создаёт новый файл *.min.xhtml.
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -7,10 +13,17 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (file.extname !== '.xhtml') {

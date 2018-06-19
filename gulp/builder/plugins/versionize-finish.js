@@ -1,3 +1,9 @@
+/**
+ * Плагин для версионирования после инкрементальной сборки. Меняет заглушку на нормальную версию.
+ * Связан с versionize-to-stub
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -7,6 +13,12 @@ const VERSION_STUB = /\.vBUILDER_VERSION_STUB/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
+/**
+ *
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {

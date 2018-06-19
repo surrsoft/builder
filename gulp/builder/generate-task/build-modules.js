@@ -1,3 +1,8 @@
+/**
+ * Генерация задачи инкрементальной сборки модулей.
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const path = require('path'),
@@ -32,6 +37,39 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
+
+/**
+ * Генерация задачи инкрементальной сборки модулей.
+ * @param {ChangesStore} changesStore кеш
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {Pool} pool пул воркеров
+ * @returns {Undertaker.TaskFunction}
+ */
+function generateTaskForBuildModules(changesStore, config, pool) {
+   const tasks = [];
+   let countCompletedModules = 0;
+
+   const printPercentComplete = function(done) {
+      countCompletedModules += 1;
+      logger.progress(100 * countCompletedModules / config.modules.length);
+      done();
+   };
+
+   const modulesMap = new Map();
+   for (const moduleInfo of config.modules) {
+      modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
+   }
+
+   for (const moduleInfo of config.modules) {
+      tasks.push(
+         gulp.series(
+            generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap),
+            printPercentComplete
+         )
+      );
+   }
+   return gulp.parallel(tasks);
+}
 
 function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
@@ -135,32 +173,6 @@ function needSymlink(hasLocalization, config, moduleInfo) {
       // ошибка в самом gulp.
       return file.history.length === 1;
    };
-}
-
-function generateTaskForBuildModules(changesStore, config, pool) {
-   const tasks = [];
-   let countCompletedModules = 0;
-
-   const printPercentComplete = function(done) {
-      countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / config.modules.length);
-      done();
-   };
-
-   const modulesMap = new Map();
-   for (const moduleInfo of config.modules) {
-      modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
-   }
-
-   for (const moduleInfo of config.modules) {
-      tasks.push(
-         gulp.series(
-            generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap),
-            printPercentComplete
-         )
-      );
-   }
-   return gulp.parallel(tasks);
 }
 
 module.exports = generateTaskForBuildModules;

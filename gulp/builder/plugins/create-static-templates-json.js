@@ -1,3 +1,8 @@
+/**
+ * Плагин для создания static_templates.json (информация для корреткной отдачи статических html в сервисе представлений)
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -5,13 +10,18 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers');
 
+/**
+ * Объявление плагина
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.

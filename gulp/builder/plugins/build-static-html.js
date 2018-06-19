@@ -1,5 +1,11 @@
 /* eslint-disable no-invalid-this */
 
+/**
+ * Плагин для генерации статических html по *.js файлам.
+ * Способ считается устаревшим, но пока поддерживаем.
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -10,6 +16,14 @@ const transliterate = require('../../../lib/transliterate'),
    generateStaticHtmlForJs = require('../../../lib/generate-static-html-for-js'),
    logger = require('../../../lib/logger').logger();
 
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Map} modulesMap имя папки модуля: полный путь до модуля
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(
       function onTransform(file, encoding, callback) {

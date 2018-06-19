@@ -1,16 +1,26 @@
+/**
+ * Плагин для создания navigation-modules.json (информация для работы аккордеона)
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger();
 
+/**
+ * Объявление плагина
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @returns {*}
+ */
 module.exports = function declarePlugin(moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             this.push(

@@ -1,3 +1,20 @@
+/**
+ * Плагин для минификации js.
+ * JS с учётом паковки собственных зависимостей и минификации может быть представлен тремя или пятью файлами.
+ * Simple.js без верстки в зависимостях:
+ *   - Simple.js - оригинал
+ *   - Simple.min.js - минифицированный файл по Simple.js
+ *   - Simple.min.js.map - source map для Simple.min.js по Simple.js
+ * Simple.js с версткой в зависимостях:
+ *   - Simple.js - оригинал
+ *   - Simple.modulepack.js - файл с пакованными зависимостями вёрстки
+ *   - Simple.min.original.js - минифицированный файл по Simple.js. Для rt паковки.
+ *   - Simple.min.js - минифицированный файл по Simple.modulepack.js
+ *   - Simple.min.js.map - source map для Simple.min.js по Simple.modulepack.js
+ *
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -19,23 +36,17 @@ const excludeRegexes = [
    /.*[/\\]EDO2[/\\]Route[/\\].*/
 ];
 
-/*
- * JS с учётом паковки собственных зависимостей и минификации может быть представлен тремя или пятью файлами.
- * Simple.js без верстки в зависимостях:
- *   - Simple.js - оригинал
- *   - Simple.min.js - минифицированный файл по Simple.js
- *   - Simple.min.js.map - source map для Simple.min.js по Simple.js
- * Simple.js с версткой в зависимостях:
- *   - Simple.js - оригинал
- *   - Simple.modulepack.js - файл с пакованными зависимостями вёрстки
- *   - Simple.min.original.js - минифицированный файл по Simple.js. Для rt паковки.
- *   - Simple.min.js - минифицированный файл по Simple.modulepack.js
- *   - Simple.min.js.map - source map для Simple.min.js по Simple.modulepack.js
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
  */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
 
-      /** @this Stream */
+      /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (file.extname !== '.js') {

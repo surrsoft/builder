@@ -1,3 +1,8 @@
+/**
+ * Плагин для создания routes-info.json (информация для работы роутинга)
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -9,6 +14,13 @@ const through = require('through2'),
    processingRoutes = require('../../../lib/processing-routes'),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(
       async function onTransform(file, encoding, callback) {
@@ -42,7 +54,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          callback(null, file);
       },
 
-      /** @this Stream */
+      /* @this Stream */
       function onFlush(callback) {
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.

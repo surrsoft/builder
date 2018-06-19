@@ -1,4 +1,9 @@
 /* eslint-disable no-sync */
+
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const path = require('path');
@@ -8,6 +13,10 @@ const ConfigurationReader = require('../../helpers/configuration-reader'),
    availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
 
 const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
+
+/**
+ * Класс с данными о конфигурации сборки
+ */
 class BuildConfiguration {
    constructor() {
       // путь до файла конфигурации
@@ -47,6 +56,11 @@ class BuildConfiguration {
       this.logFolder = '';
    }
 
+   /**
+    * Загрузка конфигурации из аргументов запуска утилиты.
+    * Возможна только синхронная версия, т.к. это нужно делать перед генерацей workflow.
+    * @param {string[]} argv массив аргументов запуска утилиты
+    */
    loadSync(argv) {
       this.configFile = ConfigurationReader.getConfigPath(argv);
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
@@ -123,8 +137,10 @@ class BuildConfiguration {
          // TODO: разобраться и может быть оформить PR в проект Gulp на github
          for (const illegalSymbol of ILLEGAL_SYMBOLS_FOR_PATH) {
             if (module.path.includes(illegalSymbol)) {
-               throw new Error(`Путь до модуля "${module.name}" содержит символ "${illegalSymbol}": "${module.path}". ` +
-                  'Gulp не сможет правильно работать с таким путём.');
+               throw new Error(
+                  `Путь до модуля "${module.name}" содержит символ "${illegalSymbol}": "${module.path}". ` +
+                     'Gulp не сможет правильно работать с таким путём.'
+               );
             }
          }
 

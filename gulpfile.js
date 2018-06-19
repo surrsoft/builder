@@ -1,4 +1,10 @@
 /* eslint-disable global-require */
+
+/**
+ * Основной исполняемый файл Builder'а. Подробности по запуску в README.md
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 try {

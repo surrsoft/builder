@@ -1,3 +1,8 @@
+/**
+ * Генерация завершающий задачи для Release сборки. Всё что, нельзя делать инкрементально из-за версионирования.
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
@@ -8,6 +13,28 @@ const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
    gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
+
+/**
+ * Генерация завершающий задачи для Release сборки.
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {Pool} pool пул воркеров
+ * @param {boolean} localizationEnable включена ли локализация
+ * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
+ */
+function generateTaskForFinalizeDistrib(config, pool, localizationEnable) {
+   if (!config.isReleaseMode) {
+      return function skipFinalizeDistrib(done) {
+         done();
+      };
+   }
+
+   const tasks = [generateTaskForCopyResources(config, pool)];
+   if (localizationEnable) {
+      tasks.push(generateTaskForNormalizeKey(config));
+   }
+
+   return gulp.series(tasks);
+}
 
 function generateTaskForCopyResources(config, pool) {
    const tasks = config.modules.map((moduleInfo) => {
@@ -49,21 +76,6 @@ function generateTaskForNormalizeKey(config) {
          });
       }
    };
-}
-
-function generateTaskForFinalizeDistrib(config, pool, localizationEnable) {
-   if (!config.isReleaseMode) {
-      return function skipFinalizeDistrib(done) {
-         done();
-      };
-   }
-
-   const tasks = [generateTaskForCopyResources(config, pool)];
-   if (localizationEnable) {
-      tasks.push(generateTaskForNormalizeKey(config));
-   }
-
-   return gulp.series(tasks);
 }
 
 module.exports = generateTaskForFinalizeDistrib;

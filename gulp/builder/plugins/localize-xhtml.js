@@ -1,3 +1,9 @@
+/**
+ * Плагин для локалицации xhtml.
+ * В XML формате расставляются скобки {[]} - аналог rk - для локализцемых фраз (строки в разметке и переводимые опции).
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),
@@ -5,6 +11,14 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../helpers/exec-in-pool');
 
+/**
+ * Объявление плагина
+ * @param {BuildConfiguration} config конфигурация сборки
+ * @param {ChangesStore} changesStore кеш
+ * @param {ModuleInfo} moduleInfo информация о модуле
+ * @param {Pool} pool пул воркеров
+ * @returns {*}
+ */
 module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
@@ -17,7 +31,10 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             return;
          }
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-         const [error, newText] = await execInPool(pool, 'prepareXHTML', [file.contents.toString(), componentsPropertiesFilePath]);
+         const [error, newText] = await execInPool(pool, 'prepareXHTML', [
+            file.contents.toString(),
+            componentsPropertiesFilePath
+         ]);
          if (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({
@@ -32,7 +49,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
       } catch (error) {
          changesStore.markFileAsFailed(file.history[0]);
          logger.error({
-            message: 'Ошибка builder\'а при локализации XHTML',
+            message: "Ошибка builder'а при локализации XHTML",
             error,
             moduleInfo,
             filePath: file.path

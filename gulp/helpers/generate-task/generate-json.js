@@ -1,3 +1,8 @@
+/**
+ * Генерация задачи генерации json описания компонентов для локализации
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 const path = require('path'),
    fs = require('fs-extra'),
@@ -6,7 +11,13 @@ const path = require('path'),
 const runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
    logger = require('../../../lib/logger').logger();
 
-// cache и config для builder'а и grubber'а - разные классы!
+/**
+ * Генерация задачи генерации json описания компонентов для локализации
+ * @param {ChangesStore|Cache} cache кеш сборки статики или сбора фраз локализации
+ * @param {BuildConfiguration|GrabberConfiguration} config конфигурация сборки статики или сбора фраз локализации
+ * @param {boolean} localizationEnable включена ли локализация
+ * @returns {function} функция-задача для gulp
+ */
 function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
    if (!localizationEnable) {
       return function generateJson(done) {

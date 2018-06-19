@@ -1,9 +1,17 @@
 /* eslint-disable no-sync */
+
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const ConfigurationReader = require('../../helpers/configuration-reader'),
    ModuleInfo = require('../../helpers/base-module-info');
 
+/**
+ * Класс с данными о конфигурации сборки
+ */
 class GrabberConfiguration {
    constructor() {
       // путь до файла конфигурации
