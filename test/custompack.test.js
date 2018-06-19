@@ -14,6 +14,10 @@ const
    { rebaseCSS } = require('../lib/pack/custom-packer'),
    DependencyGraph = require('../packer/lib/dependencyGraph');
 
+const removeAllNewLines = function(str) {
+   return str.replace(/\n/g, '');
+};
+
 describe('custompack', () => {
    let result;
    it('should reject error if include option not exists', async() => {
@@ -70,7 +74,7 @@ describe('custompack', () => {
          // isGulp
          true
       );
-      resultCSS.should.equal('.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}\r\n');
+      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}');
    });
    it('rebaseUrl correct path with url-service-path', async() => {
       const urlServicePath = '/someTestPath/';
@@ -82,6 +86,6 @@ describe('custompack', () => {
          // isGulp
          true
       );
-      resultCSS.should.equal('.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}\r\n');
+      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}');
    });
 });
