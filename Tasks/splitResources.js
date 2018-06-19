@@ -12,14 +12,8 @@ function isNeededValue(key, value) {
    return !!(matchs && matchs[1]);
 }
 
-function getName(filePath, isResources, isRootApp, sep) {
-   let splittedPath;
-
-   if (sep) {
-      splittedPath = filePath.split(sep);
-   } else {
-      splittedPath = filePath.split('/');
-   }
+function getName(filePath, isResources, isRootApp) {
+   const splittedPath = path.replace(/\\/g, '/').split('/');
 
    if (splittedPath.indexOf('ws') > -1) {
       return '';
