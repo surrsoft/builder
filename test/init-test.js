@@ -1,14 +1,34 @@
+/* eslint-disable global-require */
 'use strict';
 
-// TODO: разобраться почему объявление gulp после WS не работает
-require('gulp');
+try {
+   process.on('unhandledRejection', (reason, p) => {
+      // eslint-disable-next-line no-console
+      console.log(
+         "[00:00:00] [ERROR] Критическая ошибка в работе builder'а. ",
+         'Unhandled Rejection at:\n',
+         p,
+         '\nreason:\n',
+         reason
+      );
+   });
 
-// логгер - глобальный, должен быть определён до инициализации WS
-require('../lib/logger').setGulpLogger();
-require('../gulp/helpers/node-ws').init();
+   // TODO: разобраться почему объявление gulp после WS не работает
+   require('gulp');
 
-const chai = require('chai'),
-   chaiAsPromised = require('chai-as-promised');
+   // логгер - глобальный, должен быть определён до инициализации WS
+   require('../lib/logger').setGulpLogger();
+   require('../gulp/helpers/node-ws').init();
 
-chai.use(chaiAsPromised);
-chai.should();
+   const chai = require('chai'),
+      chaiAsPromised = require('chai-as-promised');
+
+   chai.use(chaiAsPromised);
+   chai.should();
+} catch (e) {
+   // eslint-disable-next-line no-console
+   console.log(`[00:00:00] [ERROR] Исключение при инициализации тестов: ${e.message}`);
+   // eslint-disable-next-line no-console
+   console.log(`Stack: ${e.stack}`);
+   process.exit(1);
+}
