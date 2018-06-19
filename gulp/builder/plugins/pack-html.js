@@ -48,7 +48,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                root,
                'WI.SBIS/packer/modules',
                gd,
-               '',
+               config.urlServicePath,
                config.version,
                replacePath,
                config.rawConfig.output,
