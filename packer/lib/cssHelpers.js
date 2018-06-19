@@ -11,6 +11,7 @@ const importCss = /@import[^;]+;/gi;
 
 function rebaseUrlsToAbsolutePath(root, sourceFile, css, resourceRoot) {
    let result;
+   const resourceRootWithSlash = resourceRoot ? path.join('/', resourceRoot) : '/';
    try {
       result = postcss()
          .use(
@@ -20,7 +21,7 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css, resourceRoot) {
                   if (invalidUrl.test(asset.url)) {
                      return asset.url;
                   }
-                  return `${helpers.prettifyPath(path.join('/', resourceRoot, path.relative(dir.to, path.join(dir.from, asset.url))))}`;
+                  return `${helpers.prettifyPath(path.join(resourceRootWithSlash, path.relative(dir.to, path.join(dir.from, asset.url))))}`;
                }
             })
          )

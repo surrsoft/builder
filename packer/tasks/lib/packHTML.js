@@ -10,6 +10,7 @@ const cssHelpers = require('./../../lib/cssHelpers');
 const logger = require('../../../lib/logger').logger();
 
 const domHelpers = require('./../../lib/domHelpers');
+const helpers = require('../../../lib/helpers');
 const commonPackage = require('./../../lib/commonPackage');
 
 // TODO: костыль: список статических html страниц для которых не пакуем стили контролов
@@ -245,10 +246,11 @@ function generatePackage(
    filesToPack,
    ext,
    packageTarget,
-   applicationRoot,
+   application,
    siteRoot,
    needReplacePaths,
    resourcesPath,
+   isGulp,
    namePrefix = ''
 ) {
    if (filesToPack) {
@@ -268,6 +270,8 @@ function generatePackage(
          let newName = `/${path.relative(siteRoot, packedFilePath)}`;
          if (!needReplacePaths) {
             newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
+         } else if (isGulp) {
+            newName = helpers.prettifyPath(path.join('/', application, newName));
          }
 
          return {
@@ -351,7 +355,8 @@ async function packageSingleHtml(
    buildNumber,
    needReplacePaths,
    resourcesPath,
-   availableLanguage
+   availableLanguage,
+   isGulp = true
 ) {
    const newDom = dom,
       divs = newDom.getElementsByTagName('div'),
@@ -359,8 +364,7 @@ async function packageSingleHtml(
       cssTarget = newDom.getElementById('ws-include-css'),
       htmlPath = filePath.split(path.sep),
       htmlName = htmlPath[htmlPath.length - 1],
-      wsConfig = newDom.getElementById('ws-config'),
-      applicationRoot = path.join(root, application);
+      wsConfig = newDom.getElementById('ws-config');
 
    let themeName;
 
@@ -379,7 +383,7 @@ async function packageSingleHtml(
       dg,
       startNodes,
       root,
-      path.join(root, application),
+      isGulp ? root : path.join(root, application),
       themeName,
       htmlName,
       availableLanguage
@@ -409,10 +413,11 @@ async function packageSingleHtml(
                      content,
                      getKey(buildNumber, key),
                      packageHome,
-                     applicationRoot,
+                     application,
                      root,
                      needReplacePaths,
-                     resourcesPath
+                     resourcesPath,
+                     isGulp
                   )
                );
             });
@@ -427,10 +432,11 @@ async function packageSingleHtml(
                      filesToPack[key][locale],
                      getKey(buildNumber, attr2ext[key]),
                      packageHome,
-                     applicationRoot,
+                     application,
                      root,
                      needReplacePaths,
                      resourcesPath,
+                     isGulp,
                      locale
                   )
                );
@@ -443,10 +449,11 @@ async function packageSingleHtml(
             filesToPack[key],
             getKey(buildNumber, key),
             packageHome,
-            applicationRoot,
+            application,
             root,
             needReplacePaths,
-            resourcesPath
+            resourcesPath,
+            isGulp
          );
          packages[key] = packages[key].concat(generatedScript);
       }
@@ -490,7 +497,8 @@ async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, applicat
                buildNumber,
                needReplacePaths,
                resourcesPath,
-               availableLanguage
+               availableLanguage,
+               false
             );
             await fs.outputFile(filePath, domHelpers.stringify(dom));
          } catch (err) {
