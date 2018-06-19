@@ -17,14 +17,8 @@ function isNeededValue(key, value) {
    }
 }
 
-function getName(path, isResources, isRootApp, sep) {
-   let splitPath;
-
-   if (sep) {
-      splitPath = path.split(sep);
-   } else {
-      splitPath = path.split('/');
-   }
+function getName(path, isResources, isRootApp) {
+   const splitPath = path.replace(/\\/g, '/').split('/');
 
    if (splitPath.indexOf('ws') > -1) {
       return '';
