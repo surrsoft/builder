@@ -18,7 +18,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
          const [error, text] = await execInPool(pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
          if (error) {
             logger.error({
-               message: "Ошибка builder'а при минификации html",
+               message: 'Ошибка при минификации html',
                error,
                moduleInfo,
                filePath: file.path
@@ -45,7 +45,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
          }
       } catch (error) {
          logger.error({
-            message: "Ошибка builder'а при паковке html",
+            message: 'Ошибка при паковке html',
             error,
             moduleInfo,
             filePath: file.path
