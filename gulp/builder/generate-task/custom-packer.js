@@ -1,3 +1,7 @@
+/**
+ * @author Колбешин Ф.А.
+ */
+
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),

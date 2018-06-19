@@ -1,3 +1,7 @@
+/**
+ * @author Колбешин Ф.А.
+ */
+
 'use strict';
 
 const path = require('path'),

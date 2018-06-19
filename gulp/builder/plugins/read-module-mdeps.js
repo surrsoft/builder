@@ -1,3 +1,7 @@
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2');

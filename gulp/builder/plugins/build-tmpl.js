@@ -1,4 +1,9 @@
 /* eslint-disable no-invalid-this */
+
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const through = require('through2'),

@@ -1,9 +1,16 @@
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const transliterate = require('../../../lib/transliterate'),
    path = require('path'),
    BaseModuleInfo = require('../../helpers/base-module-info');
 
+/**
+ * Класс для работы с модулями проекта. Накапливает данные о модулях, которые плохо ложатся на кеш
+ */
 class ModuleInfo extends BaseModuleInfo {
    constructor(moduleName, moduleResponsible, modulePath, commonOutputPath) {
       super(moduleName, moduleResponsible, modulePath);
@@ -20,9 +27,6 @@ class ModuleInfo extends BaseModuleInfo {
          jsModules: {},
          xmlContents: {}
       };
-
-      // объект для записи routes-info.json
-      this.routesInfo = {};
 
       // объект для записи static_templates.json
       // соответствие запроса html физическиому расположению файла

@@ -1,3 +1,6 @@
+/**
+ * @author Бегунов Ал. В.
+ */
 'use strict';
 
 const fs = require('fs-extra'),
@@ -5,7 +8,6 @@ const fs = require('fs-extra'),
 
 /**
  * Класс с данными про текущую сборку. Для реализации инкрементальной сборки.
- * @author Бегунов Ал. В.
  */
 class StoreInfo {
    constructor() {
@@ -82,7 +84,7 @@ class StoreInfo {
    }
 
    /**
-    * Получить набор выходных файлов.
+    * Получить набор выходных файлов. Нужно чтобы получать разницы между сборками и удалять лишнее.
     * @returns {Set<string>}
     */
    getOutputFilesSet() {

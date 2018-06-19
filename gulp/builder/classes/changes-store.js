@@ -1,3 +1,7 @@
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const path = require('path'),
@@ -14,7 +18,6 @@ const helpers = require('../../../lib/helpers'),
 /**
  * Класс кеша для реализации инкрементальной сборки.
  * Использует результаты работы предыдущей сборки, чтобы не делать повторную работу.
- * @author Бегунов Ал. В.
  */
 class ChangesStore {
    constructor(config) {

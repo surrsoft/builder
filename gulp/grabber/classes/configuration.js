@@ -1,4 +1,9 @@
 /* eslint-disable no-sync */
+
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const ConfigurationReader = require('../../helpers/configuration-reader'),

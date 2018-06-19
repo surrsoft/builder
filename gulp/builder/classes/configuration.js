@@ -1,4 +1,9 @@
 /* eslint-disable no-sync */
+
+/**
+ * @author Бегунов Ал. В.
+ */
+
 'use strict';
 
 const path = require('path');
@@ -8,6 +13,11 @@ const ConfigurationReader = require('../../helpers/configuration-reader'),
    availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
 
 const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
+
+/**
+ * Класс с данными о конфигурации сборки
+ * @author Бегунов Ал. В.
+ */
 class BuildConfiguration {
    constructor() {
       // путь до файла конфигурации
@@ -47,6 +57,11 @@ class BuildConfiguration {
       this.logFolder = '';
    }
 
+   /**
+    * Загрузка конфигурации из аргументов запуска утилиты.
+    * Возможна только синхронная версия, т.к. это нужно делать перед генерацей workflow.
+    * @param {string[]} argv массив аргументов запуска утилиты
+    */
    loadSync(argv) {
       this.configFile = ConfigurationReader.getConfigPath(argv);
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);

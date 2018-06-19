@@ -1,3 +1,6 @@
+/**
+ * @author Бегунов Ал. В.
+ */
 'use strict';
 
 const path = require('path'),
