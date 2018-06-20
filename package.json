@@ -1,6 +1,6 @@
 {
    "name": "sbis3-builder",
-   "version": "3.18.350-BUILD",
+   "version": "3.18.400-BUILD",
    "private": true,
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
    "files": [
@@ -45,15 +45,15 @@
       "postcss-safe-parser": "3.0.1",
       "postcss-url": "7.3.2",
       "requirejs": "2.3.5",
-      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
-      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.350",
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.400",
+      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.400",
       "strip-bom": "3.0.0",
       "tensor-xmldom": "0.2.0-b9",
       "through2": "2.0.3",
       "uglify-js": "3.3.23",
       "vinyl": "2.1.0",
       "workerpool": "2.3.0",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.350"
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.400"
    },
    "devDependencies": {
       "@tensor-corp/eslint-config": "2.0.1",
@@ -66,7 +66,7 @@
       "eslint-plugin-promise": "3.8.0",
       "mocha": "5.2.0",
       "nyc": "11.8.0",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350"
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.400"
    },
    "engines": {
       "node": ">=8.9.3"
