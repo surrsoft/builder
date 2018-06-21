@@ -306,10 +306,11 @@ async function limitingNativePackFiles(filesToPack, base) {
             }
             try {
                result.push(await promisifyLoader(getLoader(module.plugin), module, base));
-            } catch (err) {
+            } catch (error) {
                logger.warning({
                   message: 'Ошибка при чтении файла во время кастомной паковки',
-                  filePath: fullPath
+                  filePath: fullPath,
+                  error
                });
             }
          },
