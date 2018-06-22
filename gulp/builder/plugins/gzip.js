@@ -50,7 +50,13 @@ module.exports = function declarePlugin(pool, moduleInfo = null) {
                   return;
                }
             }
-            const [error, gzipContent] = await execInPool(pool, 'gzip', [file.contents.toString()]);
+
+            /**
+             * в gzip в качестве данных мы передаём именно буфер, а не строку,
+             * поскольку toString портит шрифты и они становятся впоследствии при
+             * разархивации нечитаемыми
+             */
+            const [error, gzipContent] = await execInPool(pool, 'gzip', [file.contents]);
             if (error) {
                logger.error({
                   message: "Ошибка builder'а при архивации",
