@@ -438,6 +438,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       let forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       const forRenameHtmlOutputPath = path.join(moduleOutputFolder, 'ForRename.html');
       let forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
+      const staticTemplatesJsonOutputPath = path.join(moduleOutputFolder, 'static_templates.json');
+      let staticTemplatesJson = await fs.readFile(staticTemplatesJsonOutputPath);
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
@@ -489,6 +491,17 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
+      removeRSymbol(staticTemplatesJson.toString()).should.equal(
+         '{\n' +
+         '  "/ForChange_old.html": "Modul/ForChange_old.html",\n' +
+         '  "/ForRename.html": "Modul/ForRename.html",\n' +
+         '  "/Stable.html": "Modul/Stable.html",\n' +
+         '  "/Stable/One": "Modul/Stable.html",\n' +
+         '  "/Stable/Two": "Modul/Stable.html",\n' +
+         '  "/Stable_Three": "Modul/Stable.html"\n' +
+         '}'
+      );
+
 
       // изменим "исходники"
       await timeoutForMacOS();
@@ -563,6 +576,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       stableHtml = await fs.readFile(stableHtmlOutputPath);
       forChangeHtml = await fs.readFile(forChangeHtmlOutputPath);
       forRenameHtml = await fs.readFile(forRenameHtmlOutputPath);
+      staticTemplatesJson = await fs.readFile(staticTemplatesJsonOutputPath);
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
          '<TITLE>Stable</TITLE>\n' +
@@ -617,6 +631,16 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
          '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+      );
+      removeRSymbol(staticTemplatesJson.toString()).should.equal(
+         '{\n' +
+         '  "/ForChange_new.html": "Modul/ForChange_new.html",\n' +
+         '  "/ForRename.html": "Modul/ForRename.html",\n' +
+         '  "/Stable.html": "Modul/Stable.html",\n' +
+         '  "/Stable/One": "Modul/Stable.html",\n' +
+         '  "/Stable/Two": "Modul/Stable.html",\n' +
+         '  "/Stable_Three": "Modul/Stable.html"\n' +
+         '}'
       );
 
       await clearWorkspace();
