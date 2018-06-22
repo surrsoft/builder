@@ -105,7 +105,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      this.push(
                         new Vinyl({
                            base: moduleInfo.output,
-                           path: outputMinJsFile,
+                           path: outputMinJsMapFile,
                            contents: Buffer.from(minified.map)
                         })
                      );
@@ -180,7 +180,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      this.push(
                         new Vinyl({
                            base: moduleInfo.output,
-                           path: outputMinJsFile,
+                           path: outputMinJsMapFile,
                            contents: Buffer.from(minified.map)
                         })
                      );
