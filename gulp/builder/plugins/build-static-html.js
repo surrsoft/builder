@@ -70,7 +70,13 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, module
             for (const result of results) {
                if (result) {
                   const folderName = transliterate(moduleInfo.folderName);
-                  moduleInfo.staticTemplates[result.outFileName] = path.join(folderName, result.outFileName);
+                  const htmlPath = path.join(folderName, result.outFileName);
+                  moduleInfo.staticTemplates[result.outFileName] = htmlPath;
+                  if (result.hasOwnProperty('urls') && result.urls && result.urls instanceof Array) {
+                     for (const url of result.urls) {
+                        moduleInfo.staticTemplates[url] = htmlPath;
+                     }
+                  }
                   const outputPath = path.join(moduleInfo.output, result.outFileName);
                   changesStore.addOutputFile(result.source, outputPath, moduleInfo);
                   this.push(

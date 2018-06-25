@@ -89,6 +89,30 @@ describe('parse js component', () => {
       Object.getOwnPropertyNames(webPage).length.should.equal(0);
    });
 
+   it('declare webpage with custom urls', () => {
+      const result = parseJsComponent(
+         'define("My.Module/Name", function(){' +
+         'let module;' +
+         'module.webPage = {' +
+         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+         '   title: "TestTitle",' +
+         '   outFileName: "ca_stub",' +
+         '   trash:"trash",' +
+         '   urls: ["url/one", "/urlTwo"]' +
+         '};' +
+         'return module;});'
+      );
+      Object.getOwnPropertyNames(result).length.should.equal(2);
+      result.componentName.should.equal('My.Module/Name');
+      result.hasOwnProperty('isNavigation').should.equal(false);
+      const { webPage } = result;
+      Object.getOwnPropertyNames(webPage).length.should.equal(4);
+      webPage.htmlTemplate.should.equal('\\Тема Скрепка\\Шаблоны\\empty-template.html');
+      webPage.outFileName.should.equal('ca_stub');
+      webPage.urls.length.should.equal(2);
+      webPage.urls.should.have.members(['url/one', '/urlTwo']);
+   });
+
    it('declare dependencies module', () => {
       const result = parseJsComponent('define("My.Module/Name", ["My.Dep/Name1", "My.Dep/Name2"], function(){});');
       Object.getOwnPropertyNames(result).length.should.equal(3);
