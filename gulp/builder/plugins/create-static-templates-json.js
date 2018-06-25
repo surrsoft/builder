@@ -24,10 +24,16 @@ module.exports = function declarePlugin(moduleInfo) {
       /* @this Stream */
       function onFlush(callback) {
          try {
+            const prettyStaticTemplates = {};
+            for (const url of Object.keys(moduleInfo.staticTemplates)) {
+               const prettyUrl = `/${helpers.removeLeadingSlash(helpers.prettifyPath(url))}`;
+               prettyStaticTemplates[prettyUrl] = moduleInfo.staticTemplates[url];
+            }
+
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.
             const file = new Vinyl({
                path: 'static_templates.json',
-               contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.staticTemplates), null, 2)),
+               contents: Buffer.from(JSON.stringify(helpers.sortObject(prettyStaticTemplates), null, 2)),
                moduleInfo
             });
             this.push(file);
