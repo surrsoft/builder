@@ -18,7 +18,7 @@ const logger = require('../../../lib/logger').logger(),
 module.exports = function declarePlugin(cache, moduleInfo = null) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         const isChanged = cache.isFileChanged(file.path, file.stat.mtime, moduleInfo);
+         const isChanged = cache.isFileChanged(file.path, file.contents, moduleInfo);
          if (isChanged instanceof Promise) {
             file.cached = !(await isChanged);
          } else {

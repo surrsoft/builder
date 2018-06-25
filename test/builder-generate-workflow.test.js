@@ -453,8 +453,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(forChangeHtml.toString()).should.equal(
@@ -470,8 +470,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(forRenameHtml.toString()).should.equal(
@@ -487,8 +487,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(staticTemplatesJson.toString()).should.equal(
@@ -590,8 +590,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
 
@@ -610,8 +610,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
 
@@ -628,8 +628,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          '<APPEND_STYLE></APPEND_STYLE>\n' +
          '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
          '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>false</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>false</CONFIG.GLOBAL_PARAMS>\n' +
+         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
          '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(staticTemplatesJson.toString()).should.equal(

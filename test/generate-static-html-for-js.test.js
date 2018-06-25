@@ -74,7 +74,7 @@ describe('generate static html for js', () => {
             removeRSymbol(result.text).should.equal(expected);
          };
 
-         await test(true, 'true\nfalse\nfalse\n');
+         await test(true, '%{CONFIG.USER_PARAMS}\n%{CONFIG.GLOBAL_PARAMS}\nfalse\n');
          await test(false, '%{CONFIG.USER_PARAMS}\n%{CONFIG.GLOBAL_PARAMS}\nfalse\n');
       });
       it('includes', async() => {

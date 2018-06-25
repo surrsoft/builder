@@ -7,7 +7,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   crypto = require('crypto');
 const helpers = require('../../../lib/helpers'),
    packageJson = require('../../../package.json'),
    logger = require('../../../lib/logger').logger(),
@@ -82,29 +83,50 @@ class Cache {
       });
    }
 
-   isFileChanged(filePath, fileMTime) {
+   /**
+    * Проверяет нужно ли заново обрабатывать файл или можно ничего не делать.
+    * @param {string} filePath путь до файла
+    * @param {Buffer} fileContents содержимое файла
+    * @returns {boolean}
+    */
+   isFileChanged(filePath, fileContents) {
+      // папки не меняются
+      if (!fileContents) {
+         return false;
+      }
       const prettyPath = helpers.prettifyPath(filePath);
+      const hash = crypto.createHash('sha1').update(fileContents).digest('base64');
+      const isChanged = this._isFileChanged(prettyPath, hash);
 
+      if (!isChanged) {
+         this.currentStore.cachedFiles[prettyPath] = this.lastStore.cachedFiles[prettyPath];
+      } else {
+         this.currentStore.cachedFiles[prettyPath] = {
+            words: [],
+            hash
+         };
+      }
+
+      return isChanged;
+   }
+
+   _isFileChanged(prettyPath, hash) {
+      // кеша не было, значит все файлы новые
+      if (!this.lastStore.startBuildTime) {
+         return true;
+      }
+
+      // новый файл
+      if (!this.lastStore.cachedFiles.hasOwnProperty(prettyPath)) {
+         return true;
+      }
+
+      // dropCacheForMarkup устанавливается по результатам генерации json
       if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
          return true;
       }
 
-      // кеша не было, значит все файлы новые
-      const noCache = !this.lastStore.startBuildTime;
-
-      // проверка modification time. этой проверки может быть не достаточно в двух слуаях:
-      // 1. файл вернули из корзины
-      // 2. файл не корректно был обработан в предыдущей сборке и мы не смогли определить зависимости
-      const isModifiedFile = fileMTime.getTime() > this.lastStore.startBuildTime;
-
-      // новый файл
-      const isChanged = noCache || isModifiedFile || !this.lastStore.cachedFiles.hasOwnProperty(prettyPath);
-
-      if (!isChanged) {
-         this.currentStore.cachedFiles[prettyPath] = this.lastStore.cachedFiles[prettyPath];
-      }
-
-      return isChanged;
+      return this.lastStore.cachedFiles[prettyPath].hash !== hash;
    }
 
    setDropCacheForMarkup() {
@@ -113,11 +135,15 @@ class Cache {
 
    storeCollectWords(filePath, collectWords) {
       const prettyPath = helpers.prettifyPath(filePath);
-      this.currentStore.cachedFiles[prettyPath] = collectWords;
+      this.currentStore.cachedFiles[prettyPath].words = collectWords;
    }
 
-   getCachedFiles() {
-      return this.currentStore.cachedFiles;
+   getCachedWords() {
+      let resultWords = [];
+      for (const filePath of Object.keys(this.currentStore.cachedFiles)) {
+         resultWords = [...resultWords, ...this.currentStore.cachedFiles[filePath].words];
+      }
+      return resultWords;
    }
 }
 

@@ -93,7 +93,7 @@ class StoreInfo {
          if (!this.inputPaths.hasOwnProperty(filePath)) {
             continue;
          }
-         for (const outputFilePath of this.inputPaths[filePath]) {
+         for (const outputFilePath of this.inputPaths[filePath].output) {
             resultSet.add(outputFilePath);
          }
       }

@@ -82,7 +82,7 @@ function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
 
    return function grabModule() {
       return gulp
-         .src(moduleInput, { read: false, dot: false, nodir: true })
+         .src(moduleInput, { dot: false, nodir: true })
          .pipe(
             plumber({
                errorHandler(err) {
@@ -121,8 +121,7 @@ function generateTaskForGrabModules(changesStore, config, pool) {
 
 function generateTaskForSaveOutputJson(cache, config) {
    return async function saveOutputJson() {
-      const result = Object.values(cache.getCachedFiles()).reduce((a, b) => a.concat(b));
-      await fs.writeJSON(config.outputPath, result, { spaces: 1 });
+      await fs.writeJSON(config.outputPath, cache.getCachedWords(), { spaces: 1 });
    };
 }
 
