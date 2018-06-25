@@ -7,7 +7,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   crypto = require('crypto');
 
 const helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
@@ -48,7 +49,10 @@ class ChangesStore {
             routesInfo: {},
             markupCache: {}
          };
-         this.currentStore.inputPaths[moduleInfo.path] = [];
+         this.currentStore.inputPaths[moduleInfo.path] = {
+            hash: '',
+            output: []
+         };
       }
 
       this.filePath = path.join(this.config.cachePath, 'store.json');
@@ -142,17 +146,48 @@ class ChangesStore {
 
    /**
     * Проверяет нужно ли заново обрабатывать файл или можно ничего не делать.
-    * @param {string}filePath путь до файла
-    * @param {Date} fileMTime время модификации файла
+    * @param {string} filePath путь до файла
+    * @param {Buffer} fileContents содержимое файла
     * @param {ModuleInfo} moduleInfo информация о модуле.
     * @returns {Promise<boolean>}
     */
-   async isFileChanged(filePath, fileMTime, moduleInfo) {
+   async isFileChanged(filePath, fileContents, moduleInfo) {
       const prettyPath = helpers.prettifyPath(filePath);
+      let hash = '';
+      if (fileContents) {
+         hash = crypto.createHash('sha1').update(fileContents).digest('base64');
+      }
+      const isChanged = await this._isFileChanged(prettyPath, hash, moduleInfo);
+
       const relativePath = path.relative(moduleInfo.path, filePath);
       const outputFullPath = path.join(moduleInfo.output, transliterate(relativePath));
-      this.currentStore.inputPaths[prettyPath] = [helpers.prettifyPath(outputFullPath)];
+      this.currentStore.inputPaths[prettyPath] = {
+         hash,
+         output: [helpers.prettifyPath(outputFullPath)]
+      };
 
+      if (!isChanged) {
+         // вытащим данные из старого кеша в новый кеш
+         const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
+         const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
+         if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
+            currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
+         }
+         if (lastModuleCache.markupCache.hasOwnProperty(prettyPath)) {
+            currentModuleCache.markupCache[prettyPath] = lastModuleCache.markupCache[prettyPath];
+         }
+         if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
+            currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
+         }
+         if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
+            this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
+         }
+      }
+
+      return isChanged;
+   }
+
+   async _isFileChanged(prettyPath, hash) {
       // кеша не было, значит все файлы новые
       if (!this.lastStore.startBuildTime) {
          return true;
@@ -173,35 +208,19 @@ class ChangesStore {
          return true;
       }
 
-      // проверка modification time
-      if (fileMTime.getTime() > this.lastStore.startBuildTime) {
+      if (this.lastStore.inputPaths[prettyPath].hash !== hash) {
          if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
             this.cacheChanges[prettyPath] = true;
          }
          return true;
       }
 
-      // вытащим данные из старого кеша в новый кеш
-      const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
-      const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
-      if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
-         currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
-      }
-      if (lastModuleCache.markupCache.hasOwnProperty(prettyPath)) {
-         currentModuleCache.markupCache[prettyPath] = lastModuleCache.markupCache[prettyPath];
-      }
-      if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
-         currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
-      }
-      if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
-         this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
-      }
-
       if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
-         const isChanged = await this.isDependenciesChanged(prettyPath);
+         const isChanged = await this._isDependenciesChanged(prettyPath);
          this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
       }
+
       return false;
    }
 
@@ -216,10 +235,10 @@ class ChangesStore {
       const prettyFilePath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
       if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
-         this.currentStore.inputPaths[prettyFilePath].push(outputPrettyPath);
+         this.currentStore.inputPaths[prettyFilePath].output.push(outputPrettyPath);
       } else {
          // некоторые файлы являются производными от всего модуля. например en-US.js, en-US.css
-         this.currentStore.inputPaths[moduleInfo.path].push(outputPrettyPath);
+         this.currentStore.inputPaths[moduleInfo.path].output.push(outputPrettyPath);
       }
    }
 
@@ -258,7 +277,7 @@ class ChangesStore {
     * @param {string} filePath путь до файла
     * @returns {Promise<boolean>}
     */
-   async isDependenciesChanged(filePath) {
+   async _isDependenciesChanged(filePath) {
       const dependencies = this.getAllDependencies(filePath);
       if (dependencies.length === 0) {
          return false;
@@ -271,8 +290,9 @@ class ChangesStore {
             }
             let isChanged = false;
             if (await fs.pathExists(currentPath)) {
-               const currentMTime = (await fs.lstat(filePath)).mtime.getTime();
-               isChanged = currentMTime > this.lastStore.startBuildTime;
+               const fileContents = await fs.readFile(filePath);
+               const hash = crypto.createHash('sha1').update(fileContents).digest('base64');
+               isChanged = this.lastStore.inputPaths[filePath].hash !== hash;
             } else {
                isChanged = true;
             }
