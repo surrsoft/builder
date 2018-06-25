@@ -133,7 +133,7 @@ module.exports = function register(grunt) {
           false - если у нас разделённое ядро и несколько сервисов.
           true - если у нас монолитное ядро или один сервис.
           */
-            replacePath = !(splittedCore && grunt.option('multi-service'));
+            replacePath = true;
 
          const done = () => {
             logger.correctExitCode();
@@ -218,7 +218,7 @@ module.exports = function register(grunt) {
                         return;
                      }
 
-                     generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath).then(
+                     generateStaticHtmlForJs(file, componentInfo, contents, config, modules, replacePath, false).then(
                         (result) => {
                            if (result) {
                               let outputPath;
