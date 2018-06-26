@@ -10,17 +10,15 @@ const gulp = require('gulp'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependencyGraph'),
    plumber = require('gulp-plumber'),
-   gzip = require('../plugins/gzip'),
    { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
 /**
  * Генерация задачи кастомной паковки.
  * @param {ChangesStore} changesStore кеш
  * @param {BuildConfiguration} config конфигурация сборки
- * @param {Pool} pool пул воркеров
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForCustomPack(changesStore, config, pool) {
+function generateTaskForCustomPack(changesStore, config) {
    const root = config.rawConfig.output,
       splittedCore = true,
       depsTree = new DependencyGraph(),
@@ -57,34 +55,9 @@ function generateTaskForCustomPack(changesStore, config, pool) {
       };
    });
 
-   const generateGzipTasks = config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(root, path.basename(moduleInfo.output));
-      const inputJs = path.join(moduleOutput, '/**/*.package.min.js');
-      const inputCss = path.join(moduleOutput, '/**/*.package.min.css');
-      return function gzipForCustompack() {
-         return gulp
-            .src([inputJs, inputCss], { dot: false, nodir: true, base: moduleOutput })
-            .pipe(
-               plumber({
-                  errorHandler(err) {
-                     logger.error({
-                        message: 'Задача gzip для custompack завершилась с ошибкой',
-                        error: err,
-                        moduleInfo
-                     });
-                     this.emit('end');
-                  }
-               })
-            )
-            .pipe(gzip(pool, moduleInfo))
-            .pipe(gulp.dest(moduleOutput));
-      };
-   });
-
    return gulp.series(
       generateDepsGraphTask(depsTree, changesStore),
       gulp.parallel(generatePackagesTasks),
-      gulp.parallel(generateGzipTasks),
       generateSaveResultsTask(config, results, root, splittedCore)
    );
 }
