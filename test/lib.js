@@ -50,11 +50,21 @@ const isRegularFile = async(folder, filePath) => {
    return !stat.isSymbolicLink() && stat.isFile();
 };
 
+function linkPlatform(sourceFolder) {
+   const nodeModulesPath = path.join(__dirname, '../node_modules');
+   return Promise.all([
+      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/ws'), path.join(sourceFolder, 'WS.Core')),
+      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(sourceFolder, 'View')),
+      fs.symlink(path.join(nodeModulesPath, 'sbis3-controls/Controls'), path.join(sourceFolder, 'Controls')),
+      fs.symlink(path.join(nodeModulesPath, 'ws-data/WS.Data'), path.join(sourceFolder, 'WS.Data'))]);
+}
+
 module.exports = {
    trimLessError,
    timeoutForMacOS,
    getMTime,
    removeRSymbol,
    isSymlink,
-   isRegularFile
+   isRegularFile,
+   linkPlatform
 };

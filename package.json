@@ -16,7 +16,7 @@
       "build": "npm run verify && npm run build-only",
       "verify": "npm run lint && npm test",
       "build-only": "node copy-to-dest.js && cd dest && npm i --production --legacy-bundling=false",
-      "test": "node ./node_modules/mocha/bin/mocha --timeout 120000 -R xunit --reporter-options output=xunit-result.xml > xunit.log",
+      "test": "node ./node_modules/mocha/bin/mocha --timeout 180000 -R xunit --reporter-options output=xunit-result.xml > xunit.log",
       "lint": "node ./node_modules/eslint/bin/eslint --no-color --no-eslintrc -c=.eslintrc -f=stylish .",
       "fix": "node ./node_modules/eslint/bin/eslint --no-eslintrc -c=.eslintrc --fix .",
       "coverage": "node ./node_modules/nyc/bin/nyc --reporter=html --all ./node_modules/.bin/mocha --timeout 120000 -R xunit --reporter-options output=xunit-result.xml > xunit.log"
@@ -46,15 +46,12 @@
       "postcss-safe-parser": "3.0.1",
       "postcss-url": "7.3.2",
       "requirejs": "2.3.5",
-      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
-      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.350",
       "strip-bom": "3.0.0",
       "tensor-xmldom": "0.2.0-b9",
       "through2": "2.0.3",
       "uglify-js": "3.3.23",
       "vinyl": "2.1.0",
-      "workerpool": "2.3.0",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.350"
+      "workerpool": "2.3.0"
    },
    "devDependencies": {
       "@tensor-corp/eslint-config": "2.0.1",
@@ -67,7 +64,10 @@
       "eslint-plugin-promise": "3.8.0",
       "mocha": "5.2.0",
       "nyc": "11.8.0",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350"
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.350",
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.350",
+      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.350",
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.350"
    },
    "engines": {
       "node": ">=8.9.3"
