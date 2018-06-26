@@ -15,8 +15,8 @@ const { expect } = chai;
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    fixtureFolder = path.join(__dirname, 'fixture/build-worker'),
-   workerPath = path.join(__dirname, '../gulp/helpers/worker.js'),
-   execInPool = require('../gulp/helpers/exec-in-pool'),
+   workerPath = path.join(__dirname, '../gulp/common/worker.js'),
+   execInPool = require('../gulp/common/exec-in-pool'),
    modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
    sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
 
@@ -30,7 +30,7 @@ const prepareTest = async function() {
    await fs.copy(fixtureFolder, workspaceFolder);
 };
 
-describe('gulp/helpers/worker.js', () => {
+describe('gulp/common/worker.js', () => {
    it('тест с минимально допустимыми входными данными', async() => {
       const pool = workerPool.pool(workerPath);
 

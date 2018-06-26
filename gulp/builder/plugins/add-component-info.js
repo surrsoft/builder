@@ -12,7 +12,7 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../helpers/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool');
 
 /**
  * Объявление плагина

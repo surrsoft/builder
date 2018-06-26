@@ -8,7 +8,7 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../helpers/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 

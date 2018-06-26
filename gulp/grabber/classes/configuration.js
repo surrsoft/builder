@@ -6,8 +6,8 @@
 
 'use strict';
 
-const ConfigurationReader = require('../../helpers/configuration-reader'),
-   ModuleInfo = require('../../helpers/base-module-info');
+const ConfigurationReader = require('../../common/configuration-reader'),
+   ModuleInfo = require('../../common/base-module-info');
 
 /**
  * Класс с данными о конфигурации сборки
@@ -28,7 +28,7 @@ class GrabberConfiguration {
    }
 
    loadSync(argv) {
-      this.configFile = ConfigurationReader.getConfigPath(argv);
+      this.configFile = ConfigurationReader.getProcessParameters(argv).config;
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
 
       for (const module of this.rawConfig.modules) {

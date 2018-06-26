@@ -38,6 +38,7 @@
       "gulp-plumber": "1.2.0",
       "gulp-rename": "1.2.3",
       "humanize": "0.0.9",
+      "lazypipe": "1.0.1",
       "less": "3.0.4",
       "minimatch": "3.0.4",
       "p-map": "1.2.0",
