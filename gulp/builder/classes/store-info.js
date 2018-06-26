@@ -4,6 +4,7 @@
 'use strict';
 
 const fs = require('fs-extra'),
+   path = require('path'),
    logger = require('../../../lib/logger').logger();
 
 /**
@@ -41,13 +42,18 @@ class StoreInfo {
       this.filesWithErrors = new Set();
    }
 
+   static getLastRunningParametersPath(filePath) {
+      return path.join(path.dirname(filePath), 'last_build_gulp_config.json');
+   }
+
    async load(filePath) {
       logger.debug(`Читаем файл кеша ${filePath}`);
 
       try {
          if (await fs.pathExists(filePath)) {
+            this.runningParameters = await fs.readJSON(StoreInfo.getLastRunningParametersPath(filePath));
+
             const obj = await fs.readJSON(filePath);
-            this.runningParameters = obj.runningParameters;
             this.versionOfBuilder = obj.versionOfBuilder;
             logger.debug(`В кеше versionOfBuilder: ${this.versionOfBuilder}`);
             this.startBuildTime = obj.startBuildTime;
@@ -65,11 +71,10 @@ class StoreInfo {
       }
    }
 
-   save(filePath) {
-      return fs.outputJson(
+   async save(filePath) {
+      await fs.outputJson(
          filePath,
          {
-            runningParameters: this.runningParameters,
             versionOfBuilder: this.versionOfBuilder,
             startBuildTime: this.startBuildTime,
             inputPaths: this.inputPaths,
@@ -81,7 +86,16 @@ class StoreInfo {
             spaces: 1
          }
       );
+
+      await fs.outputJson(
+         StoreInfo.getLastRunningParametersPath(filePath),
+         this.runningParameters,
+         {
+            spaces: 1
+         }
+      );
    }
+
 
    /**
     * Получить набор выходных файлов. Нужно чтобы получать разницы между сборками и удалять лишнее.

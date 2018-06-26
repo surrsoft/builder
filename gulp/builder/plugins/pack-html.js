@@ -11,7 +11,7 @@ const through = require('through2'),
    domHelpers = require('../../../packer/lib/domHelpers'),
    logger = require('../../../lib/logger').logger(),
    packHtml = require('../../../packer/tasks/lib/packHTML'),
-   execInPool = require('../../helpers/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool');
 
 /**
  * Объявление плагина

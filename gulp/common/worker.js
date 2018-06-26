@@ -9,7 +9,7 @@
 const logger = require('../../lib/logger').setWorkerLogger();
 
 // ws должен быть вызван раньше чем первый global.requirejs
-const nodeWS = require('../helpers/node-ws');
+const nodeWS = require('.//node-ws');
 nodeWS.init();
 
 const fs = require('fs-extra'),

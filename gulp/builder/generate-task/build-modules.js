@@ -15,7 +15,7 @@ const path = require('path'),
 // наши плагины
 const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    compileLess = require('../plugins/compile-less'),
-   changedInPlace = require('../../helpers/plugins/changed-in-place'),
+   changedInPlace = require('../../common/plugins/changed-in-place'),
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
@@ -27,6 +27,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
    filterCached = require('../plugins/filter-cached'),
+   filterUnused = require('../plugins/filter-unused'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
    minifyJs = require('../plugins/minify-js'),
@@ -37,6 +38,8 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
+
+const { needSymlink } = require('../helpers');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -138,40 +141,16 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
             .pipe(gulpIf(config.isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
+            .pipe(filterUnused())
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(
-                  needSymlink(hasLocalization, config, moduleInfo),
+                  needSymlink(config, moduleInfo),
                   gulp.symlink(moduleInfo.output),
                   gulp.dest(moduleInfo.output)
                )
             )
       );
-   };
-}
-
-function needSymlink(hasLocalization, config, moduleInfo) {
-   return (file) => {
-      // в релизе нельзя применять симлинки
-      if (config.isReleaseMode) {
-         return false;
-      }
-
-      // при локализации изменяются файлы с вёрсткой, нельзя использовать симлинки
-      if (hasLocalization && ['.html', '.tmpl', 'xhtml'].includes(file.extname)) {
-         return false;
-      }
-
-      // нельзя использовать симлинки для файлов, которые мы сами генерируем.
-      // абсолютный путь в relativePath  может получиться только на windows, если не получилось построить относительный
-      const relativePath = path.relative(moduleInfo.path, file.history[0]);
-      if (relativePath.includes('..') || path.isAbsolute(relativePath)) {
-         return false;
-      }
-
-      // если была транслитерация путей(признак file.history.length > 1), то симлинки не работают.
-      // ошибка в самом gulp.
-      return file.history.length === 1;
    };
 }
 

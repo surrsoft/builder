@@ -7,6 +7,10 @@ const path = require('path'),
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
+const {
+   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile
+} = require('./lib');
+
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
    outputFolder = path.join(workspaceFolder, 'output'),
@@ -15,24 +19,6 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль'),
    themesSourceFolder = path.join(sourceFolder, 'Тема Скрепка');
-
-const isSymlink = async(filePath) => {
-   const fullPath = path.join(moduleOutputFolder, filePath);
-   if (!(await fs.pathExists(fullPath))) {
-      return false;
-   }
-   const stat = await fs.lstat(fullPath);
-   return stat.isSymbolicLink();
-};
-
-const isRegularFile = async(filePath) => {
-   const fullPath = path.join(moduleOutputFolder, filePath);
-   if (!(await fs.pathExists(fullPath))) {
-      return false;
-   }
-   const stat = await fs.lstat(fullPath);
-   return !stat.isSymbolicLink() && stat.isFile();
-};
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -50,32 +36,12 @@ const runWorkflow = function() {
    });
 };
 
-const getMTime = async function(filePath) {
-   return (await fs.lstat(filePath)).mtime.getTime();
-};
-
-const timeout = function(ms) {
-   return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-// в файловой системе HFS Plus точность хранения даты равняется 1 секунде
-// из-за этого тесты могуть падать непредсказуемым образом, и при этом для пользователя проблем не будет
-const timeoutForMacOS = async function() {
-   if (process.platform === 'darwin') {
-      await timeout(1000);
-   }
-};
-
-const removeRSymbol = function(str) {
-   return str.replace(/\r/g, '');
-};
-
 // нужно проверить что происходит:
 // 1. при переименовывании файла == добавление/удаление файла
 // 2. при изменении файла
 // 3. если файл не менять
 describe('gulp/builder/generate-workflow.js', () => {
-   it('проверка компиляции less', async() => {
+   it('compile less', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
 
@@ -442,66 +408,65 @@ describe('gulp/builder/generate-workflow.js', () => {
       let staticTemplatesJson = await fs.readFile(staticTemplatesJsonOutputPath);
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
-         '<TITLE>Stable</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>Stable</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(forChangeHtml.toString()).should.equal(
          '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
-         '<TITLE>ForChange_old</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>ForChange_old</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(forRenameHtml.toString()).should.equal(
          '<FOR_RENAME></FOR_RENAME>\n' +
-         '<TITLE>ForRename</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>ForRename</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(staticTemplatesJson.toString()).should.equal(
          '{\n' +
-         '  "/ForChange_old.html": "Modul/ForChange_old.html",\n' +
-         '  "/ForRename.html": "Modul/ForRename.html",\n' +
-         '  "/Stable.html": "Modul/Stable.html",\n' +
-         '  "/Stable/One": "Modul/Stable.html",\n' +
-         '  "/Stable/Two": "Modul/Stable.html",\n' +
-         '  "/Stable_Three": "Modul/Stable.html"\n' +
-         '}'
+            '  "/ForChange_old.html": "Modul/ForChange_old.html",\n' +
+            '  "/ForRename.html": "Modul/ForRename.html",\n' +
+            '  "/Stable.html": "Modul/Stable.html",\n' +
+            '  "/Stable/One": "Modul/Stable.html",\n' +
+            '  "/Stable/Two": "Modul/Stable.html",\n' +
+            '  "/Stable_Three": "Modul/Stable.html"\n' +
+            '}'
       );
-
 
       // изменим "исходники"
       await timeoutForMacOS();
@@ -579,68 +544,68 @@ describe('gulp/builder/generate-workflow.js', () => {
       staticTemplatesJson = await fs.readFile(staticTemplatesJsonOutputPath);
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
-         '<TITLE>Stable</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>Stable</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
 
       // TODO: в следующей строке ошибка из-за кеширования результата в lib/generate-static-html-for-js.js.
       // должно быть FOR_CHANGE_NEW. пока этим можно пренебречь
       removeRSymbol(forChangeHtml.toString()).should.equal(
          '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
-         '<TITLE>ForChange_new</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>ForChange_new</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
 
       removeRSymbol(forRenameHtml.toString()).should.equal(
          '<FOR_RENAME></FOR_RENAME>\n' +
-         '<TITLE>ForRename</TITLE>\n' +
-         '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
-         '<INCLUDE><INCLUDE1/>\n' +
-         '</INCLUDE>\n' +
-         '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-         '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-         '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-         '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
-         '<APPEND_STYLE></APPEND_STYLE>\n' +
-         '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
-         '<ACCESS_LIST></ACCESS_LIST>\n' +
-         '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
-         '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
-         '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
+            '<TITLE>ForRename</TITLE>\n' +
+            '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
+            '<INCLUDE><INCLUDE1/>\n' +
+            '</INCLUDE>\n' +
+            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
+            '<APPEND_STYLE></APPEND_STYLE>\n' +
+            '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
+            '<ACCESS_LIST></ACCESS_LIST>\n' +
+            '<CONFIG.USER_PARAMS>%{CONFIG.USER_PARAMS}</CONFIG.USER_PARAMS>\n' +
+            '<CONFIG.GLOBAL_PARAMS>%{CONFIG.GLOBAL_PARAMS}</CONFIG.GLOBAL_PARAMS>\n' +
+            '<SAVE_LAST_STATE>false</SAVE_LAST_STATE>\n'
       );
       removeRSymbol(staticTemplatesJson.toString()).should.equal(
          '{\n' +
-         '  "/ForChange_new.html": "Modul/ForChange_new.html",\n' +
-         '  "/ForRename.html": "Modul/ForRename.html",\n' +
-         '  "/Stable.html": "Modul/Stable.html",\n' +
-         '  "/Stable/One": "Modul/Stable.html",\n' +
-         '  "/Stable/Two": "Modul/Stable.html",\n' +
-         '  "/Stable_Three": "Modul/Stable.html"\n' +
-         '}'
+            '  "/ForChange_new.html": "Modul/ForChange_new.html",\n' +
+            '  "/ForRename.html": "Modul/ForRename.html",\n' +
+            '  "/Stable.html": "Modul/Stable.html",\n' +
+            '  "/Stable/One": "Modul/Stable.html",\n' +
+            '  "/Stable/Two": "Modul/Stable.html",\n' +
+            '  "/Stable_Three": "Modul/Stable.html"\n' +
+            '}'
       );
 
       await clearWorkspace();
@@ -668,21 +633,21 @@ describe('gulp/builder/generate-workflow.js', () => {
          await runWorkflow();
 
          // файлы из исходников
-         (await isSymlink('template.html')).should.equal(true);
-         (await isSymlink('TestHtmlTmpl.html.tmpl')).should.equal(true);
-         (await isSymlink('TestStaticHtml.js')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'template.html')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'TestHtmlTmpl.html.tmpl')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'TestStaticHtml.js')).should.equal(true);
 
          // генерируемые файлы из исходников
-         (await isRegularFile('StaticHtml.html')).should.equal(true);
-         (await isRegularFile('TestHtmlTmpl.html')).should.equal(true);
-         (await isRegularFile('TestLess.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess.css')).should.equal(true);
 
          // генерируемые файлы на модуль
-         (await isRegularFile('contents.js')).should.equal(true);
-         (await isRegularFile('contents.json')).should.equal(true);
-         (await isRegularFile('navigation-modules.json')).should.equal(true);
-         (await isRegularFile('routes-info.json')).should.equal(true);
-         (await isRegularFile('static_templates.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'contents.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'navigation-modules.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'routes-info.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'static_templates.json')).should.equal(true);
       };
 
       await check();
@@ -717,12 +682,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          // запустим таску
          await runWorkflow();
 
-         (await isRegularFile('lang/en-US/en-US.css')).should.equal(true);
-         (await isRegularFile('lang/en-US/en-US.js')).should.equal(true);
-         (await isRegularFile('lang/ru-RU/ru-RU.js')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.js')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'lang/ru-RU/ru-RU.js')).should.equal(true);
 
-
-         (await isSymlink('lang/ru-RU/ru-RU.json')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'lang/ru-RU/ru-RU.json')).should.equal(true);
       };
 
       await check();
