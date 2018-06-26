@@ -13,9 +13,9 @@ const path = require('path'),
    workerPool = require('workerpool'),
    plumber = require('gulp-plumber');
 
-const guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
-   generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
-   changedInPlace = require('../helpers/plugins/changed-in-place'),
+const guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
+   generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
+   changedInPlace = require('../common/plugins/changed-in-place'),
    grabFile = require('./plugins/grab-file'),
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
@@ -33,7 +33,7 @@ function generateWorkflow(processArgv) {
 
    const cache = new Cache(config);
 
-   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
+   const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       maxWorkers: os.cpus().length - 1 || 1

@@ -40,7 +40,10 @@ try {
 
    // т.к. мы строим Workflow на основе файла конфигурации, то нужно отделить build от grabber,
    // чтобы не выполнялись лишние действия
-   if (process.argv.includes('build')) {
+   if (process.argv.includes('buildOnChange')) {
+      const generateBuildWorkflowOnChange = require('./gulp/builder/generate-workflow-on-change.js');
+      gulp.task('buildOnChange', generateBuildWorkflowOnChange(process.argv));
+   } else if (process.argv.includes('build')) {
       const generateBuildWorkflow = require('./gulp/builder/generate-workflow.js');
       gulp.task('build', generateBuildWorkflow(process.argv));
    } else if (process.argv.includes('collectWordsForLocalization')) {

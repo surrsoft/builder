@@ -6,7 +6,7 @@
 
 const transliterate = require('../../../lib/transliterate'),
    path = require('path'),
-   BaseModuleInfo = require('../../helpers/base-module-info');
+   BaseModuleInfo = require('../../common/base-module-info');
 
 /**
  * Класс для работы с модулями проекта. Накапливает данные о модулях, которые плохо ложатся на кеш

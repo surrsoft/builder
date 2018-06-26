@@ -1,5 +1,5 @@
 /**
- * Плагин для фильтрации не изменённых файлов, чтобы не перезаписывать и не напрягать диск.
+ * Плагин для фильтрации не нужных для стенда файлов. Например, less.
  * @author Бегунов Ал. В.
  */
 
@@ -15,7 +15,8 @@ const logger = require('../../../lib/logger').logger(),
 module.exports = function declarePlugin() {
    return through.obj(function onTransform(file, encoding, callback) {
       try {
-         if (!file.hasOwnProperty('cached') || !file.cached) {
+         // less не должны попадать в стенд или дистрибутив
+         if (file.extname !== '.less') {
             callback(null, file);
             return;
          }

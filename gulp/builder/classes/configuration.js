@@ -7,7 +7,7 @@
 'use strict';
 
 const path = require('path');
-const ConfigurationReader = require('../../helpers/configuration-reader'),
+const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
    availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
@@ -62,7 +62,7 @@ class BuildConfiguration {
     * @param {string[]} argv массив аргументов запуска утилиты
     */
    loadSync(argv) {
-      this.configFile = ConfigurationReader.getConfigPath(argv);
+      this.configFile = ConfigurationReader.getProcessParameters(argv).config;
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;

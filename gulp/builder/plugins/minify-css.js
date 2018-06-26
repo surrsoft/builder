@@ -10,7 +10,7 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../helpers/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool');
 
 const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
 

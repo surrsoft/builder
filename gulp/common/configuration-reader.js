@@ -10,18 +10,20 @@
 const fs = require('fs-extra');
 
 /**
- * Получить путь до файла конфигурации из параметров запуска утилиты.
- * Для получения 1 параметра --config не нужна сторонняя библиотека.
+ * Получить параметры командной строки, что начинаются с --
  * @param {string[]} argv спискок аргументов запуска утилиты
- * @returns {*}
+ * @returns {Object}
  */
-function getConfigPath(argv) {
+function getProcessParameters(argv) {
+   const result = {};
    for (const argument of argv) {
-      if (argument.startsWith('--config=')) {
-         return argument.replace('--config=', '').replace(/"/g, '');
+      const match = argument.match(/^--([^-=]+)=['"]?([^'"]*)['"]?$/i);
+      if (match) {
+         // eslint-disable-next-line prefer-destructuring
+         result[match[1]] = match[2];
       }
    }
-   return '';
+   return result;
 }
 
 /**
@@ -72,6 +74,6 @@ function checkModules(rawConfig) {
 }
 
 module.exports = {
-   getConfigPath,
+   getProcessParameters,
    readConfigFileSync
 };

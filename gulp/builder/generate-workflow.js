@@ -16,11 +16,13 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
-   generateTaskForGenerateJson = require('../helpers/generate-task/generate-json'),
-   guardSingleProcess = require('../helpers/generate-task/guard-single-process.js'),
-   generateTaskForSaveLoggerReport = require('../helpers/generate-task/save-logger-report'),
+   generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
+   guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
+   generateTaskForSaveLoggerReport = require('../common/generate-task/save-logger-report'),
    ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js');
+
+const { getDirnameForModule, generateTaskForLoadChangesStore, generateTaskForTerminatePool } = require('./helpers');
 
 /**
  * Генерирует поток выполнения сборки статики
@@ -34,7 +36,7 @@ function generateWorkflow(processArgv) {
 
    const changesStore = new ChangesStore(config);
 
-   const pool = workerPool.pool(path.join(__dirname, '../helpers/worker.js'), {
+   const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       maxWorkers: os.cpus().length - 1 || 1,
@@ -74,18 +76,6 @@ function generateWorkflow(processArgv) {
    );
 }
 
-function generateTaskForTerminatePool(pool) {
-   return function terminatePool() {
-      return pool.terminate();
-   };
-}
-
-function generateTaskForLoadChangesStore(changesStore) {
-   return function loadChangesStore() {
-      return changesStore.load();
-   };
-}
-
 function generateTaskForClearCache(changesStore) {
    return function clearCache() {
       return changesStore.clearCacheIfNeeded();
@@ -105,15 +95,6 @@ function generateTaskForRemoveFiles(changesStore) {
          concurrency: 20
       });
    };
-}
-
-function getDirnameForModule(modules, moduleName) {
-   for (const module of modules) {
-      if (module.name === moduleName) {
-         return module.path;
-      }
-   }
-   return '';
 }
 
 module.exports = generateWorkflow;

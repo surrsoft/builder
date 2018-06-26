@@ -7,7 +7,7 @@
 const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../helpers/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool');
 
 const supportExtensions = ['.js', '.xhtml', '.tmpl'];
 
