@@ -327,7 +327,8 @@ function getKey(buildNumber, key) {
  * надо с учётом этой темы
  */
 function getThemeFromWsConfig(wsConfig) {
-   const ast = esprima.parse(wsConfig.firstChild.data);
+   // чтобы не падал на %{CONFIG.USER_PARAMS}, нужно передать опцию tolerant: true
+   const ast = esprima.parse(wsConfig.firstChild.data, { tolerant: true });
    let themeName = null;
 
    traverse(ast, {
