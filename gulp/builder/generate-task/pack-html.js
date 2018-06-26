@@ -10,8 +10,7 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    DepGraph = require('../../../packer/lib/dependencyGraph'),
-   pluginPackHtml = require('../plugins/pack-html'),
-   gzip = require('../plugins/gzip');
+   pluginPackHtml = require('../plugins/pack-html');
 
 /**
  * Генерация задачи паковки для статических html.
@@ -55,8 +54,7 @@ function generateTaskForPackHtml(changesStore, config, pool) {
 
    return gulp.series(
       generateTaskForLoadDG(changesStore, depGraph),
-      gulp.parallel(tasks),
-      generateTaskForGzip(config, pool)
+      gulp.parallel(tasks)
    );
 }
 
@@ -64,29 +62,6 @@ function generateTaskForLoadDG(changesStore, depGraph) {
    return function load(done) {
       depGraph.fromJSON(changesStore.getModuleDependencies());
       done();
-   };
-}
-
-function generateTaskForGzip(config, pool) {
-   return function gzipPackageForHtml() {
-      const output = path.join(config.rawConfig.output, 'WI.SBIS/packer/modules');
-      const input = path.join(output, '/*.*');
-
-      return gulp
-         .src(input, { dot: false, nodir: true })
-         .pipe(
-            plumber({
-               errorHandler(err) {
-                  logger.error({
-                     message: 'Задача gzip для packHTML завершилась с ошибкой',
-                     error: err
-                  });
-                  this.emit('end');
-               }
-            })
-         )
-         .pipe(gzip(pool))
-         .pipe(gulp.dest(output));
    };
 }
 

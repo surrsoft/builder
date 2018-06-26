@@ -40,6 +40,9 @@ process.on('unhandledRejection', (reason, p) => {
    process.exit(1);
 });
 
+// не всегда понятно по 10 записям, откуда пришёл вызов.
+Error.stackTraceLimit = 100;
+
 /**
  * Прочитать описание компонетов из json для локализации. Или взять прочитанное ранее.
  * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
