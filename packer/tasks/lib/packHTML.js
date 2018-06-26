@@ -327,7 +327,11 @@ function getKey(buildNumber, key) {
  * надо с учётом этой темы
  */
 function getThemeFromWsConfig(wsConfig) {
-   const ast = esprima.parse(wsConfig.firstChild.data);
+   // нужно очистить текст скрипта от невалидных конструкций
+   const script = wsConfig.firstChild.data
+      .replace('%{CONFIG.GLOBAL_PARAMS}', 'true')
+      .replace('%{CONFIG.USER_PARAMS}', 'false');
+   const ast = esprima.parseScript(script, { tolerant: true });
    let themeName = null;
 
    traverse(ast, {
