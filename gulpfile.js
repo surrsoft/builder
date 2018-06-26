@@ -27,6 +27,9 @@ try {
       );
    });
 
+   // не всегда понятно по 10 записям, откуда пришёл вызов.
+   Error.stackTraceLimit = 100;
+
    // логгер - прежде всего
    const logger = require('./lib/logger').setGulpLogger();
 
