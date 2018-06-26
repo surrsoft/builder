@@ -290,9 +290,9 @@ class ChangesStore {
             }
             let isChanged = false;
             if (await fs.pathExists(currentPath)) {
-               const fileContents = await fs.readFile(filePath);
+               const fileContents = await fs.readFile(currentPath);
                const hash = crypto.createHash('sha1').update(fileContents).digest('base64');
-               isChanged = this.lastStore.inputPaths[filePath].hash !== hash;
+               isChanged = this.lastStore.inputPaths[currentPath].hash !== hash;
             } else {
                isChanged = true;
             }

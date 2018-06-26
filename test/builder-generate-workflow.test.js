@@ -8,7 +8,7 @@ const path = require('path'),
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
 const {
-   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile
+   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile, linkPlatform
 } = require('./lib');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
@@ -693,6 +693,78 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
       await check();
+
+      await clearWorkspace();
+   });
+
+   // проверим, что паковка собственных зависимостей корректно работает при пересборке
+   it('packOwnDeps', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packOwnDeps');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'release',
+         localization: false,
+         'default-localization': false,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'WS.Data',
+               path: path.join(sourceFolder, 'WS.Data')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      const testJsOutputPath = path.join(moduleOutputFolder, 'Test.min.js');
+      let testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent.includes('TestClassOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionOld').should.equal(true);
+
+      // поменяем js
+      const testJsInputPath = path.join(moduleSourceFolder, 'Test.js');
+      const testJsInputContent = await fs.readFile(testJsInputPath);
+      await fs.writeFile(testJsInputPath, testJsInputContent.toString().replace(/testFunctionOld/g, 'testFunctionNew'));
+
+      await runWorkflow();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+      testJsOutputContent.includes('TestClassOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionNew').should.equal(true);
+
+      // поменяем tmpl
+      const testTmplInputPath = path.join(moduleSourceFolder, 'Test.tmpl');
+      const testTmplInputContent = await fs.readFile(testTmplInputPath);
+      await fs.writeFile(testTmplInputPath, testTmplInputContent.toString().replace(/TestClassOld/g, 'TestClassNew'));
+
+      await runWorkflow();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+      testJsOutputContent.includes('TestClassNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionNew').should.equal(true);
 
       await clearWorkspace();
    });
