@@ -10,7 +10,7 @@ const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
-   availableLanguage = require('sbis3-ws/ws/res/json/availableLanguage.json');
+   availableLanguage = require('../../../resources/availableLanguage.json');
 
 const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
 

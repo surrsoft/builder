@@ -72,9 +72,7 @@ function initWs() {
       moduleControls = 'Controls';
       moduleWSData = 'WS.Data';
    } else {
-      // Есть в проекте нет своего модуля WS.Core, то подгружаем из node_modules.
-      // Это нужно для юнит тестов и для сервиса спецификаций.
-      // Для дистрибутива серсиса спецификаций не нужны модули платформы
+      // Есть в проекте нет своего модуля WS.Core, то это юнит тесты в debug режиме
       logger.debug('В worker не передан параметр ws-core-path, поэтому ws будет взят из node_modules');
       appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '/');
 

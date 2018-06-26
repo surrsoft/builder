@@ -11,24 +11,22 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
-   gzip = require('../plugins/gzip'),
    versionizeFinish = require('../plugins/versionize-finish');
 
 /**
  * Генерация завершающий задачи для Release сборки.
  * @param {BuildConfiguration} config конфигурация сборки
- * @param {Pool} pool пул воркеров
  * @param {boolean} localizationEnable включена ли локализация
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForFinalizeDistrib(config, pool, localizationEnable) {
+function generateTaskForFinalizeDistrib(config, localizationEnable) {
    if (!config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(config, pool)];
+   const tasks = [generateTaskForCopyResources(config)];
    if (localizationEnable) {
       tasks.push(generateTaskForNormalizeKey(config));
    }
@@ -36,7 +34,7 @@ function generateTaskForFinalizeDistrib(config, pool, localizationEnable) {
    return gulp.series(tasks);
 }
 
-function generateTaskForCopyResources(config, pool) {
+function generateTaskForCopyResources(config) {
    const tasks = config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
@@ -56,7 +54,6 @@ function generateTaskForCopyResources(config, pool) {
                })
             )
             .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
-            .pipe(gzip(pool, moduleInfo))
             .pipe(gulp.dest(moduleOutput));
       };
    });

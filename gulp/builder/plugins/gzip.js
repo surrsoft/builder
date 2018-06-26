@@ -8,7 +8,7 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool');
+   helpers = require('../../../lib/helpers');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
@@ -29,11 +29,10 @@ const excludeRegexes = [
 
 /**
  * Объявление плагина
- * @param {Pool} pool пул воркеров
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {*}
  */
-module.exports = function declarePlugin(pool, moduleInfo = null) {
+module.exports = function declarePlugin(moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -51,29 +50,14 @@ module.exports = function declarePlugin(pool, moduleInfo = null) {
                }
             }
 
-            /**
-             * в gzip в качестве данных мы передаём именно буфер, а не строку,
-             * поскольку toString портит шрифты и они становятся впоследствии при
-             * разархивации нечитаемыми
-             */
-            const [error, gzipContent] = await execInPool(pool, 'gzip', [file.contents]);
-            if (error) {
-               logger.error({
-                  message: "Ошибка builder'а при архивации",
-                  error,
-                  moduleInfo,
-                  filePath: file.path
-               });
-            } else {
-               this.push(
-                  new Vinyl({
-                     base: file.base,
-                     path: `${file.path}.gz`,
-                     contents: Buffer.from(gzipContent),
-                     history: [...file.history]
-                  })
-               );
-            }
+            this.push(
+               new Vinyl({
+                  base: file.base,
+                  path: `${file.path}.gz`,
+                  contents: Buffer.from(await helpers.gzip(file.contents)),
+                  history: [...file.history]
+               })
+            );
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",
