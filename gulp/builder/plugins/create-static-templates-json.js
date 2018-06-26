@@ -27,7 +27,7 @@ module.exports = function declarePlugin(moduleInfo) {
             const prettyStaticTemplates = {};
             for (const url of Object.keys(moduleInfo.staticTemplates)) {
                const prettyUrl = `/${helpers.removeLeadingSlash(helpers.prettifyPath(url))}`;
-               prettyStaticTemplates[prettyUrl] = moduleInfo.staticTemplates[url];
+               prettyStaticTemplates[prettyUrl] = helpers.prettifyPath(moduleInfo.staticTemplates[url]);
             }
 
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.
