@@ -89,7 +89,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   file.path,
                   minText,
                   false,
-                  path.basename(outputMinJsFile)
+                  path.basename(outputMinJsMapFile)
                ]);
                if (error) {
                   changesStore.markFileAsFailed(file.history[0]);
@@ -127,7 +127,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                const [errorOriginal, minifiedOriginal] = await execInPool(pool, 'uglifyJs', [
                   file.path,
                   minOriginalText,
-                  false
+                  false,
+                  path.basename(outputMinJsMapFile)
                ]);
                if (errorOriginal) {
                   changesStore.markFileAsFailed(file.history[0]);
