@@ -155,7 +155,10 @@ class ChangesStore {
       const prettyPath = helpers.prettifyPath(filePath);
       let hash = '';
       if (fileContents) {
-         hash = crypto.createHash('sha1').update(fileContents).digest('base64');
+         hash = crypto
+            .createHash('sha1')
+            .update(fileContents)
+            .digest('base64');
       }
       const isChanged = await this._isFileChanged(prettyPath, hash, moduleInfo);
 
@@ -288,10 +291,19 @@ class ChangesStore {
             if (this.cacheChanges.hasOwnProperty(currentPath)) {
                return this.cacheChanges[currentPath];
             }
+            if (
+               !this.lastStore.inputPaths.hasOwnProperty(currentPath) ||
+               !this.lastStore.inputPaths[currentPath].hash
+            ) {
+               return true;
+            }
             let isChanged = false;
             if (await fs.pathExists(currentPath)) {
                const fileContents = await fs.readFile(currentPath);
-               const hash = crypto.createHash('sha1').update(fileContents).digest('base64');
+               const hash = crypto
+                  .createHash('sha1')
+                  .update(fileContents)
+                  .digest('base64');
                isChanged = this.lastStore.inputPaths[currentPath].hash !== hash;
             } else {
                isChanged = true;
