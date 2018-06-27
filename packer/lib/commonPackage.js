@@ -298,12 +298,17 @@ async function limitingNativePackFiles(filesToPack, base) {
             }
 
             /**
-             * Позорный костыль для модулей, в которых нету плагина js, но которые используют
-             * точки в конце имени модуля(например это .compatible)
+             * Костыль для правильной загрузки модулей, в которых нету плагина js,
+             * но которые используют точки в конце имени модуля(например это .compatible)
              */
             if (fullPath && fullPath.match(extReg)) {
-               module.plugin = 'js';
+               if (module.moduleYes) {
+                  module.moduleYes.plugin = 'js';
+               } else {
+                  module.plugin = 'js';
+               }
             }
+
             try {
                result.push(await promisifyLoader(getLoader(module.plugin), module, base));
             } catch (error) {
