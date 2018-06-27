@@ -115,7 +115,7 @@ function initWs() {
       nodeRequire: require
    });
    global.requirejs = requireJS.config(config);
-   global.requirejs(path.join(appRoot, wsRoot, 'lib/core.js'));
+   global.requirejs('Lib/core');
    global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
