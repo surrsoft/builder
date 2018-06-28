@@ -4,6 +4,7 @@
  */
 
 'use strict';
+/* eslint-disable no-unused-vars */
 
 const path = require('path'),
    through = require('through2'),
@@ -394,3 +395,4 @@ module.exports = function generatePackageJson(config, depsTree, results, root) {
       callback();
    });
 };
+/* eslint-enable no-unused-vars */
