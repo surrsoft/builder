@@ -22,7 +22,7 @@ function getLibraryMeta(ast) {
    traverse(ast, {
       enter(node) {
          if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'define') {
-            const libraryDependencies = {};
+            const libraryDependenciesMeta = {};
 
             let dependencies, paramsNames, libraryName, returnStatement;
 
@@ -30,9 +30,25 @@ function getLibraryMeta(ast) {
                switch (argument.type) {
                   case 'ArrayExpression':
                      dependencies = argument.elements.map(element => element.value);
+                     libraryMeta.libraryDependencies = argument.elements;
                      break;
                   case 'FunctionExpression':
                      paramsNames = argument.params.map(param => param.name);
+                     dependencies.forEach((dependency) => {
+                        const currentParamName = paramsNames[dependencies.indexOf(dependency)];
+                        if (libraryDependenciesMeta.hasOwnProperty(dependency)) {
+                           if (currentParamName) {
+                              libraryDependenciesMeta[dependency].names.push(currentParamName);
+                           }
+                        } else {
+                           libraryDependenciesMeta[dependency] = {
+                              names: [currentParamName]
+                           };
+                        }
+                        if (isPrivate(dependency) && isInternalDependency(path.dirname(libraryName), dependency)) {
+                           libraryDependenciesMeta[dependency].isLibraryPrivate = true;
+                        }
+                     });
                      argument.body.body.forEach((expression, index) => {
                         if (expression.type === 'ReturnStatement') {
                            returnStatement = {
@@ -42,6 +58,9 @@ function getLibraryMeta(ast) {
                            };
                         }
                      });
+
+                     libraryMeta.libraryParametersNames = argument.params;
+                     libraryMeta.functionCallbackBody = argument.body;
                      if (returnStatement) {
                         libraryMeta.topLevelReturnStatement = returnStatement;
                      }
@@ -53,19 +72,8 @@ function getLibraryMeta(ast) {
                      break;
                }
             });
-            dependencies.forEach((dependency) => {
-               const currentParamName = paramsNames[dependencies.indexOf(dependency)];
-               if (libraryDependencies.hasOwnProperty(dependency)) {
-                  if (currentParamName) {
-                     libraryDependencies[dependency].names.push(currentParamName);
-                  }
-               } else {
-                  libraryDependencies[dependency] = {
-                     names: [currentParamName]
-                  };
-               }
-            });
-            libraryMeta.libraryDependencies = libraryDependencies;
+
+            libraryMeta.libraryDependenciesMeta = libraryDependenciesMeta;
             libraryMeta.libraryName = libraryName;
             this.break();
          }
@@ -215,12 +223,65 @@ function checkForDefineExportsProperty(ast) {
    return treeHasExportsDefine;
 }
 
+/**
+ * * вытаскиваем мета-данные для выражений вида
+ * 1)someParam = someAnotherParam
+ * 2)someParam = someObject.param
+ * @param{Object} currentNode - рассматриваемое выражение
+ * @returns
+ */
+function getExpressionStatementMeta(currentNode) {
+   const meta = {};
+   if (currentNode.type === 'ExpressionStatement' && currentNode.expression.right) {
+      const { expression } = currentNode;
+      meta.leftOperator = escodegen.generate(expression.left);
+      switch (expression.right.type) {
+         case 'MemberExpression':
+            meta.currentName = expression.right.object.name;
+            meta.type = 'Object';
+            meta.property = expression.right.property.name;
+            break;
+         case 'Identifier':
+            meta.currentName = expression.right.name;
+            meta.type = 'String';
+            break;
+         case 'CallExpression': {
+            const { callee } = expression.right;
+            switch (callee.type) {
+               case 'MemberExpression':
+                  meta.currentName = callee.object.name;
+                  meta.type = 'FunctionObject';
+                  meta.property = callee.property.name;
+                  break;
+               case 'Identifier':
+                  meta.currentName = callee.name;
+                  meta.type = 'FunctionString';
+                  break;
+               default:
+                  break;
+            }
+            break;
+         }
+         default:
+            break;
+      }
+   }
+   meta.expression = currentNode;
+   return meta;
+}
+
 async function packCurrentLibrary(root, data) {
    const
       ast = esprima.parse(data),
-      { libraryDependencies, libraryName, topLevelReturnStatement } = getLibraryMeta(ast),
-      privateDependencies = Object.keys(libraryDependencies).filter(
-         dependency => isPrivate(dependency) && isInternalDependency(path.dirname(libraryName), dependency)
+      {
+         libraryDependencies,
+         libraryDependenciesMeta,
+         libraryParametersNames,
+         functionCallbackBody,
+         libraryName
+      } = getLibraryMeta(ast),
+      privateDependencies = Object.keys(libraryDependenciesMeta).filter(
+         dependency => libraryDependenciesMeta[dependency].isLibraryPrivate
       ),
       externalDependenciesToPush = [];
 
@@ -238,7 +299,7 @@ async function packCurrentLibrary(root, data) {
             root,
             libraryName,
             dependency,
-            libraryDependencies,
+            libraryDependenciesMeta,
             externalDependenciesToPush
          );
          if (result) {
@@ -266,76 +327,85 @@ async function packCurrentLibrary(root, data) {
    traverse(ast, {
       enter(node) {
          if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'define') {
-            let dependencies, paramsNames, functionCallbackBody;
-
-            node.arguments.forEach((argument) => {
-               switch (argument.type) {
-                  case 'ArrayExpression':
-                     dependencies = argument.elements;
-                     break;
-                  case 'FunctionExpression':
-                     paramsNames = argument.params;
-                     functionCallbackBody = argument.body;
-                     break;
-                  default:
-                     break;
-               }
-            });
 
             /**
              * добавляем зависимости приватных частей библиотеки непосредственно
              * в зависимости самой библиотеки, если их самих ещё нет.
              */
             externalDependenciesToPush.forEach((externalDependency) => {
-               if (libraryDependencies[externalDependency].names[0]) {
-                  dependencies.unshift({
+               if (libraryDependenciesMeta[externalDependency].names[0]) {
+                  libraryDependencies.unshift({
                      type: 'Literal',
                      value: `${externalDependency}`,
                      raw: `"${externalDependency}"`
                   });
-                  paramsNames.unshift({
+                  libraryParametersNames.unshift({
                      type: 'Identifier',
-                     name: `${libraryDependencies[externalDependency].names[0]}`
+                     name: `${libraryDependenciesMeta[externalDependency].names[0]}`
                   });
                }
             });
 
+            const libDependenciesList = libraryDependencies.map(dependency => dependency.value);
+
+            let packIndex;
+            if (escodegen.generate(functionCallbackBody.body[0]).includes('\'use strict\';')) {
+               packIndex = 1;
+            } else {
+               packIndex = 0;
+            }
             privateDependenciesOrder.forEach((dep) => {
                const
                   argumentsForClosure = dep.dependencies
                      .filter((element, index) => (index <= dep.ast.params.length))
                      .map((dependency) => {
                         if (isPrivate(dependency) && isInternalDependency(path.dirname(libraryName), dependency)) {
-                           return `exports.${libraryDependencies[dependency].names[0]}`;
+                           return `${libraryDependenciesMeta[dependency].names[0]}`;
                         }
-                        return libraryDependencies[dependency].names[0];
+                        return libraryDependenciesMeta[dependency].names[0];
                      }),
-                  [currentDependencyName] = libraryDependencies[dep.moduleName].names,
-                  privateDependencyIndex = dependencies.indexOf(dep.moduleName),
-                  moduleCode = `exports.${currentDependencyName}=(${escodegen.generate(dep.ast)})(${argumentsForClosure})`;
+                  [currentDependencyName] = libraryDependenciesMeta[dep.moduleName].names,
+                  privateDependencyIndex = libDependenciesList.indexOf(dep.moduleName),
+                  moduleCode = `var ${currentDependencyName} = (${escodegen.generate(dep.ast)})(${argumentsForClosure})`;
 
                /**
                 * удаляем из зависимостей библиотеки и из аргументов функции callback'а
                 * приватные части библиотеки, поскольку они обьявлены внутри callback'а
                 * и экспортируются наружу как и планировалось.
                 */
-               dependencies.splice(
+               libraryDependencies.splice(
                   privateDependencyIndex,
                   1
                );
-               if (privateDependencyIndex <= paramsNames.length) {
-                  paramsNames.splice(
+               if (privateDependencyIndex <= libraryParametersNames.length) {
+                  libraryParametersNames.splice(
                      privateDependencyIndex,
                      1
                   );
                }
 
+               functionCallbackBody.body.forEach((expression) => {
+                  const expressionMeta = getExpressionStatementMeta(expression);
+                  if (expressionMeta.type && expressionMeta.currentName === currentDependencyName) {
+                     dep.alreadyExported = true;
+                     debugger;
+                  }
+               });
+
                functionCallbackBody.body.splice(
-                  topLevelReturnStatement.position,
+                  packIndex,
                   0,
                   esprima.parse(moduleCode)
                );
-               topLevelReturnStatement.position++;
+               packIndex++;
+
+               if (!dep.alreadyExported) {
+                  functionCallbackBody.body.splice(
+                     packIndex,
+                     0,
+                     esprima.parse(`exports.${currentDependencyName}=${currentDependencyName}`)
+                  );
+               }
             });
          }
       }
