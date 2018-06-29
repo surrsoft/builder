@@ -8,8 +8,7 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
-   transliterate = require('../../../lib/transliterate');
+   helpers = require('../../../lib/helpers');
 
 /**
  * Объявление плагина
@@ -27,8 +26,6 @@ module.exports = function declarePlugin(config, moduleInfo) {
       function onFlush(callback) {
          try {
             // подготовим contents.json и contents.js
-            moduleInfo.contents.modules[moduleInfo.folderName] = transliterate(moduleInfo.folderName);
-
             if (config.version) {
                moduleInfo.contents.buildnumber = config.version;
             }

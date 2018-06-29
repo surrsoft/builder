@@ -70,7 +70,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             });
 
             // подготовим routes-info.json
-            processingRoutes.prepareToSave(resultRoutesInfo, Object.keys(moduleInfo.contents.jsModules));
+            processingRoutes.prepareToSave(resultRoutesInfo);
 
             const routesInfoText = JSON.stringify(helpers.sortObject(resultRoutesInfo), null, 2);
             const routesInfoFile = new Vinyl({

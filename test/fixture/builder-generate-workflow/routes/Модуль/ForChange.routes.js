@@ -1,5 +1,5 @@
 module.exports = function() {
    return {
-      '/ForChange_old.html': 'js!SBIS3.Test1'
+      '/ForChange_old.html': 'Modul/Test1'
    };
 };

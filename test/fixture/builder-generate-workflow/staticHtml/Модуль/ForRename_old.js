@@ -1,4 +1,4 @@
-define('js!SBIS3.ForRename', function() {
+define('Modul/ForRename_old', function() {
    var component = {};
    component.webPage = {
       htmlTemplate: 'Тема Скрепка/ForRename_old.html',

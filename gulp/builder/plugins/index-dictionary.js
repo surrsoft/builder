@@ -76,7 +76,10 @@ module.exports = function declarePlugin(config, moduleInfo) {
                   );
                }
             }
-            moduleInfo.contents.dictionary = indexer.getDictionaryForContents();
+            const dictList = indexer.getDictionaryForContents();
+            if (dictList.length) {
+               moduleInfo.contents.modules[moduleInfo.runtimeModuleName].dict = dictList;
+            }
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",

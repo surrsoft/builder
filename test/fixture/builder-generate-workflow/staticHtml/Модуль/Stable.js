@@ -1,4 +1,4 @@
-define('js!SBIS3.Stable', function() {
+define('Modul/Stable', function() {
    var component = {};
    component.webPage = {
       htmlTemplate: 'Тема Скрепка/Stable.html',
