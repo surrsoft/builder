@@ -61,6 +61,7 @@ function getLibraryMeta(ast) {
 
                      libraryMeta.libraryParametersNames = argument.params;
                      libraryMeta.functionCallbackBody = argument.body;
+                     libraryMeta.exportsDefine = checkForDefineExportsProperty(libraryMeta.functionCallbackBody);
                      if (returnStatement) {
                         libraryMeta.topLevelReturnStatement = returnStatement;
                      }
@@ -199,25 +200,24 @@ function sortPrivateModulesByDependencies(privateDependencies) {
    });
 }
 
-function checkForDefineExportsProperty(ast) {
-   let treeHasExportsDefine = false;
-   traverse(ast, {
-      enter(node) {
-         const
-            expressionCallee = node.expression && node.expression.callee,
-            expressionArguments = node.expression && node.expression.arguments;
+function checkForDefineExportsProperty(functionCallBack) {
+   const treeHasExportsDefine = {
+      position: null
+   };
+   functionCallBack.body.forEach((node, index) => {
+      const
+         expressionCallee = node.expression && node.expression.callee,
+         expressionArguments = node.expression && node.expression.arguments;
 
-         if (node.type === 'ExpressionStatement' && expressionCallee &&
+      if (node.type === 'ExpressionStatement' && expressionCallee &&
 
-            // Object.defineProperty(exports, '__esModule', ...);
-            (expressionCallee.object && expressionCallee.object.name === 'Object') &&
-            (expressionCallee.property && expressionCallee.property.name === 'defineProperty') && expressionArguments &&
-            (expressionArguments[0] && expressionArguments[0].name === 'exports') &&
-            (expressionArguments[1] && expressionArguments[1].value === '__esModule')
-         ) {
-            treeHasExportsDefine = true;
-            this.break();
-         }
+         // Object.defineProperty(exports, '__esModule', ...);
+         (expressionCallee.object && expressionCallee.object.name === 'Object') &&
+         (expressionCallee.property && expressionCallee.property.name === 'defineProperty') && expressionArguments &&
+         (expressionArguments[0] && expressionArguments[0].name === 'exports') &&
+         (expressionArguments[1] && expressionArguments[1].value === '__esModule')
+      ) {
+         treeHasExportsDefine.position = index;
       }
    });
    return treeHasExportsDefine;
@@ -278,6 +278,8 @@ async function packCurrentLibrary(root, data) {
          libraryDependenciesMeta,
          libraryParametersNames,
          functionCallbackBody,
+         topLevelReturnStatement,
+         exportsDefine,
          libraryName
       } = getLibraryMeta(ast),
       privateDependencies = Object.keys(libraryDependenciesMeta).filter(
