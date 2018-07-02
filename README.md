@@ -1,88 +1,126 @@
-# Builder 
-Builder - утилита для сборки клиентского кода проектов на платформе СБИС3. 
-Сборка - процесс преобразования исходного кода в работающее приложение. 
+# Builder
+Builder - утилита для сборки клиентского кода проектов на платформе СБИС3.
+Сборка - процесс преобразования исходного кода в работающее приложение.
 
 Пользовательская документация: https://wi.sbis.ru/doc/platform/developmentapl/development-tools/builder/
 
-## Подготовка к запуску
+Техническая документация: https://online.sbis.ru/shared/disk/2f1f267b-f1e0-4955-9a39-fbb9786084b5
 
-1. Для использования:
+Участок работ: https://online.sbis.ru/arearesponsibility.html?region_left=areaResponsibility#openworkarea=da98e741-0b59-480a-82b2-a83669ab3167
 
-         npm install --production --legacy-bundling --no-package-lock 
+# Задачи npm
 
-2. Для разработки builder'а:
+Описаны в package.json. Запускаются из корневого каталога:
 
-         npm install --legacy-bundling --no-package-lock
+        npm run <имя команды>
+
+Перед любым запуском нужно выполнить
+
+    npm install
+
+Т.к. в проекте есть .npmrc, то о флагах обычно можно не думать.
+
+## Задачи npm для CI/CD
+
+1. **build** - основная задача сборки проекта. 
+Запускает **build:verify** и **build:only**.
+Артефакты: папка dest (готовый builder для SDK), файл eslint-report.log (отчёт ESLint только об ошибках), xunit.log и xunit-result.xml (резултьтат тестирования)
+2. **build:only** - копирует нужные исходники в папку dest и устанавливает зависимости.
+3. **build:verify** - проверка кода через ESLint(**build:lint**) и юнит тесты(**build:test**). Артефакты: файл eslint-report.log, xunit.log и xunit-result.xml.
+
+## Задачи npm для разработки
+1. **test** - запустить юнит тесты.
+2. **test:coverage** - узнать % покрытия кода юниттестами. Артефакт: файл отчёта coverage/index.html.
+3. **lint** - запустить ESLint. Если ESLint упал - точно будут проблемы при сборке. Варнинги можно игнорировать, но лучше поправить.
+4. **lint:fix** - запустить ESLint с флагом --fix. Поправит самые простые ошибки.
+
+## Про .npmrc
 
 Флаг --legacy-bundling нужен для корректной установки зависимостей пакета sbis3-json-generator.
-
-Флаг --production используется для того, чтобы не выкачивались devDependencies.
-
-Флаг --no-package-lock нужен для того, чтобы не создавался файл package-lock.json, 
-который имеет больший приоритет чем package.json. 
+Флаг --no-package-lock нужен для того, чтобы не создавался файл package-lock.json,
+который имеет больший приоритет чем package.json.
 Подробнее тут:
-https://docs.npmjs.com/files/package-lock.json, 
- 
-## Использование
+https://docs.npmjs.com/files/package-lock.json
 
-### Задача Build
+# Использование Builder'а
+
+## Задача **build**
+Основная задача сборки статики проекта.
 
 Выполнить из папки builder'а:
 
-        node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js build --config=custom_config.json 
+        node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js build --config=custom_config.json
 
 Где custom_config.json - путь до JSON конфигарации в формате:
 
       {
          "cache": "путь до папки с кешем",
          "output": "путь до папки с ресурсами статики стенда",
-         "localization": ["ru-RU", "en-US"] | false,            //опционально
-         "default-localization": "ru-RU",                       //опционально, если нет "localization" 
+         "localization": ["ru-RU", "en-US"] | false,            //опционально. список локализаций
+         "default-localization": "ru-RU",                       //опционально, если нет "localization"
          "mode": "debug"|"release",
-         "modules": [                                           //сортированный по графу зависимостей список
+         "logs": "путь до папки для записи логов",              //опционально, используется для записи builder_report.json
+         "multi-service": false|true,                           //опционально. по умолчанию false. Собираем один сервис или несколько. От этого зависит будем ли мы менять константы в статических html и пакетах.
+         "url-service-path": "путь до текущего сервиса",        //опционально. по умолчанию "/"
+         "modules": [                                           //сортированный по графу зависимостей список модулей
             {
               "name": "имя модуля",
               "path": "путь до папки модуля",
-              "responsible": "ответственный"
+              "responsible": "ответственный",
+              "preload_urls": ["url1", "url2"]
             }
          ]
       }
+После сборки в папке с кешем создаётся файл "last_build_gulp_config.json" - копия последнего оригинального файла конфигураци.
+## Задача **buildOnChange**
+Задача по обновлению одного файла в развёрнутом локальном стенде. Обычно вызывается из WebStorm.
 
-## Тестирование
+Выполнить из папки builder'а:
 
-Builder тестируем через модульные тесты с помощью mocha и chai. 
-Для запуска тестов на сервере сборки нужно из папки builder выполнить команду:
+        node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js buildOnChange --config=last_build_gulp_config.json --filePath="FilePath"
 
-      npm test
+Где **last_build_gulp_config.json** - путь до JSON конфигарации последней сборки, **FilePath** - файл который мы хотим обновить.
 
-В корне будет создан файл с результатами выполнения "xunit-result.xml".
-Для локальной отладки тестов нужно настроить среду разработки на запуск mochа в папке test. 
+## Задача **collectWordsForLocalization**
 
-## Style guide
-Стандарт разработки на JavaScript подробно описан тут: https://wi.sbis.ru/doc/platform/developmentapl/standards/styleguide-js/
-Чтобы эти требования соблюдались, написан конфиг для ESLint - файл ".eslintrc" в корне проекта.
-WebStorm 2017.2 умеет импортировать настройка code style из конфига ESLint. Для этого нужно открыть файл ".eslintrc", 
-после чего WebStorm предложит сделать импорт настроек.
+Задача сборa фраз для локализации статики. Нужно для genie.sbis.ru и wi.sbis.ru.
 
+Выполнить из папки builder'а:
 
-Для проверки всего проекта через ESLint нужно выполнить команду:
+        node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js collectWordsForLocalization --config=custom_config.json
 
-        npm run check 
+Где custom_config.json - путь до JSON конфигарации в формате:
 
-ESLint умеет самостоятельно исправлять некоторые предупреждения. Для запуска ESLint для исправления
-предупреждений по всему проекту нужно выполнить команду:
+      {
+         "cache": "путь до папки с кешем",
+         "output": "путь до результирующего json файла",
+         "modules": [{                                          //сортированный по графу зависимостей список модулей
+            "name": "имя модуля",
+            "path": "путь до папки модуля",
+            "responsible": "ответственный"
+         }]
+      }
 
-        npm run fix 
+# Тестирование
 
-При review кода будет нулевая толерантность к предупреждениям ESLint. Причины описаны тут: 
+Builder тестируем через модульные тесты с помощью mocha и chai.
+Для локальной отладки тестов нужно настроить среду разработки на запуск mochа в папке test. Нужно обязательно указать параметр "--timeout 600000". 
+Такой огромный таймаут нужен по двум причинам: 
+1. тесты на MacOS идут дольше, чем на windows и centos
+2. интеграционные тесты тоже пишем в терминах mocha. Возможно, это не совсем корректно и нужно переделать.
+
+# Style guide
+Стандарт разработки на JavaScript описан тут: https://wi.sbis.ru/doc/platform/developmentapl/standards/styleguide-js/
+
+Чтобы эти требования соблюдались, написан конфиг для ESLint - файл ".eslintrc" в корне проекта. В конфиге нулевая толерантность к несоответствию style guide. Причины описаны тут:
 1. https://ru.wikipedia.org/wiki/Теория_разбитых_окон
 2. https://habrahabr.ru/company/pvs-studio/blog/347686/
 
 Также не пренебрегайте функцией Inspect Code в WebStorm.
- 
-### Логирование и вывод ошибок
-Логирование и вывод ошибок осуществляется через универсальный логгер для Grunt и Gulp задач: sbis3-builder/lib/logger.js
-Пример использования: 
+
+# Логирование и вывод ошибок
+Логирование и вывод ошибок осуществляется через универсальный логгер: sbis3-builder/lib/logger.js
+Пример использования:
 
         const logger = require('./lib/logger').logger();
         logger.debug('Сообщение не будет видно пользователям, но будет в логах');
@@ -97,3 +135,5 @@ ESLint умеет самостоятельно исправлять некото
         });
 
 Вывод сообщений уровня debug включается при запуске утилиты с флагом -LLLL. Побробнее тут: https://github.com/gulpjs/gulp-cli
+
+После сборки записывается builder_report.json - отчёт об ошибках и предупреждениях сборки для автоматизации оформления ошибок в системе CI/CD.

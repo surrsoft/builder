@@ -1,3 +1,4 @@
 test/fixture/*
 test/workspace/*
 dest/*
+coverage/*
