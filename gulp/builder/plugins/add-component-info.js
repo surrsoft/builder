@@ -8,10 +8,7 @@
 'use strict';
 
 const through = require('through2'),
-   path = require('path'),
-   helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger(),
-   transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
 
 /**
@@ -71,15 +68,6 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
-               if (
-                  filePath.endsWith('.module.js') &&
-                  info.hasOwnProperty('componentName') &&
-                  info.componentName.startsWith('js!')
-               ) {
-                  const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-                  const componentName = info.componentName.replace('js!', '');
-                  moduleInfo.contents.jsModules[componentName] = helpers.prettifyPath(transliterate(relativePath));
-               }
                if (info.hasOwnProperty('isNavigation') && info.isNavigation) {
                   moduleInfo.navigationModules.push(info.componentName);
                }

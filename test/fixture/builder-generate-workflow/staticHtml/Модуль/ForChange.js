@@ -1,4 +1,4 @@
-define('js!SBIS3.ForChange_old', function() {
+define('Modul/ForChange', function() {
    var component = {};
    component.webPage = {
       htmlTemplate: 'Тема Скрепка/ForChange.html',
