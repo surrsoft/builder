@@ -2,6 +2,7 @@ node_modules
 .idea
 .vscode
 .nyc_output
+eslint-report.log
 xunit-result.xml
 xunit.log
 package-lock.json
