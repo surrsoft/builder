@@ -218,6 +218,14 @@ class ChangesStore {
          return true;
       }
 
+      // если локализуемые стили задаются через less,
+      // то при инкрементальной сборке в lang/en-US/en-US.js не попадает информация о стилях.
+      // TODO: Организовать кеширование локализуемых less файлов по задаче:
+      // https://online.sbis.ru/opendoc.html?guid=7f4d01c5-32f0-4e80-8e7e-4e891e21c830
+      if (path.basename(prettyPath) === 'en-US.less') {
+         return true;
+      }
+
       if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
          const isChanged = await this._isDependenciesChanged(prettyPath);
          this.cacheChanges[prettyPath] = isChanged;
