@@ -50,6 +50,11 @@ const parsePlugins = dep => [
    )
 ];
 
+const interfaceNamesMap = new Map([
+   ['WS.Deprecated', 'Deprecated'],
+   ['WS.Core/lib', 'Lib']
+]);
+
 /**
  * Объявление плагина
  * @param {ChangesStore} changesStore кеш
@@ -75,6 +80,28 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
                return prettyPath.replace(ext, `.min${ext}`);
+            };
+            const getRequireName = (filePath) => {
+               const pathParts = filePath.split('/');
+               let filePathPart, requireName;
+
+               pathParts.pop();
+               while (pathParts.length !== 0 && !requireName) {
+                  filePathPart = pathParts.join('/');
+                  requireName = interfaceNamesMap.get(filePathPart);
+                  pathParts.pop();
+               }
+               return requireName ? filePathPart : null;
+            };
+            const getPrettyFilePath = (filePath) => {
+               const
+                  requireNameToReplace = getRequireName(filePath);
+
+               let resultPath = filePath;
+               if (requireNameToReplace) {
+                  resultPath = resultPath.replace(requireNameToReplace, interfaceNamesMap.get(requireNameToReplace));
+               }
+               return resultPath;
             };
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
@@ -125,7 +152,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                .map(filePath => filePath.replace('.less', '.css'));
             for (const filePath of cssFiles) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const prettyPath = helpers.prettifyPath(transliterate(relativePath));
+               const prettyPath = getPrettyFilePath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
                json.nodes[nodeName] = {
                   path: filePathToRelativeInResources(filePath)
