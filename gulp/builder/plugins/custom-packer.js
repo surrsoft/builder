@@ -270,6 +270,31 @@ function getExpressionStatementMeta(currentNode) {
    return meta;
 }
 
+/**
+ * добавляем зависимости приватных частей библиотеки непосредственно
+ * в зависимости самой библиотеки, если их самих ещё нет.
+ */
+function addExternalDepsToLibrary(
+   externalDependenciesToPush,
+   libraryDependencies,
+   libraryDependenciesMeta,
+   libraryParametersNames
+) {
+   externalDependenciesToPush.forEach((externalDependency) => {
+      if (libraryDependenciesMeta[externalDependency].names[0]) {
+         libraryDependencies.unshift({
+            type: 'Literal',
+            value: `${externalDependency}`,
+            raw: `"${externalDependency}"`
+         });
+         libraryParametersNames.unshift({
+            type: 'Identifier',
+            name: `${libraryDependenciesMeta[externalDependency].names[0]}`
+         });
+      }
+   });
+}
+
 async function packCurrentLibrary(root, data) {
    const
       ast = esprima.parse(data),
@@ -329,33 +354,57 @@ async function packCurrentLibrary(root, data) {
    traverse(ast, {
       enter(node) {
          if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'define') {
+            const currentReturnExpressions = [];
 
-            /**
-             * добавляем зависимости приватных частей библиотеки непосредственно
-             * в зависимости самой библиотеки, если их самих ещё нет.
-             */
-            externalDependenciesToPush.forEach((externalDependency) => {
-               if (libraryDependenciesMeta[externalDependency].names[0]) {
-                  libraryDependencies.unshift({
-                     type: 'Literal',
-                     value: `${externalDependency}`,
-                     raw: `"${externalDependency}"`
-                  });
-                  libraryParametersNames.unshift({
-                     type: 'Identifier',
-                     name: `${libraryDependenciesMeta[externalDependency].names[0]}`
-                  });
-               }
-            });
-
-            const libDependenciesList = libraryDependencies.map(dependency => dependency.value);
+            addExternalDepsToLibrary(
+               externalDependenciesToPush,
+               libraryDependencies,
+               libraryDependenciesMeta,
+               libraryParametersNames
+            );
 
             let packIndex;
-            if (escodegen.generate(functionCallbackBody.body[0]).includes('\'use strict\';')) {
-               packIndex = 1;
+            if (exportsDefine.position) {
+               packIndex = exportsDefine.position + 1;
+               if (topLevelReturnStatement) {
+                  const returnArgument = topLevelReturnStatement.statement.argument;
+
+                  /**
+                   * надо проверить, что возвращается exports, иначе кидать ошибку.
+                   */
+                  if (escodegen.generate(returnArgument) !== 'exports') {
+                     logger.error({
+                        message: 'Библиотека в случае использования механизма exports должна возвращать в качестве результата именно exports',
+                        filePath: `${path.join(root, libraryName)}.js`
+                     });
+                  }
+                  functionCallbackBody.body.splice(
+                     topLevelReturnStatement.position,
+                     1
+                  );
+               }
             } else {
-               packIndex = 0;
+               let exportsObject;
+
+               if (escodegen.generate(functionCallbackBody.body[0]).includes('\'use strict\';')) {
+                  packIndex = 1;
+               } else {
+                  packIndex = 0;
+               }
+
+               if (topLevelReturnStatement) {
+                  const returnArgument = topLevelReturnStatement.statement.argument;
+                  exportsObject = escodegen.generate(returnArgument);
+                  functionCallbackBody.body.splice(
+                     topLevelReturnStatement.position,
+                     1
+                  );
+               } else {
+                  exportsObject = '{}';
+               }
+               currentReturnExpressions.push(`var exports = ${exportsObject};`);
             }
+
             privateDependenciesOrder.forEach((dep) => {
                const
                   argumentsForClosure = dep.dependencies
@@ -367,32 +416,13 @@ async function packCurrentLibrary(root, data) {
                         return libraryDependenciesMeta[dependency].names[0];
                      }),
                   [currentDependencyName] = libraryDependenciesMeta[dep.moduleName].names,
+                  libDependenciesList = libraryDependencies.map(dependency => dependency.value),
                   privateDependencyIndex = libDependenciesList.indexOf(dep.moduleName),
-                  moduleCode = `var ${currentDependencyName} = (${escodegen.generate(dep.ast)})(${argumentsForClosure})`;
+                  moduleCode = `var ${currentDependencyName} = function(){var exports = {};\n` +
+                     `(${escodegen.generate(dep.ast)})(${argumentsForClosure});\n` +
+                     'return exports;\n}();';
 
-               /**
-                * удаляем из зависимостей библиотеки и из аргументов функции callback'а
-                * приватные части библиотеки, поскольку они обьявлены внутри callback'а
-                * и экспортируются наружу как и планировалось.
-                */
-               libraryDependencies.splice(
-                  privateDependencyIndex,
-                  1
-               );
-               if (privateDependencyIndex <= libraryParametersNames.length) {
-                  libraryParametersNames.splice(
-                     privateDependencyIndex,
-                     1
-                  );
-               }
-
-               functionCallbackBody.body.forEach((expression) => {
-                  const expressionMeta = getExpressionStatementMeta(expression);
-                  if (expressionMeta.type && expressionMeta.currentName === currentDependencyName) {
-                     dep.alreadyExported = true;
-                     debugger;
-                  }
-               });
+               deletePrivateDepsFromList(privateDependencyIndex, libraryDependencies, libraryParametersNames);
 
                functionCallbackBody.body.splice(
                   packIndex,
@@ -400,19 +430,45 @@ async function packCurrentLibrary(root, data) {
                   esprima.parse(moduleCode)
                );
                packIndex++;
-
-               if (!dep.alreadyExported) {
-                  functionCallbackBody.body.splice(
-                     packIndex,
-                     0,
-                     esprima.parse(`exports.${currentDependencyName}=${currentDependencyName}`)
-                  );
+            });
+            functionCallbackBody.body.push(esprima.parse(currentReturnExpressions.join('\n')));
+            functionCallbackBody.body.push({
+               'type': 'ReturnStatement',
+               'argument': {
+                  'type': 'Identifier',
+                  'name': 'exports'
                }
             });
          }
       }
    });
    return escodegen.generate(ast);
+}
+
+/**
+ * удаляем из зависимостей библиотеки и из аргументов функции callback'а
+ * приватные части библиотеки, поскольку они обьявлены внутри callback'а
+ * и экспортируются наружу как и планировалось.
+ */
+function deletePrivateDepsFromList(privateDependencyIndex, libraryDependencies, libraryParametersNames) {
+   libraryDependencies.splice(
+      privateDependencyIndex,
+      1
+   );
+   if (privateDependencyIndex <= libraryParametersNames.length) {
+      libraryParametersNames.splice(
+         privateDependencyIndex,
+         1
+      );
+   }
+}
+
+async function readAndPackLib(root, modulePath, outputName) {
+   const
+      libraryRoot = path.join(root, modulePath),
+      data = await fs.readFile(libraryRoot, 'utf8');
+
+   await fs.writeFile(path.join(root, outputName), await packCurrentLibrary(root, data));
 }
 
 /**
@@ -427,11 +483,8 @@ module.exports = function generatePackageJson(config, depsTree, results, root) {
    return through.obj(async function onTransform(file, encoding, callback) {
       let currentConfig;
       if (file.path.includes('WS.Data')) {
-         const
-            libraryRoot = path.join(root, 'WS.Data/Data/Type.js'),
-            data = await fs.readFile(libraryRoot, 'utf8');
-
-         await fs.writeFile(path.join(root, 'test2.js'), await packCurrentLibrary(root, data));
+         await readAndPackLib(root, 'WS.Data/Data/Type.js', 'Type.js');
+         await readAndPackLib(root, 'WS.Data/Data/Util.js', 'Util.js');
       }
       try {
          currentConfig = JSON.parse(file.contents);
