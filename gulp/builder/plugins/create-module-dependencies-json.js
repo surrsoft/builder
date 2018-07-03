@@ -50,6 +50,10 @@ const parsePlugins = dep => [
    )
 ];
 
+/**
+ * набор начал путей интерфейсных модулей, которые необходимо
+ * заменить в соответствии с их использованием в require
+ */
 const interfaceNamesMap = new Map([
    ['WS.Deprecated', 'Deprecated'],
    ['WS.Core/lib', 'Lib']
