@@ -602,7 +602,7 @@ function getTemplateI18nModule(module) {
  * @param {loaders~callback} done
  * @return {Function}
  */
-function i18nLoader(module, base, done, languageConfig) {
+function i18nLoader(module, base, done, themeName, languageConfig) {
    const
       deps = ['Core/i18n'],
       { availableLanguage, defaultLanguage } = languageConfig;

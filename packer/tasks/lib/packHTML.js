@@ -50,7 +50,7 @@ async function nativePackFiles(filesToPack, base, themeName) {
    }
    const results = await pMap(
       filesToPack,
-      module => commonPackage.promisifyLoader(commonPackage.getLoader(module.plugin), module, base, null, themeName),
+      module => commonPackage.promisifyLoader(commonPackage.getLoader(module.plugin), module, base, themeName),
       { concurrency: 10 }
    );
    return results.reduce(function concat(res, modContent) {

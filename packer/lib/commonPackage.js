@@ -256,7 +256,7 @@ function prepareResultQueue(orderQueue, applicationRoot, availableLanguage) {
  * @param themeName
  * @returns {Promise<any>}
  */
-function promisifyLoader(loader, module, base, languageConfig, themeName) {
+function promisifyLoader(loader, module, base, themeName, languageConfig) {
    return new Promise((resolve, reject) => {
       loader(
          module,
@@ -267,8 +267,8 @@ function promisifyLoader(loader, module, base, languageConfig, themeName) {
             }
             return resolve(result);
          },
-         languageConfig,
-         themeName
+         themeName,
+         languageConfig
       );
    });
 }
@@ -312,18 +312,15 @@ async function limitingNativePackFiles(filesToPack, base, availableLanguage, def
             }
 
             try {
-               let languageConfig;
-               if (module.plugin === 'i18n') {
-                  languageConfig = {
-                     availableLanguage,
-                     defaultLanguage
-                  };
-               }
                result.push(await promisifyLoader(
                   getLoader(module.plugin),
                   module,
                   base,
-                  languageConfig
+                  null,
+                  {
+                     availableLanguage,
+                     defaultLanguage
+                  }
                ));
             } catch (error) {
                logger.warning({
