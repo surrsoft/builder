@@ -9,7 +9,8 @@
 
 const through = require('through2'),
    path = require('path'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers');
 
 /**
  * Объявление плагина
@@ -68,8 +69,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                // важно сохранить в зависимости для js все файлы, которые должны приводить к пересборке файла
                const filesDepsForCache = new Set();
                const ownDeps = [];
-               if (componentsInfo.hasOwnProperty(jsFile.history[0])) {
-                  const componentInfo = componentsInfo[jsFile.history[0]];
+               const prettyFilePath = helpers.prettifyPath(jsFile.history[0]);
+               if (componentsInfo.hasOwnProperty(prettyFilePath)) {
+                  const componentInfo = componentsInfo[prettyFilePath];
                   if (componentInfo.componentName && componentInfo.componentDep) {
                      for (const dep of componentInfo.componentDep) {
                         if (dep.startsWith('html!') || dep.startsWith('tmpl!')) {
@@ -97,7 +99,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                   }
                }
                if (filesDepsForCache.size > 0) {
-                  changesStore.addDependencies(jsFile.history[0], [...filesDepsForCache]);
+                  changesStore.addDependencies(prettyFilePath, [...filesDepsForCache]);
                }
                this.push(jsFile);
             }

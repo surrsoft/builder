@@ -95,7 +95,7 @@ describe('processing routes.js', () => {
          };
          const jsModules = ['SBIS3.Test'];
          processingRoutes.prepareToSave(routesInfo, jsModules);
-         routesInfo['resources/Test.routes.js']['/test.html'].isMasterPage.should.equal(true);
+         routesInfo['resources/Test.routes.js']['/test.html'].isMasterPage.should.equal(false);
       });
       it('controller not exist', () => {
          const routesInfo = {

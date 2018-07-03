@@ -17,15 +17,16 @@ class ModuleInfo extends BaseModuleInfo {
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
 
       // объект для записи contents.json
-      // availableLanguage, defaultLanguage и dictionary добавляются только при локализации
+      // availableLanguage, defaultLanguage добавляются только при локализации
+      const runtimeModuleInfo = {};
+      if (this.folderName !== this.runtimeModuleName) {
+         runtimeModuleInfo.name = this.folderName;
+      }
       this.contents = {
          htmlNames: {},
-         modules: {},
-         requirejsPaths: {},
-
-         // TODO: Удалить jsModules, xmlContents
-         jsModules: {},
-         xmlContents: {}
+         modules: {
+            [this.runtimeModuleName]: runtimeModuleInfo
+         }
       };
 
       // объект для записи static_templates.json

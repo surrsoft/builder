@@ -14,6 +14,7 @@ const path = require('path'),
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
+   generateTaskForGzip = require('./generate-task/gzip'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
@@ -65,10 +66,11 @@ function generateWorkflow(processArgv) {
          generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore)
       ),
-      generateTaskForFinalizeDistrib(config, pool, localizationEnable),
+      generateTaskForFinalizeDistrib(config, localizationEnable),
       generateTaskForPackHtml(changesStore, config, pool),
-      generateTaskForCustomPack(changesStore, config, pool),
+      generateTaskForCustomPack(changesStore, config),
       generateTaskForTerminatePool(pool),
+      generateTaskForGzip(config),
       generateTaskForSaveLoggerReport(config),
 
       // generateTaskForUnlock после всего

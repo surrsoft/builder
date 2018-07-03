@@ -8,7 +8,7 @@ const path = require('path'),
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
 const {
-   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile
+   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile, linkPlatform
 } = require('./lib');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
@@ -133,7 +133,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.routes.js',
          'ForRename_old.routes.js',
          'Stable.routes.js',
-         'Test1.module.js',
+         'Test1.js',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -145,20 +145,20 @@ describe('gulp/builder/generate-workflow.js', () => {
       await routesInfo.should.deep.equal({
          'resources/Modul/ForChange.routes.js': {
             '/ForChange_old.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          },
          'resources/Modul/ForRename_old.routes.js': {
             '/ForRename.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          },
          'resources/Modul/Stable.routes.js': {
             '/Stable.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          }
       });
@@ -188,7 +188,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.routes.js',
          'ForRename_new.routes.js',
          'Stable.routes.js',
-         'Test1.module.js',
+         'Test1.js',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -204,126 +204,22 @@ describe('gulp/builder/generate-workflow.js', () => {
       await routesInfo.should.deep.equal({
          'resources/Modul/ForChange.routes.js': {
             '/ForChange_new.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          },
          'resources/Modul/ForRename_new.routes.js': {
             '/ForRename.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          },
          'resources/Modul/Stable.routes.js': {
             '/Stable.html': {
-               controller: 'js!SBIS3.Test1',
-               isMasterPage: true
+               controller: 'Modul/Test1',
+               isMasterPage: false
             }
          }
-      });
-
-      await clearWorkspace();
-   });
-
-   it('jsModules for contents.json', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/jsModules');
-      await prepareTest(fixtureFolder);
-
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         mode: 'debug',
-         modules: [
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
-
-      // запустим таску
-      await runWorkflow();
-
-      // проверим, что все нужные файлы появились в "стенде"
-      let resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForChange.module.js',
-         'ForRename_old.module.js',
-         'Stable.module.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
-      ]);
-      const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
-      let contentsObj = await fs.readJSON(contentsJsonOutputPath);
-      await contentsObj.should.deep.equal({
-         buildMode: 'debug',
-         htmlNames: {},
-         jsModules: {
-            'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
-            'SBIS3.ForRename': 'Modul/ForRename_old.module.js',
-            'SBIS3.Stable': 'Modul/Stable.module.js'
-         },
-         modules: {
-            'Модуль': 'Modul'
-         },
-         requirejsPaths: {},
-         xmlContents: {}
-      });
-
-      // запомним время модификации незменяемого файла и изменяемого в "стенде"
-      const stableFileOutputPath = path.join(moduleOutputFolder, 'Stable.module.js');
-      const forChangeFileOutputPath = path.join(moduleOutputFolder, 'ForChange.module.js');
-      const mTimeStableFile = await getMTime(stableFileOutputPath);
-      const mTimeForChangeFile = await getMTime(forChangeFileOutputPath);
-
-      // изменим "исходники"
-      await timeoutForMacOS();
-      await fs.rename(
-         path.join(moduleSourceFolder, 'ForRename_old.module.js'),
-         path.join(moduleSourceFolder, 'ForRename_new.module.js')
-      );
-      const filePathForChange = path.join(moduleSourceFolder, 'ForChange.module.js');
-      const data = await fs.readFile(filePathForChange);
-      await fs.writeFile(filePathForChange, data.toString().replace('ForChange_old', 'ForChange_new'));
-
-      // запустим повторно таску
-      await runWorkflow();
-
-      // проверим, что все нужные файлы появились в "стенде", лишние удалились
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForChange.module.js',
-         'ForRename_new.module.js',
-         'Stable.module.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
-      ]);
-
-      // проверим время модификации незменяемого файла и изменяемого в "стенде"
-      (await getMTime(stableFileOutputPath)).should.equal(mTimeStableFile);
-      (await getMTime(forChangeFileOutputPath)).should.not.equal(mTimeForChangeFile);
-
-      contentsObj = await fs.readJSON(contentsJsonOutputPath);
-      await contentsObj.should.deep.equal({
-         buildMode: 'debug',
-         htmlNames: {},
-         jsModules: {
-            'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
-            'SBIS3.ForRename': 'Modul/ForRename_new.module.js',
-            'SBIS3.Stable': 'Modul/Stable.module.js'
-         },
-         modules: {
-            'Модуль': 'Modul'
-         },
-         requirejsPaths: {},
-         xmlContents: {}
       });
 
       await clearWorkspace();
@@ -356,11 +252,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForChange.module.js',
+         'ForChange.js',
          'ForChange_old.html',
-         'ForRename_old.module.js',
+         'ForRename_old.js',
          'ForRename.html',
-         'Stable.module.js',
+         'Stable.js',
          'Stable.html',
          'contents.js',
          'contents.json',
@@ -371,28 +267,23 @@ describe('gulp/builder/generate-workflow.js', () => {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         buildMode: 'debug',
-         htmlNames: {
-            'js!SBIS3.ForChange_old': 'ForChange_old.html',
-            'js!SBIS3.ForRename': 'ForRename.html',
-            'js!SBIS3.Stable': 'Stable.html'
+         'buildMode': 'debug',
+         'htmlNames': {
+            'Modul/ForChange': 'ForChange_old.html',
+            'Modul/ForRename_old': 'ForRename.html',
+            'Modul/Stable': 'Stable.html'
          },
-         jsModules: {
-            'SBIS3.ForChange_old': 'Modul/ForChange.module.js',
-            'SBIS3.ForRename': 'Modul/ForRename_old.module.js',
-            'SBIS3.Stable': 'Modul/Stable.module.js'
-         },
-         modules: {
-            'Модуль': 'Modul'
-         },
-         requirejsPaths: {},
-         xmlContents: {}
+         'modules': {
+            'Modul': {
+               'name': 'Модуль'
+            }
+         }
       });
 
       // запомним время модификации незменяемого файла и изменяемого в "стенде"
-      const stableJsOutputPath = path.join(moduleOutputFolder, 'Stable.module.js');
+      const stableJsOutputPath = path.join(moduleOutputFolder, 'Stable.js');
       const stableHtmlOutputPath = path.join(moduleOutputFolder, 'Stable.html');
-      const forChangeJsOutputPath = path.join(moduleOutputFolder, 'ForChange.module.js');
+      const forChangeJsOutputPath = path.join(moduleOutputFolder, 'ForChange.js');
       let forChangeHtmlOutputPath = path.join(moduleOutputFolder, 'ForChange_old.html');
       const mTimeStableJs = await getMTime(stableJsOutputPath);
       const mTimeStableHtml = await getMTime(stableHtmlOutputPath);
@@ -409,7 +300,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
             '<TITLE>Stable</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/Stable</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -426,7 +317,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(forChangeHtml.toString()).should.equal(
          '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
             '<TITLE>ForChange_old</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.ForChange_old</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/ForChange</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -443,7 +334,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(forRenameHtml.toString()).should.equal(
          '<FOR_RENAME></FOR_RENAME>\n' +
             '<TITLE>ForRename</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/ForRename_old</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -471,15 +362,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       // изменим "исходники"
       await timeoutForMacOS();
       await fs.rename(
-         path.join(moduleSourceFolder, 'ForRename_old.module.js'),
-         path.join(moduleSourceFolder, 'ForRename_new.module.js')
+         path.join(moduleSourceFolder, 'ForRename_old.js'),
+         path.join(moduleSourceFolder, 'ForRename_new.js')
       );
       await fs.rename(
          path.join(themesSourceFolder, 'ForRename_old.html'),
          path.join(themesSourceFolder, 'ForRename_new.html')
       );
 
-      const filePathForChangeJs = path.join(moduleSourceFolder, 'ForChange.module.js');
+      const filePathForChangeJs = path.join(moduleSourceFolder, 'ForChange.js');
       const dataJs = await fs.readFile(filePathForChangeJs);
       await fs.writeFile(filePathForChangeJs, dataJs.toString().replace(/ForChange_old/g, 'ForChange_new'));
 
@@ -493,11 +384,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForChange.module.js',
+         'ForChange.js',
          'ForChange_new.html',
-         'ForRename_new.module.js',
+         'ForRename_new.js',
          'ForRename.html',
-         'Stable.module.js',
+         'Stable.js',
          'Stable.html',
          'contents.js',
          'contents.json',
@@ -519,22 +410,17 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         buildMode: 'debug',
-         htmlNames: {
-            'js!SBIS3.ForChange_new': 'ForChange_new.html',
-            'js!SBIS3.ForRename': 'ForRename.html',
-            'js!SBIS3.Stable': 'Stable.html'
+         'buildMode': 'debug',
+         'htmlNames': {
+            'Modul/ForChange': 'ForChange_new.html',
+            'Modul/ForRename_old': 'ForRename.html',
+            'Modul/Stable': 'Stable.html'
          },
-         jsModules: {
-            'SBIS3.ForChange_new': 'Modul/ForChange.module.js',
-            'SBIS3.ForRename': 'Modul/ForRename_new.module.js',
-            'SBIS3.Stable': 'Modul/Stable.module.js'
-         },
-         modules: {
-            'Модуль': 'Modul'
-         },
-         requirejsPaths: {},
-         xmlContents: {}
+         'modules': {
+            'Modul': {
+               'name': 'Модуль'
+            }
+         }
       });
 
       // проверим сами html
@@ -545,7 +431,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(stableHtml.toString()).should.equal(
          '<STABLE></STABLE>\n' +
             '<TITLE>Stable</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.Stable</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/Stable</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -565,7 +451,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(forChangeHtml.toString()).should.equal(
          '<FOR_CHANGE_OLD></FOR_CHANGE_OLD>\n' +
             '<TITLE>ForChange_new</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.ForChange_new</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/ForChange</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -583,7 +469,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       removeRSymbol(forRenameHtml.toString()).should.equal(
          '<FOR_RENAME></FOR_RENAME>\n' +
             '<TITLE>ForRename</TITLE>\n' +
-            '<START_DIALOG>js!SBIS3.ForRename</START_DIALOG>\n' +
+            '<START_DIALOG>Modul/ForRename_old</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
@@ -693,6 +579,78 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
       await check();
+
+      await clearWorkspace();
+   });
+
+   // проверим, что паковка собственных зависимостей корректно работает при пересборке
+   it('packOwnDeps', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packOwnDeps');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'release',
+         localization: false,
+         'default-localization': false,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'WS.Data',
+               path: path.join(sourceFolder, 'WS.Data')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      const testJsOutputPath = path.join(moduleOutputFolder, 'Test.min.js');
+      let testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent.includes('TestClassOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionOld').should.equal(true);
+
+      // поменяем js
+      const testJsInputPath = path.join(moduleSourceFolder, 'Test.js');
+      const testJsInputContent = await fs.readFile(testJsInputPath);
+      await fs.writeFile(testJsInputPath, testJsInputContent.toString().replace(/testFunctionOld/g, 'testFunctionNew'));
+
+      await runWorkflow();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+      testJsOutputContent.includes('TestClassOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionNew').should.equal(true);
+
+      // поменяем tmpl
+      const testTmplInputPath = path.join(moduleSourceFolder, 'Test.tmpl');
+      const testTmplInputContent = await fs.readFile(testTmplInputPath);
+      await fs.writeFile(testTmplInputPath, testTmplInputContent.toString().replace(/TestClassOld/g, 'TestClassNew'));
+
+      await runWorkflow();
+
+      // проверим, что js файл содержит актуальные данные из js и tmpl
+      testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+      testJsOutputContent.includes('TestClassNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionNew').should.equal(true);
 
       await clearWorkspace();
    });

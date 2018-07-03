@@ -191,4 +191,62 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
 
       await clearWorkspace();
    });
+
+   // если модуль расположен по симлинку, слежение за файлами всё равно должно работать.
+   it('module as symlink', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/symlink');
+      const sourceModuleCopied = path.join(workspaceFolder, 'sourceCopied', 'Модуль');
+      const sourceModuleSymlink = path.join(sourceFolder, 'Модуль');
+      await clearWorkspace();
+      await fs.ensureDir(sourceFolder);
+      await fs.copy(path.join(fixtureFolder, 'Модуль'), sourceModuleCopied);
+      await fs.symlink(sourceModuleCopied, sourceModuleSymlink);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflowBuild();
+
+      // проверим, что все нужные файлы есть в "стенде"
+      let resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Test.js',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      // переименуем файл Test.js в скопированном каталоге
+      await fs.move(path.join(sourceModuleCopied, 'Test.js'), path.join(sourceModuleCopied, 'Test_new.js'));
+
+      // запустим пересборку из скопированной папки
+      await runWorkflowBuildOnChange(path.join(sourceModuleCopied, 'Test_new.js'));
+
+      // проверим, что Test_new.js появился в стенде
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Test_new.js',
+         'Test.js',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      await clearWorkspace();
+   });
 });

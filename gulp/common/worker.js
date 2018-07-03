@@ -5,28 +5,8 @@
 
 'use strict';
 
-// логгер - прежде всего
-const logger = require('../../lib/logger').setWorkerLogger();
-
-// ws должен быть вызван раньше чем первый global.requirejs
-const nodeWS = require('.//node-ws');
-nodeWS.init();
-
-const fs = require('fs-extra'),
-   workerPool = require('workerpool'),
-   helpers = require('../../lib/helpers'),
-   buildLess = require('../../lib/build-less'),
-   processingTmpl = require('../../lib/processing-tmpl'),
-   parseJsComponent = require('../../lib/parse-js-component'),
-   processingRoutes = require('../../lib/processing-routes'),
-   prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
-   buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml,
-   runMinifyCss = require('../../lib/run-minify-css'),
-   runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
-   uglifyJs = require('../../lib/run-uglify-js'),
-   collectWordsPrimitive = require('../../lib/i18n/collect-words');
-
-let componentsProperties;
+// не всегда понятно по 10 записям, откуда пришёл вызов.
+Error.stackTraceLimit = 100;
 
 process.on('unhandledRejection', (reason, p) => {
    // eslint-disable-next-line no-console
@@ -39,6 +19,28 @@ process.on('unhandledRejection', (reason, p) => {
    );
    process.exit(1);
 });
+
+// логгер - прежде всего
+const logger = require('../../lib/logger').setWorkerLogger();
+
+// ws должен быть вызван раньше чем первый global.requirejs
+const nodeWS = require('./node-ws');
+nodeWS.init();
+
+const fs = require('fs-extra'),
+   workerPool = require('workerpool'),
+   buildLess = require('../../lib/build-less'),
+   processingTmpl = require('../../lib/processing-tmpl'),
+   parseJsComponent = require('../../lib/parse-js-component'),
+   processingRoutes = require('../../lib/processing-routes'),
+   prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
+   buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml,
+   runMinifyCss = require('../../lib/run-minify-css'),
+   runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
+   uglifyJs = require('../../lib/run-uglify-js'),
+   collectWordsPrimitive = require('../../lib/i18n/collect-words');
+
+let componentsProperties;
 
 /**
  * Прочитать описание компонетов из json для локализации. Или взять прочитанное ранее.
@@ -156,6 +158,5 @@ workerPool.worker({
    minifyCss: wrapFunction(runMinifyCss),
    minifyXhtmlAndHtml: wrapFunction(runMinifyXhtmlAndHtml),
    uglifyJs: wrapFunction(uglifyJs),
-   gzip: wrapFunction(helpers.gzip),
    collectWords: wrapFunction(collectWords)
 });

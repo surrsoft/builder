@@ -1,5 +1,5 @@
 module.exports = function() {
    return {
-      '/Stable.html': 'js!SBIS3.Test1'
+      '/Stable.html': 'Modul/Test1'
    };
 };
