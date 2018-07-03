@@ -187,14 +187,14 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
          modules,
          async(module) => {
             if (linkModules.hasOwnProperty(module.fullName)) {
+               linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
+               moduleName = getNameModule(module.fullPath);
                let langPath;
                if (isGulp) {
                   langPath = path.join(applicationRoot, moduleName, 'lang');
                } else {
                   langPath = path.join(applicationRoot, 'resources', moduleName, 'lang');
                }
-               linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
-               moduleName = getNameModule(module.fullPath);
                if (modulesI18n.hasOwnProperty(moduleName)) {
                   linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
                   module.addDeps = modulesI18n[moduleName].fullName;
