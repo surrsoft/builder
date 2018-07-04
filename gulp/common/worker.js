@@ -29,6 +29,7 @@ nodeWS.init();
 
 const fs = require('fs-extra'),
    workerPool = require('workerpool'),
+   compileEsAndTs = require('../../lib/compile-es-and-ts'),
    buildLess = require('../../lib/build-less'),
    processingTmpl = require('../../lib/processing-tmpl'),
    parseJsComponent = require('../../lib/parse-js-component'),
@@ -151,6 +152,7 @@ workerPool.worker({
    parseJsComponent: wrapFunction(parseJsComponent),
    parseRoutes: wrapFunction(processingRoutes.parseRoutes),
    buildLess: wrapFunction(buildLess),
+   compileEsAndTs: wrapFunction(compileEsAndTs),
    buildTmpl: wrapFunction(buildTmpl),
    buildHtmlTmpl: wrapFunction(buildHtmlTmpl),
    prepareXHTML: wrapFunction(prepareXHTML),
