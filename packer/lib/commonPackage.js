@@ -252,10 +252,11 @@ function prepareResultQueue(orderQueue, applicationRoot, availableLanguage) {
  * @param loader
  * @param module
  * @param base
+ * @param availableLanguage
  * @param themeName
  * @returns {Promise<any>}
  */
-function promisifyLoader(loader, module, base, themeName) {
+function promisifyLoader(loader, module, base, themeName, languageConfig, isGulp) {
    return new Promise((resolve, reject) => {
       loader(
          module,
@@ -266,7 +267,9 @@ function promisifyLoader(loader, module, base, themeName) {
             }
             return resolve(result);
          },
-         themeName
+         themeName,
+         languageConfig,
+         isGulp
       );
    });
 }
@@ -284,14 +287,14 @@ function promisifyLoader(loader, module, base, themeName) {
  * Относительно этой папки будут высчитаны новые пути в ссылках
  * @param {nativePackFiles~callback} done
  */
-async function limitingNativePackFiles(filesToPack, base) {
+async function limitingNativePackFiles(filesToPack, base, availableLanguage, defaultLanguage, isGulp) {
    if (filesToPack && filesToPack.length) {
       const result = [];
 
       await pMap(
          filesToPack,
          async(module) => {
-            const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`);
+            const extReg = new RegExp(`\\.${module.moduleYes ? module.moduleYes.plugin : module.plugin}(\\.min)?\\.js$`);
             let { fullPath } = module;
             if (!fullPath) {
                fullPath = module.moduleYes ? module.moduleYes.fullPath : null;
@@ -310,7 +313,17 @@ async function limitingNativePackFiles(filesToPack, base) {
             }
 
             try {
-               result.push(await promisifyLoader(getLoader(module.plugin), module, base));
+               result.push(await promisifyLoader(
+                  getLoader(module.plugin),
+                  module,
+                  base,
+                  null,
+                  {
+                     availableLanguage,
+                     defaultLanguage
+                  },
+                  isGulp
+               ));
             } catch (error) {
                logger.warning({
                   message: 'Ошибка при чтении файла во время кастомной паковки',

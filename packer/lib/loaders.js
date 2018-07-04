@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
 const logger = require('../../lib/logger').logger();
-
 const dblSlashes = /\\/g;
 let availableLangs;
 const langRegExp = /lang\/([a-z]{2}-[A-Z]{2})/;
@@ -603,15 +602,24 @@ function getTemplateI18nModule(module) {
  * @param {loaders~callback} done
  * @return {Function}
  */
-function i18nLoader(module, base, done) {
-   const coreConstants = global.requirejs('Core/constants'),
-      deps = ['Core/i18n'];
+function i18nLoader(module, base, done, themeName, languageConfig, isGulp) {
+   const
+      deps = ['Core/i18n'],
+      { availableLanguage, defaultLanguage } = languageConfig;
 
-   availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
-
-   if (!availableLangs || (coreConstants && !coreConstants.defaultLanguage) || !module.deps) {
-      done(null, getTemplateI18nModule(module));
-      return;
+   if (isGulp) {
+      availableLangs = availableLanguage;
+      if (!availableLangs || !defaultLanguage || !module.deps) {
+         done(null, getTemplateI18nModule(module));
+         return;
+      }
+   } else {
+      const coreConstants = global.requirejs('Core/constants');
+      availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
+      if (!availableLangs || (coreConstants && !coreConstants.defaultLanguage) || !module.deps) {
+         done(null, getTemplateI18nModule(module));
+         return;
+      }
    }
 
    const noCssDeps = module.deps.filter(d => d.indexOf('native-css!') === -1);

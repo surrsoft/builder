@@ -512,7 +512,8 @@ module.exports = function generatePackageJson(config, depsTree, results, root) {
 
          // isGulp
          true,
-         config.localizations
+         config.localizations,
+         config.defaultLocalization
       );
 
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundles');
