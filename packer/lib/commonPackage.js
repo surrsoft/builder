@@ -294,7 +294,7 @@ async function limitingNativePackFiles(filesToPack, base, availableLanguage, def
       await pMap(
          filesToPack,
          async(module) => {
-            const extReg = new RegExp(`\\.${module.plugin}(\\.min)?\\.js$`);
+            const extReg = new RegExp(`\\.${module.moduleYes ? module.moduleYes.plugin : module.plugin}(\\.min)?\\.js$`);
             let { fullPath } = module;
             if (!fullPath) {
                fullPath = module.moduleYes ? module.moduleYes.fullPath : null;
