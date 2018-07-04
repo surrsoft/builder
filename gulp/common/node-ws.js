@@ -119,10 +119,16 @@ function initWs() {
    global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
+      jsModules: {},
       modules: {
-         View: { path: moduleView },
-         Controls: { path: moduleControls },
-         'WS.Data': { path: moduleWSData }
+         View: moduleView,
+         Controls: moduleControls,
+         'WS.Data': moduleWSData
+      },
+      requirejsPaths: {
+         View: moduleView,
+         Controls: moduleControls,
+         'WS.Data': moduleWSData
       }
    };
    loadContents(appContents, true, { service: appRoot });
