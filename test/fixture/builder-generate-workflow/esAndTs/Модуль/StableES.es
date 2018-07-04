@@ -1,5 +1,5 @@
-import Di from; './Di.es';
+import Di from './Di.es';
 const Factory = {
    Di
 };
-export; default; Factory;
+export default Factory;
