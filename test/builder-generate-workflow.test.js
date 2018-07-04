@@ -654,4 +654,81 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       await clearWorkspace();
    });
+
+   // TODO: дополнить тест проверки реакции на изменение файлов
+   it('compile es and ts', async() => {
+      const checkFiles = async() => {
+         const resultsFiles = await fs.readdir(moduleOutputFolder);
+         resultsFiles.should.have.members([
+            'StableES.js',
+            'StableTS.js',
+            'StableES.es',
+            'StableTS.ts',
+            'contents.js',
+            'contents.json',
+            'navigation-modules.json',
+            'routes-info.json',
+            'static_templates.json'
+         ]);
+
+         const EsOutputPath = path.join(moduleOutputFolder, 'StableES.js');
+         const TsOutputPath = path.join(moduleOutputFolder, 'StableTS.js');
+
+         const EsContent = await fs.readFile(EsOutputPath);
+         const TsContent = await fs.readFile(TsOutputPath);
+
+         removeRSymbol(EsContent.toString()).should.equal(
+            'define(\'Modul/StableES\', [\n' +
+            '    \'require\',\n' +
+            '    \'exports\',\n' +
+            '    \'Modul/Di\'\n' +
+            '], function (require, exports, Di_es_1) {\n' +
+            '    \'use strict\';\n' +
+            '    Object.defineProperty(exports, \'__esModule\', { value: true });\n' +
+            '    var Factory = { Di: Di_es_1.default };\n' +
+            '    exports.default = Factory;\n' +
+            '});'
+         );
+         removeRSymbol(TsContent.toString()).should.equal(
+            'define(\'Modul/StableTS\', [\n' +
+            '    \'require\',\n' +
+            '    \'exports\',\n' +
+            '    \'Modul/Di\'\n' +
+            '], function (require, exports, Di_es_1) {\n' +
+            '    \'use strict\';\n' +
+            '    Object.defineProperty(exports, \'__esModule\', { value: true });\n' +
+            '    var Factory = { Di: Di_es_1.default };\n' +
+            '    exports.default = Factory;\n' +
+            '});'
+         );
+      };
+
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/esAndTs');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      await checkFiles();
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      await checkFiles();
+
+      await clearWorkspace();
+   });
 });
