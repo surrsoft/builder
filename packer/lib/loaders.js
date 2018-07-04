@@ -602,16 +602,24 @@ function getTemplateI18nModule(module) {
  * @param {loaders~callback} done
  * @return {Function}
  */
-function i18nLoader(module, base, done, themeName, languageConfig) {
+function i18nLoader(module, base, done, themeName, languageConfig, isGulp) {
    const
       deps = ['Core/i18n'],
       { availableLanguage, defaultLanguage } = languageConfig;
 
-   availableLangs = availableLanguage;
-
-   if (!availableLangs || !defaultLanguage || !module.deps) {
-      done(null, getTemplateI18nModule(module));
-      return;
+   if (isGulp) {
+      availableLangs = availableLanguage;
+      if (!availableLangs || !defaultLanguage || !module.deps) {
+         done(null, getTemplateI18nModule(module));
+         return;
+      }
+   } else {
+      const coreConstants = global.requirejs('Core/constants');
+      availableLangs = availableLangs || Object.keys(global.requirejs('Core/i18n').getAvailableLang());
+      if (!availableLangs || (coreConstants && !coreConstants.defaultLanguage) || !module.deps) {
+         done(null, getTemplateI18nModule(module));
+         return;
+      }
    }
 
    const noCssDeps = module.deps.filter(d => d.indexOf('native-css!') === -1);
