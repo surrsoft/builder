@@ -28,10 +28,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
+         const
+            isJsonJs = file.basename.endsWith('.json.js');
+
          try {
-            if (!includeExts.includes(file.extname)) {
-               callback(null, file);
-               return;
+            if (!isJsonJs) {
+               if (!includeExts.includes(file.extname)) {
+                  callback(null, file);
+                  return;
+               }
             }
 
             for (const regex of excludeRegexes) {
@@ -41,9 +46,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                }
             }
 
+            const
+               currentFilePath = isJsonJs ? file.history[0].replace('.json', '.json.js') : file.history[0],
+               currentExt = isJsonJs ? '.json.js' : file.extname,
+               minFileExt = isJsonJs ? '.json.min.js' : `.min${file.extname}`;
+
             const relativePath = path
-               .relative(moduleInfo.path, file.history[0])
-               .replace(file.extname, `.min${file.extname}`);
+               .relative(moduleInfo.path, currentFilePath)
+               .replace(currentExt, minFileExt);
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
