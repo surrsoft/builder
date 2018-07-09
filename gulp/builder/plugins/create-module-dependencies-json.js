@@ -56,7 +56,8 @@ const parsePlugins = dep => [
  */
 const interfaceNamesMap = new Map([
    ['WS.Deprecated', 'Deprecated'],
-   ['WS.Core/lib', 'Lib']
+   ['WS.Core/lib', 'Lib'],
+   ['WS.Core/css', 'WS/css']
 ]);
 
 /**
