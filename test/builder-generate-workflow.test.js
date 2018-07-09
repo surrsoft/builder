@@ -731,4 +731,61 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       await clearWorkspace();
    });
+
+   it('compile json to ts', async() => {
+      const checkFiles = async() => {
+         const resultsFiles = await fs.readdir(moduleOutputFolder);
+         resultsFiles.should.have.members([
+            'currentLanguages.json',
+            'currentLanguages.json.js',
+            'contents.js',
+            'contents.json',
+            'navigation-modules.json',
+            'routes-info.json',
+            'static_templates.json'
+         ]);
+
+         const jsonJsOutputPath = path.join(moduleOutputFolder, 'currentLanguages.json.js');
+
+         const jsonJsContent = await fs.readFile(jsonJsOutputPath);
+
+         jsonJsContent.toString().should.equal(
+            'define(\'Modul/currentLanguages.json\',[],' +
+            'function(){return {' +
+            '"ru-RU":"Русский (Россия)",' +
+            '"uk-UA":"Українська (Україна)",' +
+            '"en-US":"English (USA)"' +
+            '};' +
+            '});'
+         );
+      };
+
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/jsonToJs');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      await checkFiles();
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      await checkFiles();
+
+      await clearWorkspace();
+   });
 });
