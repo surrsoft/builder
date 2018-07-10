@@ -10,7 +10,8 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers'),
-   transliterate = require('../../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate'),
+   modulePathToRequire = require('../../../lib/modulepath-to-require');
 
 // плагины, которые должны попасть в links
 const supportedPluginsForLinks = new Set([
@@ -51,16 +52,6 @@ const parsePlugins = dep => [
 ];
 
 /**
- * набор начал путей интерфейсных модулей, которые необходимо
- * заменить в соответствии с их использованием в require
- */
-const interfaceNamesMap = new Map([
-   ['WS.Deprecated', 'Deprecated'],
-   ['WS.Core/lib', 'Lib'],
-   ['WS.Core/css', 'WS/css']
-]);
-
-/**
  * Объявление плагина
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -85,28 +76,6 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
                return prettyPath.replace(ext, `.min${ext}`);
-            };
-            const getRequireName = (filePath) => {
-               const pathParts = filePath.split('/');
-               let filePathPart, requireName;
-
-               pathParts.pop();
-               while (pathParts.length !== 0 && !requireName) {
-                  filePathPart = pathParts.join('/');
-                  requireName = interfaceNamesMap.get(filePathPart);
-                  pathParts.pop();
-               }
-               return requireName ? filePathPart : null;
-            };
-            const getPrettyFilePath = (filePath) => {
-               const
-                  requireNameToReplace = getRequireName(filePath);
-
-               let resultPath = filePath;
-               if (requireNameToReplace) {
-                  resultPath = resultPath.replace(requireNameToReplace, interfaceNamesMap.get(requireNameToReplace));
-               }
-               return resultPath;
             };
             const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
@@ -157,7 +126,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                .map(filePath => filePath.replace('.less', '.css'));
             for (const filePath of cssFiles) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const prettyPath = getPrettyFilePath(helpers.prettifyPath(transliterate(relativePath)));
+               const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
                json.nodes[nodeName] = {
                   path: filePathToRelativeInResources(filePath)

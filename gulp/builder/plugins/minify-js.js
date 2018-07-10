@@ -54,7 +54,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            if (file.extname !== '.js') {
+            if (file.extname !== '.js' || file.basename.endsWith('.json.js')) {
                callback(null, file);
                return;
             }
