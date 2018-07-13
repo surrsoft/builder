@@ -22,7 +22,8 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../common/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool'),
+   esExt = /\.(es|ts)$/;
 
 const excludeRegexes = [
    /.*\.min\.js$/,
@@ -66,7 +67,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                }
             }
 
-            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(file.extname, '');
+            const extName = esExt.test(file.history[0]) ? esExt : file.extname;
+            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
             const outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
             const outputMinJsFile = `${outputFileWoExt}.min.js`;
             const outputMinOriginalJsFile = `${outputFileWoExt}.min.original.js`;
