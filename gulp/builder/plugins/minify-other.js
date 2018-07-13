@@ -29,8 +29,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
       /* @this Stream */
       function onTransform(file, encoding, callback) {
          const
-            isJsonJs = file.basename.endsWith('.json.js');
+            isJsonJs = file.basename.endsWith('.json.js'),
+            needToLog = isJsonJs && file.path.includes('WS.Core');
 
+         if (needToLog) {
+            logger.info({
+               message: 'Файл удовлетворяет требованиям amd-json-модуля',
+               filePath: file.path
+            });
+         }
          try {
             if (!isJsonJs) {
                if (!includeExts.includes(file.extname)) {
@@ -38,6 +45,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                   return;
                }
             }
+
 
             for (const regex of excludeRegexes) {
                if (regex.test(file.path)) {
@@ -56,10 +64,30 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                .replace(currentExt, minFileExt);
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
+            if (needToLog) {
+               logger.info({
+                  message: 'Дошли до обработки jsonjs внутри minify-other\n' +
+                  `currentFilePath: ${currentFilePath},\n` +
+                  `currentExt: ${currentExt},\n` +
+                  `minFileExt: ${minFileExt},\n` +
+                  `relativePath: ${relativePath},\n` +
+                  `outputMinFile: ${outputMinFile},\n` +
+                  `isCached: ${file.cached}`,
+                  filePath: file.path
+               });
+            }
+
             if (file.cached) {
                changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
                return;
+            }
+
+            if (needToLog) {
+               logger.info({
+                  message: 'Дошли до минификации jsonjs',
+                  filePath: file.path
+               });
             }
 
             /**
