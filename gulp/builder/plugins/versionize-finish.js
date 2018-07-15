@@ -28,7 +28,13 @@ module.exports = function declarePlugin(config, moduleInfo) {
          }
 
          let version = '';
-         if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
+
+         /**
+          * временно версионируем дебажные cssки. Нужно для нормальной работы шрифтов в IE.
+          * TODO выпилить, когда будет решение по задаче
+          * https://online.sbis.ru/opendoc.html?guid=bcd44398-026d-4717-9c0e-c8f3affd6795
+          */
+         if (file.path.match(/\.min\.[^.\\/]+$/) || ['.css', '.html'].includes(file.extname)) {
             version = `.v${config.version}`;
          }
          const text = file.contents.toString();
