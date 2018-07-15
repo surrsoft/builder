@@ -52,7 +52,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   'Необходимо удалить лишний JS-файл';
 
                // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
-               logger.debug({
+               logger.info({
                   message,
                   filePath: jsInSources,
                   moduleInfo
