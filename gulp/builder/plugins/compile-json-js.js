@@ -46,19 +46,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
 
             const jsInSources = file.history[0].replace(/\.(json)$/, '.json.js');
             if (await fs.pathExists(jsInSources)) {
-               changesStore.markFileAsFailed(file.history[0]);
-               const message =
-                  `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
-                  'Необходимо удалить лишний JS-файл';
+               const message = 'Существует скомпилированный в AMD-формат JSON-файл. Данный файл будет перезаписан!';
 
                // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
-               logger.info({
+               logger.warning({
                   message,
                   filePath: jsInSources,
                   moduleInfo
                });
-               callback(null, file);
-               return;
             }
 
             // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
