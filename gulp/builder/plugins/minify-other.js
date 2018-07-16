@@ -31,11 +31,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
          const isJsonJs = file.basename.endsWith('.json.js');
 
          try {
-            if (!isJsonJs) {
-               if (!includeExts.includes(file.extname)) {
-                  callback(null, file);
-                  return;
-               }
+            if (!isJsonJs && !includeExts.includes(file.extname)) {
+               callback(null, file);
+               return;
             }
 
             for (const regex of excludeRegexes) {
