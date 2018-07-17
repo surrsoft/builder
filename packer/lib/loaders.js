@@ -201,12 +201,22 @@ function xhtmlLoader(module, base, done) {
  * @param {String} base - site root
  * @param {loaders~callback} done
  */
-function cssLoader(module, base, done, themeName) {
+function cssLoader(
+   module,
+   base,
+   done,
+   themeName,
+   languageConfig,
+   isGulp,
+   root,
+   urlServicePath
+) {
    const suffix = themeName ? `__${themeName}` : '';
    let modulePath = module.fullPath;
    if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
       modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
+   const resourceRoot = isGulp ? `${path.join(urlServicePath, 'resources/')}` : '/';
    readFile(
       modulePath,
       rebaseUrls(
@@ -217,7 +227,8 @@ function cssLoader(module, base, done, themeName) {
                onlyForIE10AndAbove(ignoreIfNoFile(done, 'cssLoader'), module.fullName),
                module.fullName
             )
-         )
+         ),
+         resourceRoot
       )
    );
 }
@@ -557,12 +568,16 @@ head.appendChild(style);\
  * @param {Function} f - callback
  * @return {Function}
  */
-function rebaseUrls(root, sourceFile, f) {
+function rebaseUrls(root, sourceFile, f, resourceRoot) {
    return (err, res) => {
       if (err) {
          f(err);
       } else {
-         f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
+         if (resourceRoot) {
+            f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res, resourceRoot));
+         } else {
+            f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
+         }
       }
    };
 }
