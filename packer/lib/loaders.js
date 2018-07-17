@@ -572,12 +572,10 @@ function rebaseUrls(root, sourceFile, f, resourceRoot) {
    return (err, res) => {
       if (err) {
          f(err);
+      } else if (resourceRoot) {
+         f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res, resourceRoot));
       } else {
-         if (resourceRoot) {
-            f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res, resourceRoot));
-         } else {
-            f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
-         }
+         f(null, rebaseUrlsToAbsolutePath(root, sourceFile, res));
       }
    };
 }
