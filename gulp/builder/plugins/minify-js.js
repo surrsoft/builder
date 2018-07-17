@@ -29,6 +29,9 @@ const excludeRegexes = [
    /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
+
+   // https://online.sbis.ru/opendoc.html?guid=05e7f1be-9fa9-48d4-a0d9-5506ac8d2b12
+   /.*\.json\.js$/,
    /.*\.worker\.js$/,
    /.*[/\\]node_modules[/\\].*/,
    /.*[/\\]ServerEvent[/\\]worker[/\\].*/,
@@ -55,7 +58,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            if (file.extname !== '.js' || file.basename.endsWith('.json.js')) {
+            if (file.extname !== '.js') {
                callback(null, file);
                return;
             }
