@@ -1,5 +1,10 @@
 /**
  * Плагин для компиляции json-файлов в AMD-формат.
+ * json-файлы необходимо вставлять в разметку как скрипты, чтобы
+ * разрешить проблему, которую описал Бегунов Андрей:
+ * Cсылку на json нельзя вставить в тело страницы. В итоге оживление
+ * идет с синхронными разрывами через require.js.
+ * Также в будущем возникнет ситуация, что json плагина нет в es6 modules
  * @author Колбешин Ф.А.
  */
 
@@ -10,7 +15,7 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../common/exec-in-pool');
+   compileJsonToJs = require('../../../lib/compile-json-to-js');
 
 /**
  * Объявление плагина
@@ -19,7 +24,7 @@ const through = require('through2'),
  * @param {Pool} pool пул воркеров
  * @returns {*}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -63,17 +68,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                moduleInfo
             });
 
-            let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
+            let
+               relativeFilePath = path.relative(moduleInfo.path, file.history[0]),
+               result;
+
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
-            const [error, result] = await execInPool(
-               pool,
-               'compileJsonToJs',
-               [relativeFilePath, file.contents.toString()],
-               file.history[0],
-               moduleInfo
-            );
-            if (error) {
+            try {
+               result = compileJsonToJs(relativeFilePath, file.contents.toString());
+            } catch (error) {
                changesStore.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка создания AMD-модуля для json-файла',
