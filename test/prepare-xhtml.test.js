@@ -99,7 +99,7 @@ describe('i18n', () => {
       });
 
       // опции с версткой - тип content, но в самом шаблоне тип String
-      it('content component option, templates string', () => {
+      it('content component option, but templates string', () => {
          const text =
             '<component data-component="Test.Component">\n' +
             '   <option name="contentOpt">Текст</option>\n' +
