@@ -256,7 +256,16 @@ function prepareResultQueue(orderQueue, applicationRoot, availableLanguage) {
  * @param themeName
  * @returns {Promise<any>}
  */
-function promisifyLoader(loader, module, base, themeName, languageConfig, isGulp) {
+function promisifyLoader(
+   loader,
+   module,
+   base,
+   themeName,
+   languageConfig,
+   isGulp,
+   root,
+   application
+) {
    return new Promise((resolve, reject) => {
       loader(
          module,
@@ -269,7 +278,9 @@ function promisifyLoader(loader, module, base, themeName, languageConfig, isGulp
          },
          themeName,
          languageConfig,
-         isGulp
+         isGulp,
+         root,
+         application
       );
    });
 }
@@ -287,9 +298,18 @@ function promisifyLoader(loader, module, base, themeName, languageConfig, isGulp
  * Относительно этой папки будут высчитаны новые пути в ссылках
  * @param {nativePackFiles~callback} done
  */
-async function limitingNativePackFiles(filesToPack, base, availableLanguage, defaultLanguage, isGulp) {
+async function limitingNativePackFiles(
+   filesToPack,
+   root,
+   application,
+   availableLanguage,
+   defaultLanguage,
+   isGulp
+) {
    if (filesToPack && filesToPack.length) {
-      const result = [];
+      const
+         result = [],
+         base = path.join(root, application);
 
       await pMap(
          filesToPack,
@@ -322,7 +342,9 @@ async function limitingNativePackFiles(filesToPack, base, availableLanguage, def
                      availableLanguage,
                      defaultLanguage
                   },
-                  isGulp
+                  isGulp,
+                  root,
+                  application
                ));
             } catch (error) {
                logger.warning({
