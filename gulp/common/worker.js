@@ -80,14 +80,19 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
  * @param {string} fullPath полный путь до файла
  * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
  * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
+ * @param {boolean} replacePath нужно ли вставлять путь к сервису в получившемся html
+ * @param {string} urlServicePath относительный url текущего сервиса
  * @returns {Promise<string>}
  */
-async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropertiesFilePath) {
+async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropertiesFilePath, replacePath, urlServicePath) {
    return processingTmpl.buildHtmlTmpl(
       text,
       fullPath,
       relativeFilePath,
-      await readComponentsProperties(componentsPropertiesFilePath)
+      await readComponentsProperties(componentsPropertiesFilePath),
+      true,
+      replacePath,
+      urlServicePath
    );
 }
 
