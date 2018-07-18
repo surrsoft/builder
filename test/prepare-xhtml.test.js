@@ -98,6 +98,34 @@ describe('i18n', () => {
          );
       });
 
+      // опции с версткой - тип content, но в самом шаблоне тип String
+      it('content component option, but templates string', () => {
+         const text =
+            '<component data-component="Test.Component">\n' +
+            '   <option name="contentOpt">Текст</option>\n' +
+            '</component>';
+         const componentsProperties = {
+            'Test.Component': {
+               properties: {
+                  'ws-config': {
+                     options: {
+                        contentOpt: {
+                           translatable: true,
+                           type: 'Content'
+                        }
+                     }
+                  }
+               }
+            }
+         };
+         const result = prepareXhtml(text, componentsProperties);
+         result.should.equal(
+            '<component data-component="Test.Component">\n' +
+            '   <option name="contentOpt">{[Текст]}</option>\n' +
+            '</component>'
+         );
+      });
+
       // опции-массивы
       it('array component option', () => {
          const text =

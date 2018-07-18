@@ -54,7 +54,12 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
             newText = newText
                .replace(
                   /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
-                  `$1${VERSION_STUB}$2`
+                  (match, partFilePath, partExt) => {
+                     if (partExt === '.css') {
+                        return `${partFilePath + VERSION_STUB}.min${partExt}`;
+                     }
+                     return partFilePath + VERSION_STUB + partExt;
+                  }
                )
                .replace(
                   /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
@@ -68,7 +73,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                      ) {
                         return match;
                      }
-                     return partEqual + partFilePath + VERSION_STUB + partExt;
+                     return `${partEqual + partFilePath + VERSION_STUB}.min${partExt}`;
                   }
                );
          }
