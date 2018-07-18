@@ -153,7 +153,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minOriginalText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
 
                // минимизируем JS c пакованными зависимостями
                // если файл не возможно минифицировать, то запишем оригинал
@@ -165,6 +165,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(file.modulepack)
                   })
                );
+               changesStore.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
 
                const [error, minified] = await execInPool(pool, 'uglifyJs', [
                   file.path,
