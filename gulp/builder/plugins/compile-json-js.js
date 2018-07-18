@@ -42,9 +42,11 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
 
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.(json)$/, '.json.js');
             const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+            const outputMinPath = outputPath.replace(/\.js$/, '.min.js');
 
             if (file.cached) {
                changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+               changesStore.addOutputFile(file.history[0], outputMinPath, moduleInfo);
                callback(null, file);
                return;
             }
