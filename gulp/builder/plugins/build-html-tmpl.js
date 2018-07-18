@@ -46,7 +46,9 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                   file.contents.toString(),
                   file.history[0],
                   relativeTmplPathWithModuleName,
-                  componentsPropertiesFilePath
+                  componentsPropertiesFilePath,
+                  !config.multiService,
+                  config.urlServicePath
                ],
                file.history[0],
                moduleInfo
