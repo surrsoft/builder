@@ -84,7 +84,14 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
  * @param {string} urlServicePath относительный url текущего сервиса
  * @returns {Promise<string>}
  */
-async function buildHtmlTmpl(text, fullPath, relativeFilePath, componentsPropertiesFilePath, replacePath, urlServicePath) {
+async function buildHtmlTmpl(
+   text,
+   fullPath,
+   relativeFilePath,
+   componentsPropertiesFilePath,
+   replacePath,
+   urlServicePath
+) {
    return processingTmpl.buildHtmlTmpl(
       text,
       fullPath,
