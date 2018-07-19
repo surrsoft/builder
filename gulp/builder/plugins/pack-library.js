@@ -6,6 +6,7 @@
  * @author Колбешин Ф.А.
  */
 
+/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
@@ -13,9 +14,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    helpers = require('../../../lib/helpers'),
-   { packCurrentLibrary }= require('../../../lib/pack/library-packer'),
-   transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../common/exec-in-pool'),
+   { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
    esExt = /\.(es|ts)$/;
 
 /**
@@ -25,7 +24,7 @@ const through = require('through2'),
  * @param {Pool} pool пул воркеров
  * @returns {*}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(config, changesStore, moduleInfo) {
    const
       privateParts = {},
       libraries = [],
@@ -53,7 +52,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
       },
       function onFlush(callback) {
          libraries.forEach((library) => {
-            let privatePartsForChangesStore = [];
+            const privatePartsForChangesStore = [];
             let result;
             try {
                result = packCurrentLibrary(
@@ -62,7 +61,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                   library.contents.toString(),
                   privateParts
                );
-            } catch(error) {
+            } catch (error) {
                logger.error({
                   error
                });

@@ -40,7 +40,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                return;
             }
 
-            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(/\.(es|ts)$/, '');
+            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(esExt, '');
             const outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
             const outputPath = `${outputFileWoExt}.js`;
             const outputMinJsFile = `${outputFileWoExt}.min.js`;
@@ -58,7 +58,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                return;
             }
 
-            const jsInSources = file.history[0].replace(/\.(es|ts)$/, '.js');
+            const jsInSources = file.history[0].replace(esExt, '.js');
             if (await fs.pathExists(jsInSources)) {
                changesStore.markFileAsFailed(file.history[0]);
                const message =
