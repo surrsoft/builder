@@ -104,8 +104,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             }
 
             changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+            changesStore.storeCompiledES(file.history[0], moduleInfo.name, result);
             const newFile = file.clone();
-            newFile.contents = Buffer.from(result);
+            newFile.contents = Buffer.from(result.text);
             newFile.path = outputPath;
             newFile.base = moduleInfo.output;
             this.push(newFile);

@@ -15,6 +15,7 @@ const through = require('through2'),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    helpers = require('../../../lib/helpers'),
    { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
+   { getSourcePathByModuleName } = require('../../../lib/pack/helpers/changes-store'),
    esExt = /\.(es|ts)$/;
 
 /**
@@ -51,6 +52,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
          }
       },
       function onFlush(callback) {
+         const privatePartsCache = changesStore.getCompiledEsModuleCache(moduleInfo.name);
          libraries.forEach((library) => {
             const privatePartsForChangesStore = [];
             let result;
@@ -59,7 +61,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                   root,
                   privatePartsForChangesStore,
                   library.contents.toString(),
-                  privateParts
+                  privatePartsCache
                );
             } catch (error) {
                logger.error({
@@ -68,7 +70,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
             }
             if (privatePartsForChangesStore.length > 0) {
                changesStore.addDependencies(library.history[0], privatePartsForChangesStore.map(
-                  dependency => privateParts[dependency].history[0]
+                  dependency => getSourcePathByModuleName(privatePartsCache, dependency)
                ));
             }
             library.modulepack = result;
