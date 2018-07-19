@@ -56,7 +56,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                   /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
-                        return `${partFilePath + VERSION_STUB}.min${partExt}`;
+                        return `${partFilePath}.min${VERSION_STUB + partExt}`;
                      }
                      return partFilePath + VERSION_STUB + partExt;
                   }
@@ -73,7 +73,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                      ) {
                         return match;
                      }
-                     return `${partEqual + partFilePath + VERSION_STUB}.min${partExt}`;
+                     return `${partEqual + partFilePath}.min${VERSION_STUB + partExt}`;
                   }
                );
          }
