@@ -9,9 +9,7 @@
 'use strict';
 
 const through = require('through2'),
-   fs = require('fs-extra'),
    path = require('path'),
-   Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    helpers = require('../../../lib/helpers'),
@@ -55,7 +53,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
       },
       function onFlush(callback) {
          libraries.forEach((library) => {
-            const privatePartsForChangesStore = [];
+            let privatePartsForChangesStore = [];
             let result;
             try {
                result = packCurrentLibrary(

@@ -212,7 +212,7 @@ class ChangesStore {
       }
 
       if (this.lastStore.inputPaths[prettyPath].hash !== hash) {
-         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es')) {
             this.cacheChanges[prettyPath] = true;
          }
          return true;
@@ -226,7 +226,7 @@ class ChangesStore {
          return true;
       }
 
-      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es')) {
          const isChanged = await this._isDependenciesChanged(prettyPath);
          this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
