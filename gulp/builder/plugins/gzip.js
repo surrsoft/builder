@@ -1,12 +1,12 @@
 /**
- * Плагин архивации файлов с помощью gzip
+ * Плагин архивации файлов с помощью gzip.
+ * Генерирует в поток gzip файлы, но не пропускает через себя все остальные файлы, чтобы не перезаписывать лишинй раз.
  * @author Бегунов Ал. В.
  */
 
 'use strict';
 
 const through = require('through2'),
-   Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers');
 
@@ -38,26 +38,26 @@ module.exports = function declarePlugin(moduleInfo) {
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
+            if (!file.contents) {
+               callback();
+               return;
+            }
+
             if (!includeExts.includes(file.extname)) {
-               callback(null, file);
+               callback();
                return;
             }
 
             for (const regex of excludeRegexes) {
                if (regex.test(file.path)) {
-                  callback(null, file);
+                  callback();
                   return;
                }
             }
 
-            this.push(
-               new Vinyl({
-                  base: file.base,
-                  path: `${file.path}.gz`,
-                  contents: Buffer.from(await helpers.gzip(file.contents)),
-                  history: [...file.history]
-               })
-            );
+            file.path = `${file.path}.gz`;
+            file.contents = Buffer.from(await helpers.gzip(file.contents));
+            this.push(file);
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",
@@ -66,7 +66,7 @@ module.exports = function declarePlugin(moduleInfo) {
                filePath: file.path
             });
          }
-         callback(null, file);
+         callback();
       }
    );
 };

@@ -134,7 +134,7 @@ class ChangesStore {
       }
 
       // если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
-      if (this.config.version) {
+      if (this.config.outputPath !== this.config.rawConfig.output) {
          if (await fs.pathExists(this.config.rawConfig.output)) {
             removePromises.push(fs.remove(this.config.rawConfig.output));
          }
