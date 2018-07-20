@@ -75,6 +75,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                      ) {
                         return match;
                      }
+
                      // если в пути уже есть .min, то дублировать не нужно
                      const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
                      return `${partEqual + partFilePathWithoutMin}.min${VERSION_STUB + partExt}`;
