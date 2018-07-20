@@ -13,8 +13,33 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
-   { getSourcePathByModuleName } = require('../../../lib/pack/helpers/changes-store'),
+   pMap = require('p-map'),
    esExt = /\.(es|ts)$/;
+
+/**
+ * Возвращает путь до исходного ES файла для анализируемой зависимости.
+ * @param sourceRoot - корень UI-исходников
+ * @param privateModulesCache - кэш из changesStore для приватных модулей
+ * @param moduleName - имя анализируемой зависимости
+ * @returns {String}
+ */
+function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) {
+   let result = null;
+   Object.keys(privateModulesCache).forEach((cacheName) => {
+      if (privateModulesCache[cacheName].moduleName === moduleName) {
+         result = cacheName;
+      }
+   });
+
+   /**
+    * если не нашли исходник для приватной зависимости в esModulesCache,
+    * значит приватная зависимость - это js-модуль в ES5 формате.
+    */
+   if (!result) {
+      result = `${path.join(sourceRoot, moduleName)}.js`
+   }
+   return result;
+}
 
 /**
  * Объявление плагина
@@ -45,31 +70,39 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
       },
 
       /* @this Stream */
-      function onFlush(callback) {
-         const privatePartsCache = changesStore.getCompiledEsModuleCache(moduleInfo.name);
-         libraries.forEach((library) => {
-            const privatePartsForChangesStore = [];
-            let result;
-            try {
-               result = packCurrentLibrary(
-                  root,
-                  privatePartsForChangesStore,
-                  library.contents.toString(),
-                  privatePartsCache
-               );
-            } catch (error) {
-               logger.error({
-                  error
-               });
+      async function onFlush(callback) {
+         const
+            privatePartsCache = changesStore.getCompiledEsModuleCache(moduleInfo.name),
+            sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
+         await pMap(
+            libraries,
+            async(library) => {
+               const privatePartsForChangesStore = [];
+               let result;
+               try {
+                  result = await packCurrentLibrary(
+                     sourceRoot,
+                     privatePartsForChangesStore,
+                     library.contents.toString(),
+                     privatePartsCache
+                  );
+               } catch (error) {
+                  logger.error({
+                     error
+                  });
+               }
+               if (privatePartsForChangesStore.length > 0) {
+                  changesStore.addDependencies(library.history[0], privatePartsForChangesStore.map(
+                     dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
+                  ));
+               }
+               library.modulepack = result;
+               this.push(library);
+            },
+            {
+               concurrency: 10
             }
-            if (privatePartsForChangesStore.length > 0) {
-               changesStore.addDependencies(library.history[0], privatePartsForChangesStore.map(
-                  dependency => getSourcePathByModuleName(privatePartsCache, dependency)
-               ));
-            }
-            library.modulepack = result;
-            this.push(library);
-         });
+         );
          callback(null);
       }
    );
