@@ -26,6 +26,7 @@ class ChangesStore {
       this.lastStore = new StoreInfo();
       this.currentStore = new StoreInfo();
       this.dropCacheForMarkup = false;
+      this.dropCacheForLess = false;
 
       // js и less файлы инвалидируются с зависимостями
       // less - зависмости через import
@@ -198,6 +199,11 @@ class ChangesStore {
 
       // если сборка с локализацией и свойства компонентов поменялись
       if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
+         return true;
+      }
+
+      // если список тем поменялся, то нужно все less пересобрать
+      if (this.dropCacheForLess && (prettyPath.endsWith('.less'))) {
          return true;
       }
 
@@ -490,6 +496,16 @@ class ChangesStore {
             return null;
          })
          .filter(filePath => !!filePath);
+   }
+
+   addStyleTheme(themeName, filePath) {
+      this.currentStore.styleThemes.set(themeName, filePath);
+   }
+
+   checkThemesForUpdate() {
+      if (!helpers.isEqualMaps(this.currentStore.styleThemes, this.lastStore.styleThemes)) {
+         this.dropCacheForLess = true;
+      }
    }
 
    /**

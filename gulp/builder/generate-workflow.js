@@ -13,6 +13,7 @@ const path = require('path'),
    pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
+   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForGzip = require('./generate-task/gzip'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
@@ -55,6 +56,7 @@ function generateWorkflow(processArgv) {
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(config.cachePath),
       generateTaskForLoadChangesStore(changesStore),
+      generateTaskForCollectThemes(changesStore, config),
 
       // в generateTaskForClearCache нужен загруженный кеш
       generateTaskForClearCache(changesStore, config),

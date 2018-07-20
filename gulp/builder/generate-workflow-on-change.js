@@ -20,6 +20,7 @@ const path = require('path'),
 const ChangesStore = require('./classes/changes-store'),
    Configuration = require('./classes/configuration.js'),
    ConfigurationReader = require('../common/configuration-reader'),
+   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    compileLess = require('./plugins/compile-less'),
    filterUnused = require('./plugins/filter-unused');
 
@@ -64,6 +65,7 @@ function generateBuildWorkflowOnChange(processArgv) {
    return gulp.series(
       generateTaskForLoadChangesStore(changesStore),
       generateTaskForCheckVersion(changesStore),
+      generateTaskForCollectThemes(changesStore, config),
       generateTaskForBuildFile(changesStore, config, pool, filePath),
       generateTaskForTerminatePool(pool)
    );

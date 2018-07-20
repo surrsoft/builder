@@ -40,6 +40,9 @@ class StoreInfo {
       // Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
       // и подавать их при повторном запуске как изменённые
       this.filesWithErrors = new Set();
+
+      // Темы для компиляции less. <Имя темы>: <путь до файла _theme.less>
+      this.styleThemes = new Map();
    }
 
    static getLastRunningParametersPath(filePath) {
@@ -62,6 +65,7 @@ class StoreInfo {
             this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
             this.filesWithErrors = new Set(obj.filesWithErrors);
+            this.styleThemes = new Map(obj.styleThemes);
          }
       } catch (error) {
          logger.info({
@@ -80,7 +84,8 @@ class StoreInfo {
             inputPaths: this.inputPaths,
             dependencies: this.dependencies,
             modulesCache: this.modulesCache,
-            filesWithErrors: [...this.filesWithErrors]
+            filesWithErrors: [...this.filesWithErrors],
+            styleThemes: [...this.styleThemes]
          },
          {
             spaces: 1
