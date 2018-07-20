@@ -12,7 +12,6 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
-   helpers = require('../../../lib/helpers'),
    { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
    { getSourcePathByModuleName } = require('../../../lib/pack/helpers/changes-store'),
    esExt = /\.(es|ts)$/;
