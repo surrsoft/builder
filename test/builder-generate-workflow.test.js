@@ -812,7 +812,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
-   describe('pack-library', async() => {
+   describe('pack-library', () => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packLibraries');
       const config = {
          cache: cacheFolder,

@@ -36,7 +36,7 @@ function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) 
     * значит приватная зависимость - это js-модуль в ES5 формате.
     */
    if (!result) {
-      result = `${path.join(sourceRoot, moduleName)}.js`
+      result = `${path.join(sourceRoot, moduleName)}.js`;
    }
    return result;
 }
@@ -49,10 +49,7 @@ function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) 
  * @returns {*}
  */
 module.exports = function declarePlugin(config, changesStore, moduleInfo) {
-   const
-      libraries = [],
-      root = config.rawConfig.output;
-
+   const libraries = [];
    return through.obj(
 
       /* @this Stream */

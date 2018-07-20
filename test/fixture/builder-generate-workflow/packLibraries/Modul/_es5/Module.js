@@ -1,3 +1,4 @@
+/* eslint-disable */
 define('Modul/_es5/Module', [
    'require',
    'exports',
