@@ -26,7 +26,6 @@ const through = require('through2'),
  */
 module.exports = function declarePlugin(config, changesStore, moduleInfo) {
    const
-      privateParts = {},
       libraries = [],
       root = config.rawConfig.output;
 
@@ -34,18 +33,13 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
-         if (file.extname === '.js' && esExt.test(file.history[0])) {
-            if (!libPackHelpers.isPrivate(path.relative(moduleInfo.output, file.path))) {
-               libraries.push(file);
-               callback();
-            } else {
-               const dependency = helpers.unixifyPath(path.join(
-                  moduleInfo.name,
-                  path.relative(moduleInfo.output, file.path)
-               ));
-               privateParts[dependency] = file;
-               callback(null, file);
-            }
+         if (
+            file.extname === '.js' &&
+            esExt.test(file.history[0]) &&
+            !libPackHelpers.isPrivate(path.relative(moduleInfo.output, file.path))
+         ) {
+            libraries.push(file);
+            callback();
          } else {
             callback(null, file);
          }
