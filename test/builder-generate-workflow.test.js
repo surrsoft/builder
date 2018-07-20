@@ -798,6 +798,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       await linkPlatform(sourceFolder);
+
       // запустим таску
       await runWorkflow();
 
@@ -811,7 +812,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
-   describe('pack-library', async () => {
+   describe('pack-library', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packLibraries');
       const config = {
          cache: cacheFolder,
@@ -835,45 +836,45 @@ describe('gulp/builder/generate-workflow.js', () => {
        * @type {string[]}
        */
       const correctOutputContentList = [
-         "Modul.es",
-         "Modul.js",
-         "Modul.js.gz",
-         "Modul.min.js",
-         "Modul.min.js.gz",
-         "Modul.min.js.map",
-         "Modul.min.original.js",
-         "Modul.modulepack.js",
-         "_Cycle_dependence",
-         "_es5",
-         "_es6",
-         "contents.js",
-         "contents.js.gz",
-         "contents.json",
-         "contents.json.gz",
-         "libraryCycle.es",
-         "libraryCycle.js",
-         "libraryCycle.js.gz",
-         "libraryCycle.min.js",
-         "libraryCycle.min.js.gz",
-         "libraryCycle.min.js.map",
-         "libraryCycle.min.original.js",
-         "libraryCycle.modulepack.js",
-         "module-dependencies.json",
-         "module-dependencies.json.gz",
-         "navigation-modules.json",
-         "navigation-modules.json.gz",
-         "privateDepCycle.es",
-         "privateDepCycle.js",
-         "privateDepCycle.js.gz",
-         "privateDepCycle.min.js",
-         "privateDepCycle.min.js.gz",
-         "privateDepCycle.min.js.map",
-         "privateDepCycle.min.original.js",
-         "privateDepCycle.modulepack.js",
-         "routes-info.json",
-         "routes-info.json.gz",
-         "static_templates.json",
-         "static_templates.json.gz"
+         'Modul.es',
+         'Modul.js',
+         'Modul.js.gz',
+         'Modul.min.js',
+         'Modul.min.js.gz',
+         'Modul.min.js.map',
+         'Modul.min.original.js',
+         'Modul.modulepack.js',
+         '_Cycle_dependence',
+         '_es5',
+         '_es6',
+         'contents.js',
+         'contents.js.gz',
+         'contents.json',
+         'contents.json.gz',
+         'libraryCycle.es',
+         'libraryCycle.js',
+         'libraryCycle.js.gz',
+         'libraryCycle.min.js',
+         'libraryCycle.min.js.gz',
+         'libraryCycle.min.js.map',
+         'libraryCycle.min.original.js',
+         'libraryCycle.modulepack.js',
+         'module-dependencies.json',
+         'module-dependencies.json.gz',
+         'navigation-modules.json',
+         'navigation-modules.json.gz',
+         'privateDepCycle.es',
+         'privateDepCycle.js',
+         'privateDepCycle.js.gz',
+         'privateDepCycle.min.js',
+         'privateDepCycle.min.js.gz',
+         'privateDepCycle.min.js.map',
+         'privateDepCycle.min.original.js',
+         'privateDepCycle.modulepack.js',
+         'routes-info.json',
+         'routes-info.json.gz',
+         'static_templates.json',
+         'static_templates.json.gz'
       ];
 
       /**
@@ -891,10 +892,10 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          await pMap(
             [
-              'Modul.js',
-              'Modul.modulepack.js',
-              'libraryCycle.js',
-              'privateDepCycle.js'
+               'Modul.js',
+               'Modul.modulepack.js',
+               'libraryCycle.js',
+               'privateDepCycle.js'
             ],
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
