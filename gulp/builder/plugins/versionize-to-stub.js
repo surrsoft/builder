@@ -56,7 +56,9 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                   /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
-                        return `${partFilePath}.min${VERSION_STUB + partExt}`;
+                        // если в пути уже есть .min, то дублировать не нужно
+                        const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
+                        return `${partFilePathWithoutMin}.min${VERSION_STUB + partExt}`;
                      }
                      return partFilePath + VERSION_STUB + partExt;
                   }
@@ -73,7 +75,9 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                      ) {
                         return match;
                      }
-                     return `${partEqual + partFilePath}.min${VERSION_STUB + partExt}`;
+                     // если в пути уже есть .min, то дублировать не нужно
+                     const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
+                     return `${partEqual + partFilePathWithoutMin}.min${VERSION_STUB + partExt}`;
                   }
                );
          }
