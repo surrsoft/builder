@@ -109,7 +109,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             )
             .pipe(changedInPlace(changesStore, moduleInfo))
             .pipe(compileEsAndTs(changesStore, moduleInfo, pool))
-            .pipe(packLibrary(config, changesStore, moduleInfo, pool))
+            .pipe(packLibrary(config, changesStore, moduleInfo))
             .pipe(compileJsonToJs(changesStore, moduleInfo))
             .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
             .pipe(addComponentInfo(changesStore, moduleInfo, pool))
