@@ -6,7 +6,6 @@
  * @author Колбешин Ф.А.
  */
 
-/* eslint-disable no-invalid-this */
 'use strict';
 
 const through = require('through2'),
@@ -51,6 +50,8 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
             callback(null, file);
          }
       },
+
+      /* @this Stream */
       function onFlush(callback) {
          const privatePartsCache = changesStore.getCompiledEsModuleCache(moduleInfo.name);
          libraries.forEach((library) => {
