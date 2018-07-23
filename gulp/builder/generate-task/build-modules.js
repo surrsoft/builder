@@ -15,6 +15,7 @@ const path = require('path'),
 // наши плагины
 const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    compileEsAndTs = require('../plugins/compile-es-and-ts'),
+   packLibrary = require('../plugins/pack-library'),
    compileJsonToJs = require('../plugins/compile-json-js'),
    compileLess = require('../plugins/compile-less'),
    changedInPlace = require('../../common/plugins/changed-in-place'),
@@ -108,6 +109,7 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
             )
             .pipe(changedInPlace(changesStore, moduleInfo))
             .pipe(compileEsAndTs(changesStore, moduleInfo, pool))
+            .pipe(packLibrary(config, changesStore, moduleInfo))
             .pipe(compileJsonToJs(changesStore, moduleInfo))
             .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
             .pipe(addComponentInfo(changesStore, moduleInfo, pool))

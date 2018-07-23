@@ -3,7 +3,9 @@
 require('./init-test');
 
 const path = require('path'),
-   fs = require('fs-extra');
+   fs = require('fs-extra'),
+   pMap = require('p-map'),
+   helpers = require('../lib/helpers');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
@@ -736,28 +738,43 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
-            'currentLanguages.json',
-            'currentLanguages.json.js',
             'contents.js',
+            'contents.js.gz',
             'contents.json',
+            'contents.json.gz',
+            'currentLanguages.json',
+            'currentLanguages.json.gz',
+            'currentLanguages.json.js',
+            'currentLanguages.json.js.gz',
+            'currentLanguages.json.min.js',
+            'currentLanguages.json.min.js.gz',
+            'currentLanguages.min.json',
+            'currentLanguages.min.json.gz',
+            'module-dependencies.json',
+            'module-dependencies.json.gz',
             'navigation-modules.json',
+            'navigation-modules.json.gz',
             'routes-info.json',
-            'static_templates.json'
+            'routes-info.json.gz',
+            'static_templates.json',
+            'static_templates.json.gz'
          ]);
 
          const jsonJsOutputPath = path.join(moduleOutputFolder, 'currentLanguages.json.js');
+         const jsonMinJsOutputPath = path.join(moduleOutputFolder, 'currentLanguages.json.min.js');
 
          const jsonJsContent = await fs.readFile(jsonJsOutputPath);
-
-         jsonJsContent.toString().should.equal(
-            'define(\'Modul/currentLanguages.json\',[],' +
+         const jsonMinJsContent = await fs.readFile(jsonMinJsOutputPath);
+         const correctCompileJsonJs = 'define(\'Modul/currentLanguages.json\',[],' +
             'function(){return {' +
             '"ru-RU":"Русский (Россия)",' +
             '"uk-UA":"Українська (Україна)",' +
             '"en-US":"English (USA)"' +
             '};' +
-            '});'
-         );
+            '});';
+
+         jsonJsContent.toString().should.equal(correctCompileJsonJs);
+         jsonMinJsContent.toString().should.equal(correctCompileJsonJs);
       };
 
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/jsonToJs');
@@ -766,8 +783,12 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
+         mode: 'release',
          modules: [
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
             {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
@@ -775,6 +796,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          ]
       };
       await fs.writeJSON(configPath, config);
+
+      await linkPlatform(sourceFolder);
 
       // запустим таску
       await runWorkflow();
@@ -787,5 +810,200 @@ describe('gulp/builder/generate-workflow.js', () => {
       await checkFiles();
 
       await clearWorkspace();
+   });
+
+   describe('pack-library', () => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packLibraries');
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'release',
+         modules: [
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'Modul',
+               path: path.join(sourceFolder, 'Modul')
+            }
+         ]
+      };
+
+      /**
+       * Набор файлов и папок, который должен получиться по завершении workflow
+       * при перезапуске без изменений данный набор также должен сохраниться.
+       * @type {string[]}
+       */
+      const correctOutputContentList = [
+         'Modul.es',
+         'Modul.js',
+         'Modul.js.gz',
+         'Modul.min.js',
+         'Modul.min.js.gz',
+         'Modul.min.js.map',
+         'Modul.min.original.js',
+         'Modul.modulepack.js',
+         '_Cycle_dependence',
+         '_es5',
+         '_es6',
+         'contents.js',
+         'contents.js.gz',
+         'contents.json',
+         'contents.json.gz',
+         'libraryCycle.es',
+         'libraryCycle.js',
+         'libraryCycle.js.gz',
+         'libraryCycle.min.js',
+         'libraryCycle.min.js.gz',
+         'libraryCycle.min.js.map',
+         'libraryCycle.min.original.js',
+         'libraryCycle.modulepack.js',
+         'module-dependencies.json',
+         'module-dependencies.json.gz',
+         'navigation-modules.json',
+         'navigation-modules.json.gz',
+         'privateDepCycle.es',
+         'privateDepCycle.js',
+         'privateDepCycle.js.gz',
+         'privateDepCycle.min.js',
+         'privateDepCycle.min.js.gz',
+         'privateDepCycle.min.js.map',
+         'privateDepCycle.min.original.js',
+         'privateDepCycle.modulepack.js',
+         'routes-info.json',
+         'routes-info.json.gz',
+         'static_templates.json',
+         'static_templates.json.gz'
+      ];
+
+      /**
+       * Будем хранить правильные исходники для всех тестов паковки
+       * библиотек в одном объекте.
+       * @type {{}}
+       */
+      const correctModulesContent = {};
+      it('workspace-generated', async() => {
+         await prepareTest(fixtureFolder);
+         await linkPlatform(sourceFolder);
+         await fs.writeJSON(configPath, config);
+         await runWorkflow();
+         const correctModulesPath = path.join(fixtureFolder, 'compiledCorrectResult');
+
+         await pMap(
+            [
+               'Modul.js',
+               'Modul.modulepack.js',
+               'libraryCycle.js',
+               'privateDepCycle.js'
+            ],
+            async(basename) => {
+               const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
+               correctModulesContent[basename] = readedFile
+                  .slice(readedFile.indexOf('define('), readedFile.length)
+                  .replace(/\n$/, '');
+            },
+            {
+               concurrency: 5
+            }
+         );
+      });
+      it('test-output-file-content', async() => {
+         const resultsFiles = await fs.readdir(moduleOutputFolder);
+         resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('test-recurse', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-recurse-library-dependencies-in-store', async() => {
+         const moduleSourcePath = helpers.unixifyPath(path.join(sourceFolder, 'Modul/Модуль.es'));
+         const correctStoreDepsForModule = [
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es5/Module.js')),
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль.es')),
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль2.es'))
+         ];
+         const currentStore = await fs.readJson(path.join(cacheFolder, 'store.json'));
+         currentStore.dependencies[moduleSourcePath].should.have.members(correctStoreDepsForModule);
+      });
+      it('test-cycle-private-dependency', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+      });
+      it('test-cycle-library-dependency', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+      });
+      it('workflow-rebuilded', async() => {
+         await runWorkflow();
+      });
+      it('test-output-file-content-after-rebuild', async() => {
+         const resultsFiles = await fs.readdir(moduleOutputFolder);
+         resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('test-recurse-library-dependencies-in-store-after-rebuild', async() => {
+         const moduleSourcePath = helpers.unixifyPath(path.join(sourceFolder, 'Modul/Модуль.es'));
+         const correctStoreDepsForModule = [
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es5/Module.js')),
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль.es')),
+            helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль2.es'))
+         ];
+         const currentStore = await fs.readJson(path.join(cacheFolder, 'store.json'));
+         currentStore.dependencies[moduleSourcePath].should.have.members(correctStoreDepsForModule);
+      });
+      it('test-recurse-after-rerun-workflow', async() => {
+         const resultsFiles = await fs.readdir(moduleOutputFolder);
+         resultsFiles.should.have.members(correctOutputContentList);
+
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-cycle-private-dependency-after-rebuild', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+      });
+      it('test-cycle-library-dependency-after-rebuild', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+      });
+      it('workspace-cleared', async() => {
+         await clearWorkspace();
+      });
    });
 });

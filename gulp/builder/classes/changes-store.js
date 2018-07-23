@@ -47,7 +47,8 @@ class ChangesStore {
          this.currentStore.modulesCache[moduleInfo.name] = {
             componentsInfo: {},
             routesInfo: {},
-            markupCache: {}
+            markupCache: {},
+            esCompileCache: {}
          };
          this.currentStore.inputPaths[moduleInfo.path] = {
             hash: '',
@@ -179,6 +180,9 @@ class ChangesStore {
          if (lastModuleCache.markupCache.hasOwnProperty(prettyPath)) {
             currentModuleCache.markupCache[prettyPath] = lastModuleCache.markupCache[prettyPath];
          }
+         if (lastModuleCache.esCompileCache.hasOwnProperty(prettyPath)) {
+            currentModuleCache.esCompileCache[prettyPath] = lastModuleCache.esCompileCache[prettyPath];
+         }
          if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
             currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
          }
@@ -212,7 +216,7 @@ class ChangesStore {
       }
 
       if (this.lastStore.inputPaths[prettyPath].hash !== hash) {
-         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es')) {
             this.cacheChanges[prettyPath] = true;
          }
          return true;
@@ -226,7 +230,7 @@ class ChangesStore {
          return true;
       }
 
-      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js')) {
+      if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es')) {
          const isChanged = await this._isDependenciesChanged(prettyPath);
          this.cacheChanges[prettyPath] = isChanged;
          return isChanged;
@@ -396,6 +400,18 @@ class ChangesStore {
    }
 
    /**
+    * Сохранить в кеше скомпилированный ES-модуль. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {Object} obj Объект с полями text, nodeName (имя файла для require) и dependencies
+    */
+   storeCompiledES(filePath, moduleName, obj) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      currentModuleCache.esCompileCache[prettyPath] = obj;
+   }
+
+   /**
     * Получить всю скомпилированную верстку для конкретного модуля
     * @param {string} moduleName имя модуля
     * @returns {Object} Информация о скомпилированной верстки модуля в виде
@@ -410,6 +426,22 @@ class ChangesStore {
    getMarkupCache(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.markupCache;
+   }
+
+   /**
+    * Получить все скомпилированные ES модули для конкретного интерфейсного модуля.
+    * @param {string} moduleName имя модуля
+    * @returns {Object} Информация о скомпилированном ES модуле в виде
+    *    {
+    *       <путь до файла>: {
+    *          text: <js код>
+    *          nodeName: <имя файла для require>
+    *       }
+    *    }
+    */
+   getCompiledEsModuleCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.esCompileCache;
    }
 
    /**
