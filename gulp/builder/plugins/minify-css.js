@@ -19,7 +19,7 @@ const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]desig
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
    return through.obj(

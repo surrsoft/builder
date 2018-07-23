@@ -15,20 +15,19 @@ const logger = require('../../../lib/logger').logger(),
 
 /**
  * Генерация завершающий задачи для Release сборки.
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {boolean} localizationEnable включена ли локализация
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForFinalizeDistrib(config, localizationEnable) {
-   if (!config.isReleaseMode) {
+function generateTaskForFinalizeDistrib(taskParameters) {
+   if (!taskParameters.config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(config)];
-   if (localizationEnable) {
-      tasks.push(generateTaskForNormalizeKey(config));
+   const tasks = [generateTaskForCopyResources(taskParameters.config)];
+   if (taskParameters.config.localizations.length > 0) {
+      tasks.push(generateTaskForNormalizeKey(taskParameters.config));
    }
 
    return gulp.series(tasks);

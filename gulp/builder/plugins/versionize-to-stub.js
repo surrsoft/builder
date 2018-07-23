@@ -18,7 +18,7 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
  * @param {BuildConfiguration} config конфигурация сборки
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(config, changesStore, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
@@ -53,7 +53,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
          } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
                         // если в пути уже есть .min, то дублировать не нужно

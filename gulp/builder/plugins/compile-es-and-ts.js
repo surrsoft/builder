@@ -15,12 +15,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -49,18 +48,18 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const outputModulepackJsFile = `${outputFileWoExt}.modulepack.js`;
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
                callback(null, file);
                return;
             }
 
             const jsInSources = file.history[0].replace(esExt, '.js');
             if (await fs.pathExists(jsInSources)) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
                   'Необходимо удалить лишний JS-файл';
@@ -86,14 +85,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
             const [error, result] = await execInPool(
-               pool,
+               taskParameters.pool,
                'compileEsAndTs',
                [relativeFilePath, file.contents.toString()],
                file.history[0],
                moduleInfo
             );
             if (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   error,
                   filePath: file.history[0],
@@ -103,15 +102,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                return;
             }
 
-            changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
-            changesStore.storeCompiledES(file.history[0], moduleInfo.name, result);
+            taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+            taskParameters.cache.storeCompiledES(file.history[0], moduleInfo.name, result);
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
             newFile.path = outputPath;
             newFile.base = moduleInfo.output;
             this.push(newFile);
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при компиляции в JS",
                error,

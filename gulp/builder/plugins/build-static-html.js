@@ -22,7 +22,7 @@ const transliterate = require('../../../lib/transliterate'),
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @param {Map} modulesMap имя папки модуля: полный путь до модуля
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(config, changesStore, moduleInfo, modulesMap) {
    return through.obj(

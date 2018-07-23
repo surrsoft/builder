@@ -12,7 +12,7 @@ const
    packHelpers = require('../lib/pack/helpers/custompack'),
    customPacker = require('../lib/pack/custom-packer'),
    { rebaseCSS } = require('../lib/pack/custom-packer'),
-   DependencyGraph = require('../packer/lib/dependencyGraph');
+   DependencyGraph = require('../packer/lib/dependency-graph');
 
 const removeAllNewLines = function(str) {
    return str.replace(/\n/g, '');

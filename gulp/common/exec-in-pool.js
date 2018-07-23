@@ -17,7 +17,7 @@ const logger = require('../../lib/logger').logger();
  * @param {ModuleInfo} moduleInfo информация о модуле. Для красивых логов.
  * @returns {Promise<[error, result]>}
  */
-async function execInPool(pool, funcName, funcArgs, filePath = null, moduleInfo = null) {
+async function execInPool(pool, funcName, funcArgs, filePath = '', moduleInfo = null) {
    try {
       let moduleInfoObj;
       if (moduleInfo) {

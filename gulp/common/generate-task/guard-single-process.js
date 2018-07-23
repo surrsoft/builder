@@ -14,10 +14,11 @@ let lockFile;
 
 /**
  * Геренация задачи блокировки. Обязательно должна выполнятся перед всеми другими задачами.
- * @param {string} cachePath путь до кеша
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): (Promise)}
  */
-function generateTaskForLock(cachePath) {
+function generateTaskForLock(taskParameters) {
+   const { cachePath } = taskParameters.config;
    return function lock() {
       return new Promise(async(resolve, reject) => {
          await fs.ensureDir(cachePath);

@@ -9,25 +9,23 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
-   DepGraph = require('../../../packer/lib/dependencyGraph'),
+   DepGraph = require('../../../packer/lib/dependency-graph'),
    pluginPackHtml = require('../plugins/pack-html');
 
 /**
  * Генерация задачи паковки для статических html.
- * @param {ChangesStore} changesStore кеш
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {Pool} pool пул воркеров
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForPackHtml(changesStore, config, pool) {
-   if (!config.isReleaseMode) {
+function generateTaskForPackHtml(taskParameters) {
+   if (!taskParameters.config.isReleaseMode) {
       return function skipPackHtml(done) {
          done();
       };
    }
    const depGraph = new DepGraph();
-   const tasks = config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
+   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+      const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
 
       // интересны именно файлы на первом уровне вложенности в модулях
       const input = path.join(moduleOutput, '/*.html');
@@ -47,20 +45,20 @@ function generateTaskForPackHtml(changesStore, config, pool) {
                   }
                })
             )
-            .pipe(pluginPackHtml(depGraph, config, moduleInfo, pool))
+            .pipe(pluginPackHtml(taskParameters, moduleInfo, depGraph))
             .pipe(gulp.dest(moduleOutput));
       };
    });
 
    return gulp.series(
-      generateTaskForLoadDG(changesStore, depGraph),
+      generateTaskForLoadDG(taskParameters.cache, depGraph),
       gulp.parallel(tasks)
    );
 }
 
-function generateTaskForLoadDG(changesStore, depGraph) {
+function generateTaskForLoadDG(cache, depGraph) {
    return function load(done) {
-      depGraph.fromJSON(changesStore.getModuleDependencies());
+      depGraph.fromJSON(cache.getModuleDependencies());
       done();
    };
 }

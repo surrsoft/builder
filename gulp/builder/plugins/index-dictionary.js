@@ -19,7 +19,7 @@ const through = require('through2'),
  * Объявление плагина
  * @param {BuildConfiguration} config конфигурация сборки
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(config, moduleInfo) {
    const indexer = new DictionaryIndexer(config.localizations);

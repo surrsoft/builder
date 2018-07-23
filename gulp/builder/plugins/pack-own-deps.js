@@ -16,7 +16,7 @@ const through = require('through2'),
  * Объявление плагина
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    // js файлы можно паковать только после сборки xhtml и tmpl файлов.

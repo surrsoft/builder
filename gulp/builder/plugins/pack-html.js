@@ -8,9 +8,9 @@
 
 const through = require('through2'),
    path = require('path'),
-   domHelpers = require('../../../packer/lib/domHelpers'),
+   domHelpers = require('../../../packer/lib/dom-helpers'),
    logger = require('../../../lib/logger').logger(),
-   packHtml = require('../../../packer/tasks/lib/packHTML'),
+   packHtml = require('../../../packer/tasks/lib/pack-html'),
    execInPool = require('../../common/exec-in-pool');
 
 /**
@@ -19,7 +19,7 @@ const through = require('through2'),
  * @param {BuildConfiguration} config конфигурация сборки
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
    return through.obj(async function onTransform(file, encoding, callback) {

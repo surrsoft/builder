@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const DepGraph = require('./dependencyGraph');
+const DepGraph = require('./dependency-graph');
 const pMap = require('p-map');
 const MODULE_DEPENDENCIES_FILENAME = 'module-dependencies.json';
 

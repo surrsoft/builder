@@ -17,7 +17,7 @@ const path = require('path'),
  * @param {DependencyGraph} depsTree граф зависимостей
  * @param {{bundles:{}, bundlesRoute:{}}} results результаты паковки для конкретного конфига
  * @param {string} root корень развернутого приложения
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function generatePackageJson(config, depsTree, results, root) {
    return through.obj(async function onTransform(file, encoding, callback) {
@@ -43,11 +43,6 @@ module.exports = function generatePackageJson(config, depsTree, results, root) {
          // application
          '/',
 
-         // splittedCore
-         true,
-
-         // isGulp
-         true,
          config.localizations,
          config.defaultLocalization
       );

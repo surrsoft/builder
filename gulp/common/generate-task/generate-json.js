@@ -13,13 +13,11 @@ const runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
 
 /**
  * Генерация задачи генерации json описания компонентов для локализации
- * @param {ChangesStore|Cache} cache кеш сборки статики или сбора фраз локализации
- * @param {BuildConfiguration|GrabberConfiguration} config конфигурация сборки статики или сбора фраз локализации
- * @param {boolean} localizationEnable включена ли локализация
- * @returns {function} функция-задача для gulp
+ * @param {TaskParameters} taskParameters параметры для задач
+ * @return {function} функция-задача для gulp
  */
-function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
-   if (!localizationEnable) {
+function generateTaskForGenerateJson(taskParameters) {
+   if (!taskParameters.config.localizations.length) {
       return function generateJson(done) {
          done();
       };
@@ -27,10 +25,10 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
    return async function generateJson() {
       try {
          const folders = [];
-         for (const module of config.modules) {
+         for (const module of taskParameters.config.modules) {
             folders.push(module.path);
          }
-         const resultJsonGenerator = await runJsonGenerator(folders, config.cachePath);
+         const resultJsonGenerator = await runJsonGenerator(folders, taskParameters.config.cachePath);
          for (const error of resultJsonGenerator.errors) {
             logger.warning({
                message: 'Ошибка при разборе JSDoc комментариев',
@@ -41,7 +39,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
 
          // если components-properties поменялись, то нужно сбросить кеш для верстки
          let isComponentsPropertiesChanged = false;
-         const filePath = path.join(config.cachePath, 'components-properties.json');
+         const filePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
          if (await fs.pathExists(filePath)) {
             let oldIndex = {};
             try {
@@ -55,7 +53,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
             }
 
             try {
-               assert.deepEqual(oldIndex, resultJsonGenerator.index);
+               assert.deepStrictEqual(oldIndex, resultJsonGenerator.index);
             } catch (error) {
                isComponentsPropertiesChanged = true;
             }
@@ -64,7 +62,7 @@ function generateTaskForGenerateJson(cache, config, localizationEnable = true) {
          }
          if (isComponentsPropertiesChanged) {
             logger.info('Кеш для файлов верстки будет сброшен, если был.');
-            cache.setDropCacheForMarkup();
+            taskParameters.cache.setDropCacheForMarkup();
             await fs.writeJSON(filePath, resultJsonGenerator.index, { spaces: 1 });
          }
       } catch (error) {

@@ -21,7 +21,7 @@ const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
  * Объявление плагина
  * @param {ChangesStore} changesStore кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(changesStore, moduleInfo) {
    return through.obj(

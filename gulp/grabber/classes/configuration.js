@@ -7,7 +7,7 @@
 'use strict';
 
 const ConfigurationReader = require('../../common/configuration-reader'),
-   ModuleInfo = require('../../common/base-module-info');
+   ModuleInfo = require('../../common/classes/base-module-info');
 
 /**
  * Класс с данными о конфигурации сборки

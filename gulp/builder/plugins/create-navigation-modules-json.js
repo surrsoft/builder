@@ -12,7 +12,7 @@ const through = require('through2'),
 /**
  * Объявление плагина
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(moduleInfo) {
    return through.obj(

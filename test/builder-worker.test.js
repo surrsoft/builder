@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 'use strict';
 
 require('./init-test');

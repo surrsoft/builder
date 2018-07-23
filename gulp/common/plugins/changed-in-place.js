@@ -11,14 +11,14 @@ const logger = require('../../../lib/logger').logger(),
 
 /**
  * Объявление плагина
- * @param {ChangesStore|Cache} cache кеш сборки статики или сбора фраз локализации
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(cache, moduleInfo = null) {
+module.exports = function declarePlugin(taskParameters, moduleInfo = null) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         const isChanged = cache.isFileChanged(file.path, file.contents, moduleInfo);
+         const isChanged = taskParameters.cache.isFileChanged(file.path, file.contents, moduleInfo);
          if (isChanged instanceof Promise) {
             file.cached = !(await isChanged);
          } else {

@@ -17,7 +17,7 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
  *
  * @param {BuildConfiguration} config конфигурация сборки
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(config, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {

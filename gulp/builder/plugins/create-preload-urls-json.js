@@ -12,7 +12,7 @@ const through = require('through2'),
 /**
  *
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(moduleInfo) {
    const preloadUrls = [];

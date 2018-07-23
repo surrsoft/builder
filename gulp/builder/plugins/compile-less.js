@@ -15,14 +15,13 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
  * @param {string} sbis3ControlsPath путь до модуля SBIS3.CONTROLS. нужно для поиска тем
  * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
    return through.obj(
 
       /* @this Stream */
@@ -37,14 +36,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                callback(null, file);
                return;
             }
 
             const cssInSources = file.history[0].replace(/\.less$/, '.css');
             if (await fs.pathExists(cssInSources)) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                   'Необходимо удалить лишний CSS-файл';
@@ -58,14 +57,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             }
 
             const [error, result] = await execInPool(
-               pool,
+               taskParameters.pool,
                'buildLess',
                [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, pathsForImport],
                file.history[0],
                moduleInfo
             );
             if (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   error,
                   filePath: file.history[0],
@@ -78,8 +77,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             if (result.ignoreMessage) {
                logger.debug(result.ignoreMessage);
             } else {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
-               changesStore.addDependencies(file.history[0], result.imports);
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addDependencies(file.history[0], result.imports);
                this.push(
                   new Vinyl({
                      base: moduleInfo.output,
@@ -90,7 +89,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                );
             }
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при компиляции less",
                error,

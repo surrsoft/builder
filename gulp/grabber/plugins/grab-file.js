@@ -17,7 +17,7 @@ const supportExtensions = ['.js', '.xhtml', '.tmpl'];
  * @param {Cache} cache кеш
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
    return through.obj(async(file, encoding, callback) => {

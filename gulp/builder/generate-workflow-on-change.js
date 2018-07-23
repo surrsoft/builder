@@ -10,16 +10,15 @@
 const path = require('path'),
    gulp = require('gulp'),
    gulpIf = require('gulp-if'),
-   os = require('os'),
    fs = require('fs-extra'),
-   workerPool = require('workerpool'),
    gulpRename = require('gulp-rename'),
    gulpChmod = require('gulp-chmod'),
    plumber = require('gulp-plumber');
 
-const ChangesStore = require('./classes/changes-store'),
+const Cache = require('./classes/cache'),
    Configuration = require('./classes/configuration.js'),
    ConfigurationReader = require('../common/configuration-reader'),
+   TaskParameters = require('../common/classes/task-parameters'),
    compileLess = require('./plugins/compile-less'),
    filterUnused = require('./plugins/filter-unused');
 
@@ -28,10 +27,10 @@ const logger = require('../../lib/logger').logger(),
 
 const {
    needSymlink,
-   getDirnameForModule,
-   generateTaskForLoadChangesStore,
+   generateTaskForLoadCache,
+   generateTaskForInitWorkerPool,
    generateTaskForTerminatePool
-} = require('./helpers');
+} = require('../common/helpers');
 
 /**
  * Генерирует поток выполнения сборки одного less файла при измении
@@ -47,34 +46,25 @@ function generateBuildWorkflowOnChange(processArgv) {
    if (!filePath) {
       throw new Error('Не указан параметр --filePath');
    }
-   const changesStore = new ChangesStore(config);
 
-   const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
-
-      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1,
-      forkOpts: {
-         env: {
-            'ws-core-path': getDirnameForModule(config.rawConfig.modules, 'WS.Core')
-         }
-      }
-   });
+   const taskParameters = new TaskParameters(config, new Cache(config));
 
    // guardSingleProcess пришлось убрать из-за того что WebStorm может вызвать несколько процессов параллельно
    return gulp.series(
-      generateTaskForLoadChangesStore(changesStore),
-      generateTaskForCheckVersion(changesStore),
-      generateTaskForBuildFile(changesStore, config, pool, filePath),
-      generateTaskForTerminatePool(pool)
+      generateTaskForLoadCache(taskParameters),
+      generateTaskForCheckVersion(taskParameters),
+      generateTaskForInitWorkerPool(taskParameters),
+      generateTaskForBuildFile(taskParameters, filePath),
+      generateTaskForTerminatePool(taskParameters)
    );
 }
 
-function generateTaskForBuildFile(changesStore, config, pool, filePath) {
+function generateTaskForBuildFile(taskParameters, filePath) {
    let currentModuleInfo;
    let sbis3ControlsPath = '';
    const pathsForImportSet = new Set();
    let filePathInProject = filePath;
-   for (const moduleInfo of config.modules) {
+   for (const moduleInfo of taskParameters.config.modules) {
       if (!currentModuleInfo) {
          let relativePath = path.relative(moduleInfo.path, filePath);
 
@@ -119,7 +109,7 @@ function generateTaskForBuildFile(changesStore, config, pool, filePath) {
                }
             })
          )
-         .pipe(compileLess(changesStore, currentModuleInfo, pool, sbis3ControlsPath, pathsForImport))
+         .pipe(compileLess(taskParameters, currentModuleInfo, sbis3ControlsPath, pathsForImport))
          .pipe(
             gulpRename((file) => {
                file.dirname = transliterate(file.dirname);
@@ -130,20 +120,22 @@ function generateTaskForBuildFile(changesStore, config, pool, filePath) {
          .pipe(gulpChmod({ read: true, write: true }))
          .pipe(
             gulpIf(
-               needSymlink(config, currentModuleInfo),
+               needSymlink(taskParameters.config, currentModuleInfo),
                gulp.symlink(currentModuleInfo.output),
                gulp.dest(currentModuleInfo.output)
             )
          );
    };
 }
-function generateTaskForCheckVersion(changesStore) {
+function generateTaskForCheckVersion(taskParameters) {
    return function checkBuilderVersion(done) {
-      if (changesStore.lastStore.versionOfBuilder !== changesStore.currentStore.versionOfBuilder) {
+      const lastVersion = taskParameters.cache.lastStore.versionOfBuilder,
+         currentVersion = taskParameters.cache.currentStore.versionOfBuilder;
+      if (lastVersion !== currentVersion) {
          logger.error(
-            `Текущая версия Builder'а (${changesStore.currentStore.versionOfBuilder}) не совпадает с версией, ` +
-            `сохранённой в кеше (${changesStore.lastStore.versionOfBuilder}). ` +
-            'Вероятно, необходимо передеплоить стенд.'
+            `Текущая версия Builder'а (${currentVersion}) не совпадает с версией, ` +
+               `сохранённой в кеше (${lastVersion}). ` +
+               'Вероятно, необходимо передеплоить стенд.'
          );
       }
       done();
