@@ -20,9 +20,9 @@ const Cache = require('./classes/cache'),
    ConfigurationReader = require('../common/configuration-reader'),
    TaskParameters = require('../common/classes/task-parameters'),
    compileLess = require('./plugins/compile-less'),
-   filterUnused = require('./plugins/filter-unused');
-
-const logger = require('../../lib/logger').logger(),
+   filterUnused = require('./plugins/filter-unused'),
+   generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
+   logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
 const {
@@ -53,6 +53,7 @@ function generateBuildWorkflowOnChange(processArgv) {
    return gulp.series(
       generateTaskForLoadCache(taskParameters),
       generateTaskForCheckVersion(taskParameters),
+      generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForBuildFile(taskParameters, filePath),
       generateTaskForTerminatePool(taskParameters)
