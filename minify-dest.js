@@ -4,7 +4,8 @@
 const fs = require('fs-extra'),
    path = require('path');
 
-const dest = path.join(__dirname, 'dest', 'node_modules');
+const dest = path.join(__dirname, 'dest');
+const destNodeModules = path.join(dest, 'node_modules');
 
 // все строки в lower case
 const filesForRemove = [
@@ -102,10 +103,13 @@ function needRemove(filePath, isDir) {
 }
 
 const files = [];
-recursiveReadDir(dest, files);
+recursiveReadDir(destNodeModules, files);
 for (const file of files) {
    if (needRemove(file.path, file.isDir)) {
       console.log(`remove ${file.path}`);
       fs.removeSync(file.path);
    }
 }
+
+// package-lock.json уже не нужен после npm ci
+fs.removeSync(path.join(dest, 'package-lock.json'));
