@@ -8,7 +8,7 @@ const path = require('path'),
    logger = require('../lib/logger').logger(),
    generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 
-function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, cb) {
+function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, isMultiService, servicesPath, cb) {
    async function handleResult(newFullPath, res) {
       await fs.writeFile(newFullPath, res);
 
@@ -67,7 +67,9 @@ function convertTmpl(splittedCore, resourcesRoot, filePattern, componentsPropert
                fullPath,
                relativePath,
                componentsProperties,
-               splittedCore
+               splittedCore,
+               isMultiService,
+               servicesPath
             );
             const newFullPath = fullPath.replace(/\.html\.tmpl$/, '.html');
             await handleResult(newFullPath, htmlText);
@@ -89,6 +91,7 @@ module.exports = function register(grunt) {
    const userParams = grunt.option('user_params') || false;
    const globalParams = grunt.option('global_params') || false;
    const splittedCore = grunt.option('splitted-core');
+   const multiService = grunt.option('multi-service') || false;
 
    grunt.registerMultiTask('html-tmpl', 'Generate static html from .html.tmpl files',
 
@@ -102,15 +105,16 @@ module.exports = function register(grunt) {
             resourcesRoot = path.join(applicationRoot, 'resources'),
             componentsProperties = {};
 
-         convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, (err) => {
-            if (err) {
-               logger.error({ error: err });
-            }
+         convertTmpl(splittedCore, resourcesRoot, filePattern, componentsProperties, multiService, servicesPath,
+            (err) => {
+               if (err) {
+                  logger.error({ error: err });
+               }
 
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
-            logger.correctExitCode();
-            done();
-         });
+               logger.debug(`Duration: ${(Date.now() - start) / 1000} sec`);
+               logger.correctExitCode();
+               done();
+            });
       });
 
    grunt.registerMultiTask('static-html', 'Generate static html from modules',

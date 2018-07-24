@@ -80,8 +80,8 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
  * @param {string} fullPath полный путь до файла
  * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
  * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
- * @param {boolean} replacePath нужно ли вставлять путь к сервису в получившемся html
- * @param {string} urlServicePath относительный url текущего сервиса
+ * @param {boolean} isMultiService является ли проект мультисервисным
+ * @param {string} servicesPath путь к текущему сервису
  * @returns {Promise<string>}
  */
 async function buildHtmlTmpl(
@@ -89,8 +89,8 @@ async function buildHtmlTmpl(
    fullPath,
    relativeFilePath,
    componentsPropertiesFilePath,
-   replacePath,
-   urlServicePath
+   isMultiService,
+   servicesPath
 ) {
    return processingTmpl.buildHtmlTmpl(
       text,
@@ -98,8 +98,8 @@ async function buildHtmlTmpl(
       relativeFilePath,
       await readComponentsProperties(componentsPropertiesFilePath),
       true,
-      replacePath,
-      urlServicePath
+      isMultiService,
+      servicesPath
    );
 }
 

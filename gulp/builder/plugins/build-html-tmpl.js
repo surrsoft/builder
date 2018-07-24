@@ -38,6 +38,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             const relativeTmplPathWithModuleName = helpers.prettifyPath(
                path.join(path.basename(moduleInfo.path), relativeTmplPath)
             );
+            const servicesPath = `${config.urlServicePath}service/`;
 
             const [error, result] = await execInPool(
                pool,
@@ -47,8 +48,8 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                   file.history[0],
                   relativeTmplPathWithModuleName,
                   componentsPropertiesFilePath,
-                  !config.multiService,
-                  config.urlServicePath
+                  config.multiService,
+                  servicesPath
                ],
                file.history[0],
                moduleInfo
