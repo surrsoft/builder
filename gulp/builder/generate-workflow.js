@@ -57,12 +57,10 @@ function generateWorkflow(processArgv) {
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
       generateTaskForBuildModules(taskParameters),
-      gulp.parallel(
 
-         // завершающие задачи
-         generateTaskForRemoveFiles(taskParameters),
-         generateTaskForSaveCache(taskParameters)
-      ),
+      // завершающие задачи
+      generateTaskForRemoveFiles(taskParameters),
+      generateTaskForSaveCache(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
