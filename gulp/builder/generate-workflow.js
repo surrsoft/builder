@@ -60,12 +60,10 @@ function generateWorkflow(processArgv) {
       generateTaskForClearCache(changesStore, config),
       generateTaskForGenerateJson(changesStore, config, localizationEnable),
       generateTaskForBuildModules(changesStore, config, pool),
-      gulp.parallel(
 
-         // завершающие задачи
-         generateTaskForRemoveFiles(changesStore),
-         generateTaskForSaveChangesStore(changesStore)
-      ),
+      // завершающие задачи
+      generateTaskForRemoveFiles(changesStore),
+      generateTaskForSaveChangesStore(changesStore),
       generateTaskForFinalizeDistrib(config, localizationEnable),
       generateTaskForPackHtml(changesStore, config, pool),
       generateTaskForCustomPack(changesStore, config),
