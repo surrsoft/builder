@@ -36,6 +36,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const relativeTmplPathWithModuleName = helpers.prettifyPath(
                path.join(path.basename(moduleInfo.path), relativeTmplPath)
             );
+            const servicesPath = `${taskParameters.config.urlServicePath}service/`;
 
             const [error, result] = await execInPool(
                taskParameters.pool,
@@ -46,7 +47,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   relativeTmplPathWithModuleName,
                   componentsPropertiesFilePath,
                   !taskParameters.config.multiService,
-                  taskParameters.config.urlServicePath
+                  servicesPath
                ],
                file.history[0],
                moduleInfo
