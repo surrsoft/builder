@@ -376,7 +376,7 @@ describe('collect words', () => {
                      test: {
                         translatable: true
                      },
-                     not_translatable: {
+                     'not_translatable': {
                         translatable: false
                      }
                   }
