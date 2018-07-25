@@ -30,7 +30,7 @@ function generateTaskForPackHtml(changesStore, config, pool) {
       const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
 
       // интересны именно файлы на первом уровне вложенности в модулях
-      const input = path.join(moduleOutput, '/*.html');
+      const input = path.join(moduleOutput, '/**/*.html');
 
       return function packHtml() {
          return gulp
