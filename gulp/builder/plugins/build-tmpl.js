@@ -18,14 +18,12 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
  * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
-   const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
 
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
@@ -34,13 +32,13 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             return;
          }
          let outputMinFile = '';
-         if (config.isReleaseMode) {
+         if (taskParameters.config.isReleaseMode) {
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.tmpl$/, '.min.tmpl');
             outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
          }
          if (file.cached) {
             if (outputMinFile) {
-               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
             }
             callback(null, file);
             return;
@@ -52,14 +50,14 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
          const [error, result] = await execInPool(
-            pool,
+            taskParameters.pool,
             'buildTmpl',
             [newText, relativeFilePath, componentsPropertiesFilePath],
             relativeFilePath,
             moduleInfo
          );
          if (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка компиляции TMPL',
                error,
@@ -67,21 +65,21 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                filePath: relativeFilePath
             });
          } else {
-            changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
+            taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
             newText = result.text;
 
-            if (config.isReleaseMode) {
+            if (taskParameters.config.isReleaseMode) {
                // если tmpl не возможно минифицировать, то запишем оригинал
 
                const [errorUglify, obj] = await execInPool(
-                  pool,
+                  taskParameters.pool,
                   'uglifyJs',
                   [file.path, newText, true],
                   relativeFilePath.replace('.tmpl', '.min.tmpl'),
                   moduleInfo
                );
                if (errorUglify) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации скомпилированного TMPL',
                      errorUglify,
@@ -103,12 +101,12 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                   history: [...file.history]
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+            taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } else {
             file.contents = Buffer.from(newText);
          }
       } catch (error) {
-         changesStore.markFileAsFailed(file.history[0]);
+         taskParameters.cache.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при компиляции TMPL",
             error,

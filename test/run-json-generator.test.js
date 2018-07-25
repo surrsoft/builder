@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra'),
@@ -15,6 +15,9 @@ function clear() {
 
 // просто проверяем, что run-json-generator нормально вызывается.
 describe('run json-generator', () => {
+   before(async() => {
+      await initTest();
+   });
    it('tests', async() => {
       let testedOptions, modules, result;
 

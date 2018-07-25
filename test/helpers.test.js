@@ -1,10 +1,14 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const helpers = require('../lib/helpers');
 
 describe('helpers', () => {
+   before(async() => {
+      await initTest();
+   });
+
    it('getFirstDirInRelativePath', () => {
       helpers.getFirstDirInRelativePath('/Test1/test2/').should.equal('Test1');
       helpers.getFirstDirInRelativePath('Test1/test1').should.equal('Test1');

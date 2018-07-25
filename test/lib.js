@@ -1,6 +1,5 @@
 'use strict';
 
-
 const path = require('path'),
    fs = require('fs-extra');
 
@@ -56,7 +55,8 @@ function linkPlatform(sourceFolder) {
       fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/ws'), path.join(sourceFolder, 'WS.Core'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(sourceFolder, 'View'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'sbis3-controls/Controls'), path.join(sourceFolder, 'Controls'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'ws-data/WS.Data'), path.join(sourceFolder, 'WS.Data'), 'dir')]);
+      fs.symlink(path.join(nodeModulesPath, 'ws-data/WS.Data'), path.join(sourceFolder, 'WS.Data'), 'dir')
+   ]);
 }
 
 module.exports = {

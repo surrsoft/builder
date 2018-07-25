@@ -2,7 +2,18 @@
 'use strict';
 
 const path = require('path'),
-   fs = require('fs-extra');
+   fs = require('fs-extra'),
+   chai = require('chai'),
+   chaiAsPromised = require('chai-as-promised');
+
+// TODO: разобраться почему объявление gulp после WS не работает
+require('gulp');
+
+// логгер - глобальный, должен быть определён до инициализации WS
+require('../lib/logger').setGulpLogger();
+
+chai.use(chaiAsPromised);
+chai.should();
 
 function copyWS() {
    const nodeModulesPath = path.normalize(path.join(__dirname, '../node_modules'));
@@ -14,11 +25,6 @@ function copyWS() {
 
    fs.removeSync(fixtureWSPath);
 
-   /* fs.copySync(path.join(nodeModulesPath, 'sbis3-ws/ws'), path.join(fixtureWSPath, 'WS.Core'));
-   fs.copySync(path.join(nodeModulesPath, 'sbis3-ws/Core'), path.join(fixtureWSPath, 'Core'));
-   fs.copySync(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(fixtureWSPath, 'View'));
-   fs.copySync(path.join(nodeModulesPath, 'sbis3-controls/Controls'), path.join(fixtureWSPath, 'Controls'));
-*/
    const config = new Config();
    config.cachePath = fixtureWSPath;
    config.modules = [
@@ -33,7 +39,6 @@ function copyWS() {
    });
 }
 
-
 process.on('unhandledRejection', (reason, p) => {
    // eslint-disable-next-line no-console
    console.log(
@@ -45,25 +50,10 @@ process.on('unhandledRejection', (reason, p) => {
    );
 });
 
-
 let initialized = false;
-
 async function init() {
    if (!initialized) {
       try {
-         // TODO: разобраться почему объявление gulp после WS не работает
-         require('gulp');
-
-
-         // логгер - глобальный, должен быть определён до инициализации WS
-         require('../lib/logger').setGulpLogger();
-
-         const chai = require('chai'),
-            chaiAsPromised = require('chai-as-promised');
-
-         chai.use(chaiAsPromised);
-         chai.should();
-
          await copyWS();
          process.env['ws-core-path'] = path.join(__dirname, 'fixtureWS/platform/ws');
          require('../gulp/common/node-ws').init();

@@ -1,10 +1,13 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const transliterate = require('../lib/transliterate');
 
 describe('transliterate', () => {
+   before(async() => {
+      await initTest();
+   });
    it('lower case', () => {
       transliterate('тест').should.equal('test');
    });

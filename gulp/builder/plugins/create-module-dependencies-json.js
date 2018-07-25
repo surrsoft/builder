@@ -53,11 +53,11 @@ const parsePlugins = dep => [
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
@@ -77,7 +77,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
                return prettyPath.replace(ext, `.min${ext}`);
             };
-            const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
+            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
                if (info.hasOwnProperty('componentName')) {
@@ -106,7 +106,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                }
             });
 
-            const markupCache = changesStore.getMarkupCache(moduleInfo.name);
+            const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
                if (markupObj) {
@@ -120,7 +120,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                }
             }
 
-            const cssFiles = changesStore
+            const cssFiles = taskParameters.cache
                .getInputPathsByFolder(moduleInfo.path)
                .filter(filePath => filePath.endsWith('.less') || filePath.endsWith('.css'))
                .map(filePath => filePath.replace('.less', '.css'));
@@ -140,7 +140,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             });
             this.push(jsonFile);
 
-            changesStore.storeLocalModuleDependencies(json);
+            taskParameters.cache.storeLocalModuleDependencies(json);
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",

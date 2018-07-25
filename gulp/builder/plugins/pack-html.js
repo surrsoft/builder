@@ -15,21 +15,20 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {DepGraph} gd граф зависмостей
- * @param {BuildConfiguration} config конфигурация сборки
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
+ * @param {DepGraph} gd граф зависмостей
  * @returns {stream}
  */
-module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         if (file.extname !== '.html' || path.dirname(path.dirname(file.path)) !== config.rawConfig.output) {
+         if (file.extname !== '.html' || path.dirname(path.dirname(file.path)) !== taskParameters.config.rawConfig.output) {
             callback(null, file);
             return;
          }
 
-         const [error, text] = await execInPool(pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
+         const [error, text] = await execInPool(taskParameters.pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
          if (error) {
             logger.error({
                message: 'Ошибка при минификации html',
@@ -39,8 +38,8 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             });
          } else {
             let dom = domHelpers.domify(text);
-            const root = path.dirname(config.rawConfig.output),
-               replacePath = !config.multiService;
+            const root = path.dirname(taskParameters.config.rawConfig.output),
+               replacePath = !taskParameters.config.multiService;
 
             dom = await packHtml.packageSingleHtml(
                file.path,
@@ -48,11 +47,11 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                root,
                'WI.SBIS/packer/modules',
                gd,
-               config.urlServicePath,
-               config.version,
+               taskParameters.config.urlServicePath,
+               taskParameters.config.version,
                replacePath,
-               config.rawConfig.output,
-               config.localizations
+               taskParameters.config.rawConfig.output,
+               taskParameters.config.localizations
             );
 
             file.contents = Buffer.from(domHelpers.stringify(dom));

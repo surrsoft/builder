@@ -19,7 +19,7 @@ const through = require('through2'),
 /**
  * Возвращает путь до исходного ES файла для анализируемой зависимости.
  * @param {string} sourceRoot - корень UI-исходников
- * @param {array<string>} privateModulesCache - кэш из changesStore для приватных модулей
+ * @param {array<string>} privateModulesCache - кэш из taskParameters.cache для приватных модулей
  * @param {string} moduleName - имя анализируемой зависимости
  * @returns {string}
  */
@@ -73,12 +73,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          await pMap(
             libraries,
             async(library) => {
-               const privatePartsForChangesStore = [];
+               const privatePartsForCache = [];
                let result;
                try {
                   result = await packCurrentLibrary(
                      sourceRoot,
-                     privatePartsForChangesStore,
+                     privatePartsForCache,
                      library.contents.toString(),
                      privatePartsCache
                   );
@@ -87,8 +87,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      error
                   });
                }
-               if (privatePartsForChangesStore.length > 0) {
-                  taskParameters.cache.addDependencies(library.history[0], privatePartsForChangesStore.map(
+               if (privatePartsForCache.length > 0) {
+                  taskParameters.cache.addDependencies(library.history[0], privatePartsForCache.map(
                      dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
                   ));
                }

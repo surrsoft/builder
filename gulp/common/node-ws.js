@@ -9,7 +9,6 @@ const path = require('path'),
    requireJS = require('requirejs'),
    logger = require('../../lib/logger').logger();
 
-const dblSlashes = /\\/g;
 const resourceRoot = '/';
 
 const formatMessage = function(message) {
@@ -43,17 +42,6 @@ const wsLogger = {
    }
 };
 
-function removeLeadingSlash(filePath) {
-   let resultPath = filePath;
-   if (resultPath) {
-      const head = resultPath.charAt(0);
-      if (head === '/' || head === '\\') {
-         resultPath = resultPath.substr(1);
-      }
-   }
-   return resultPath;
-}
-
 function initWs() {
    // Используем платформу из кода проекта.
    // Это нужно для беспроблемного прохождения тестов WS и Controls, а также сборки онлайна.
@@ -61,15 +49,12 @@ function initWs() {
    // При этом API, которое предоставляет WS для Builder'а, меняется редко.
    // Считаем, что все модули платформы лежат в одной директории.
    logger.debug(`В worker передан параметр ws-core-path=${process.env['ws-core-path']}`);
-   const appRoot = path.dirname(process.env['ws-core-path']);
+   const WSFullPath = process.env['ws-core-path'];
+   const appRoot = path.dirname(WSFullPath);
+
 
    // для wsRoot слэш в начале обязателен
-   const wsRoot = `/${path.basename(process.env['ws-core-path'])}`;
-   const moduleCore = 'Core';
-   const moduleView = 'View';
-   const moduleControls = 'Controls';
-   const moduleWSData = 'WS.Data';
-
+   const wsRoot = `/${path.basename(WSFullPath)}`;
 
    global.wsConfig = {
       appRoot,
@@ -98,29 +83,22 @@ function initWs() {
 
    // eslint-disable-next-line global-require
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
-   const config = requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+   const config = requireJSConfig(appRoot, WSFullPath, appRoot, {
       waitSeconds: 20,
       nodeRequire: require
    });
    global.requirejs = requireJS.config(config);
-   global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
-      jsModules: {},
       modules: {
-         Core: moduleCore,
-         View: moduleView,
-         Controls: moduleControls,
-         'WS.Data': moduleWSData
-      },
-      requirejsPaths: {
-         Core: moduleCore,
-         View: moduleView,
-         Controls: moduleControls,
-         'WS.Data': moduleWSData
+         Core: {},
+         View: {},
+         Controls: {},
+         'WS.Data': {}
       }
    };
    loadContents(appContents, true, { service: appRoot });
+   global.requirejs('Core/core');
    global.requirejs('Lib/core');
 }
 

@@ -101,7 +101,7 @@ function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
    };
 }
 
-function generateTaskForGrabModules(changesStore, config, pool) {
+function generateTaskForGrabModules(taskParameters.cache, config, pool;) {
    const tasks = [];
    let countCompletedModules = 0;
 
@@ -113,7 +113,7 @@ function generateTaskForGrabModules(changesStore, config, pool) {
 
    for (const moduleInfo of config.modules) {
       tasks.push(
-         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool), printPercentComplete)
+         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, taskParameters.cache, pool), printPercentComplete)
       );
    }
    return gulp.parallel(tasks);

@@ -49,7 +49,7 @@ function generateTaskForCustomPack(taskParameters) {
                   }
                })
             )
-            .pipe(generatePackageJson(taskParameters.config, depsTree, results, root));
+            .pipe(generatePackageJson(taskParameters, depsTree, results, root));
       };
    });
 

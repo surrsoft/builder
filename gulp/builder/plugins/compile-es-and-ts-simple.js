@@ -13,11 +13,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
  * @returns {stream}
  */
-module.exports = function declarePlugin(moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -41,7 +41,7 @@ module.exports = function declarePlugin(moduleInfo, pool) {
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
             const [error, result] = await execInPool(
-               pool,
+               taskParameters.pool,
                'compileEsAndTs',
                [relativeFilePath, file.contents.toString()],
                file.history[0],

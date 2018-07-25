@@ -1,10 +1,13 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const runUglifyJs = require('../lib/run-uglify-js');
 
 describe('run uglify-js', () => {
+   before(async() => {
+      await initTest();
+   });
    it('empty', () => {
       const text = '';
       const result = runUglifyJs('virtual.js', text);

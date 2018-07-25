@@ -14,13 +14,12 @@ const VERSION_STUB = '.vBUILDER_VERSION_STUB';
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
 /**
- *
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {ChangesStore} changesStore кеш
+ * Объявление плагина
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {
          if (!includeExts.includes(file.extname)) {
@@ -85,7 +84,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
 
          file.contents = Buffer.from(newText);
       } catch (error) {
-         changesStore.markFileAsFailed(file.history[0]);
+         taskParameters.cache.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при версионировании",
             error,

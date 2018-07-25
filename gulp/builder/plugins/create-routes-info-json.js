@@ -16,12 +16,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {stream}
+  * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       async function onTransform(file, encoding, callback) {
          if (file.cached) {
@@ -34,14 +33,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          }
 
          const [error, routeInfo] = await execInPool(
-            pool,
+            taskParameters.pool,
             'parseRoutes',
             [file.contents.toString()],
             file.history[0],
             moduleInfo
          );
          if (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка при обработке файла роутинга',
                filePath: file.history[0],
@@ -49,7 +48,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                moduleInfo
             });
          } else {
-            changesStore.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
+            taskParameters.cache.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
          }
          callback(null, file);
       },
@@ -60,7 +59,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.
 
             // нужно преобразовать абсолютные пути в исходниках в относительные пути в стенде
-            const routesInfoBySourceFiles = changesStore.getRoutesInfo(moduleInfo.name);
+            const routesInfoBySourceFiles = taskParameters.cache.getRoutesInfo(moduleInfo.name);
             const resultRoutesInfo = {};
             Object.keys(routesInfoBySourceFiles).forEach((filePath) => {
                const routeInfo = routesInfoBySourceFiles[filePath];

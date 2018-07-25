@@ -1,11 +1,16 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test'),
+   path = require('path');
 
-const path = require('path'),
-   collectWords = require('../lib/i18n/collect-words');
+let collectWords;
 
 describe('collect words', () => {
+   before(async() => {
+      await initTest();
+      collectWords = require('../lib/i18n/collect-words');
+   });
+
    it('empty js', async() => {
       const text = '';
       const words = await collectWords('module', 'file.js', text, {});
@@ -371,7 +376,7 @@ describe('collect words', () => {
                      test: {
                         translatable: true
                      },
-                     'not_translatable': {
+                     not_translatable: {
                         translatable: false
                      }
                   }

@@ -35,7 +35,7 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
          const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
 
          const [error, collectWords] = await execInPool(
-            pool,
+            taskParameters.pool,
             'collectWords',
             [moduleInfo.path, file.path, componentsPropertiesFilePath],
             file.path,

@@ -126,8 +126,8 @@ describe('i18n', () => {
          const result = prepareXhtml(text, componentsProperties);
          result.should.equal(
             '<component data-component="Test.Component">\n' +
-            '   <option name="contentOpt">{[Текст]}</option>\n' +
-            '</component>'
+               '   <option name="contentOpt">{[Текст]}</option>\n' +
+               '</component>'
          );
       });
 

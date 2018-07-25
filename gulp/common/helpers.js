@@ -62,7 +62,7 @@ function getDirnameForModule(modules, moduleName) {
  * @returns {function(): *}
  */
 function generateTaskForLoadCache(taskParameters) {
-   return function loadChangesStore() {
+   return function loadCache() {
       return taskParameters.cache.load();
    };
 }
@@ -129,5 +129,6 @@ module.exports = {
    generateTaskForLoadCache,
    generateTaskForInitWorkerPool,
    generateTaskForTerminatePool,
-   wrapWorkerFunction
+   wrapWorkerFunction,
+   getDirnameForModule
 };

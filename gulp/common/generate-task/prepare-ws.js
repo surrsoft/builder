@@ -13,7 +13,9 @@ const path = require('path'),
    plumber = require('gulp-plumber'),
    gulpIf = require('gulp-if'),
    workerPool = require('workerpool'),
-   pluginCompileEsAndTs = require('../../builder/plugins/simple-compile-es-and-ts'),
+   helpers = require('../helpers'),
+   pluginCompileEsAndTs = require('../../builder/plugins/compile-es-and-ts-simple'),
+   TaskParameters = require('../../common/classes/task-parameters'),
    logger = require('../../../lib/logger').logger();
 
 const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Controls'];
@@ -28,15 +30,24 @@ function generateTaskForPrepareWS(taskParameters) {
 
    const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {
 
+      // TODO: ошибка где-то тут
+
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
+      maxWorkers: os.cpus().length - 1 || 1,
+      forkOpts: {
+         env: {
+            'ws-core-path': helpers.getDirnameForModule(taskParameters.config.modules, 'WS.Core') ||
+               helpers.getDirnameForModule(taskParameters.config.modules, 'ws')
+         }
+      }
    });
 
+   const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, pool);
    const seriesTask = [];
    if (modulesFromWS.length) {
       seriesTask.push(
          gulp.parallel(
-            modulesFromWS.map(moduleInfo => generateTaskForPrepareWSModule(taskParameters.config, moduleInfo, pool))
+            modulesFromWS.map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
          )
       );
    }
@@ -44,9 +55,9 @@ function generateTaskForPrepareWS(taskParameters) {
    return gulp.series(seriesTask);
 }
 
-function generateTaskForPrepareWSModule(config, moduleInfo, pool) {
+function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-   const moduleOutput = path.join(config.cachePath, 'platform', path.basename(moduleInfo.path));
+   const moduleOutput = path.join(localTaskParameters.config.cachePath, 'platform', path.basename(moduleInfo.path));
    return function buildWSModule() {
       return gulp
          .src(moduleInput, { dot: false, nodir: true })
@@ -62,7 +73,7 @@ function generateTaskForPrepareWSModule(config, moduleInfo, pool) {
                }
             })
          )
-         .pipe(pluginCompileEsAndTs(moduleInfo, pool))
+         .pipe(pluginCompileEsAndTs(localTaskParameters, moduleInfo))
          .pipe(gulpIf(needSymlink, gulp.symlink(moduleOutput), gulp.dest(moduleOutput)));
    };
 }
