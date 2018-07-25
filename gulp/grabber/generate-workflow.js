@@ -101,19 +101,22 @@ function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
    };
 }
 
-function generateTaskForGrabModules(taskParameters.cache, config, pool;) {
+function generateTaskForGrabModules(taskParameters, config) {
    const tasks = [];
    let countCompletedModules = 0;
 
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / config.modules.length);
+      logger.progress((100 * countCompletedModules) / config.modules.length);
       done();
    };
 
    for (const moduleInfo of config.modules) {
       tasks.push(
-         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, taskParameters.cache, pool), printPercentComplete)
+         gulp.series(
+            generateTaskForGrabSingleModule(config, moduleInfo, taskParameters.cache, taskParameters.pool),
+            printPercentComplete
+         )
       );
    }
    return gulp.parallel(tasks);
