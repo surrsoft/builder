@@ -10,6 +10,7 @@ const through = require('through2'),
    path = require('path'),
    domHelpers = require('../../../packer/lib/domHelpers'),
    logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
    packHtml = require('../../../packer/tasks/lib/packHTML'),
    execInPool = require('../../common/exec-in-pool');
 
@@ -22,14 +23,15 @@ const through = require('through2'),
  * @returns {*}
  */
 module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
+   const prettyOutput = helpers.prettifyPath(config.rawConfig.output);
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         if (file.extname !== '.html' || path.dirname(path.dirname(file.path)) !== config.rawConfig.output) {
+         if (file.extname !== '.html') {
             callback(null, file);
             return;
          }
 
-         const [error, text] = await execInPool(pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
+         const [error, minText] = await execInPool(pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
          if (error) {
             logger.error({
                message: 'Ошибка при минификации html',
@@ -37,8 +39,13 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                moduleInfo,
                filePath: file.path
             });
+         } else if (helpers.prettifyPath(path.dirname(path.dirname(file.path))) !== prettyOutput) {
+            // если файл лежит не в корне модуля, то это скорее всего шаблон html.
+            // используется в сервисе представлений для построения страниц на роутинге.
+            // паковка тут не нужна, а минимизация нужна.
+            file.contents = Buffer.from(minText);
          } else {
-            let dom = domHelpers.domify(text);
+            let dom = domHelpers.domify(minText);
             const root = path.dirname(config.rawConfig.output),
                replacePath = !config.multiService;
 
