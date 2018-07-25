@@ -8,4 +8,5 @@ xunit.log
 check-code-result.xml
 dest
 test/workspace
+test/fixtureWS
 coverage/

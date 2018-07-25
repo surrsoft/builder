@@ -1,10 +1,15 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
-const prepareXhtml = require('../lib/i18n/prepare-xhtml');
+let prepareXhtml;
 
 describe('i18n', () => {
+   before(async() => {
+      await initTest();
+      prepareXhtml = require('../lib/i18n/prepare-xhtml');
+   });
+
    describe('prepare XHTML', () => {
       it('empty file', () => {
          const result = prepareXhtml('', {});

@@ -16,7 +16,7 @@ const path = require('path'),
    pluginCompileEsAndTs = require('../../builder/plugins/simple-compile-es-and-ts'),
    logger = require('../../../lib/logger').logger();
 
-const wsModulesNames = ['WS.Core', 'Core', 'View', 'Controls'];
+const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Controls'];
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -26,7 +26,7 @@ const wsModulesNames = ['WS.Core', 'Core', 'View', 'Controls'];
 function generateTaskForPrepareWS(taskParameters) {
    const modulesFromWS = taskParameters.config.modules.filter(moduleInfo => wsModulesNames.includes(moduleInfo.name));
 
-   const pool = workerPool.pool(path.join(__dirname, '../common/worker-compile-es-and-ts.js'), {
+   const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       maxWorkers: os.cpus().length - 1 || 1

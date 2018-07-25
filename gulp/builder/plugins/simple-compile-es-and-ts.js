@@ -58,8 +58,8 @@ module.exports = function declarePlugin(moduleInfo, pool) {
             }
 
             const newFile = file.clone();
-            newFile.contents = Buffer.from(result);
-            newFile.path = file.path.replace(/\.(es|ts)$/, '');
+            newFile.contents = Buffer.from(result.text);
+            newFile.path = file.path.replace(/\.(es|ts)$/, '.js');
             this.push(newFile);
          } catch (error) {
             logger.error({
