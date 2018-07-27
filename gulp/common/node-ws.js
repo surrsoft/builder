@@ -91,13 +91,21 @@ function initWs() {
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
       modules: {
-         Core: {},
-         View: {},
-         Controls: {},
-         'WS.Data': {}
+         Core: {
+            path: path.join(appRoot, 'Core')
+         },
+         View: {
+            path: path.join(appRoot, 'View')
+         },
+         Controls: {
+            path: path.join(appRoot, 'Controls')
+         },
+         'WS.Data': {
+            path: path.join(appRoot, 'WS.Data')
+         }
       }
    };
-   loadContents(appContents, true, { service: appRoot });
+   loadContents(appContents, true, { resources: '/' });
    global.requirejs('Core/core');
    global.requirejs('Lib/core');
 }

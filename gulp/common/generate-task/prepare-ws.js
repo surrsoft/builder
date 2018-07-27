@@ -13,12 +13,11 @@ const path = require('path'),
    plumber = require('gulp-plumber'),
    gulpIf = require('gulp-if'),
    workerPool = require('workerpool'),
-   helpers = require('../helpers'),
    pluginCompileEsAndTs = require('../../builder/plugins/compile-es-and-ts-simple'),
    TaskParameters = require('../../common/classes/task-parameters'),
    logger = require('../../../lib/logger').logger();
 
-const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Controls'];
+const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Controls', 'WS.Data'];
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -30,16 +29,8 @@ function generateTaskForPrepareWS(taskParameters) {
 
    const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {
 
-      // TODO: ошибка где-то тут
-
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1,
-      forkOpts: {
-         env: {
-            'ws-core-path': helpers.getDirnameForModule(taskParameters.config.modules, 'WS.Core') ||
-               helpers.getDirnameForModule(taskParameters.config.modules, 'ws')
-         }
-      }
+      maxWorkers: os.cpus().length - 1 || 1
    });
 
    const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, pool);

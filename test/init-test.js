@@ -29,6 +29,7 @@ function copyWS() {
    config.cachePath = fixtureWSPath;
    config.modules = [
       new ModuleInfo('ws', '', path.join(nodeModulesPath, 'sbis3-ws/ws')),
+      new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data')),
       new ModuleInfo('Core', '', path.join(nodeModulesPath, 'sbis3-ws/Core')),
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View')),
       new ModuleInfo('Controls', '', path.join(nodeModulesPath, 'sbis3-controls/Controls'))

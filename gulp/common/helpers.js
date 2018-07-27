@@ -80,7 +80,8 @@ function generateTaskForInitWorkerPool(taskParameters) {
             maxWorkers: os.cpus().length - 1 || 1,
             forkOpts: {
                env: {
-                  'ws-core-path': getDirnameForModule(taskParameters.config.rawConfig.modules, 'WS.Core')
+                  'ws-core-path': process.env['ws-core-path'] ||
+                     path.join(taskParameters.config.cachePath, 'platform/WS.Core')
                }
             }
          })

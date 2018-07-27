@@ -43,6 +43,12 @@ module.exports = function generatePackageJson(taskParameters, depsTree, results,
          // application
          '/',
 
+         // isSplittedCore,
+         true,
+
+         // isGulp
+         true,
+
          taskParameters.config.localizations,
          taskParameters.config.defaultLocalization
       );
