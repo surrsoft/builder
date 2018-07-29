@@ -14,18 +14,18 @@ const gzipPlugin = require('../plugins/gzip'),
 
 /**
  * Генерация задачи архивации для файлов
- * @param {BuildConfiguration} config конфигурация сборки
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForGzip(config) {
-   if (!config.isReleaseMode) {
+function generateTaskForGzip(taskParameters) {
+   if (!taskParameters.config.isReleaseMode) {
       return function skipGzip(done) {
          done();
       };
    }
 
-   const tasks = config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
+   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+      const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
 
       // интересны именно файлы на первом уровне вложенности в модулях
       const input = path.join(moduleOutput, '/**/*.*');

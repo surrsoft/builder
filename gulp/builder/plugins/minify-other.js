@@ -19,11 +19,11 @@ const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -54,7 +54,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -70,7 +70,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                try {
                   newText = JSON.stringify(JSON.parse(newText));
                } catch (error) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации файла',
                      error,
@@ -87,9 +87,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                   contents: Buffer.from(newText)
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+            taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при минификации",
                error,

@@ -15,12 +15,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -34,7 +33,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -45,14 +44,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
             const [errorBuild, resultBuild] = await execInPool(
-               pool,
+               taskParameters.pool,
                'buildXhtml',
                [newText, relativeFilePath],
                relativeFilePath,
                moduleInfo
             );
             if (errorBuild) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка компиляции XHTML',
                   errorBuild,
@@ -60,15 +59,15 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   filePath: relativeFilePath
                });
             } else {
-               changesStore.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
+               taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
                newText = resultBuild.text;
 
                // если xhtml не возможно минифицировать, то запишем оригинал
 
-               const [error, obj] = await execInPool(pool, 'uglifyJs', [file.path, newText, true]);
+               const [error, obj] = await execInPool(taskParameters.pool, 'uglifyJs', [file.path, newText, true]);
                newText = obj.code;
                if (error) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации скомпилированного XHTML',
                      error,
@@ -86,9 +85,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   history: [...file.history]
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+            taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при компиляции XHTML",
                error,

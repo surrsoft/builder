@@ -5,13 +5,13 @@ const fs = require('fs-extra');
 const esprima = require('esprima');
 const { traverse } = require('estraverse');
 const pMap = require('p-map');
-const cssHelpers = require('./../../lib/cssHelpers');
+const cssHelpers = require('../../lib/css-helpers');
 
 const logger = require('../../../lib/logger').logger();
 
-const domHelpers = require('./../../lib/domHelpers');
+const domHelpers = require('../../lib/dom-helpers');
 const helpers = require('../../../lib/helpers');
-const commonPackage = require('./../../lib/commonPackage');
+const commonPackage = require('../../lib/common-package');
 
 // TODO: костыль: список статических html страниц для которых не пакуем стили контролов
 const HTMLPAGESWITHNOONLINESTYLES = [

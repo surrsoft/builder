@@ -14,12 +14,12 @@ const VERSION_STUB = /\.vBUILDER_VERSION_STUB/g;
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
 /**
- *
- * @param {BuildConfiguration} config конфигурация сборки
+ * Объявление плагина
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {
          if (!includeExts.includes(file.extname)) {
@@ -30,7 +30,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
          let version = '';
 
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
-            version = `.v${config.version}`;
+            version = `.v${taskParameters.config.version}`;
          }
          const text = file.contents.toString();
          file.contents = Buffer.from(text.replace(VERSION_STUB, version));

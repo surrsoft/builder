@@ -14,11 +14,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    // js файлы можно паковать только после сборки xhtml и tmpl файлов.
    // поэтому переместим обработку в самый конец
    const jsFiles = [];
@@ -35,8 +35,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
       /* @this Stream */
       function onFlush(callback) {
          try {
-            const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
-            const markupCache = changesStore.getMarkupCache(moduleInfo.name);
+            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
+            const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
             const nodenameToMarkup = new Map();
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
@@ -99,7 +99,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                   }
                }
                if (filesDepsForCache.size > 0) {
-                  changesStore.addDependencies(prettyFilePath, [...filesDepsForCache]);
+                  taskParameters.cache.addDependencies(prettyFilePath, [...filesDepsForCache]);
                }
                this.push(jsFile);
             }

@@ -3,8 +3,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
-   getMeta = require('./../../lib/getDependencyMeta'),
-   commonPackage = require('./../../lib/commonPackage');
+   getMeta = require('../../lib/get-dependency-meta'),
+   commonPackage = require('../../lib/common-package');
 
 /**
  * Get all js modules

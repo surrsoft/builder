@@ -18,10 +18,10 @@ const through = require('through2'),
 
 /**
  * Возвращает путь до исходного ES файла для анализируемой зависимости.
- * @param sourceRoot - корень UI-исходников
- * @param privateModulesCache - кэш из changesStore для приватных модулей
- * @param moduleName - имя анализируемой зависимости
- * @returns {String}
+ * @param {string} sourceRoot - корень UI-исходников
+ * @param {array<string>} privateModulesCache - кэш из taskParameters.cache для приватных модулей
+ * @param {string} moduleName - имя анализируемой зависимости
+ * @returns {string}
  */
 function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) {
    let result = null;
@@ -43,12 +43,11 @@ function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) 
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const libraries = [];
    return through.obj(
 
@@ -69,17 +68,17 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
       /* @this Stream */
       async function onFlush(callback) {
          const
-            privatePartsCache = changesStore.getCompiledEsModuleCache(moduleInfo.name),
+            privatePartsCache = taskParameters.cache.getCompiledEsModuleCache(moduleInfo.name),
             sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
          await pMap(
             libraries,
             async(library) => {
-               const privatePartsForChangesStore = [];
+               const privatePartsForCache = [];
                let result;
                try {
                   result = await packCurrentLibrary(
                      sourceRoot,
-                     privatePartsForChangesStore,
+                     privatePartsForCache,
                      library.contents.toString(),
                      privatePartsCache
                   );
@@ -88,8 +87,8 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
                      error
                   });
                }
-               if (privatePartsForChangesStore.length > 0) {
-                  changesStore.addDependencies(library.history[0], privatePartsForChangesStore.map(
+               if (privatePartsForCache.length > 0) {
+                  taskParameters.cache.addDependencies(library.history[0], privatePartsForCache.map(
                      dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
                   ));
                }

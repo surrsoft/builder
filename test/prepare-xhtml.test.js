@@ -1,10 +1,16 @@
+/* eslint-disable global-require */
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
-const prepareXhtml = require('../lib/i18n/prepare-xhtml');
+let prepareXhtml;
 
 describe('i18n', () => {
+   before(async() => {
+      await initTest();
+      prepareXhtml = require('../lib/i18n/prepare-xhtml');
+   });
+
    describe('prepare XHTML', () => {
       it('empty file', () => {
          const result = prepareXhtml('', {});
@@ -121,8 +127,8 @@ describe('i18n', () => {
          const result = prepareXhtml(text, componentsProperties);
          result.should.equal(
             '<component data-component="Test.Component">\n' +
-            '   <option name="contentOpt">{[Текст]}</option>\n' +
-            '</component>'
+               '   <option name="contentOpt">{[Текст]}</option>\n' +
+               '</component>'
          );
       });
 

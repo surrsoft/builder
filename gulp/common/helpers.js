@@ -4,7 +4,10 @@
  */
 'use strict';
 
-const path = require('path');
+const path = require('path'),
+   os = require('os'),
+   logger = require('../../lib/logger').logger(),
+   workerPool = require('workerpool');
 
 /**
  * Функция, которая нужна в сборке для выбора между gulp.dest и gulp.symlink
@@ -42,7 +45,7 @@ function needSymlink(config, moduleInfo) {
  * Получать директорию модуля
  * @param {Object[]} modules список модулей из оригиноального конфига
  * @param {string} moduleName имя модуля, для которого получаем директорию
- * @returns {*}
+ * @returns {string}
  */
 function getDirnameForModule(modules, moduleName) {
    for (const module of modules) {
@@ -55,29 +58,78 @@ function getDirnameForModule(modules, moduleName) {
 
 /**
  * Генерация задачи загрузки кеша сборки
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
  */
-function generateTaskForLoadChangesStore(changesStore) {
-   return function loadChangesStore() {
-      return changesStore.load();
+function generateTaskForLoadCache(taskParameters) {
+   return function loadCache() {
+      return taskParameters.cache.load();
+   };
+}
+
+/**
+ * Генерация задачи инициализации пула воркеров
+ * @param {TaskParameters} taskParameters параметры для задач
+ * @returns {function(): *}
+ */
+function generateTaskForInitWorkerPool(taskParameters) {
+   return function initWorkerPool(done) {
+      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
+      taskParameters.setWorkerPool(
+         workerPool.pool(path.join(__dirname, '../common/worker.js'), {
+            maxWorkers: os.cpus().length - 1 || 1,
+            forkOpts: {
+               env: {
+                  'ws-core-path': process.env['ws-core-path'] ||
+                     path.join(taskParameters.config.cachePath, 'platform/WS.Core')
+               }
+            }
+         })
+      );
+
+      done();
    };
 }
 
 /**
  * Генерация задачи убийства пула воркеров
- * @param {Pool} pool пул воркеров
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
  */
-function generateTaskForTerminatePool(pool) {
+function generateTaskForTerminatePool(taskParameters) {
    return function terminatePool() {
-      return pool.terminate();
+      return taskParameters.pool.terminate();
    };
 }
 
+/**
+ * Оборачивает функцию в воркере, чтобы была возможность вернуть ошибки и варнинги от WS.
+ * Работает в тандеме с gulp/helpers/exec-in-pool.js
+ * @param {Function} func функция, которую оборачиваем
+ * @returns {Function}
+ */
+function wrapWorkerFunction(func) {
+   return async(funcArgs, filePath = null, moduleInfo = null) => {
+      logger.setInfo(filePath, moduleInfo);
+      let result;
+      try {
+         result = func(...funcArgs);
+         if (result instanceof Promise) {
+            result = await result;
+         }
+      } catch (error) {
+         return [{ message: error.message, stack: error.stack }, null, logger.getMessageForReport()];
+      }
+      return [null, result, logger.getMessageForReport()];
+   };
+}
+
+
 module.exports = {
    needSymlink,
-   getDirnameForModule,
-   generateTaskForLoadChangesStore,
-   generateTaskForTerminatePool
+   generateTaskForLoadCache,
+   generateTaskForInitWorkerPool,
+   generateTaskForTerminatePool,
+   wrapWorkerFunction,
+   getDirnameForModule
 };

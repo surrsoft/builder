@@ -20,7 +20,7 @@ const helpers = require('../../../lib/helpers'),
  * Класс кеша для реализации инкрементальной сборки.
  * Использует результаты работы предыдущей сборки, чтобы не делать повторную работу.
  */
-class ChangesStore {
+class Cache {
    constructor(config) {
       this.config = config;
       this.lastStore = new StoreInfo();
@@ -74,8 +74,8 @@ class ChangesStore {
          logger.info(`Не удалось обнаружить валидный кеш от предыдущей сборки. ${finishText}`);
          return true;
       }
-      const lastRunningParameters = Object.assign({}, this.lastStore.runningParameters);
-      const currentRunningParameters = Object.assign({}, this.currentStore.runningParameters);
+      const lastRunningParameters = { ...this.lastStore.runningParameters };
+      const currentRunningParameters = { ...this.currentStore.runningParameters };
 
       // поле version всегда разное
       if (lastRunningParameters.version !== '' || currentRunningParameters.version !== '') {
@@ -87,7 +87,7 @@ class ChangesStore {
          currentRunningParameters.version = '';
       }
       try {
-         assert.deepEqual(lastRunningParameters, currentRunningParameters);
+         assert.deepStrictEqual(lastRunningParameters, currentRunningParameters);
       } catch (error) {
          logger.info(`Параметры запуска builder'а поменялись. ${finishText}`);
          return true;
@@ -552,4 +552,4 @@ class ChangesStore {
    }
 }
 
-module.exports = ChangesStore;
+module.exports = Cache;

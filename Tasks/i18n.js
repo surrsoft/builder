@@ -1,4 +1,4 @@
-/* eslint-disable no-invalid-this, no-sync */
+/* eslint-disable no-invalid-this,no-sync,promise/catch-or-return,promise/prefer-await-to-then,promise/always-return */
 'use strict';
 
 const path = require('path'),

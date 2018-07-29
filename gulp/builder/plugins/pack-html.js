@@ -8,22 +8,21 @@
 
 const through = require('through2'),
    path = require('path'),
-   domHelpers = require('../../../packer/lib/domHelpers'),
+   domHelpers = require('../../../packer/lib/dom-helpers'),
    logger = require('../../../lib/logger').logger(),
    helpers = require('../../../lib/helpers'),
-   packHtml = require('../../../packer/tasks/lib/packHTML'),
+   packHtml = require('../../../packer/tasks/lib/pack-html'),
    execInPool = require('../../common/exec-in-pool');
 
 /**
  * Объявление плагина
- * @param {DepGraph} gd граф зависмостей
- * @param {BuildConfiguration} config конфигурация сборки
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @param {DepGraph} gd граф зависмостей
+ * @returns {stream}
  */
-module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
-   const prettyOutput = helpers.prettifyPath(config.rawConfig.output);
+module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
+   const prettyOutput = helpers.prettifyPath(taskParameters.config.rawConfig.output);
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.extname !== '.html') {
@@ -31,7 +30,7 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             return;
          }
 
-         const [error, minText] = await execInPool(pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
+         const [error, minText] = await execInPool(taskParameters.pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
          if (error) {
             logger.error({
                message: 'Ошибка при минификации html',
@@ -46,8 +45,8 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
             file.contents = Buffer.from(minText);
          } else {
             let dom = domHelpers.domify(minText);
-            const root = path.dirname(config.rawConfig.output),
-               replacePath = !config.multiService;
+            const root = path.dirname(taskParameters.config.rawConfig.output),
+               replacePath = !taskParameters.config.multiService;
 
             dom = await packHtml.packageSingleHtml(
                file.path,
@@ -55,11 +54,11 @@ module.exports = function declarePlugin(gd, config, moduleInfo, pool) {
                root,
                'WI.SBIS/packer/modules',
                gd,
-               config.urlServicePath,
-               config.version,
+               taskParameters.config.urlServicePath,
+               taskParameters.config.version,
                replacePath,
-               config.rawConfig.output,
-               config.localizations
+               taskParameters.config.rawConfig.output,
+               taskParameters.config.localizations
             );
 
             file.contents = Buffer.from(domHelpers.stringify(dom));

@@ -17,18 +17,18 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {BuildConfiguration} config конфигурация сборки
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, moduleInfo) {
-   const indexer = new DictionaryIndexer(config.localizations);
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   const indexer = new DictionaryIndexer(taskParameters.config.localizations);
    return through.obj(
       function onTransform(file, encoding, callback) {
          try {
             // нам нужны только css и json локализации
             const locale = file.stem;
-            if ((file.extname !== '.json' && file.extname !== '.css') || !config.localizations.includes(locale)) {
+            if ((file.extname !== '.json' && file.extname !== '.css') || !taskParameters.config.localizations.includes(locale)) {
                callback(null, file);
                return;
             }
@@ -51,7 +51,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
       /* @this Stream */
       function onFlush(callback) {
          try {
-            for (const locale of config.localizations) {
+            for (const locale of taskParameters.config.localizations) {
                const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, locale);
                if (mergedCSSCode) {
                   const mergedCSSPath = path.join(moduleInfo.output, 'lang', locale, `${locale}.css`);

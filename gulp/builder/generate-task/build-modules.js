@@ -42,34 +42,32 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
-const { needSymlink } = require('../helpers');
+const { needSymlink } = require('../../common/helpers');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
- * @param {ChangesStore} changesStore кеш
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {Pool} pool пул воркеров
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForBuildModules(changesStore, config, pool) {
+function generateTaskForBuildModules(taskParameters) {
    const tasks = [];
    let countCompletedModules = 0;
 
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / config.modules.length);
+      logger.progress(100 * countCompletedModules / taskParameters.config.modules.length);
       done();
    };
 
    const modulesMap = new Map();
-   for (const moduleInfo of config.modules) {
+   for (const moduleInfo of taskParameters.config.modules) {
       modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
    }
 
-   for (const moduleInfo of config.modules) {
+   for (const moduleInfo of taskParameters.config.modules) {
       tasks.push(
          gulp.series(
-            generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap),
+            generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap),
             printPercentComplete
          )
       );
@@ -77,13 +75,14 @@ function generateTaskForBuildModules(changesStore, config, pool) {
    return gulp.parallel(tasks);
 }
 
-function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool, modulesMap) {
+function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
    let sbis3ControlsPath = '';
    if (modulesMap.has('SBIS3.CONTROLS')) {
       sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
    }
-   const hasLocalization = config.localizations.length > 0;
+   const { isReleaseMode } = taskParameters.config;
+   const hasLocalization = taskParameters.config.localizations.length > 0;
 
    const pathsForImportSet = new Set();
    for (const modulePath of modulesMap.values()) {
@@ -107,51 +106,51 @@ function generateTaskForBuildSingleModule(config, changesStore, moduleInfo, pool
                   }
                })
             )
-            .pipe(changedInPlace(changesStore, moduleInfo))
-            .pipe(compileEsAndTs(changesStore, moduleInfo, pool))
-            .pipe(packLibrary(config, changesStore, moduleInfo))
-            .pipe(compileJsonToJs(changesStore, moduleInfo))
-            .pipe(compileLess(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport))
-            .pipe(addComponentInfo(changesStore, moduleInfo, pool))
-            .pipe(gulpBuildHtmlTmpl(config, changesStore, moduleInfo, pool))
-            .pipe(buildStaticHtml(config, changesStore, moduleInfo, modulesMap))
+            .pipe(changedInPlace(taskParameters, moduleInfo))
+            .pipe(compileEsAndTs(taskParameters, moduleInfo))
+            .pipe(packLibrary(taskParameters, moduleInfo))
+            .pipe(compileJsonToJs(taskParameters, moduleInfo))
+            .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
+            .pipe(addComponentInfo(taskParameters, moduleInfo))
+            .pipe(gulpBuildHtmlTmpl(taskParameters, moduleInfo))
+            .pipe(buildStaticHtml(taskParameters, moduleInfo, modulesMap))
 
             // versionizeToStub зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
-            .pipe(gulpIf(!!config.version, versionizeToStub(config, changesStore, moduleInfo)))
-            .pipe(gulpIf(hasLocalization, indexDictionary(config, moduleInfo)))
-            .pipe(gulpIf(hasLocalization, localizeXhtml(config, changesStore, moduleInfo, pool)))
-            .pipe(gulpIf(hasLocalization || config.isReleaseMode, buildTmpl(config, changesStore, moduleInfo, pool)))
-            .pipe(gulpIf(config.isReleaseMode, buildXhtml(changesStore, moduleInfo, pool)))
+            .pipe(gulpIf(!!taskParameters.config.version, versionizeToStub(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization, indexDictionary(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization || isReleaseMode, buildTmpl(taskParameters, moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, buildXhtml(taskParameters, moduleInfo)))
 
             // packOwnDeps зависит от buildTmpl и buildXhtml
-            .pipe(gulpIf(config.isReleaseMode, packOwnDeps(changesStore, moduleInfo)))
-            .pipe(gulpIf(config.isReleaseMode, minifyCss(changesStore, moduleInfo, pool)))
+            .pipe(gulpIf(isReleaseMode, packOwnDeps(taskParameters, moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, minifyCss(taskParameters, moduleInfo)))
 
             // minifyJs зависит от packOwnDeps
-            .pipe(gulpIf(config.isReleaseMode, minifyJs(changesStore, moduleInfo, pool)))
-            .pipe(gulpIf(config.isReleaseMode, minifyOther(changesStore, moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, minifyJs(taskParameters, moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, minifyOther(taskParameters, moduleInfo)))
             .pipe(
                gulpRename((file) => {
                   file.dirname = transliterate(file.dirname);
                   file.basename = transliterate(file.basename);
                })
             )
-            .pipe(createRoutesInfoJson(changesStore, moduleInfo, pool))
+            .pipe(createRoutesInfoJson(taskParameters, moduleInfo))
             .pipe(createNavigationModulesJson(moduleInfo))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
-            .pipe(createContentsJson(config, moduleInfo))
+            .pipe(createContentsJson(taskParameters, moduleInfo))
 
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
             .pipe(createStaticTemplatesJson(moduleInfo))
-            .pipe(gulpIf(config.isReleaseMode, createModuleDependenciesJson(changesStore, moduleInfo)))
-            .pipe(gulpIf(config.isReleaseMode, createPreloadUrlsJson(moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, createModuleDependenciesJson(taskParameters, moduleInfo)))
+            .pipe(gulpIf(isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
             .pipe(filterUnused())
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(
-                  needSymlink(config, moduleInfo),
+                  needSymlink(taskParameters.config, moduleInfo),
                   gulp.symlink(moduleInfo.output),
                   gulp.dest(moduleInfo.output)
                )

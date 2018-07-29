@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const chai = require('chai'),
    path = require('path'),
@@ -34,6 +34,10 @@ const removeRSymbol = function(str) {
 };
 
 describe('generate static html for js', () => {
+   before(async() => {
+      await initTest();
+   });
+
    describe('module with web page', () => {
       it('empty', async() => {
          const componentInfo = {
@@ -188,9 +192,9 @@ describe('generate static html for js', () => {
             true
          ).should.be.rejectedWith(
             `Ошибка при обработке файла ${root}/Modules/Ошибки/includes.html: ` +
-            `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +
-            `Ошибка при обработке файла ${root}/Modules/Ошибки/include2.html: ` +
-            `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`
+               `Ошибка при обработке файла ${root}/Modules/Ошибки/include1.html: ` +
+               `Ошибка при обработке файла ${root}/Modules/Ошибки/include2.html: ` +
+               `ENOENT: no such file or directory, open '${root}/Modules/Ошибки/include3.html`
          );
       });
    });

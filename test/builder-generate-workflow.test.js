@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra'),
@@ -43,6 +43,10 @@ const runWorkflow = function() {
 // 2. при изменении файла
 // 3. если файл не менять
 describe('gulp/builder/generate-workflow.js', () => {
+   before(async() => {
+      await initTest();
+   });
+
    it('compile less', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
@@ -269,15 +273,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       const contentsJsonOutputPath = path.join(moduleOutputFolder, 'contents.json');
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {
+         buildMode: 'debug',
+         htmlNames: {
             'Modul/ForChange': 'ForChange_old.html',
             'Modul/ForRename_old': 'ForRename.html',
             'Modul/Stable': 'Stable.html'
          },
-         'modules': {
-            'Modul': {
-               'name': 'Модуль'
+         modules: {
+            Modul: {
+               name: 'Модуль'
             }
          }
       });
@@ -412,15 +416,15 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
-         'buildMode': 'debug',
-         'htmlNames': {
+         buildMode: 'debug',
+         htmlNames: {
             'Modul/ForChange': 'ForChange_new.html',
             'Modul/ForRename_old': 'ForRename.html',
             'Modul/Stable': 'Stable.html'
          },
-         'modules': {
-            'Modul': {
-               'name': 'Модуль'
+         modules: {
+            Modul: {
+               name: 'Модуль'
             }
          }
       });
@@ -680,28 +684,28 @@ describe('gulp/builder/generate-workflow.js', () => {
          const TsContent = await fs.readFile(TsOutputPath);
 
          removeRSymbol(EsContent.toString()).should.equal(
-            'define(\'Modul/StableES\', [\n' +
-            '    \'require\',\n' +
-            '    \'exports\',\n' +
-            '    \'Modul/Di\'\n' +
-            '], function (require, exports, Di_es_1) {\n' +
-            '    \'use strict\';\n' +
-            '    Object.defineProperty(exports, \'__esModule\', { value: true });\n' +
-            '    var Factory = { Di: Di_es_1.default };\n' +
-            '    exports.default = Factory;\n' +
-            '});'
+            "define('Modul/StableES', [\n" +
+               "    'require',\n" +
+               "    'exports',\n" +
+               "    'Modul/Di'\n" +
+               '], function (require, exports, Di_es_1) {\n' +
+               "    'use strict';\n" +
+               "    Object.defineProperty(exports, '__esModule', { value: true });\n" +
+               '    var Factory = { Di: Di_es_1.default };\n' +
+               '    exports.default = Factory;\n' +
+               '});'
          );
          removeRSymbol(TsContent.toString()).should.equal(
-            'define(\'Modul/StableTS\', [\n' +
-            '    \'require\',\n' +
-            '    \'exports\',\n' +
-            '    \'Modul/Di\'\n' +
-            '], function (require, exports, Di_es_1) {\n' +
-            '    \'use strict\';\n' +
-            '    Object.defineProperty(exports, \'__esModule\', { value: true });\n' +
-            '    var Factory = { Di: Di_es_1.default };\n' +
-            '    exports.default = Factory;\n' +
-            '});'
+            "define('Modul/StableTS', [\n" +
+               "    'require',\n" +
+               "    'exports',\n" +
+               "    'Modul/Di'\n" +
+               '], function (require, exports, Di_es_1) {\n' +
+               "    'use strict';\n" +
+               "    Object.defineProperty(exports, '__esModule', { value: true });\n" +
+               '    var Factory = { Di: Di_es_1.default };\n' +
+               '    exports.default = Factory;\n' +
+               '});'
          );
       };
 
@@ -765,7 +769,8 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          const jsonJsContent = await fs.readFile(jsonJsOutputPath);
          const jsonMinJsContent = await fs.readFile(jsonMinJsOutputPath);
-         const correctCompileJsonJs = 'define(\'Modul/currentLanguages.json\',[],' +
+         const correctCompileJsonJs =
+            "define('Modul/currentLanguages.json',[]," +
             'function(){return {' +
             '"ru-RU":"Русский (Россия)",' +
             '"uk-UA":"Українська (Україна)",' +
@@ -891,12 +896,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const correctModulesPath = path.join(fixtureFolder, 'compiledCorrectResult');
 
          await pMap(
-            [
-               'Modul.js',
-               'Modul.modulepack.js',
-               'libraryCycle.js',
-               'privateDepCycle.js'
-            ],
+            ['Modul.js', 'Modul.modulepack.js', 'libraryCycle.js', 'privateDepCycle.js'],
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
                correctModulesContent[basename] = readedFile

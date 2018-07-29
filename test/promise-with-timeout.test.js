@@ -1,12 +1,16 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const promiseTimeout = require('../lib/promise-with-timeout');
 
 describe('promise with timeout', () => {
-   let result;
+   before(async() => {
+      await initTest();
+   });
+
    it('should return timeout error if Timeout', async() => {
+      let result;
       try {
          result = await promiseTimeout.promiseWithTimeout(new Promise(resolve => setTimeout(resolve, 100)), 10);
       } catch (err) {
@@ -16,6 +20,7 @@ describe('promise with timeout', () => {
    });
 
    it('should return result if resolved successfully', async() => {
+      let result;
       const testResult = 'some value';
       try {
          result = await promiseTimeout.promiseWithTimeout(
@@ -29,6 +34,7 @@ describe('promise with timeout', () => {
    });
 
    it('should return correct exception if promise rejected with Error', async() => {
+      let result;
       const testError = new Error('some Error rejected');
       try {
          result = await promiseTimeout.promiseWithTimeout(

@@ -1,10 +1,9 @@
 /* eslint-disable id-match */
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
-const
-   path = require('path'),
+const path = require('path'),
    root = __dirname,
    application = 'fixture/custompack',
    applicationRoot = path.join(root, application),
@@ -12,18 +11,21 @@ const
    packHelpers = require('../lib/pack/helpers/custompack'),
    customPacker = require('../lib/pack/custom-packer'),
    { rebaseCSS } = require('../lib/pack/custom-packer'),
-   DependencyGraph = require('../packer/lib/dependencyGraph');
+   DependencyGraph = require('../packer/lib/dependency-graph');
 
 const removeAllNewLines = function(str) {
    return str.replace(/\n/g, '');
 };
 
 describe('custompack', () => {
-   let result;
+   before(async() => {
+      await initTest();
+   });
+
    it('should reject error if include option not exists', async() => {
+      let result;
       try {
-         const
-            moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json')),
+         const moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json')),
             currentNodes = Object.keys(moduleDeps.nodes),
             currentLinks = Object.keys(moduleDeps.links),
             depsTree = new DependencyGraph();
@@ -61,7 +63,9 @@ describe('custompack', () => {
       }
 
       (result instanceof Error).should.equal(true);
-      result.message.should.equal('Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.');
+      result.message.should.equal(
+         'Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.'
+      );
    });
    const testCssPath = path.join(applicationRoot, 'packcss/testRebaseURL.css');
    it('rebaseUrl correct path without url-service-path', async() => {
@@ -74,7 +78,9 @@ describe('custompack', () => {
          // isGulp
          true
       );
-      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}');
+      removeAllNewLines(resultCSS).should.equal(
+         '.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}'
+      );
    });
    it('rebaseUrl correct path with url-service-path', async() => {
       const urlServicePath = '/someTestPath/';
@@ -86,6 +92,8 @@ describe('custompack', () => {
          // isGulp
          true
       );
-      removeAllNewLines(resultCSS).should.equal('.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}');
+      removeAllNewLines(resultCSS).should.equal(
+         '.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}'
+      );
    });
 });

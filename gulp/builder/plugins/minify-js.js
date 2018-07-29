@@ -47,12 +47,11 @@ const excludeRegexes = [
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -79,10 +78,10 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             const outputModulepackJsFile = `${outputFileWoExt}.modulepack.js`;
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -90,14 +89,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             if (!file.modulepack) {
                // если файл не возможно минифицировать, то запишем оригинал
                let minText = file.contents.toString();
-               const [error, minified] = await execInPool(pool, 'uglifyJs', [
+               const [error, minified] = await execInPool(taskParameters.pool, 'uglifyJs', [
                   file.path,
                   minText,
                   false,
                   path.basename(outputMinJsMapFile)
                ]);
                if (error) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации файла',
                      error,
@@ -114,7 +113,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                            contents: Buffer.from(minified.map)
                         })
                      );
-                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
+                     taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                   }
                }
                this.push(
@@ -124,19 +123,19 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             } else {
                // минимизируем оригинальный JS
                // если файл не возможно минифицировать, то запишем оригинал
                let minOriginalText = file.contents.toString();
-               const [errorOriginal, minifiedOriginal] = await execInPool(pool, 'uglifyJs', [
+               const [errorOriginal, minifiedOriginal] = await execInPool(taskParameters.pool, 'uglifyJs', [
                   file.path,
                   minOriginalText,
                   false,
                   path.basename(outputMinJsMapFile)
                ]);
                if (errorOriginal) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации файла',
                      error: errorOriginal,
@@ -153,7 +152,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minOriginalText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
 
                // минимизируем JS c пакованными зависимостями
                // если файл не возможно минифицировать, то запишем оригинал
@@ -165,16 +164,16 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(file.modulepack)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
 
-               const [error, minified] = await execInPool(pool, 'uglifyJs', [
+               const [error, minified] = await execInPool(taskParameters.pool, 'uglifyJs', [
                   file.path,
                   minText,
                   false,
                   path.basename(outputMinJsMapFile)
                ]);
                if (error) {
-                  changesStore.markFileAsFailed(file.history[0]);
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
                   logger.error({
                      message: 'Ошибка минификации файла',
                      error,
@@ -191,7 +190,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                            contents: Buffer.from(minified.map)
                         })
                      );
-                     changesStore.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
+                     taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                   }
                }
                this.push(
@@ -201,10 +200,10 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                      contents: Buffer.from(minText)
                   })
                );
-               changesStore.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             }
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при минификации",
                error,

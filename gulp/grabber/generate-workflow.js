@@ -8,18 +8,24 @@
 // модули из npm
 const path = require('path'),
    gulp = require('gulp'),
-   os = require('os'),
    fs = require('fs-extra'),
-   workerPool = require('workerpool'),
    plumber = require('gulp-plumber');
 
 const guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
+   generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
    changedInPlace = require('../common/plugins/changed-in-place'),
    grabFile = require('./plugins/grab-file'),
    Configuration = require('./classes/configuration.js'),
    Cache = require('./classes/cache.js'),
-   logger = require('../../lib/logger').logger();
+   logger = require('../../lib/logger').logger(),
+
+   TaskParameters = require('../common/classes/task-parameters');
+
+const {
+   generateTaskForInitWorkerPool,
+   generateTaskForTerminatePool
+} = require('../common/helpers');
 
 /**
  * Генерирует поток выполнения сбора локализуемых фраз
@@ -31,27 +37,30 @@ function generateWorkflow(processArgv) {
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
-   const cache = new Cache(config);
-
-   const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
-
-      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
-   });
+   const taskParameters = new TaskParameters(
+      config,
+      new Cache(config),
+      true
+   );
 
    return gulp.series(
 
       //  generateTaskForLock прежде всего
-      guardSingleProcess.generateTaskForLock(config.cachePath),
-      generateTaskForLoadCache(cache),
-      generateTaskForGenerateJson(cache, config),
-      generateTaskForGrabModules(cache, config, pool),
+      guardSingleProcess.generateTaskForLock(taskParameters),
+      generateTaskForLoadCache(taskParameters),
+
+      // подготовка WS для воркера
+      generateTaskForPrepareWS(taskParameters),
+      generateTaskForInitWorkerPool(taskParameters),
+
+      generateTaskForGenerateJson(taskParameters),
+      generateTaskForGrabModules(taskParameters),
       gulp.parallel(
 
          // завершающие задачи
-         generateTaskForSaveCache(cache),
-         generateTaskForSaveOutputJson(cache, config),
-         generateTaskForTerminatePool(pool)
+         generateTaskForSaveCache(taskParameters),
+         generateTaskForSaveOutputJson(taskParameters),
+         generateTaskForTerminatePool(taskParameters)
       ),
 
       // generateTaskForUnlock после всего
@@ -59,25 +68,19 @@ function generateWorkflow(processArgv) {
    );
 }
 
-function generateTaskForTerminatePool(pool) {
-   return function terminatePool() {
-      return pool.terminate();
-   };
-}
-
-function generateTaskForSaveCache(cache) {
+function generateTaskForSaveCache(taskParameters) {
    return function saveCache() {
-      return cache.save();
+      return taskParameters.cache.save();
    };
 }
 
-function generateTaskForLoadCache(cache) {
+function generateTaskForLoadCache(taskParameters) {
    return function loadCache() {
-      return cache.load();
+      return taskParameters.cache.load();
    };
 }
 
-function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
+function generateTaskForGrabSingleModule(taskParameters, moduleInfo) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl)');
 
    return function grabModule() {
@@ -95,33 +98,36 @@ function generateTaskForGrabSingleModule(config, moduleInfo, cache, pool) {
                }
             })
          )
-         .pipe(changedInPlace(cache))
-         .pipe(grabFile(config, cache, moduleInfo, pool))
+         .pipe(changedInPlace(taskParameters))
+         .pipe(grabFile(taskParameters, moduleInfo))
          .pipe(gulp.dest(moduleInfo.path));
    };
 }
 
-function generateTaskForGrabModules(changesStore, config, pool) {
+function generateTaskForGrabModules(taskParameters) {
    const tasks = [];
    let countCompletedModules = 0;
 
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / config.modules.length);
+      logger.progress((100 * countCompletedModules) / taskParameters.config.modules.length);
       done();
    };
 
-   for (const moduleInfo of config.modules) {
+   for (const moduleInfo of taskParameters.config.modules) {
       tasks.push(
-         gulp.series(generateTaskForGrabSingleModule(config, moduleInfo, changesStore, pool), printPercentComplete)
+         gulp.series(
+            generateTaskForGrabSingleModule(taskParameters, moduleInfo),
+            printPercentComplete
+         )
       );
    }
    return gulp.parallel(tasks);
 }
 
-function generateTaskForSaveOutputJson(cache, config) {
+function generateTaskForSaveOutputJson(taskParameters) {
    return async function saveOutputJson() {
-      await fs.writeJSON(config.outputPath, cache.getCachedWords(), { spaces: 1 });
+      await fs.writeJSON(taskParameters.config.outputPath, taskParameters.cache.getCachedWords(), { spaces: 1 });
    };
 }
 

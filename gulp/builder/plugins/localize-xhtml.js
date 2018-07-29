@@ -13,13 +13,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.cached) {
@@ -30,13 +28,13 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             callback(null, file);
             return;
          }
-         const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
-         const [error, newText] = await execInPool(pool, 'prepareXHTML', [
+         const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
+         const [error, newText] = await execInPool(taskParameters.pool, 'prepareXHTML', [
             file.contents.toString(),
             componentsPropertiesFilePath
          ]);
          if (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка при локализации XHTML',
                error,
@@ -47,7 +45,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             file.contents = Buffer.from(newText);
          }
       } catch (error) {
-         changesStore.markFileAsFailed(file.history[0]);
+         taskParameters.cache.markFileAsFailed(file.history[0]);
          logger.error({
             message: "Ошибка builder'а при локализации XHTML",
             error,

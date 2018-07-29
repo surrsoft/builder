@@ -1,3 +1,4 @@
+/* eslint-disable promise/catch-or-return,promise/prefer-await-to-then,promise/always-return */
 'use strict';
 
 const path = require('path'),
