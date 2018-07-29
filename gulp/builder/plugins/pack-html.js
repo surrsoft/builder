@@ -22,7 +22,7 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
-   const prettyOutput = helpers.prettifyPath(config.rawConfig.output);
+   const prettyOutput = helpers.prettifyPath(taskParameters.config.rawConfig.output);
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
          if (file.extname !== '.html') {
