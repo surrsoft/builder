@@ -10,6 +10,7 @@ const through = require('through2'),
    path = require('path'),
    domHelpers = require('../../../packer/lib/dom-helpers'),
    logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
    packHtml = require('../../../packer/tasks/lib/pack-html'),
    execInPool = require('../../common/exec-in-pool');
 
@@ -21,14 +22,15 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
+   const prettyOutput = helpers.prettifyPath(config.rawConfig.output);
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         if (file.extname !== '.html' || path.dirname(path.dirname(file.path)) !== taskParameters.config.rawConfig.output) {
+         if (file.extname !== '.html') {
             callback(null, file);
             return;
          }
 
-         const [error, text] = await execInPool(taskParameters.pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
+         const [error, minText] = await execInPool(taskParameters.pool, 'minifyXhtmlAndHtml', [file.contents.toString()]);
          if (error) {
             logger.error({
                message: 'Ошибка при минификации html',
@@ -36,8 +38,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                moduleInfo,
                filePath: file.path
             });
+         } else if (helpers.prettifyPath(path.dirname(path.dirname(file.path))) !== prettyOutput) {
+            // если файл лежит не в корне модуля, то это скорее всего шаблон html.
+            // используется в сервисе представлений для построения страниц на роутинге.
+            // паковка тут не нужна, а минимизация нужна.
+            file.contents = Buffer.from(minText);
          } else {
-            let dom = domHelpers.domify(text);
+            let dom = domHelpers.domify(minText);
             const root = path.dirname(taskParameters.config.rawConfig.output),
                replacePath = !taskParameters.config.multiService;
 
