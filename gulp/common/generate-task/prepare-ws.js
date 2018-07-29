@@ -33,7 +33,7 @@ function generateTaskForPrepareWS(taskParameters) {
       maxWorkers: os.cpus().length - 1 || 1
    });
 
-   const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, pool);
+   const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false, pool);
    const seriesTask = [];
    if (modulesFromWS.length) {
       seriesTask.push(

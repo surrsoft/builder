@@ -17,7 +17,7 @@ const runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
  * @return {function} функция-задача для gulp
  */
 function generateTaskForGenerateJson(taskParameters) {
-   if (!taskParameters.config.localizations.length) {
+   if (!taskParameters.needGenerateJson) {
       return function generateJson(done) {
          done();
       };

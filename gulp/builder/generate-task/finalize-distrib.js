@@ -25,7 +25,7 @@ function generateTaskForFinalizeDistrib(taskParameters) {
       };
    }
 
-   const tasks = [generateTaskForCopyResources(taskParameters.config)];
+   const tasks = [generateTaskForCopyResources(taskParameters)];
    if (taskParameters.config.localizations.length > 0) {
       tasks.push(generateTaskForNormalizeKey(taskParameters.config));
    }
@@ -33,10 +33,10 @@ function generateTaskForFinalizeDistrib(taskParameters) {
    return gulp.series(tasks);
 }
 
-function generateTaskForCopyResources(config) {
-   const tasks = config.modules.map((moduleInfo) => {
+function generateTaskForCopyResources(taskParameters) {
+   const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
-      const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
+      const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
          return gulp
             .src(input, { dot: false, nodir: true })
@@ -52,7 +52,7 @@ function generateTaskForCopyResources(config) {
                   }
                })
             )
-            .pipe(gulpIf(!!config.version, versionizeFinish(config, moduleInfo)))
+            .pipe(gulpIf(!!taskParameters.config.version, versionizeFinish(taskParameters, moduleInfo)))
             .pipe(gulp.dest(moduleOutput));
       };
    });
