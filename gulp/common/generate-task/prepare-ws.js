@@ -51,9 +51,10 @@ function generateTaskForPrepareWS(taskParameters) {
 }
 
 function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
-   const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-   const moduleOutput = path.join(localTaskParameters.config.cachePath, 'platform', path.basename(moduleInfo.path));
    return function buildWSModule() {
+      const moduleInput = path.join(moduleInfo.path, '/**/*.*');
+      const moduleOutput = path.join(localTaskParameters.config.cachePath, 'platform', path.basename(moduleInfo.path));
+      logger.debug(`Задача buildWSModule. moduleInput: "${moduleInput}", moduleOutput: "${moduleOutput}"`);
       return gulp
          .src(moduleInput, { dot: false, nodir: true })
          .pipe(
