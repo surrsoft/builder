@@ -50,7 +50,7 @@ function generateWorkflow(processArgv) {
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
       generateTaskForLoadCache(taskParameters),
-      generateTaskForCollectThemes(changesStore, config),
+      generateTaskForCollectThemes(taskParameters, config),
 
       // в generateTaskForClearCache нужен загруженный кеш
       generateTaskForClearCache(taskParameters),
@@ -62,7 +62,7 @@ function generateWorkflow(processArgv) {
       generateTaskForBuildModules(taskParameters),
 
          // завершающие задачи
-         //generateTaskForRemoveFiles(taskParameters),
+         generateTaskForRemoveFiles(taskParameters),
          generateTaskForSaveCache(taskParameters
       ),
       generateTaskForFinalizeDistrib(taskParameters),

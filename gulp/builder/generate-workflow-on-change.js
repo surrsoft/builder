@@ -56,7 +56,7 @@ function generateBuildWorkflowOnChange(processArgv) {
       generateTaskForCheckVersion(taskParameters),
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
-      generateTaskForCollectThemes(changesStore, config),
+      generateTaskForCollectThemes(taskParameters, config),
       generateTaskForBuildFile(taskParameters, filePath),
       generateTaskForTerminatePool(taskParameters)
    );

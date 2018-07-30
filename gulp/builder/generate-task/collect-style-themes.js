@@ -18,11 +18,11 @@ const logger = require('../../../lib/logger').logger();
 
 /**
  * Генерация задачи поиска тем
- * @param {ChangesStore} changesStore кеш сборки статики
+ * @param {taskParameters} taskParameters кеш сборки статики
  * @param {BuildConfiguration} config конфигурация сборки
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForCollectThemes(changesStore, config) {
+function generateTaskForCollectThemes(taskParameters, config) {
    const tasks = config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.path, '/themes/*/*.less');
 
@@ -45,7 +45,7 @@ function generateTaskForCollectThemes(changesStore, config) {
                const fileName = path.basename(file.path, '.less');
                const folderName = path.basename(path.dirname(file.path));
                if (fileName === folderName) {
-                  changesStore.addStyleTheme(folderName, path.dirname(file.path));
+                  taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path));
                }
                done();
             }));
@@ -55,7 +55,7 @@ function generateTaskForCollectThemes(changesStore, config) {
    return gulp.series(
       gulp.parallel(tasks),
       (done) => {
-         changesStore.checkThemesForUpdate();
+         taskParameters.cache.checkThemesForUpdate();
          done();
       }
    );

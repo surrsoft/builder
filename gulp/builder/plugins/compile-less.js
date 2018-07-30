@@ -34,7 +34,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
 
             const allThemes = {};
             const allOutputPath = {};
-            changesStore.currentStore.styleThemes.forEach((value, key) => {
+            taskParameters.cache.currentStore.styleThemes.forEach((value, key) => {
                allThemes[key] = value;
 
                const relativePath = path.relative(moduleInfo.path, file.history[0])
@@ -91,15 +91,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            results.forEach((result) => {if (result.ignoreMessage) {
-               logger.debug(result.ignoreMessage);
-            } else {
-               taskParameters.cache.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
-               taskParameters.cache.addDependencies(file.history[0], result.imports);
-               const newFile = file.clone();
-                     newFile.path= allOutputPath[result.nameTheme];
-                     newFile.contents= Buffer.from(result.text);
-                     this.push(newFile);
+            results.forEach((result) => {
+               if (result.ignoreMessage) {
+                  logger.debug(result.ignoreMessage);
+               } else {
+                  taskParameters.cache.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
+                  taskParameters.cache.addDependencies(file.history[0], result.imports);
+                  const newFile = file.clone();
+                  newFile.path = allOutputPath[result.nameTheme];
+                  newFile.contents = Buffer.from(result.text);
+                  this.push(newFile);
                }
             });
          } catch (error) {
