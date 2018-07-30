@@ -41,9 +41,9 @@ class StoreInfo {
       // и подавать их при повторном запуске как изменённые
       this.filesWithErrors = new Set();
 
-      // Темы для компиляции less. <Имя темы>: <путь до файла _theme.less>
+      // Темы для компиляции less. <Имя темы>: <путь до папки где лежит <Имя темы>.less>
       this.styleThemes = new Map();
-   }
+}
 
    static getLastRunningParametersPath(filePath) {
       return path.join(path.dirname(filePath), 'last_build_gulp_config.json');

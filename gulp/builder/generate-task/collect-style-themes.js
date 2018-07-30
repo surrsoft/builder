@@ -41,13 +41,13 @@ function generateTaskForCollectThemes(changesStore, config) {
                   }
                })
             )
-            .pipe(mapStream((file, cb) => {
+            .pipe(mapStream((file, done) => {
                const fileName = path.basename(file.path, '.less');
                const folderName = path.basename(path.dirname(file.path));
                if (fileName === folderName) {
-                  changesStore.addStyleTheme(fileName, file.path);
+                  changesStore.addStyleTheme(folderName, path.dirname(file.path));
                }
-               cb();
+               done();
             }));
       };
    });

@@ -68,9 +68,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForChange.css',
-         'ForRename_old.css',
-         'Stable.css',
+         'ForChange_online.css',
+         'ForRename_old_online.css',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -94,9 +94,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForChange.css',
-         'ForRename_new.css',
-         'Stable.css',
+         'ForChange_online.css',
+         'ForRename_new_online.css',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -507,6 +507,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          mode: 'debug',
          modules: [
             {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
             }
@@ -526,7 +530,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'TestLess.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
@@ -557,6 +561,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          'default-localization': 'ru-RU',
          modules: [
             {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
             }
@@ -568,7 +576,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // запустим таску
          await runWorkflow();
 
-         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US_online.css')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.js')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'lang/ru-RU/ru-RU.js')).should.equal(true);
 

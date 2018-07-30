@@ -33,11 +33,21 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                return;
             }
 
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, '.css');
-            const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+            const allThemes = {};
+            const allOutputPath = {};
+            changesStore.currentStore.styleThemes.forEach((value, key) => {
+               allThemes[key] = value;
+
+               const relativePath = path.relative(moduleInfo.path, file.history[0])
+                  .replace(/\.less$/, `_${key}.css`);
+               const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+               allOutputPath[key] = outputPath;
+            });
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+               Object.keys(allOutputPath).forEach((key) => {
+                  changesStore.addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
+               });
                callback(null, file);
                return;
             }
@@ -57,10 +67,17 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                return;
             }
 
-            const [error, result] = await execInPool(
+            const [error, results] = await execInPool(
                pool,
                'buildLess',
-               [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, pathsForImport],
+               [
+                  file.history[0],
+                  file.contents.toString(),
+                  moduleInfo.path,
+                  sbis3ControlsPath,
+                  pathsForImport,
+                  allThemes
+               ],
                file.history[0],
                moduleInfo
             );
@@ -75,20 +92,18 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                return;
             }
 
-            if (result.ignoreMessage) {
-               logger.debug(result.ignoreMessage);
-            } else {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
-               changesStore.addDependencies(file.history[0], result.imports);
-               this.push(
-                  new Vinyl({
-                     base: moduleInfo.output,
-                     path: outputPath,
-                     contents: Buffer.from(result.text),
-                     history: [...file.history]
-                  })
-               );
-            }
+            results.forEach((result) => {
+               if (result.ignoreMessage) {
+                  logger.debug(result.ignoreMessage);
+               } else {
+                  changesStore.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
+                  changesStore.addDependencies(file.history[0], result.imports);
+                  const newFile = file.clone();
+                  newFile.path = allOutputPath[result.nameTheme];
+                  newFile.contents = Buffer.from(result.text);
+                  this.push(newFile);
+               }
+            });
          } catch (error) {
             changesStore.markFileAsFailed(file.history[0]);
             logger.error({

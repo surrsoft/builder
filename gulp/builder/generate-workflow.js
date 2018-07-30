@@ -65,7 +65,7 @@ function generateWorkflow(processArgv) {
       gulp.parallel(
 
          // завершающие задачи
-         generateTaskForRemoveFiles(changesStore),
+         //generateTaskForRemoveFiles(changesStore),
          generateTaskForSaveChangesStore(changesStore)
       ),
       generateTaskForFinalizeDistrib(config, localizationEnable),
