@@ -33,8 +33,14 @@ const prepareTest = async function(fixtureFolder) {
 };
 
 const runWorkflow = function() {
-   return new Promise((resolve) => {
-      generateWorkflow([`--config="${configPath}"`])(resolve);
+   return new Promise((resolve, reject) => {
+      generateWorkflow([`--config="${configPath}"`])((error) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve();
+         }
+      });
    });
 };
 

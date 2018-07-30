@@ -8,8 +8,11 @@
 
 const through = require('through2'),
    path = require('path'),
+   fs = require('fs-extra'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../common/exec-in-pool');
+
+const esExt = /\.(es|ts)$/;
 
 /**
  * Объявление плагина
@@ -39,6 +42,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
+
+            const jsInSources = file.history[0].replace(esExt, '.js');
+            if (await fs.pathExists(jsInSources)) {
+               const message =
+                  `Существующий JS-файл мешает записи результата компиляции '${file.path}'.`;
+
+               // выводим в режиме debug, т.к. это подготовительный этап сборки и никому не интересно особо
+               logger.debug({
+                  message,
+                  filePath: jsInSources,
+                  moduleInfo
+               });
+               callback(null, file);
+               return;
+            }
 
             const [error, result] = await execInPool(
                taskParameters.pool,
