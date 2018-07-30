@@ -36,11 +36,12 @@ module.exports = function gruntMain(grunt) {
       const target = path.resolve(root);
       const application = path.join('/', app, '/').replace(dblSlashes, '/');
       const logger = require('./lib/logger').setGruntLogger(grunt);
-      logger.error('Обнаружено использование Grunt. ' +
-         'Чтобы перейти на Gulp, нужно удалить в проекте слой "Приложения" (s3app). ' +
-         'Для облачных решений это означает переход на Сервис Представлений. ' +
-         'Для desktop решений это просто отказ от ненужной сущности.');
-
+      for (let i = 0; i < 50; i++) {
+         logger.warning('Обнаружено использование Grunt. ' +
+            'Чтобы перейти на Gulp, нужно удалить в проекте слой "Приложения" (s3app). ' +
+            'Для облачных решений это означает переход на Сервис Представлений. ' +
+            'Для desktop решений это просто отказ от ненужной сущности.');
+      }
       const configBuilder = require('./lib/config-builder.js');
 
       process.env.ROOT = target;
