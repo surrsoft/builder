@@ -45,7 +45,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
 
             if (file.cached) {
                Object.keys(allOutputPath).forEach((key) => {
-                  taskParameters.cache..addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
+                  taskParameters.cache.addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
                });
                callback(null, file);
                return;
