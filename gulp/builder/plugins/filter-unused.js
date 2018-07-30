@@ -10,7 +10,7 @@ const logger = require('../../../lib/logger').logger(),
 
 /**
  * Объявление плагина
- * @returns {*}
+ * @returns {stream}
  */
 module.exports = function declarePlugin() {
    return through.obj(function onTransform(file, encoding, callback) {

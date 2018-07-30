@@ -15,14 +15,12 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) {
-   const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
 
    return through.obj(
 
@@ -38,23 +36,24 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
             const relativeTmplPathWithModuleName = helpers.prettifyPath(
                path.join(path.basename(moduleInfo.path), relativeTmplPath)
             );
+            const servicesPath = `${taskParameters.config.urlServicePath}service/`;
 
             const [error, result] = await execInPool(
-               pool,
+               taskParameters.pool,
                'buildHtmlTmpl',
                [
                   file.contents.toString(),
                   file.history[0],
                   relativeTmplPathWithModuleName,
                   componentsPropertiesFilePath,
-                  !config.multiService,
-                  config.urlServicePath
+                  !taskParameters.config.multiService,
+                  servicesPath
                ],
                file.history[0],
                moduleInfo
             );
             if (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка при обработке html-tmpl шаблона',
                   error,
@@ -63,7 +62,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, pool) 
                });
             } else {
                const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                this.push(
                   new Vinyl({
                      base: moduleInfo.output,

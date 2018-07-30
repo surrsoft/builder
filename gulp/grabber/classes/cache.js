@@ -47,7 +47,7 @@ class Cache {
          return true;
       }
       try {
-         assert.deepEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
+         assert.deepStrictEqual(this.lastStore.runningParameters, this.currentStore.runningParameters);
       } catch (error) {
          logger.info(`Параметры запуска builder'а поменялись. ${finishText}`);
          return true;

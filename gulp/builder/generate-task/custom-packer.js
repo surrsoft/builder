@@ -8,32 +8,30 @@ const gulp = require('gulp'),
    path = require('path'),
    generatePackageJson = require('../plugins/custom-packer'),
    logger = require('../../../lib/logger').logger(),
-   DependencyGraph = require('../../../packer/lib/dependencyGraph'),
+   DependencyGraph = require('../../../packer/lib/dependency-graph'),
    plumber = require('gulp-plumber'),
    { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
 /**
  * Генерация задачи кастомной паковки.
- * @param {ChangesStore} changesStore кеш
- * @param {BuildConfiguration} config конфигурация сборки
+ * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForCustomPack(changesStore, config) {
-   const root = config.rawConfig.output,
-      splittedCore = true,
+function generateTaskForCustomPack(taskParameters) {
+   const root = taskParameters.config.rawConfig.output,
       depsTree = new DependencyGraph(),
       results = {
          bundles: {},
          bundlesRoute: {}
       };
 
-   if (!config.isReleaseMode) {
+   if (!taskParameters.config.isReleaseMode) {
       return function skipCustomPack(done) {
          done();
       };
    }
 
-   const generatePackagesTasks = config.modules.map((moduleInfo) => {
+   const generatePackagesTasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(root, path.basename(moduleInfo.output));
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function custompack() {
@@ -51,27 +49,27 @@ function generateTaskForCustomPack(changesStore, config) {
                   }
                })
             )
-            .pipe(generatePackageJson(config, depsTree, results, root));
+            .pipe(generatePackageJson(taskParameters, depsTree, results, root));
       };
    });
 
    return gulp.series(
-      generateDepsGraphTask(depsTree, changesStore),
+      generateDepsGraphTask(depsTree, taskParameters.cache),
       gulp.parallel(generatePackagesTasks),
-      generateSaveResultsTask(config, results, root, splittedCore)
+      generateSaveResultsTask(taskParameters.config, results, root)
    );
 }
 
-function generateSaveResultsTask(config, results, applicationRoot, splittedCore) {
+function generateSaveResultsTask(config, results, applicationRoot) {
    return function saveCustomPackerResults() {
       results.bundlesJson = results.bundles;
-      return saveCustomPackResults(results, applicationRoot, splittedCore, true);
+      return saveCustomPackResults(results, applicationRoot, true, true);
    };
 }
 
-function generateDepsGraphTask(depsTree, changesStore) {
+function generateDepsGraphTask(depsTree, cache) {
    return function generateDepsGraph(done) {
-      const moduleDeps = changesStore.getModuleDependencies(),
+      const moduleDeps = cache.getModuleDependencies(),
          currentNodes = Object.keys(moduleDeps.nodes),
          currentLinks = Object.keys(moduleDeps.links);
 

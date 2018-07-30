@@ -9,7 +9,6 @@ const path = require('path'),
    requireJS = require('requirejs'),
    logger = require('../../lib/logger').logger();
 
-const dblSlashes = /\\/g;
 const resourceRoot = '/';
 
 const formatMessage = function(message) {
@@ -43,45 +42,19 @@ const wsLogger = {
    }
 };
 
-function removeLeadingSlash(filePath) {
-   let resultPath = filePath;
-   if (resultPath) {
-      const head = resultPath.charAt(0);
-      if (head === '/' || head === '\\') {
-         resultPath = resultPath.substr(1);
-      }
-   }
-   return resultPath;
-}
-
 function initWs() {
-   let appRoot, wsRoot, moduleView, moduleControls, moduleWSData;
+   // Используем платформу из кода проекта.
+   // Это нужно для беспроблемного прохождения тестов WS и Controls, а также сборки онлайна.
+   // Часто код WS должен быть одинаковым на стенде и в билдере, иначе стенд разваливается.
+   // При этом API, которое предоставляет WS для Builder'а, меняется редко.
+   // Считаем, что все модули платформы лежат в одной директории.
+   logger.debug(`В worker передан параметр ws-core-path=${process.env['ws-core-path']}`);
+   const WSFullPath = process.env['ws-core-path'];
+   const appRoot = path.dirname(WSFullPath);
 
-   if (process.env && process.env.hasOwnProperty('ws-core-path') && process.env['ws-core-path']) {
-      // Если в проекте есть модуль WS.Core, то используем платформу из кода проекта.
-      // Это нужно для беспроблемного прохождения тестов WS и Controls, а также сборки онлайна.
-      // Часто код WS должен быть одинаковым на стенде и в билдере, иначе стенд разваливается.
-      // При этом API, которое предоставляет WS для Builder'а, меняется редко.
-      // Считаем, что все модули платформы лежат в одной директории.
-      logger.debug(`В worker передан параметр ws-core-path=${process.env['ws-core-path']}`);
-      appRoot = path.dirname(process.env['ws-core-path']);
 
-      // для wsRoot слэш в начале обязателен
-      wsRoot = '/WS.Core';
-      moduleView = 'View';
-      moduleControls = 'Controls';
-      moduleWSData = 'WS.Data';
-   } else {
-      // Есть в проекте нет своего модуля WS.Core, то это юнит тесты в debug режиме
-      logger.debug('В worker не передан параметр ws-core-path, поэтому ws будет взят из node_modules');
-      appRoot = path.join(__dirname, '../../node_modules').replace(dblSlashes, '/');
-
-      // для wsRoot слэш в начале обязателен
-      wsRoot = '/sbis3-ws/ws/';
-      moduleView = 'sbis3-ws/View';
-      moduleControls = 'sbis3-controls/Controls';
-      moduleWSData = 'ws-data/WS.Data';
-   }
+   // для wsRoot слэш в начале обязателен
+   const wsRoot = `/${path.basename(WSFullPath)}`;
 
    global.wsConfig = {
       appRoot,
@@ -110,28 +83,31 @@ function initWs() {
 
    // eslint-disable-next-line global-require
    const requireJSConfig = require(path.join(appRoot, wsRoot, 'ext/requirejs/config.js'));
-   const config = requireJSConfig(appRoot, removeLeadingSlash(wsRoot), removeLeadingSlash(resourceRoot), {
+   const config = requireJSConfig(appRoot, WSFullPath, appRoot, {
       waitSeconds: 20,
       nodeRequire: require
    });
    global.requirejs = requireJS.config(config);
-   global.requirejs('Lib/core');
-   global.requirejs('Core/core');
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
-      jsModules: {},
       modules: {
-         View: moduleView,
-         Controls: moduleControls,
-         'WS.Data': moduleWSData
-      },
-      requirejsPaths: {
-         View: moduleView,
-         Controls: moduleControls,
-         'WS.Data': moduleWSData
+         Core: {
+            path: path.join(appRoot, 'Core')
+         },
+         View: {
+            path: path.join(appRoot, 'View')
+         },
+         Controls: {
+            path: path.join(appRoot, 'Controls')
+         },
+         'WS.Data': {
+            path: path.join(appRoot, 'WS.Data')
+         }
       }
    };
-   loadContents(appContents, true, { service: appRoot });
+   loadContents(appContents, true, { resources: '/' });
+   global.requirejs('Core/core');
+   global.requirejs('Lib/core');
 }
 
 let initialized = false;

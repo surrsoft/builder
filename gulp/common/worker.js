@@ -21,7 +21,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 // логгер - прежде всего
-const logger = require('../../lib/logger').setWorkerLogger();
+require('../../lib/logger').setWorkerLogger();
 
 // ws должен быть вызван раньше чем первый global.requirejs
 const nodeWS = require('./node-ws');
@@ -39,7 +39,8 @@ const fs = require('fs-extra'),
    runMinifyCss = require('../../lib/run-minify-css'),
    runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
    uglifyJs = require('../../lib/run-uglify-js'),
-   collectWordsPrimitive = require('../../lib/i18n/collect-words');
+   collectWordsPrimitive = require('../../lib/i18n/collect-words'),
+   { wrapWorkerFunction } = require('./helpers');
 
 let componentsProperties;
 
@@ -80,8 +81,8 @@ async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
  * @param {string} fullPath полный путь до файла
  * @param {string} relativeFilePath относительный путь до файла (начинается с имени модуля)
  * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
- * @param {boolean} replacePath нужно ли вставлять путь к сервису в получившемся html
- * @param {string} urlServicePath относительный url текущего сервиса
+ * @param {boolean} isMultiService является ли проект мультисервисным
+ * @param {string} servicesPath путь к текущему сервису
  * @returns {Promise<string>}
  */
 async function buildHtmlTmpl(
@@ -89,8 +90,8 @@ async function buildHtmlTmpl(
    fullPath,
    relativeFilePath,
    componentsPropertiesFilePath,
-   replacePath,
-   urlServicePath
+   isMultiService,
+   servicesPath
 ) {
    return processingTmpl.buildHtmlTmpl(
       text,
@@ -98,8 +99,8 @@ async function buildHtmlTmpl(
       relativeFilePath,
       await readComponentsProperties(componentsPropertiesFilePath),
       true,
-      replacePath,
-      urlServicePath
+      isMultiService,
+      servicesPath
    );
 }
 
@@ -139,38 +140,17 @@ async function collectWords(modulePath, filePath, componentsPropertiesFilePath) 
    return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
 }
 
-/**
- * Оборачивает функцию, чтобы была возможность вернуть ошибки и варнинги от WS.
- * Работает в тандеме с gulp/helpers/exec-in-pool.js
- * @param {Function} func функция, которую оборачиваем
- * @returns {Function}
- */
-function wrapFunction(func) {
-   return async(funcArgs, filePath = null, moduleInfo = null) => {
-      logger.setInfo(filePath, moduleInfo);
-      let result;
-      try {
-         result = func(...funcArgs);
-         if (result instanceof Promise) {
-            result = await result;
-         }
-      } catch (error) {
-         return [{ message: error.message, stack: error.stack }, null, logger.getMessageForReport()];
-      }
-      return [null, result, logger.getMessageForReport()];
-   };
-}
 workerPool.worker({
-   parseJsComponent: wrapFunction(parseJsComponent),
-   parseRoutes: wrapFunction(processingRoutes.parseRoutes),
-   buildLess: wrapFunction(buildLess),
-   compileEsAndTs: wrapFunction(compileEsAndTs),
-   buildTmpl: wrapFunction(buildTmpl),
-   buildHtmlTmpl: wrapFunction(buildHtmlTmpl),
-   prepareXHTML: wrapFunction(prepareXHTML),
-   buildXhtml: wrapFunction(buildXhtml),
-   minifyCss: wrapFunction(runMinifyCss),
-   minifyXhtmlAndHtml: wrapFunction(runMinifyXhtmlAndHtml),
-   uglifyJs: wrapFunction(uglifyJs),
-   collectWords: wrapFunction(collectWords)
+   parseJsComponent: wrapWorkerFunction(parseJsComponent),
+   parseRoutes: wrapWorkerFunction(processingRoutes.parseRoutes),
+   buildLess: wrapWorkerFunction(buildLess),
+   compileEsAndTs: wrapWorkerFunction(compileEsAndTs),
+   buildTmpl: wrapWorkerFunction(buildTmpl),
+   buildHtmlTmpl: wrapWorkerFunction(buildHtmlTmpl),
+   prepareXHTML: wrapWorkerFunction(prepareXHTML),
+   buildXhtml: wrapWorkerFunction(buildXhtml),
+   minifyCss: wrapWorkerFunction(runMinifyCss),
+   minifyXhtmlAndHtml: wrapWorkerFunction(runMinifyXhtmlAndHtml),
+   uglifyJs: wrapWorkerFunction(uglifyJs),
+   collectWords: wrapWorkerFunction(collectWords)
 });

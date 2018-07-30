@@ -19,12 +19,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -45,8 +44,8 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             const outputMinPath = outputPath.replace(/\.js$/, '.min.js');
 
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
-               changesStore.addOutputFile(file.history[0], outputMinPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinPath, moduleInfo);
                callback(null, file);
                return;
             }
@@ -79,7 +78,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
             try {
                result = compileJsonToJs(relativeFilePath, file.contents.toString());
             } catch (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка создания AMD-модуля для json-файла',
                   error,
@@ -90,14 +89,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo) {
                return;
             }
 
-            changesStore.addOutputFile(file.history[0], outputPath, moduleInfo);
+            taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
             const newFile = file.clone();
             newFile.contents = Buffer.from(result);
             newFile.path = outputPath;
             newFile.base = moduleInfo.output;
             this.push(newFile);
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при компиляции json в JS",
                error,

@@ -3,7 +3,7 @@
 'use strict';
 
 const logger = require('../../lib/logger').logger(),
-   modDeps = require('../../packer/lib/moduleDependencies'),
+   modDeps = require('../../packer/lib/module-dependencies'),
    path = require('path'),
    fs = require('fs-extra'),
    customPacker = require('../../lib/pack/custom-packer');

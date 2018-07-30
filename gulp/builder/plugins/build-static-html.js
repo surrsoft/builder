@@ -18,13 +18,12 @@ const transliterate = require('../../../lib/transliterate'),
 
 /**
  * Объявление плагина
- * @param {BuildConfiguration} config конфигурация сборки
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @param {Map} modulesMap имя папки модуля: полный путь до модуля
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, changesStore, moduleInfo, modulesMap) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
@@ -32,11 +31,11 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, module
       async function onFlush(callback) {
          try {
             const configForReplaceInHTML = {
-               urlServicePath: config.urlServicePath,
+               urlServicePath: taskParameters.config.urlServicePath,
                wsPath: 'resources/WS.Core/'
             };
-            const needReplacePath = !config.multiService;
-            const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
+            const needReplacePath = !taskParameters.config.multiService;
+            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             const results = await pMap(
                Object.keys(componentsInfo),
                async(filePath) => {
@@ -78,7 +77,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo, module
                      }
                   }
                   const outputPath = path.join(moduleInfo.output, result.outFileName);
-                  changesStore.addOutputFile(result.source, outputPath, moduleInfo);
+                  taskParameters.cache.addOutputFile(result.source, outputPath, moduleInfo);
                   this.push(
                      new Vinyl({
                         base: moduleInfo.output,

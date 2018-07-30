@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra');
@@ -16,10 +16,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
-const {
-   isSymlink, isRegularFile
-} = require('./lib');
-
+const { isSymlink, isRegularFile } = require('./lib');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -44,6 +41,10 @@ const runWorkflowBuildOnChange = function(filePath) {
 };
 
 describe('gulp/builder/generate-workflow-on-change.js', () => {
+   before(async() => {
+      await initTest();
+   });
+
    it('compile less', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/less');
       await prepareTest(fixtureFolder);
@@ -80,10 +81,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
-      await fs.rename(
-         path.join(moduleSourceFolder, 'ForRename_old.less'),
-         forRenameNewFilePath
-      );
+      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), forRenameNewFilePath);
 
       await runWorkflowBuildOnChange(forRenameNewFilePath);
 
@@ -154,10 +152,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
 
       // проверим как работает build-on-change при переименовывании файла
       const newFilePath = path.join(moduleSourceFolder, 'Test_new.js');
-      await fs.rename(
-         path.join(moduleSourceFolder, 'Test.js'),
-         newFilePath
-      );
+      await fs.rename(path.join(moduleSourceFolder, 'Test.js'), newFilePath);
 
       await runWorkflowBuildOnChange(newFilePath);
 

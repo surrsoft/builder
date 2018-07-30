@@ -1,8 +1,6 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const chai = require('chai'),
    path = require('path'),
@@ -36,6 +34,10 @@ const prepareTest = async function() {
 };
 
 describe('gulp/common/worker.js', () => {
+   before(async() => {
+      await initTest();
+   });
+
    it('тест с минимально допустимыми входными данными', async() => {
       const pool = workerPool.pool(workerPath);
 
@@ -126,11 +128,11 @@ describe('gulp/common/worker.js', () => {
          const text = (await fs.readFile(filePath)).toString();
          [error] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
 
-
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
-         lib.trimLessError(errorMessage)
-            .should.equal(`Ошибка компиляции ${filePath} на строке 1: 'notExist' wasn't found.`);
+         lib.trimLessError(errorMessage).should.equal(
+            `Ошибка компиляции ${filePath} на строке 1: 'notExist' wasn't found.`
+         );
       } finally {
          await clearWorkspace();
          await pool.terminate();

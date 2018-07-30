@@ -5,7 +5,7 @@
 'use strict';
 
 const path = require('path'),
-   transliterate = require('../../lib/transliterate');
+   transliterate = require('../../../lib/transliterate');
 
 /**
  * Класс с базовой информацией о модуле. Используется как база для сборки статики и для сбора фраз локализации.

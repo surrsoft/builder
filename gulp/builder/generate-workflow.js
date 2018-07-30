@@ -5,11 +5,8 @@
 
 'use strict';
 
-const path = require('path'),
-   fs = require('fs-extra'),
+const fs = require('fs-extra'),
    gulp = require('gulp'),
-   os = require('os'),
-   workerPool = require('workerpool'),
    pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
@@ -20,11 +17,17 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
    guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
+   generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
    generateTaskForSaveLoggerReport = require('../common/generate-task/save-logger-report'),
-   ChangesStore = require('./classes/changes-store'),
-   Configuration = require('./classes/configuration.js');
+   Cache = require('./classes/cache'),
+   Configuration = require('./classes/configuration.js'),
+   TaskParameters = require('../common/classes/task-parameters');
 
-const { getDirnameForModule, generateTaskForLoadChangesStore, generateTaskForTerminatePool } = require('./helpers');
+const {
+   generateTaskForLoadCache,
+   generateTaskForInitWorkerPool,
+   generateTaskForTerminatePool
+} = require('../common/helpers');
 
 /**
  * Генерирует поток выполнения сборки статики
@@ -36,65 +39,59 @@ function generateWorkflow(processArgv) {
    const config = new Configuration();
    config.loadSync(processArgv); // eslint-disable-line no-sync
 
-   const changesStore = new ChangesStore(config);
-
-   const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
-
-      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1,
-      forkOpts: {
-         env: {
-            'ws-core-path': getDirnameForModule(config.rawConfig.modules, 'WS.Core')
-         }
-      }
-   });
-
-   const localizationEnable = config.localizations.length > 0;
+   const taskParameters = new TaskParameters(
+      config,
+      new Cache(config),
+      config.localizations.length > 0
+   );
 
    return gulp.series(
 
       // generateTaskForLock прежде всего
-      guardSingleProcess.generateTaskForLock(config.cachePath),
-      generateTaskForLoadChangesStore(changesStore),
+      guardSingleProcess.generateTaskForLock(taskParameters),
+      generateTaskForLoadCache(taskParameters),
       generateTaskForCollectThemes(changesStore, config),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      generateTaskForClearCache(changesStore, config),
-      generateTaskForGenerateJson(changesStore, config, localizationEnable),
-      generateTaskForBuildModules(changesStore, config, pool),
-      gulp.parallel(
+      generateTaskForClearCache(taskParameters),
+
+      // подготовка WS для воркера
+      generateTaskForPrepareWS(taskParameters),
+      generateTaskForInitWorkerPool(taskParameters),
+      generateTaskForGenerateJson(taskParameters),
+      generateTaskForBuildModules(taskParameters),
 
          // завершающие задачи
-         //generateTaskForRemoveFiles(changesStore),
-         generateTaskForSaveChangesStore(changesStore)
+         //generateTaskForRemoveFiles(taskParameters),
+         generateTaskForSaveCache(taskParameters
       ),
-      generateTaskForFinalizeDistrib(config, localizationEnable),
-      generateTaskForPackHtml(changesStore, config, pool),
-      generateTaskForCustomPack(changesStore, config),
-      generateTaskForTerminatePool(pool),
-      generateTaskForGzip(config),
-      generateTaskForSaveLoggerReport(config),
+      generateTaskForFinalizeDistrib(taskParameters),
+      generateTaskForPackHtml(taskParameters),
+      generateTaskForCustomPack(taskParameters),
+      generateTaskForTerminatePool(taskParameters),
+      generateTaskForGzip(taskParameters),
+      generateTaskForSaveLoggerReport(taskParameters),
 
       // generateTaskForUnlock после всего
       guardSingleProcess.generateTaskForUnlock()
    );
 }
 
-function generateTaskForClearCache(changesStore) {
+function generateTaskForClearCache(taskParameters) {
    return function clearCache() {
-      return changesStore.clearCacheIfNeeded();
+      return taskParameters.cache.clearCacheIfNeeded();
    };
 }
 
-function generateTaskForSaveChangesStore(changesStore) {
-   return function saveChangesStore() {
-      return changesStore.save();
+function generateTaskForSaveCache(taskParameters) {
+   return function saveCache() {
+      return taskParameters.cache.save();
    };
 }
 
-function generateTaskForRemoveFiles(changesStore) {
+function generateTaskForRemoveFiles(taskParameters) {
    return async function removeOutdatedFiles() {
-      const filesForRemove = await changesStore.getListForRemoveFromOutputDir();
+      const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir();
       return pMap(filesForRemove, filePath => fs.remove(filePath), {
          concurrency: 20
       });

@@ -15,14 +15,13 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
  * @param {string} sbis3ControlsPath путь до модуля SBIS3.CONTROLS. нужно для поиска тем
  * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3ControlsPath, pathsForImport) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
    return through.obj(
 
       /* @this Stream */
@@ -46,7 +45,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
 
             if (file.cached) {
                Object.keys(allOutputPath).forEach((key) => {
-                  changesStore.addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
+                  taskParameters.cache..addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
                });
                callback(null, file);
                return;
@@ -54,7 +53,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
 
             const cssInSources = file.history[0].replace(/\.less$/, '.css');
             if (await fs.pathExists(cssInSources)) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
                   'Необходимо удалить лишний CSS-файл';
@@ -68,7 +67,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
             }
 
             const [error, results] = await execInPool(
-               pool,
+               taskParameters.pool,
                'buildLess',
                [
                   file.history[0],
@@ -82,7 +81,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                moduleInfo
             );
             if (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   error,
                   filePath: file.history[0],
@@ -92,20 +91,19 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool, sbis3Con
                return;
             }
 
-            results.forEach((result) => {
-               if (result.ignoreMessage) {
-                  logger.debug(result.ignoreMessage);
-               } else {
-                  changesStore.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
-                  changesStore.addDependencies(file.history[0], result.imports);
-                  const newFile = file.clone();
-                  newFile.path = allOutputPath[result.nameTheme];
-                  newFile.contents = Buffer.from(result.text);
-                  this.push(newFile);
+            results.forEach((result) => {if (result.ignoreMessage) {
+               logger.debug(result.ignoreMessage);
+            } else {
+               taskParameters.cache.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
+               taskParameters.cache.addDependencies(file.history[0], result.imports);
+               const newFile = file.clone();
+                     newFile.path= allOutputPath[result.nameTheme];
+                     newFile.contents= Buffer.from(result.text);
+                     this.push(newFile);
                }
             });
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при компиляции less",
                error,

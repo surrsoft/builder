@@ -1,4 +1,4 @@
-/* eslint-disable filenames/match-regex, global-require */
+/* eslint-disable global-require */
 'use strict';
 
 const path = require('path');
@@ -36,7 +36,7 @@ module.exports = function gruntMain(grunt) {
       const target = path.resolve(root);
       const application = path.join('/', app, '/').replace(dblSlashes, '/');
       const logger = require('./lib/logger').setGruntLogger(grunt);
-      logger.warning('Обнаружено использование Grunt. ' +
+      logger.error('Обнаружено использование Grunt. ' +
          'Чтобы перейти на Gulp, нужно удалить в проекте слой "Приложения" (s3app). ' +
          'Для облачных решений это означает переход на Сервис Представлений. ' +
          'Для desktop решений это просто отказ от ненужной сущности.');

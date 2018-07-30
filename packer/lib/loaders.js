@@ -6,7 +6,7 @@ const codegen = require('escodegen');
 const stripBOM = require('strip-bom');
 const path = require('path');
 const fs = require('fs-extra');
-const rebaseUrlsToAbsolutePath = require('./cssHelpers').rebaseUrls;
+const rebaseUrlsToAbsolutePath = require('./css-helpers').rebaseUrls;
 const logger = require('../../lib/logger').logger();
 const dblSlashes = /\\/g;
 let availableLangs;

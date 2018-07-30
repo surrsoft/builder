@@ -16,18 +16,17 @@ const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]desig
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            // Нужно вызвать changesStore.addOutputFile для less, чтобы не удалился *.min.css файл.
+            // Нужно вызвать taskParameters.cache.addOutputFile для less, чтобы не удалился *.min.css файл.
             // Ведь самой css не будет в потоке при повторном запуске
             if (!['.css', '.less'].includes(file.extname)) {
                callback(null, file);
@@ -45,7 +44,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
 
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
-               changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
                return;
             }
@@ -59,10 +58,10 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
             // если файл не возможно минифицировать, то запишем оригинал
             let newText = file.contents.toString();
 
-            const [error, minified] = await execInPool(pool, 'minifyCss', [newText]);
+            const [error, minified] = await execInPool(taskParameters.pool, 'minifyCss', [newText]);
             newText = minified.styles;
             if (minified.errors.length > 0) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                const errors = minified.errors.toString();
                logger.warning({
                   message: `Ошибки минификации файла: ${errors.split('; ')}`,
@@ -71,7 +70,7 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                });
             }
             if (error) {
-               changesStore.markFileAsFailed(file.history[0]);
+               taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка минификации файла',
                   error,
@@ -87,9 +86,9 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                   contents: Buffer.from(newText)
                })
             );
-            changesStore.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+            taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: "Ошибка builder'а при минификации",
                error,

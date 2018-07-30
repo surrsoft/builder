@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const chai = require('chai'),
    processingRoutes = require('../lib/processing-routes');
@@ -8,6 +8,9 @@ const chai = require('chai'),
 const { expect } = chai;
 
 describe('processing routes.js', () => {
+   before(async() => {
+      await initTest();
+   });
    describe('parse routes', () => {
       it('empty file', () => {
          const result = processingRoutes.parseRoutes('');
@@ -66,7 +69,7 @@ describe('processing routes.js', () => {
             processingRoutes.parseRoutes(text);
          }).to.throw(
             'Некоторые роутинги не являются корректными. ' +
-            'Роутинг должен задаваться строкой, которая начинается с символа "/". Список некорректных роутингов: test_1'
+               'Роутинг должен задаваться строкой, которая начинается с символа "/". Список некорректных роутингов: test_1'
          );
       });
       it('return string', () => {

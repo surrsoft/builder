@@ -5,8 +5,8 @@ const { traverse } = require('estraverse');
 const async = require('async');
 const path = require('path');
 const fs = require('fs-extra');
-const DepGraph = require('./../../lib/dependencyGraph');
-const getMeta = require('./../../lib/getDependencyMeta');
+const DepGraph = require('../../lib/dependency-graph');
+const getMeta = require('../../lib/get-dependency-meta');
 const logger = require('../../../lib/logger').logger();
 
 const rjsPaths = global.requirejs.s.contexts._.config.paths || {};

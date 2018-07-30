@@ -13,12 +13,11 @@ const through = require('through2'),
 
 /**
  * Объявление плагина
- * @param {ChangesStore} changesStore кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       async function onTransform(file, encoding, callback) {
          if (file.cached) {
@@ -45,14 +44,14 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
          }
 
          const [error, componentInfo] = await execInPool(
-            pool,
+            taskParameters.pool,
             'parseJsComponent',
             [file.contents.toString()],
             file.history[0],
             moduleInfo
          );
          if (error) {
-            changesStore.markFileAsFailed(file.history[0]);
+            taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
                message: 'Ошибка при обработке JS компонента',
                filePath: file.history[0],
@@ -60,12 +59,12 @@ module.exports = function declarePlugin(changesStore, moduleInfo, pool) {
                moduleInfo
             });
          }
-         changesStore.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
+         taskParameters.cache.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
          callback(null, file);
       },
       function onFlush(callback) {
          try {
-            const componentsInfo = changesStore.getComponentsInfo(moduleInfo.name);
+            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
                if (info.hasOwnProperty('isNavigation') && info.isNavigation) {

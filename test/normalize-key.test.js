@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra'),
@@ -13,6 +13,8 @@ const languages = ['en-US', 'ru-RU'];
 
 describe('lib/i18n/normalize-key.js', () => {
    before(async() => {
+      await initTest();
+
       await fs.remove(workspaceFolder);
       await fs.copy(fixtureFolder, workspaceFolder);
    });

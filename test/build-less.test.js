@@ -2,7 +2,7 @@
 
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const chai = require('chai'),
    path = require('path'),
@@ -24,6 +24,10 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
    };
 
 describe('build less', () => {
+   before(async() => {
+      await initTest();
+   });
+
    it('empty less', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
@@ -36,9 +40,7 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
       result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
-      );
+      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
    it('less from retail', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
@@ -46,9 +48,7 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, themes);
       result[2].imports.length.should.equal(2);
-      result[2].text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n"
-      );
+      result[2].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
    it('less from retail with presto theme', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
@@ -56,18 +56,14 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, themes);
       result[1].imports.length.should.equal(2);
-      result[1].text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
-      );
+      result[1].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath, pathsForImport, themes);
       result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
-      );
+      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
 
    // важно отобразить корректно строку в которой ошибка
@@ -137,7 +133,6 @@ describe('build less', () => {
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
-
    it('ignore folder _less. №2', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes\\presto\\_less\\normal.less');
@@ -162,9 +157,7 @@ describe('build less', () => {
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
 
       result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
-      );
+      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
       result[1].imports.length.should.equal(2);
       result[1].text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"

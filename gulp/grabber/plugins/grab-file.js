@@ -13,13 +13,11 @@ const supportExtensions = ['.js', '.xhtml', '.tmpl'];
 
 /**
  * Объявление плагина
- * @param {GrabberConfiguration} config конфигурация сбора фраз локализации
- * @param {Cache} cache кеш
+ * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {Pool} pool пул воркеров
- * @returns {*}
+ * @returns {stream}
  */
-module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(async(file, encoding, callback) => {
       try {
          if (!supportExtensions.includes(file.extname)) {
@@ -32,10 +30,10 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
             return;
          }
 
-         const componentsPropertiesFilePath = path.join(config.cachePath, 'components-properties.json');
+         const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
 
          const [error, collectWords] = await execInPool(
-            pool,
+            taskParameters.pool,
             'collectWords',
             [moduleInfo.path, file.path, componentsPropertiesFilePath],
             file.path,
@@ -49,7 +47,7 @@ module.exports = function declarePlugin(config, cache, moduleInfo, pool) {
                moduleInfo
             });
          } else {
-            cache.storeCollectWords(file.history[0], collectWords);
+            taskParameters.cache.storeCollectWords(file.history[0], collectWords);
          }
       } catch (error) {
          logger.warning({

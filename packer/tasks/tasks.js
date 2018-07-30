@@ -2,10 +2,10 @@
 'use strict';
 
 const path = require('path');
-const modDeps = require('./../lib/moduleDependencies');
-const { gruntPackHTML } = require('./lib/packHTML');
+const modDeps = require('../lib/module-dependencies');
+const { gruntPackHTML } = require('./lib/pack-html');
 const packOwnDeps = require('./lib/pack-own-deps');
-const makeDependenciesGraph = require('./lib/collectDependencies');
+const makeDependenciesGraph = require('./lib/collect-dependencies');
 const logger = require('../../lib/logger').logger();
 
 const isDemoModule = /ws\/lib\/Control\/\w+\/demo\//i;

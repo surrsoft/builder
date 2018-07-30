@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const path = require('path'),
    fs = require('fs-extra');
@@ -65,6 +65,10 @@ const checkResult = async function(extension, context) {
 
 // нужно проверить что происходить, что кеш работает
 describe('gulp/grabber/generate-workflow.js', () => {
+   before(async() => {
+      await initTest();
+   });
+
    describe('проверка сбора фраз локализации по js коду', () => {
       it('перезапуск без изменений', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');

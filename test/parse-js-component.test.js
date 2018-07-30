@@ -1,6 +1,6 @@
 'use strict';
 
-require('./init-test');
+const initTest = require('./init-test');
 
 const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
@@ -8,6 +8,9 @@ const chai = require('chai'),
 const { expect } = chai;
 
 describe('parse js component', () => {
+   before(async() => {
+      await initTest();
+   });
    it('empty file', () => {
       const result = parseJsComponent('');
       Object.getOwnPropertyNames(result).length.should.equal(0);
@@ -92,15 +95,15 @@ describe('parse js component', () => {
    it('declare webpage with custom urls', () => {
       const result = parseJsComponent(
          'define("My.Module/Name", function(){' +
-         'let module;' +
-         'module.webPage = {' +
-         '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
-         '   title: "TestTitle",' +
-         '   outFileName: "ca_stub",' +
-         '   trash:"trash",' +
-         '   urls: ["url/one", "/urlTwo"]' +
-         '};' +
-         'return module;});'
+            'let module;' +
+            'module.webPage = {' +
+            '   htmlTemplate: "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html",' +
+            '   title: "TestTitle",' +
+            '   outFileName: "ca_stub",' +
+            '   trash:"trash",' +
+            '   urls: ["url/one", "/urlTwo"]' +
+            '};' +
+            'return module;});'
       );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
