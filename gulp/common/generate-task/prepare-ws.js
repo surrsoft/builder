@@ -17,6 +17,10 @@ const path = require('path'),
    TaskParameters = require('../../common/classes/task-parameters'),
    logger = require('../../../lib/logger').logger();
 
+const {
+   generateTaskForTerminatePool
+} = require('../helpers');
+
 const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Controls', 'WS.Data'];
 
 /**
@@ -42,7 +46,7 @@ function generateTaskForPrepareWS(taskParameters) {
          )
       );
    }
-   seriesTask.push(() => pool.terminate());
+   seriesTask.push(generateTaskForTerminatePool(localTaskParameters));
    return gulp.series(seriesTask);
 }
 
