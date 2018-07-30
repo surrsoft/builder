@@ -29,14 +29,26 @@ const prepareTest = async function(fixtureFolder) {
 };
 
 const runWorkflowBuild = function() {
-   return new Promise((resolve) => {
-      generateWorkflow([`--config="${configPath}"`])(resolve);
+   return new Promise((resolve, reject) => {
+      generateWorkflow([`--config="${configPath}"`])((error) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve();
+         }
+      });
    });
 };
 
 const runWorkflowBuildOnChange = function(filePath) {
-   return new Promise((resolve) => {
-      generateWorkflowOnChange([`--config="${configPath}"`, `--filePath="${filePath}"`])(resolve);
+   return new Promise((resolve, reject) => {
+      generateWorkflowOnChange([`--config="${configPath}"`, `--filePath="${filePath}"`])((error) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve();
+         }
+      });
    });
 };
 
