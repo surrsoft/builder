@@ -6,7 +6,8 @@
 'use strict';
 
 const through = require('through2'),
-   Vinyl = require('vinyl'),
+
+   // Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
