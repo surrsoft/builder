@@ -7,7 +7,8 @@
 
 const through = require('through2'),
    path = require('path'),
-   Vinyl = require('vinyl'),
+
+   // Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
