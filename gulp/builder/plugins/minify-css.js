@@ -42,11 +42,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             const lastHistory = file.history[file.history.length - 1];
-            const relativePath = path.relative(moduleInfo.path, lastHistory).replace(/(\.css|\.less)$/, '.min.css');
-
+            const relativePath = path.relative(
+               /\.css$/.test(file.history[0]) ? moduleInfo.path : moduleInfo.output,
+               lastHistory
+            ).replace(/\.css$/, '.min.css');
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
-               taskParameters.cache.addOutputFile(lastHistory, outputMinFile, moduleInfo);
+               taskParameters.cache.getOutputFile(file.history[0]).forEach((outputFile) => {
+                  taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo);
+               });
                callback(null, file);
                return;
             }

@@ -263,6 +263,14 @@ class Cache {
       }
    }
 
+   getOutputFile(filePath) {
+      const prettyFilePath = helpers.prettifyPath(filePath);
+      if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
+         return this.currentStore.inputPaths[prettyFilePath].output;
+      }
+      return [];
+   }
+
    /**
     * Получить список файлов из исходников, которые относятся к конкретному модулю
     * @param {string} modulePath путь до модуля
