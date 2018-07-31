@@ -43,7 +43,7 @@ class StoreInfo {
 
       // Темы для компиляции less. <Имя темы>: <путь до папки где лежит <Имя темы>.less>
       this.styleThemes = new Map();
-}
+   }
 
    static getLastRunningParametersPath(filePath) {
       return path.join(path.dirname(filePath), 'last_build_gulp_config.json');
