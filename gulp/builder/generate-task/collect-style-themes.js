@@ -18,7 +18,7 @@ const logger = require('../../../lib/logger').logger();
 
 /**
  * Генерация задачи поиска тем
- * @param {taskParameters} taskParameters кеш сборки статики
+ * @param {TaskParameters} taskParameters кеш сборки статики
  * @param {BuildConfiguration} config конфигурация сборки
  * @returns {Undertaker.TaskFunction}
  */

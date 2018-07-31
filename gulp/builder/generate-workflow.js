@@ -60,11 +60,9 @@ function generateWorkflow(processArgv) {
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
       generateTaskForBuildModules(taskParameters),
-
-         // завершающие задачи
-         generateTaskForRemoveFiles(taskParameters),
-         generateTaskForSaveCache(taskParameters
-      ),
+      generateTaskForRemoveFiles(taskParameters),
+      generateTaskForSaveCache(taskParameters),
+      generateTaskForTerminatePool(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
