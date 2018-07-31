@@ -80,13 +80,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
             }
 
-            this.push(
-               new Vinyl({
-                  base: moduleInfo.output,
-                  path: outputMinFile,
-                  contents: Buffer.from(newText)
-               })
-            );
+            const newFile = file.clone();
+            newFile.contents = Buffer.from(newText);
+            newFile.path = outputMinFile;
+            newFile.base = moduleInfo.output;
+            this.push(newFile);
             taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);

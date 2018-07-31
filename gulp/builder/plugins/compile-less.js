@@ -99,8 +99,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                   taskParameters.cache.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
                   taskParameters.cache.addDependencies(file.history[0], result.imports);
                   const newFile = file.clone();
-                  newFile.path = allOutputPath[result.nameTheme];
                   newFile.contents = Buffer.from(result.text);
+                  newFile.path = allOutputPath[result.nameTheme];
+                  newFile.base = moduleInfo.output;
                   this.push(newFile);
                }
             });
