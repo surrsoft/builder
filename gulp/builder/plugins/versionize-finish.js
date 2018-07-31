@@ -28,7 +28,7 @@ module.exports = function declarePlugin(config, moduleInfo) {
          }
 
          let version = '';
-         if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
+         if (file.path.match(/\.min\.[^.\\/]+$/) || ['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             version = `.v${config.version}`;
          }
          const text = file.contents.toString();
