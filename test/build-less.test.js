@@ -46,17 +46,17 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, themes);
-      result[2].imports.length.should.equal(2);
-      result[2].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, {});
+      result[0].imports.length.should.equal(2);
+      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
    it('less from retail with presto theme', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, themes);
-      result[1].imports.length.should.equal(2);
-      result[1].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
+      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, {});
+      result[0].imports.length.should.equal(2);
+      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
@@ -158,8 +158,8 @@ describe('build less', () => {
 
       result[0].imports.length.should.equal(2);
       result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
-      result[1].imports.length.should.equal(2);
-      result[1].text.should.equal(
+      result[2].imports.length.should.equal(2);
+      result[2].text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
       );
    });

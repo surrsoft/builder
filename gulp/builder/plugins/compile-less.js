@@ -36,10 +36,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
             const allThemes = taskParameters.cache.currentStore.styleThemes;
 
             if (file.cached) {
+
+               let relativePath = path.relative(moduleInfo.path, file.history[0])
+                  .replace(/\.less$/, '.css');
+               let outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+
                Object.keys(allThemes).forEach((key) => {
-                  const relativePath = path.relative(moduleInfo.path, file.history[0])
+                  relativePath = path.relative(moduleInfo.path, file.history[0])
                      .replace(/\.less$/, `_${key}.css`);
-                  const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+                  outputPath = path.join(moduleInfo.output, transliterate(relativePath));
                   taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                });
                callback(null, file);
@@ -91,7 +97,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                   logger.debug(result.ignoreMessage);
                } else {
                   const relativePath = path.relative(moduleInfo.path, file.history[0])
-                     .replace(/\.less$/, `_${result.nameTheme}.css`);
+                     .replace(/\.less$/, result.defaultTheme ? '.css' : `_${result.nameTheme}.css`);
                   const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
 
                   taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);

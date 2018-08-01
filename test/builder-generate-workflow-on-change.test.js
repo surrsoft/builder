@@ -84,6 +84,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRename_old.css',
          'ForRename_old_online.css',
          'contents.js',
          'contents.json',
@@ -101,7 +102,9 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRename_old.css',
          'ForRename_old_online.css',
+         'ForRename_new.css',
          'ForRename_new_online.css',
          'contents.js',
          'contents.json',
@@ -117,6 +120,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRename_new.css',
          'ForRename_new_online.css',
          'contents.js',
          'contents.json',
