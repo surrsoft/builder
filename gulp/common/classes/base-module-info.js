@@ -41,7 +41,7 @@ class ModuleInfo {
    symlinkInputPathToAvoidProblems(cachePath) {
       if (isShareOnWindows(this.path) || getIllegalSymbolInPath(this.path)) {
          logger.debug(`Необходим симлинк на модуль ${this.path}`);
-         const newPath = path.join(cachePath, 'temp-modules', path.join(this.path));
+         const newPath = path.join(cachePath, 'temp-modules', path.basename(this.path));
          if (getIllegalSymbolInPath(newPath)) {
             throw new Error(`Временный пусть до модуля содержит не корректный символ "${getIllegalSymbolInPath(newPath)}"`);
          }
