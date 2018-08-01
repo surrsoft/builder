@@ -31,11 +31,18 @@ class GrabberConfiguration {
       this.configFile = ConfigurationReader.getProcessParameters(argv).config;
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
 
-      for (const module of this.rawConfig.modules) {
-         this.modules.push(new ModuleInfo(module.name, module.responsible, module.path));
+      const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
+
+      this.cachePath = this.rawConfig.cache;
+      if (!this.cachePath) {
+         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
 
-      const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
+      for (const module of this.rawConfig.modules) {
+         const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path);
+         moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath);
+         this.modules.push(moduleInfo);
+      }
 
       this.outputPath = this.rawConfig.output;
       if (!this.outputPath) {
@@ -44,11 +51,6 @@ class GrabberConfiguration {
 
       if (!this.outputPath.endsWith('.json')) {
          throw new Error(`${startErrorMessage} Параметр output должен быть json-файлом.`);
-      }
-
-      this.cachePath = this.rawConfig.cache;
-      if (!this.cachePath) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
       }
    }
 }

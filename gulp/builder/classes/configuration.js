@@ -12,8 +12,6 @@ const ConfigurationReader = require('../../common/configuration-reader'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
-const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
-
 /**
  * Класс с данными о конфигурации сборки
  */
@@ -132,19 +130,9 @@ class BuildConfiguration {
       }
 
       for (const module of this.rawConfig.modules) {
-         // Gulp не правильно работает, если в путях встречаются некоторые особые символы.
-         // Пока просто выводим ошибку, чтобы разработчики не тратили время на понимание проблемы.
-         // TODO: разобраться и может быть оформить PR в проект Gulp на github
-         for (const illegalSymbol of ILLEGAL_SYMBOLS_FOR_PATH) {
-            if (module.path.includes(illegalSymbol)) {
-               throw new Error(
-                  `Путь до модуля "${module.name}" содержит символ "${illegalSymbol}": "${module.path}". ` +
-                     'Gulp не сможет правильно работать с таким путём.'
-               );
-            }
-         }
-
          const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path, this.outputPath);
+         moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath);
+
          moduleInfo.contents.buildMode = mode;
          if (this.defaultLocalization && this.localizations.length > 0) {
             moduleInfo.contents.defaultLanguage = this.defaultLocalization;
