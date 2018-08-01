@@ -42,7 +42,7 @@ class StoreInfo {
       this.filesWithErrors = new Set();
 
       // Темы для компиляции less. <Имя темы>: <путь до папки где лежит <Имя темы>.less>
-      this.styleThemes = new Map();
+      this.styleThemes = {};
    }
 
    static getLastRunningParametersPath(filePath) {
@@ -65,7 +65,7 @@ class StoreInfo {
             this.dependencies = obj.dependencies;
             this.modulesCache = obj.modulesCache;
             this.filesWithErrors = new Set(obj.filesWithErrors);
-            this.styleThemes = new Map(obj.styleThemes);
+            this.styleThemes = obj.styleThemes;
          }
       } catch (error) {
          logger.info({
@@ -85,7 +85,7 @@ class StoreInfo {
             dependencies: this.dependencies,
             modulesCache: this.modulesCache,
             filesWithErrors: [...this.filesWithErrors],
-            styleThemes: [...this.styleThemes]
+            styleThemes: this.styleThemes
          },
          {
             spaces: 1

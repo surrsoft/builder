@@ -33,20 +33,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            const allThemes = {};
-            const allOutputPath = {};
-            taskParameters.cache.currentStore.styleThemes.forEach((value, key) => {
-               allThemes[key] = value;
-
-               const relativePath = path.relative(moduleInfo.path, file.history[0])
-                  .replace(/\.less$/, `_${key}.css`);
-               const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
-               allOutputPath[key] = outputPath;
-            });
+            const allThemes = taskParameters.cache.currentStore.styleThemes;
 
             if (file.cached) {
-               Object.keys(allOutputPath).forEach((key) => {
-                  taskParameters.cache.addOutputFile(file.history[0], allOutputPath[key], moduleInfo);
+               Object.keys(allThemes).forEach((key) => {
+                  const relativePath = path.relative(moduleInfo.path, file.history[0])
+                     .replace(/\.less$/, `_${key}.css`);
+                  const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+                  taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                });
                callback(null, file);
                return;
@@ -96,11 +90,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                if (result.ignoreMessage) {
                   logger.debug(result.ignoreMessage);
                } else {
-                  taskParameters.cache.addOutputFile(file.history[0], allOutputPath[result.nameTheme], moduleInfo);
+                  const relativePath = path.relative(moduleInfo.path, file.history[0])
+                     .replace(/\.less$/, `_${result.nameTheme}.css`);
+                  const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+
+                  taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                   taskParameters.cache.addDependencies(file.history[0], result.imports);
+
                   const newFile = file.clone();
                   newFile.contents = Buffer.from(result.text);
-                  newFile.path = allOutputPath[result.nameTheme];
+                  newFile.path = outputPath;
                   newFile.base = moduleInfo.output;
                   this.push(newFile);
                }

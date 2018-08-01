@@ -539,11 +539,11 @@ class Cache {
    }
 
    addStyleTheme(themeName, filePath) {
-      this.currentStore.styleThemes.set(themeName, filePath);
+      this.currentStore.styleThemes[themeName] = filePath;
    }
 
    checkThemesForUpdate() {
-      if (!helpers.isEqualMaps(this.currentStore.styleThemes, this.lastStore.styleThemes)) {
+      if (!helpers.isEqualObjectFirstLevel(this.currentStore.styleThemes, this.lastStore.styleThemes)) {
          this.dropCacheForLess = true;
       }
    }
