@@ -594,7 +594,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // запустим таску
          await runWorkflow();
 
-         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US_online.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.css')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.js')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'lang/ru-RU/ru-RU.js')).should.equal(true);
 

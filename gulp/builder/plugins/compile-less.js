@@ -6,8 +6,6 @@
 'use strict';
 
 const through = require('through2'),
-
-   // Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
@@ -23,31 +21,40 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
+
+   const getOutput = function(file, replaceStr) {
+      const relativePath = path.relative(moduleInfo.path, file.history[0])
+         .replace(/\.less$/, replaceStr);
+      return path.join(moduleInfo.output, transliterate(relativePath));
+   };
+
    return through.obj(
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
+            let isLangCss = false;
+            const allThemes = taskParameters.cache.currentStore.styleThemes;
+
+            if (moduleInfo.contents.availableLanguage) {
+               const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
+               isLangCss = avlLang.includes(file.basename.replace('.less', ''));
+            }
+
             if (!file.path.endsWith('.less')) {
                callback(null, file);
                return;
             }
 
-            const allThemes = taskParameters.cache.currentStore.styleThemes;
-
             if (file.cached) {
+               taskParameters.cache.addOutputFile(file.history[0], getOutput(file, '.css'), moduleInfo);
 
-               let relativePath = path.relative(moduleInfo.path, file.history[0])
-                  .replace(/\.less$/, '.css');
-               let outputPath = path.join(moduleInfo.output, transliterate(relativePath));
-               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               if (!isLangCss) {
+                  Object.keys(allThemes).forEach((key) => {
+                     taskParameters.cache.addOutputFile(file.history[0], getOutput(file, `_${key}.css`), moduleInfo);
+                  });
+               }
 
-               Object.keys(allThemes).forEach((key) => {
-                  relativePath = path.relative(moduleInfo.path, file.history[0])
-                     .replace(/\.less$/, `_${key}.css`);
-                  outputPath = path.join(moduleInfo.output, transliterate(relativePath));
-                  taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-               });
                callback(null, file);
                return;
             }
@@ -76,7 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                   moduleInfo.path,
                   sbis3ControlsPath,
                   pathsForImport,
-                  allThemes
+                  isLangCss ? null : allThemes
                ],
                file.history[0],
                moduleInfo
@@ -96,9 +103,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                if (result.ignoreMessage) {
                   logger.debug(result.ignoreMessage);
                } else {
-                  const relativePath = path.relative(moduleInfo.path, file.history[0])
-                     .replace(/\.less$/, result.defaultTheme ? '.css' : `_${result.nameTheme}.css`);
-                  const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
+                  const outputPath = getOutput(file, result.defaultTheme ? '.css' : `_${result.nameTheme}.css`);
 
                   taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                   taskParameters.cache.addDependencies(file.history[0], result.imports);
