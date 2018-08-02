@@ -53,7 +53,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
          } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w{}/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   `$1${VERSION_STUB}$2`
                )
                .replace(
