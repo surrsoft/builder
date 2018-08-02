@@ -21,7 +21,6 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
-
    const getOutput = function(file, replaceStr) {
       const relativePath = path.relative(moduleInfo.path, file.history[0])
          .replace(/\.less$/, replaceStr);
