@@ -101,7 +101,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   json.links[info.componentName] = [...depsOfLink];
                   json.nodes[info.componentName] = {
                      amd: true,
-                     path: filePathToRelativeInResources(filePath)
+                     path: filePathToRelativeInResources(filePath).replace(/(.ts|.es)$/, '.js')
                   };
                }
             });
