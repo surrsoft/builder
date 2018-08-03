@@ -263,7 +263,7 @@ class Cache {
       }
    }
 
-   getOutputFile(filePath) {
+   getOutputForFile(filePath) {
       const prettyFilePath = helpers.prettifyPath(filePath);
       if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
          return this.currentStore.inputPaths[prettyFilePath].output;

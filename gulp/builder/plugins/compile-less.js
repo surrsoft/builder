@@ -21,9 +21,8 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
-   const getOutput = function(file, replaceStr) {
-      const relativePath = path.relative(moduleInfo.path, file.history[0])
-         .replace(/\.less$/, replaceStr);
+   const getOutput = function(file, replacingExt) {
+      const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
    };
 
@@ -98,7 +97,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            results.forEach((result) => {
+            for (const result of results) {
                if (result.ignoreMessage) {
                   logger.debug(result.ignoreMessage);
                } else {
@@ -113,7 +112,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                   newFile.base = moduleInfo.output;
                   this.push(newFile);
                }
-            });
+            }
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
