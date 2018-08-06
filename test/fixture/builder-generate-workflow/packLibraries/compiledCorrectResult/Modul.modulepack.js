@@ -6,7 +6,11 @@
  * саму библиотеку.
  */
 
-define('Modul/Modul', ['tslib'], function (tslib_1) {
+define('Modul/Modul', [
+    'tslib',
+    'require',
+    'exports'
+], function (tslib_1, require, exports) {
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
         var Modul_2 = function () {
