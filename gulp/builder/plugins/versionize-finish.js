@@ -33,7 +33,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
             version = `.v${taskParameters.config.version}`;
-            versionMin = `.min.v${config.version}`;
+            versionMin = `.min.v${taskParameters.config.version}`;
          }
          const text = file.contents.toString();
          file.contents = Buffer.from(text.replace(VERSION_STUB, version).replace(VERSION_MIN_STUB, versionMin));
