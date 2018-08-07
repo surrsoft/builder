@@ -29,14 +29,14 @@ module.exports = function declarePlugin(config, moduleInfo) {
          }
 
          let version = '';
-         let version_min = '';
+         let versionMin = '';
 
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
             version = `.v${config.version}`;
-            version_min = `.min.v${config.version}`;
+            versionMin = `.min.v${config.version}`;
          }
          const text = file.contents.toString();
-         file.contents = Buffer.from(text.replace(VERSION_STUB, version).replace(VERSION_MIN_STUB, version_min));
+         file.contents = Buffer.from(text.replace(VERSION_STUB, version).replace(VERSION_MIN_STUB, versionMin));
       } catch (error) {
          logger.error({
             message: "Ошибка builder'а при версионировании",
