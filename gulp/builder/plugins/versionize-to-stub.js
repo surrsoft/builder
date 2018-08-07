@@ -10,6 +10,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
 const VERSION_STUB = '.vBUILDER_VERSION_STUB';
+const VERSION_MIN_STUB = '.vBUILDER_VERSION_MIN_STUB';
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
@@ -53,18 +54,18 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
          } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^}}]+}})[\w{}/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]+(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
                         // если в пути уже есть .min, то дублировать не нужно
                         const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                        return `${partFilePathWithoutMin}.min${VERSION_STUB + partExt}`;
+                        return partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
                      }
                      return partFilePath + VERSION_STUB + partExt;
                   }
                )
                .replace(
-                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
+                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+}|{{[^{}]*}})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
                   (match, partEqual, partFilePath, partExt) => {
                      // ignore cdn and data-providers
                      if (
@@ -78,7 +79,7 @@ module.exports = function declarePlugin(config, changesStore, moduleInfo) {
 
                      // если в пути уже есть .min, то дублировать не нужно
                      const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                     return `${partEqual + partFilePathWithoutMin}.min${VERSION_STUB + partExt}`;
+                     return partEqual + partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
                   }
                );
          }

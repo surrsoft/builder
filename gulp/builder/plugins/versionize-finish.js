@@ -10,6 +10,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
 const VERSION_STUB = /\.vBUILDER_VERSION_STUB/g;
+const VERSION_MIN_STUB = /\.vBUILDER_VERSION_MIN_STUB/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
 
@@ -28,12 +29,14 @@ module.exports = function declarePlugin(config, moduleInfo) {
          }
 
          let version = '';
+         let versionMin = '';
 
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
             version = `.v${config.version}`;
+            versionMin = `.min.v${config.version}`;
          }
          const text = file.contents.toString();
-         file.contents = Buffer.from(text.replace(VERSION_STUB, version));
+         file.contents = Buffer.from(text.replace(VERSION_STUB, version).replace(VERSION_MIN_STUB, versionMin));
       } catch (error) {
          logger.error({
             message: "Ошибка builder'а при версионировании",
