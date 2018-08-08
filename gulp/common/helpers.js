@@ -6,6 +6,7 @@
 
 const path = require('path'),
    os = require('os'),
+   fs = require('fs-extra'),
    logger = require('../../lib/logger').logger(),
    workerPool = require('workerpool');
 
@@ -73,21 +74,37 @@ function generateTaskForLoadCache(taskParameters) {
  * @returns {function(): *}
  */
 function generateTaskForInitWorkerPool(taskParameters) {
-   return function initWorkerPool(done) {
+   return async function initWorkerPool() {
+      // переменная окружения ws-core-path задана в тестах
+      let wsCorePath = process.env['ws-core-path'];
+
+      // WS.Core - название модуля в SDK
+      if (!wsCorePath) {
+         const possibleWsCorePath = path.join(taskParameters.config.cachePath, 'platform/WS.Core');
+         if (await fs.pathExists(possibleWsCorePath)) {
+            wsCorePath = possibleWsCorePath;
+         }
+      }
+
+      // ws - название модуля в node_modules
+      if (!wsCorePath) {
+         const possibleWsCorePath = path.join(taskParameters.config.cachePath, 'platform/ws');
+         if (await fs.pathExists(possibleWsCorePath)) {
+            wsCorePath = possibleWsCorePath;
+         }
+      }
+
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       taskParameters.setWorkerPool(
          workerPool.pool(path.join(__dirname, '../common/worker.js'), {
             maxWorkers: os.cpus().length - 1 || 1,
             forkOpts: {
                env: {
-                  'ws-core-path': process.env['ws-core-path'] ||
-                     path.join(taskParameters.config.cachePath, 'platform/WS.Core')
+                  'ws-core-path': wsCorePath
                }
             }
          })
       );
-
-      done();
    };
 }
 

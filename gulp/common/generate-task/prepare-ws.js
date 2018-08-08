@@ -9,6 +9,7 @@
 
 const path = require('path'),
    os = require('os'),
+   fs = require('fs-extra'),
    gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    gulpIf = require('gulp-if'),
@@ -38,7 +39,7 @@ function generateTaskForPrepareWS(taskParameters) {
    });
 
    const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false, pool);
-   const seriesTask = [];
+   const seriesTask = [generateTaskForRemoveOldFiles(taskParameters)];
    if (modulesFromWS.length) {
       seriesTask.push(
          gulp.parallel(
@@ -71,6 +72,12 @@ function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
          )
          .pipe(pluginCompileEsAndTs(localTaskParameters, moduleInfo))
          .pipe(gulpIf(needSymlink, gulp.symlink(moduleOutput), gulp.dest(moduleOutput)));
+   };
+}
+
+function generateTaskForRemoveOldFiles(taskParameters) {
+   return function removeOldPlatformFiles() {
+      return fs.remove(path.join(taskParameters.config.cachePath, 'platform'));
    };
 }
 
