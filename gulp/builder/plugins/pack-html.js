@@ -52,7 +52,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                file.path,
                dom,
                root,
-               `${moduleInfo.name}/static_packages`,
+               `${path.basename(moduleInfo.output)}/static_packages`,
                gd,
                taskParameters.config.urlServicePath,
                taskParameters.config.version,
