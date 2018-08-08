@@ -87,7 +87,7 @@ function createJsonAndJsModule(modulejs) {
       amd: true,
       encode: false,
       fullName: `${modulejs.fullName}.json`,
-      fullPath: modulejs.fullPath.replace(/\.js$/, '.json'),
+      fullPath: modulejs.fullPath.replace(/\.js$/, '.json.js'),
       module: `${modulejs.module}.json`,
       plugin: 'js'
    };
