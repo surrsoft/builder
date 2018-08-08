@@ -7,7 +7,6 @@
 
 const through = require('through2'),
    path = require('path'),
-   Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
@@ -40,11 +39,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/(\.css|\.less)$/, '.min.css');
-
+            const lastHistory = file.history[file.history.length - 1];
+            const filePath = /\.css$/.test(file.history[0]) ? moduleInfo.path : moduleInfo.output;
+            const relativePath = path.relative(filePath, lastHistory).replace(/\.css$/, '.min.css');
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
-               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.getOutputForFile(file.history[0]).forEach((outputFile) => {
+                  taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo);
+               });
                callback(null, file);
                return;
             }
@@ -79,13 +81,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
             }
 
-            this.push(
-               new Vinyl({
-                  base: moduleInfo.output,
-                  path: outputMinFile,
-                  contents: Buffer.from(newText)
-               })
-            );
+            const newFile = file.clone();
+            newFile.contents = Buffer.from(newText);
+            newFile.path = outputMinFile;
+            newFile.base = moduleInfo.output;
+            this.push(newFile);
             taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);

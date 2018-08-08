@@ -18,6 +18,7 @@ const path = require('path'),
 const Cache = require('./classes/cache'),
    Configuration = require('./classes/configuration.js'),
    ConfigurationReader = require('../common/configuration-reader'),
+   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    TaskParameters = require('../common/classes/task-parameters'),
    compileLess = require('./plugins/compile-less'),
    filterUnused = require('./plugins/filter-unused'),
@@ -55,6 +56,7 @@ function generateBuildWorkflowOnChange(processArgv) {
       generateTaskForCheckVersion(taskParameters),
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
+      generateTaskForCollectThemes(taskParameters, config),
       generateTaskForBuildFile(taskParameters, filePath),
       generateTaskForTerminatePool(taskParameters)
    );

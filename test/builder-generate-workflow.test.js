@@ -81,8 +81,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForChange.css',
+         'ForChange_online.css',
          'ForRename_old.css',
+         'ForRename_old_online.css',
          'Stable.css',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -107,8 +110,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForChange.css',
+         'ForChange_online.css',
          'ForRename_new.css',
+         'ForRename_new_online.css',
          'Stable.css',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -519,6 +525,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          mode: 'debug',
          modules: [
             {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
             }
@@ -538,7 +548,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'TestLess.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
@@ -568,6 +578,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          localization: ['en-US', 'ru-RU'],
          'default-localization': 'ru-RU',
          modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
             {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')

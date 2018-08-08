@@ -26,6 +26,7 @@ class Cache {
       this.lastStore = new StoreInfo();
       this.currentStore = new StoreInfo();
       this.dropCacheForMarkup = false;
+      this.dropCacheForLess = false;
 
       // js и less файлы инвалидируются с зависимостями
       // less - зависмости через import
@@ -205,6 +206,11 @@ class Cache {
          return true;
       }
 
+      // если список тем поменялся, то нужно все less пересобрать
+      if (this.dropCacheForLess && (prettyPath.endsWith('.less'))) {
+         return true;
+      }
+
       // новый файл
       if (!this.lastStore.inputPaths.hasOwnProperty(prettyPath)) {
          return true;
@@ -255,6 +261,14 @@ class Cache {
          // некоторые файлы являются производными от всего модуля. например en-US.js, en-US.css
          this.currentStore.inputPaths[moduleInfo.path].output.push(outputPrettyPath);
       }
+   }
+
+   getOutputForFile(filePath) {
+      const prettyFilePath = helpers.prettifyPath(filePath);
+      if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
+         return this.currentStore.inputPaths[prettyFilePath].output;
+      }
+      return [];
    }
 
    /**
@@ -522,6 +536,16 @@ class Cache {
             return null;
          })
          .filter(filePath => !!filePath);
+   }
+
+   addStyleTheme(themeName, filePath) {
+      this.currentStore.styleThemes[themeName] = filePath;
+   }
+
+   checkThemesForUpdate() {
+      if (!helpers.isEqualObjectFirstLevel(this.currentStore.styleThemes, this.lastStore.styleThemes)) {
+         this.dropCacheForLess = true;
+      }
    }
 
    /**

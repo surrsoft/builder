@@ -6,7 +6,6 @@
 'use strict';
 
 const through = require('through2'),
-   Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
@@ -22,21 +21,38 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
+   const getOutput = function(file, replacingExt) {
+      const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
+      return path.join(moduleInfo.output, transliterate(relativePath));
+   };
+
    return through.obj(
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
+            let isLangCss = false;
+            const allThemes = taskParameters.cache.currentStore.styleThemes;
+
+            if (moduleInfo.contents.availableLanguage) {
+               const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
+               isLangCss = avlLang.includes(file.basename.replace('.less', ''));
+            }
+
             if (!file.path.endsWith('.less')) {
                callback(null, file);
                return;
             }
 
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, '.css');
-            const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
-
             if (file.cached) {
-               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], getOutput(file, '.css'), moduleInfo);
+
+               if (!isLangCss) {
+                  Object.keys(allThemes).forEach((key) => {
+                     taskParameters.cache.addOutputFile(file.history[0], getOutput(file, `_${key}.css`), moduleInfo);
+                  });
+               }
+
                callback(null, file);
                return;
             }
@@ -56,10 +72,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            const [error, result] = await execInPool(
+            const [error, results] = await execInPool(
                taskParameters.pool,
                'buildLess',
-               [file.history[0], file.contents.toString(), moduleInfo.path, sbis3ControlsPath, pathsForImport],
+               [
+                  file.history[0],
+                  file.contents.toString(),
+                  moduleInfo.path,
+                  sbis3ControlsPath,
+                  pathsForImport,
+                  isLangCss ? null : allThemes
+               ],
                file.history[0],
                moduleInfo
             );
@@ -74,19 +97,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            if (result.ignoreMessage) {
-               logger.debug(result.ignoreMessage);
-            } else {
-               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-               taskParameters.cache.addDependencies(file.history[0], result.imports);
-               this.push(
-                  new Vinyl({
-                     base: moduleInfo.output,
-                     path: outputPath,
-                     contents: Buffer.from(result.text),
-                     history: [...file.history]
-                  })
-               );
+            for (const result of results) {
+               if (result.ignoreMessage) {
+                  logger.debug(result.ignoreMessage);
+               } else {
+                  const outputPath = getOutput(file, result.defaultTheme ? '.css' : `_${result.nameTheme}.css`);
+
+                  taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+                  taskParameters.cache.addDependencies(file.history[0], result.imports);
+
+                  const newFile = file.clone();
+                  newFile.contents = Buffer.from(result.text);
+                  newFile.path = outputPath;
+                  newFile.base = moduleInfo.output;
+                  this.push(newFile);
+               }
             }
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);

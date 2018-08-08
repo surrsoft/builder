@@ -16,7 +16,12 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    workerPath = path.join(__dirname, '../gulp/common/worker.js'),
    execInPool = require('../gulp/common/exec-in-pool'),
    modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS');
+   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
+   themes = {
+      'online': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
+      'presto': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/presto'),
+      'carry': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/carry')
+   };
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -52,12 +57,13 @@ describe('gulp/common/worker.js', () => {
             text,
             modulePath,
             sbis3ControlsPath,
-            [workspaceFolder]
+            [workspaceFolder],
+            themes
          ]);
-         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess.imports.length.should.equal(2);
-         resultsBuildLess.text.should.equal('');
+         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].imports.length.should.equal(2);
+         resultsBuildLess[0].text.should.equal('');
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -92,12 +98,13 @@ describe('gulp/common/worker.js', () => {
             text,
             modulePath,
             sbis3ControlsPath,
-            [workspaceFolder]
+            [workspaceFolder],
+            themes
          ]);
-         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess.imports.length.should.equal(2);
-         resultsBuildLess.text.should.equal(
+         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].imports.length.should.equal(2);
+         resultsBuildLess[0].text.should.equal(
             ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );
       } finally {
@@ -119,7 +126,7 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         [error] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, []]);
+         [error] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = error.message.replace(/\\/g, '/');
