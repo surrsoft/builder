@@ -52,7 +52,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                file.path,
                dom,
                root,
-               'WI.SBIS/packer/modules',
+               `${moduleInfo.name}/static_packages`,
                gd,
                taskParameters.config.urlServicePath,
                taskParameters.config.version,
