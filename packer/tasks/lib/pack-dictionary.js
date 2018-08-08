@@ -77,19 +77,19 @@ function getNameDict(name, lang) {
 }
 
 /**
- * Создаёт модуль с плагином text!.
+ * Создаёт js-модуль, содержащий сам словарь!.
  * @param {Object} modulejs - мета данные js-ого модуля словаря.
  * @returns {{amd: boolean, encode: boolean, fullName: string, fullPath: string, module: string, plugin: string}}
  *          - мета данные json модуля.
  */
-function createTextModule(modulejs) {
+function createJsonAndJsModule(modulejs) {
    return {
-      amd: false,
+      amd: true,
       encode: false,
-      fullName: `text!${modulejs.fullName}.json`,
+      fullName: `${modulejs.fullName}.json`,
       fullPath: modulejs.fullPath.replace(/\.js$/, '.json'),
       module: `${modulejs.module}.json`,
-      plugin: 'text'
+      plugin: 'js'
    };
 }
 
@@ -262,7 +262,7 @@ function packDictClassic(modules, applicationRoot, availableLanguage) {
                const fullPath = getPathDict(nameModule, lang, applicationRoot);
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
-                  dictTextModule = createTextModule(dictJsModule);
+                  dictTextModule = createJsonAndJsModule(dictJsModule);
                   dictPack[lang].push(dictTextModule);
                   dictPack[lang].push(dictJsModule);
 
