@@ -8,8 +8,7 @@ const path = require('path'),
    fs = require('fs-extra'),
    assert = require('assert');
 
-const runJsonGenerator = require('../../../lib/i18n/run-json-generator'),
-   logger = require('../../../lib/logger').logger();
+const logger = require('../../../lib/logger').logger();
 
 /**
  * Генерация задачи генерации json описания компонентов для локализации
@@ -28,6 +27,10 @@ function generateTaskForGenerateJson(taskParameters) {
          for (const module of taskParameters.config.modules) {
             folders.push(module.path);
          }
+
+         // если локализация не нужна, то и ругаться, что json-generator нет, не нужно.
+         // eslint-disable-next-line global-require
+         const runJsonGenerator = require('../../../lib/i18n/run-json-generator');
          const resultJsonGenerator = await runJsonGenerator(folders, taskParameters.config.cachePath);
          for (const error of resultJsonGenerator.errors) {
             logger.warning({
