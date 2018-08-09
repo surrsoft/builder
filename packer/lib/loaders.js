@@ -587,11 +587,11 @@ function getTemplateI18nModule(module) {
    var availableDict = ${availableDict},
       langMatch = String(typeof document === 'undefined' ? '' : document.cookie).match(/lang=([A-z-]+)/),
       langName = langMatch ? langMatch[1] : 'ru-RU',
-      langModule = 'text!${dictName}/lang/' + langName + '/' + langName + '.json';
+      langModule = '${dictName}/lang/' + langName + '/' + langName + '.json';
    if (langName in availableDict) {
       define('${module.fullName}', ['Core/i18n', langModule], function(i18n, data) {
          if (data){
-            i18n.setDict(JSON.parse(data), langModule, langName);
+            i18n.setDict(data, langModule, langName);
          }
       });
    } else {
