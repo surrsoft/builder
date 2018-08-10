@@ -47,6 +47,9 @@ class BuildConfiguration {
       // относительный url текущего сервиса
       this.urlServicePath = '';
 
+      // относительный url сервиса БЛ
+      this.urlDefaultServicePath = '';
+
       // относительный url текущего сервиса
       this.version = '';
 
@@ -150,6 +153,12 @@ class BuildConfiguration {
 
       if (this.rawConfig.hasOwnProperty('url-service-path')) {
          this.urlServicePath = this.rawConfig['url-service-path'];
+      }
+
+      if (this.rawConfig.hasOwnProperty('url-default-service-path')) {
+         this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
+      } else {
+         this.urlDefaultServicePath = this.urlServicePath;
       }
 
       if (this.rawConfig.hasOwnProperty('logs')) {
