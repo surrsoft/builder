@@ -12,7 +12,7 @@ const path = require('path'),
    fs = require('fs-extra'),
    gulp = require('gulp'),
    plumber = require('gulp-plumber'),
-   gulpIf = require('gulp-if'),
+   gulpChmod = require('gulp-chmod'),
    workerPool = require('workerpool'),
    pluginCompileEsAndTs = require('../../builder/plugins/compile-es-and-ts-simple'),
    TaskParameters = require('../../common/classes/task-parameters'),
@@ -71,7 +71,8 @@ function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
             })
          )
          .pipe(pluginCompileEsAndTs(localTaskParameters, moduleInfo))
-         .pipe(gulpIf(needSymlink, gulp.symlink(moduleOutput), gulp.dest(moduleOutput)));
+         .pipe(gulpChmod({ read: true, write: true }))
+         .pipe(gulp.dest(moduleOutput));
    };
 }
 
@@ -79,11 +80,6 @@ function generateTaskForRemoveOldFiles(taskParameters) {
    return function removeOldPlatformFiles() {
       return fs.remove(path.join(taskParameters.config.cachePath, 'platform'));
    };
-}
-
-function needSymlink(file) {
-   // если файл порождён нами же, то симлинк не применим
-   return file.history.length === 1;
 }
 
 module.exports = generateTaskForPrepareWS;
