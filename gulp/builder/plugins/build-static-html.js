@@ -32,6 +32,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
          try {
             const configForReplaceInHTML = {
                urlServicePath: taskParameters.config.urlServicePath,
+               urlDefaultServicePath: taskParameters.config.urlDefaultServicePath,
                wsPath: 'resources/WS.Core/'
             };
             const needReplacePath = !taskParameters.config.multiService;
