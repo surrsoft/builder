@@ -21,6 +21,8 @@ const guardSingleProcess = require('../common/generate-task/guard-single-process
    Cache = require('./classes/cache.js'),
    logger = require('../../lib/logger').logger();
 
+const { getDirnameForModule } = require('../builder/helpers');
+
 /**
  * Генерирует поток выполнения сбора локализуемых фраз
  * @param {string[]} processArgv массив аргументов запуска утилиты
@@ -36,7 +38,12 @@ function generateWorkflow(processArgv) {
    const pool = workerPool.pool(path.join(__dirname, '../common/worker.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
+      maxWorkers: os.cpus().length - 1 || 1,
+      forkOpts: {
+         env: {
+            'ws-core-path': getDirnameForModule(config.rawConfig.modules, 'WS.Core')
+         }
+      }
    });
 
    return gulp.series(
