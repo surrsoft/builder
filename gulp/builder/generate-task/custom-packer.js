@@ -6,7 +6,7 @@
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
-   generateCollectCustomPacks = require('../plugins/collect-custom-packages'),
+   generateCollectPackageJson = require('../plugins/collect-custom-packages'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependency-graph'),
    plumber = require('gulp-plumber'),
@@ -54,7 +54,7 @@ function generateTaskForCustomPack(taskParameters) {
                   }
                })
             )
-            .pipe(generateCollectCustomPacks(configs, root));
+            .pipe(generateCollectPackageJson(configs, root));
       };
    });
 
