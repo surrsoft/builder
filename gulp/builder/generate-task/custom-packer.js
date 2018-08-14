@@ -6,10 +6,11 @@
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
-   generatePackageJson = require('../plugins/custom-packer'),
+   generateCollectCustomPacks = require('../plugins/collect-custom-packages'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependency-graph'),
    plumber = require('gulp-plumber'),
+   customPacker = require('../../../lib/pack/custom-packer'),
    { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
 
 /**
@@ -20,6 +21,10 @@ const gulp = require('gulp'),
 function generateTaskForCustomPack(taskParameters) {
    const root = taskParameters.config.rawConfig.output,
       depsTree = new DependencyGraph(),
+      configs = {
+         priorityConfigs: [],
+         normalConfigs: []
+      },
       results = {
          bundles: {},
          bundlesRoute: {}
@@ -31,10 +36,10 @@ function generateTaskForCustomPack(taskParameters) {
       };
    }
 
-   const generatePackagesTasks = taskParameters.config.modules.map((moduleInfo) => {
+   const generateCollectPackagesTasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(root, path.basename(moduleInfo.output));
       const input = path.join(moduleOutput, '/**/*.package.json');
-      return function custompack() {
+      return function collectPackageJson() {
          return gulp
             .src(input, { dot: false, nodir: true })
             .pipe(
@@ -49,15 +54,22 @@ function generateTaskForCustomPack(taskParameters) {
                   }
                })
             )
-            .pipe(generatePackageJson(taskParameters, depsTree, results, root));
+            .pipe(generateCollectCustomPacks(configs, root));
       };
    });
 
    return gulp.series(
       generateDepsGraphTask(depsTree, taskParameters.cache),
-      gulp.parallel(generatePackagesTasks),
+      gulp.parallel(generateCollectPackagesTasks),
+      generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateSaveResultsTask(taskParameters.config, results, root)
    );
+}
+
+function generateCustomPackageTask(configs, taskParameters, depsTree, results, root) {
+   return function custompack() {
+      return customPacker.generateCurrentCustomPackage(configs, taskParameters, depsTree, results, root);
+   };
 }
 
 function generateSaveResultsTask(config, results, applicationRoot) {
