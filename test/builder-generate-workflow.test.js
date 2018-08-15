@@ -268,16 +268,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       let contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
          'buildMode': 'debug',
+         'dictionary': {},
          'htmlNames': {
             'Modul/ForChange': 'ForChange_old.html',
             'Modul/ForRename_old': 'ForRename.html',
             'Modul/Stable': 'Stable.html'
          },
+         'jsModules': {},
          'modules': {
-            'Modul': {
-               'name': 'Модуль'
-            }
-         }
+            'Модуль': 'Modul'
+         },
+         'requirejsPaths': {},
+         'xmlContents': {}
       });
 
       // запомним время модификации незменяемого файла и изменяемого в "стенде"
@@ -411,16 +413,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       contentsObj = await fs.readJSON(contentsJsonOutputPath);
       await contentsObj.should.deep.equal({
          'buildMode': 'debug',
+         'dictionary': {},
          'htmlNames': {
             'Modul/ForChange': 'ForChange_new.html',
             'Modul/ForRename_old': 'ForRename.html',
             'Modul/Stable': 'Stable.html'
          },
+         'jsModules': {},
          'modules': {
-            'Modul': {
-               'name': 'Модуль'
-            }
-         }
+            'Модуль': 'Modul'
+         },
+         'requirejsPaths': {},
+         'xmlContents': {}
       });
 
       // проверим сами html
