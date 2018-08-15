@@ -15,7 +15,6 @@ const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 const excludeRegexes = [
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
-   /[/\\]node_modules[/\\].*/,
    /[/\\]ServerEvent[/\\]worker[/\\].*/,
    /.*\.routes\.js$/,
    /.*\.original\.js$/,
@@ -23,8 +22,7 @@ const excludeRegexes = [
    /.*\.test\.js$/,
    /.*\.esp\.json$/,
    /.*[/\\]data-providers[/\\].*\.js$/,
-   /.*[/\\]design[/\\].*\.js$/,
-   /.*[/\\]node_modules[/\\].*\.js$/
+   /.*[/\\]design[/\\].*\.js$/
 ];
 
 /**

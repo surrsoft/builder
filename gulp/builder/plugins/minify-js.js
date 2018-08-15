@@ -33,7 +33,9 @@ const excludeRegexes = [
    // https://online.sbis.ru/opendoc.html?guid=05e7f1be-9fa9-48d4-a0d9-5506ac8d2b12
    /.*\.json\.js$/,
    /.*\.worker\.js$/,
-   /.*[/\\]node_modules[/\\].*/,
+
+   // TODO: удалить про node_modules
+   /.*[/\\]node_modules[/\\]sbis3-dependency-graph[/\\].*/,
    /.*[/\\]ServerEvent[/\\]worker[/\\].*/,
 
    // https://online.sbis.ru/opendoc.html?guid=761eb095-c7be-437d-ab0c-c5058de852a4

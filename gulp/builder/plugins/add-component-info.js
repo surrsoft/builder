@@ -30,13 +30,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          //  *.test.js - тесты
          //  *.worker.js - воркеры
          //  *.routes.js - роутинг. обрабатывается в отдельном плагине
-         //  файлы в папках node_modules - модули node.js
          //  файлы в папках design - файлы для макетирования в genie
          if (
             file.extname !== '.js' ||
             file.path.endsWith('.worker.js') ||
             file.path.endsWith('.test.js') ||
-            file.path.includes('/node_modules/') ||
             file.path.includes('/design/')
          ) {
             callback(null, file);
