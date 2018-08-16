@@ -37,18 +37,20 @@ module.exports = function declarePlugin(config, moduleInfo) {
             const deprecatedModules = {};
 
             for (const modFolder of Object.keys(moduleInfo.contents.modules)) {
-               if (moduleInfo.contents.modules[modFolder].hasOwnProperty('name')) {
-                  deprecatedModules[moduleInfo.contents.modules[modFolder].name] = modFolder;
-               } else {
-                  deprecatedModules[modFolder] = modFolder;
-               }
+               if (modFolder !== 'Core') {
+                  if (moduleInfo.contents.modules[modFolder].hasOwnProperty('name')) {
+                     deprecatedModules[moduleInfo.contents.modules[modFolder].name] = modFolder;
+                  } else {
+                     deprecatedModules[modFolder] = modFolder;
+                  }
 
-               if (moduleInfo.contents.modules[modFolder].hasOwnProperty('dict')) {
-                  for (const dict of moduleInfo.contents.modules[modFolder].dict) {
-                     if (dict.endsWith('.css')) {
-                        deprecateDictionary[`${modFolder}.${dict}`] = true;
-                     } else {
-                        deprecateDictionary[`${modFolder}.${dict}.json`] = true;
+                  if (moduleInfo.contents.modules[modFolder].hasOwnProperty('dict')) {
+                     for (const dict of moduleInfo.contents.modules[modFolder].dict) {
+                        if (dict.endsWith('.css')) {
+                           deprecateDictionary[`${modFolder}.${dict}`] = true;
+                        } else {
+                           deprecateDictionary[`${modFolder}.${dict}.json`] = true;
+                        }
                      }
                   }
                }
