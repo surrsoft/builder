@@ -29,7 +29,7 @@ module.exports = function collectPackageJson(configs, root) {
          );
          configsArray.forEach((currentConfig) => {
             switch (currentConfig.level) {
-               case 'Application':
+               case 'Service':
                   configs.priorityConfigs.push(currentConfig);
                   break;
                case 'Module':
