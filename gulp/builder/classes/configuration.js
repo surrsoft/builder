@@ -140,9 +140,9 @@ class BuildConfiguration {
        * Исключение: тесты билдера.
        */
       if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests) {
-         throw new Error(`В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp: 
-         ${missedNecessaryModules}
-         Добавьте их из $(SBISPlatformSDK)/ui-modules`);
+         throw new Error('В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp:' +
+         `\n${missedNecessaryModules}` +
+         '\nДобавьте их из $(SBISPlatformSDK)/ui-modules');
       }
 
       for (const module of this.rawConfig.modules) {
