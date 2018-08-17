@@ -10,7 +10,7 @@ const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
-   checkForMandatoryModules = require('../../../lib/check-build-for-main-modules'),
+   checkForNecessaryModules = require('../../../lib/check-build-for-main-modules'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
@@ -133,15 +133,15 @@ class BuildConfiguration {
          }
       }
 
-      const missedMandatorModules = checkForMandatoryModules(this.rawConfig.modules);
+      const missedNecessaryModules = checkForNecessaryModules(this.rawConfig.modules);
 
       /**
        * Если нету общеобязательного набора Интерфейсных модулей, сборку завершаем с ошибкой.
        * Исключение: тесты билдера.
        */
-      if (missedMandatorModules.length > 0 && !this.rawConfig.builderTests) {
+      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests) {
          throw new Error(`В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp: 
-         ${missedMandatorModules}
+         ${missedNecessaryModules}
          Добавьте их из $(SBISPlatformSDK)/ui-modules`);
       }
 
