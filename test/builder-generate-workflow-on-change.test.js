@@ -65,6 +65,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -140,6 +141,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'Модуль',
@@ -217,6 +219,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'Модуль',
