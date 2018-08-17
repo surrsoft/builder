@@ -60,6 +60,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         builderTests: true,
          mode: 'debug',
          modules: [
             {
@@ -133,6 +134,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'Модуль',
@@ -251,6 +253,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'Модуль',
@@ -523,6 +526,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -575,6 +579,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          localization: ['en-US', 'ru-RU'],
          'default-localization': 'ru-RU',
          modules: [
@@ -618,6 +623,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'release',
+         builderTests: true,
          localization: false,
          'default-localization': false,
          modules: [
@@ -736,6 +742,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         builderTests: true,
          modules: [
             {
                name: 'Модуль',
@@ -809,6 +816,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'release',
+         builderTests: true,
          modules: [
             {
                name: 'WS.Core',
@@ -843,6 +851,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'release',
+         builderTests: true,
          modules: [
             {
                name: 'WS.Core',
