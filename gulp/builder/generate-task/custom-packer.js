@@ -22,7 +22,8 @@ function generateTaskForCustomPack(taskParameters) {
       depsTree = new DependencyGraph(),
       results = {
          bundles: {},
-         bundlesRoute: {}
+         bundlesRoute: {},
+         excludedCSS: {}
       };
 
    if (!taskParameters.config.isReleaseMode) {
