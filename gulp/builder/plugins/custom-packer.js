@@ -55,6 +55,7 @@ module.exports = function generatePackageJson(taskParameters, depsTree, results,
 
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundles');
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundlesRoute');
+      packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'excludedCSS');
       callback();
    });
 };
