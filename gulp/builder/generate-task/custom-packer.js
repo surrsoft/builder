@@ -24,7 +24,8 @@ function generateTaskForCustomPack(changesStore, config) {
       depsTree = new DependencyGraph(),
       results = {
          bundles: {},
-         bundlesRoute: {}
+         bundlesRoute: {},
+         excludedCSS: {}
       };
 
    if (!config.isReleaseMode) {

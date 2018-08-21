@@ -54,6 +54,7 @@ module.exports = function generatePackageJson(config, depsTree, results, root) {
 
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundles');
       packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'bundlesRoute');
+      packHelpers.appendBundlesOptionsToCommon(currentResult, results, 'excludedCSS');
       callback();
    });
 };
