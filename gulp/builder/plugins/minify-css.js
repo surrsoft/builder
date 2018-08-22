@@ -11,7 +11,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
 
-const excludeRegexes = [/.*\.min\.css$/, /[/\\]node_modules[/\\].*/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
+const excludeRegexes = [/.*\.min\.css$/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
 
 /**
  * Объявление плагина

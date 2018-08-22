@@ -27,7 +27,8 @@ function generateTaskForCustomPack(taskParameters) {
       },
       results = {
          bundles: {},
-         bundlesRoute: {}
+         bundlesRoute: {},
+         excludedCSS: {}
       };
 
    if (!taskParameters.config.isReleaseMode) {

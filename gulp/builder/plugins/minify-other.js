@@ -15,7 +15,7 @@ const through = require('through2'),
 
 const includeExts = ['.jstpl', '.json'];
 
-const excludeRegexes = [/.*\.package\.json$/, /[/\\]node_modules[/\\].*/];
+const excludeRegexes = [/.*\.package\.json$/];
 
 /**
  * Объявление плагина
