@@ -153,6 +153,7 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
    const availableLang = {};
 
    availableLanguage.forEach((lang) => {
+      // eslint-disable-next-line no-sync
       if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot, isGulp))) {
          availableLang[lang] = true;
       }
@@ -267,6 +268,8 @@ function packDictClassic(modules, applicationRoot, availableLanguage) {
             nameModule = getNameModule(module.fullPath);
             Object.keys(dictPack).forEach((lang) => {
                const fullPath = getPathDict(nameModule, lang, applicationRoot);
+
+               // eslint-disable-next-line no-sync
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createJsonAndJsModule(dictJsModule);
