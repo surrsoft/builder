@@ -153,6 +153,7 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
    const availableLang = {};
 
    availableLanguage.forEach((lang) => {
+      // eslint-disable-next-line no-sync
       if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot, isGulp))) {
          availableLang[lang] = true;
       }
@@ -204,8 +205,15 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
                    * для него в пакете модуль локализации
                    */
                   modulesI18n[moduleName] = createI18nModule(moduleName);
-                  linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                  module.addDeps = modulesI18n[moduleName].fullName;
+
+                  /**
+                   * В tslib в качестве зависимости указывать локализацию не нужно и приводит
+                   * к цикличной зависимости, поэтому подобные модули локализовать не будем.
+                   */
+                  if (module.fullName.includes('/')) {
+                     linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
+                     module.addDeps = modulesI18n[moduleName].fullName;
+                  }
                }
             }
          },
@@ -260,6 +268,8 @@ function packDictClassic(modules, applicationRoot, availableLanguage) {
             nameModule = getNameModule(module.fullPath);
             Object.keys(dictPack).forEach((lang) => {
                const fullPath = getPathDict(nameModule, lang, applicationRoot);
+
+               // eslint-disable-next-line no-sync
                if (needPushDict(nameModule, lang, isPackedDict) && fs.existsSync(fullPath)) {
                   dictJsModule = createJsModule(nameModule, fullPath, lang);
                   dictTextModule = createJsonAndJsModule(dictJsModule);
