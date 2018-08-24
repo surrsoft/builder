@@ -10,7 +10,7 @@ const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
-   checkForNecessaryModules = require('../../../lib/check-build-for-main-modules'),
+   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
@@ -133,7 +133,7 @@ class BuildConfiguration {
          }
       }
 
-      const missedNecessaryModules = checkForNecessaryModules(this.rawConfig.modules);
+      const missedNecessaryModules = buildConfigurationChecker.checkForNecessaryModules(this.rawConfig.modules);
 
       /**
        * Если нету общеобязательного набора Интерфейсных модулей, сборку завершаем с ошибкой.
