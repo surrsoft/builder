@@ -56,16 +56,24 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (error) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
 
+               const missedTemplateModules = buildConfigurationChecker.getMissedTemplateModules(
+                  ['Controls', 'View'],
+                  taskParameters.config.modules
+               );
+
                /**
-                * при отсутствии ИМ Controls в структуре проекта обязательно ругаемся ошибкой.
-                * При билде .html.tmpl данный модуль необходим в обязательном порядке.
+                * при отсутствии ИМ View и Controls в структуре проекта обязательно ругаемся ошибкой.
+                * При билде .html.tmpl и tmpl данные модули необходимы в обязательном порядке.
                 */
-               if (!buildConfigurationChecker.checkForNeededModule('Controls', taskParameters.config.modules)) {
-                  const moduleNotExistsError = new Error('В вашем проекте отсутствует обязательный Интерфейсный модуль, ' +
-                     'необходимый для компиляции html.tmpl:\n"Controls"\nДобавьте его в проект из $(SBISPlatformSDK)/ui-modules');
+               if (missedTemplateModules.length > 0) {
+                  const moduleNotExistsError = new Error('В вашем проекте отсутствуют обязательные Интерфейсные модули, ' +
+                     `необходимые для компиляции *.html.tmpl и *.tmpl:\n${missedTemplateModules}\n` +
+                     'Добавьте его в проект из $(SBISPlatformSDK)/ui-modules');
+
                   logger.error({
                      message: 'Ошибка при обработке html-tmpl шаблона',
                      error: moduleNotExistsError,
+                     filePath: file.history[0],
                      moduleInfo
                   });
                } else {
