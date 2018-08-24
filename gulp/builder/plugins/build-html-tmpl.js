@@ -11,7 +11,8 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    helpers = require('../../../lib/helpers'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool'),
+   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules');
 
 /**
  * Объявление плагина
@@ -54,12 +55,27 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             );
             if (error) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
-               logger.error({
-                  message: 'Ошибка при обработке html-tmpl шаблона',
-                  error,
-                  moduleInfo,
-                  filePath: file.history[0]
-               });
+
+               /**
+                * при отсутствии ИМ Controls в структуре проекта обязательно ругаемся ошибкой.
+                * При билде .html.tmpl данный модуль необходим в обязательном порядке.
+                */
+               if (!buildConfigurationChecker.checkForNeededModule('Controls', taskParameters.config.modules)) {
+                  const moduleNotExistsError = new Error('В вашем проекте отсутствует обязательный Интерфейсный модуль, ' +
+                     'необходимый для компиляции html.tmpl:\n"Controls"\nДобавьте его в проект из $(SBISPlatformSDK)/ui-modules');
+                  logger.error({
+                     message: 'Ошибка при обработке html-tmpl шаблона',
+                     error: moduleNotExistsError,
+                     moduleInfo
+                  });
+               } else {
+                  logger.error({
+                     message: 'Ошибка при обработке html-tmpl шаблона',
+                     error,
+                     moduleInfo,
+                     filePath: file.history[0]
+                  });
+               }
             } else {
                const outputPath = path.join(moduleInfo.output, transliterate(relativeTmplPath)).replace('.tmpl', '');
                taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
