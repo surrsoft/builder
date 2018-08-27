@@ -16,7 +16,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
-const { isSymlink } = require('./lib');
+const { isSymlink, isRegularFile } = require('./lib');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
