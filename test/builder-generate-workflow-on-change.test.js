@@ -86,6 +86,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_old.css',
+         'ForRename_old_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -103,13 +104,16 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_old.css',
+         'ForRename_old_online.css',
          'ForRename_new.css',
+         'ForRename_new_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(true);
 
       // запустим таску повторно
       await runWorkflowBuild();
@@ -118,6 +122,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_new.css',
+         'ForRename_new_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
