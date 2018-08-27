@@ -50,6 +50,7 @@ describe('custompack', () => {
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
+            {},
             root,
             application,
             configsArray[0],
