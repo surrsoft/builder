@@ -67,11 +67,12 @@ async function readComponentsProperties(componentsPropertiesFilePath) {
  * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
  * @returns {Promise<{text, nodeName, dependencies}>}
  */
-async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath) {
+async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath, templateExt) {
    return processingTmpl.buildTmpl(
       processingTmpl.minifyTmpl(text),
       relativeFilePath,
-      await readComponentsProperties(componentsPropertiesFilePath)
+      await readComponentsProperties(componentsPropertiesFilePath),
+      templateExt
    );
 }
 
