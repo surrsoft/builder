@@ -18,30 +18,30 @@ const removeAllNewLines = function(str) {
 };
 
 describe('custompack', () => {
+   let moduleDeps, currentNodes, currentLinks, depsTree;
    before(async() => {
+      moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json'));
+      currentNodes = Object.keys(moduleDeps.nodes);
+      currentLinks = Object.keys(moduleDeps.links);
+      depsTree = new DependencyGraph();
+      if (currentLinks.length > 0) {
+         currentLinks.forEach((link) => {
+            depsTree.setLink(link, moduleDeps.links[link]);
+         });
+      }
+      if (currentNodes.length > 0) {
+         currentNodes.forEach((node) => {
+            const currentNode = moduleDeps.nodes[node];
+            currentNode.path = currentNode.path.replace(/^resources\//, '');
+            depsTree.setNode(node, currentNode);
+         });
+      }
       await initTest();
    });
 
    it('should reject error if include option not exists', async() => {
       let result;
       try {
-         const moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json')),
-            currentNodes = Object.keys(moduleDeps.nodes),
-            currentLinks = Object.keys(moduleDeps.links),
-            depsTree = new DependencyGraph();
-
-         if (currentLinks.length > 0) {
-            currentLinks.forEach((link) => {
-               depsTree.setLink(link, moduleDeps.links[link]);
-            });
-         }
-         if (currentNodes.length > 0) {
-            currentNodes.forEach((node) => {
-               const currentNode = moduleDeps.nodes[node];
-               currentNode.path = currentNode.path.replace(/^resources\//, '');
-               depsTree.setNode(node, currentNode);
-            });
-         }
          const config = await fs.readJson(path.join(applicationRoot, 'configs/without-include.package.json'));
          const configsArray = packHelpers.getConfigsFromPackageJson(
             path.normalize('configs/without-include.package.json'),
@@ -67,6 +67,73 @@ describe('custompack', () => {
       result.message.should.equal(
          'Конфиг для кастомного пакета должен содержать опцию include для нового вида паковки.'
       );
+   });
+   it('should reject error when no data to pack', async() => {
+      let result;
+      try {
+         const config = await fs.readJson(path.join(applicationRoot, 'configs/without-data.package.json'));
+         const configsArray = packHelpers.getConfigsFromPackageJson(
+            path.normalize('configs/without-data.package.json'),
+            applicationRoot,
+            config
+         );
+         const currentResult = await customPacker.generateCustomPackage(
+            depsTree,
+            {},
+            root,
+            application,
+            configsArray[0],
+            true,
+            true,
+            []
+         );
+         result = currentResult;
+      } catch (err) {
+         result = err;
+      }
+
+      (result instanceof Error).should.equal(true);
+      result.message.should.equal(
+         'В ваш пакет ничего не запаковалось, проверьте правильность описания правил паковки в package.json файле'
+      );
+   });
+   it('should save js and css packages when only styles included', async() => {
+      let result;
+      try {
+         const config = await fs.readJson(path.join(applicationRoot, 'configs/only-styles.package.json'));
+         const configsArray = packHelpers.getConfigsFromPackageJson(
+            path.normalize('configs/only-styles.package.json'),
+            applicationRoot,
+            config
+         );
+         const currentResult = await customPacker.generateCustomPackage(
+            depsTree,
+            {},
+            root,
+            application,
+            configsArray[0],
+            true,
+            true,
+            []
+         );
+         result = currentResult;
+      } catch (err) {
+         result = err;
+      }
+
+      (result instanceof Error).should.equal(false);
+      const resultsToRead = [
+         path.join(applicationRoot, 'configs/only-styles.package.min.css'),
+         path.join(applicationRoot, 'configs/only-styles.package.min.js')
+      ];
+      const cssPackageResult = await fs.readFile(resultsToRead[0], 'utf8');
+      const jsPackageResult = await fs.readFile(resultsToRead[1], 'utf8');
+      const correctCssPackageResult = await fs.readFile(path.join(applicationRoot, 'packcss/correct-only-styles.package.min.css'), 'utf8');
+      cssPackageResult.should.equal(correctCssPackageResult);
+      jsPackageResult.should.equal('(function(){define(\'css!InterfaceModule1/moduleStyle\',[\'css!configs/only-styles.package\'],\'\');})();');
+      resultsToRead.forEach(async(currentPath) => {
+         await fs.remove(currentPath);
+      });
    });
    const testCssPath = path.join(applicationRoot, 'packcss/testRebaseURL.css');
    it('rebaseUrl correct path without url-service-path', async() => {
