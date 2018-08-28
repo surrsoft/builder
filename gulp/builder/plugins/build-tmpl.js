@@ -15,7 +15,8 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules');
+   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules'),
+   templateExtReg = /(\.tmpl|\.wml)$/;
 
 /**
  * Объявление плагина
@@ -28,13 +29,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
-         if (file.extname !== '.tmpl') {
+         if (!['.tmpl', '.wml'].includes(file.extname)) {
             callback(null, file);
             return;
          }
          let outputMinFile = '';
          if (taskParameters.config.isReleaseMode) {
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.tmpl$/, '.min.tmpl');
+            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(templateExtReg, '.min$1');
             outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
          }
          if (file.cached) {
@@ -53,7 +54,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const [error, result] = await execInPool(
             taskParameters.pool,
             'buildTmpl',
-            [newText, relativeFilePath, componentsPropertiesFilePath],
+            [newText, relativeFilePath, componentsPropertiesFilePath, file.extname.slice(1, file.extname.length)],
             relativeFilePath,
             moduleInfo
          );
@@ -74,7 +75,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   'Добавьте его в проект из $(SBISPlatformSDK)/ui-modules');
 
                logger.error({
-                  message: 'Ошибка при обработке html-tmpl шаблона',
+                  message: 'Ошибка компиляции TMPL',
                   error: moduleNotExistsError,
                   filePath: file.history[0],
                   moduleInfo
@@ -92,13 +93,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             newText = result.text;
 
             if (taskParameters.config.isReleaseMode) {
-               // если tmpl не возможно минифицировать, то запишем оригинал
+               // если tmpl/wml невозможно минифицировать, то запишем оригинал
 
                const [errorUglify, obj] = await execInPool(
                   taskParameters.pool,
                   'uglifyJs',
                   [file.path, newText, true],
-                  relativeFilePath.replace('.tmpl', '.min.tmpl'),
+                  relativeFilePath.replace(templateExtReg, '.min$1'),
                   moduleInfo
                );
                if (errorUglify) {
@@ -107,7 +108,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      message: 'Ошибка минификации скомпилированного TMPL',
                      errorUglify,
                      moduleInfo,
-                     filePath: relativeFilePath.replace('.tmpl', '.min.tmpl')
+                     filePath: relativeFilePath.replace(templateExtReg, '.min$1')
                   });
                } else {
                   newText = obj.code;
