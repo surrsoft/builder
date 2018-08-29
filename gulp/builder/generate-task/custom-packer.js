@@ -10,8 +10,11 @@ const gulp = require('gulp'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependency-graph'),
    plumber = require('gulp-plumber'),
-   customPacker = require('../../../lib/pack/custom-packer'),
-   { saveCustomPackResults } = require('../../../lib/pack/custom-packer');
+   {
+      saveCustomPackResults,
+      generateCurrentCustomPackage,
+      collectAllIntersects
+   } = require('../../../lib/pack/custom-packer');
 
 /**
  * Генерация задачи кастомной паковки.
@@ -63,13 +66,21 @@ function generateTaskForCustomPack(taskParameters) {
       generateDepsGraphTask(depsTree, taskParameters.cache),
       gulp.parallel(generateCollectPackagesTasks),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
+      generateInterceptCollectorTask(root, results),
       generateSaveResultsTask(taskParameters.config, results, root)
    );
 }
 
 function generateCustomPackageTask(configs, taskParameters, depsTree, results, root) {
    return function custompack() {
-      return customPacker.generateCurrentCustomPackage(configs, taskParameters, depsTree, results, root);
+      return generateCurrentCustomPackage(configs, taskParameters, depsTree, results, root);
+   };
+}
+
+
+function generateInterceptCollectorTask(root, results) {
+   return function collectIntercepts() {
+      return collectAllIntersects(root, results);
    };
 }
 
