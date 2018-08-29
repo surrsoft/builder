@@ -1,6 +1,11 @@
 {
   "links": {
-
+    "InterfaceModule1/amdModule": [
+      "css!InterfaceModule1/moduleStyle"
+    ],
+    "InterfaceModule2/amdModule": [
+      "css!InterfaceModule2/moduleStyle"
+    ]
   },
   "nodes": {
     "InterfaceModule1/amdModule": {
@@ -9,6 +14,13 @@
     },
     "css!InterfaceModule1/moduleStyle": {
       "path": "InterfaceModule1\\moduleStyle.css"
+    },
+    "InterfaceModule2/amdModule": {
+      "amd": true,
+      "path": "InterfaceModule2\\amdModule.js"
+    },
+    "css!InterfaceModule2/moduleStyle": {
+      "path": "InterfaceModule2\\moduleStyle.css"
     }
   }
 }
