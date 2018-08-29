@@ -12,7 +12,7 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    {
       saveCustomPackResults,
-      generateCurrentCustomPackage,
+      generateAllCustomPackages,
       collectAllIntersects
    } = require('../../../lib/pack/custom-packer');
 
@@ -73,7 +73,7 @@ function generateTaskForCustomPack(taskParameters) {
 
 function generateCustomPackageTask(configs, taskParameters, depsTree, results, root) {
    return function custompack() {
-      return generateCurrentCustomPackage(configs, taskParameters, depsTree, results, root);
+      return generateAllCustomPackages(configs, taskParameters, depsTree, results, root);
    };
 }
 

@@ -11,10 +11,11 @@ const path = require('path'),
    packHelpers = require('../lib/pack/helpers/custompack'),
    customPacker = require('../lib/pack/custom-packer'),
    { rebaseCSS } = require('../lib/pack/custom-packer'),
-   DependencyGraph = require('../packer/lib/dependency-graph');
+   DependencyGraph = require('../packer/lib/dependency-graph'),
+   pMap = require('p-map');
 
 const removeAllNewLines = function(str) {
-   return str.replace(/\n/g, '');
+   return str.replace(/\n|\r/g, '');
 };
 
 describe('custompack', () => {
@@ -163,5 +164,109 @@ describe('custompack', () => {
       removeAllNewLines(resultCSS).should.equal(
          '.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}'
       );
+   });
+});
+
+async function removeResultFiles() {
+   const configsPath = path.join(applicationRoot, 'configs');
+   const pathsToRemove = [...(await fs.readdir(configsPath)).map(fileName => path.join('configs', fileName))];
+   pathsToRemove.push('InterfaceModule1/customPackIntersects.json');
+   pathsToRemove.push('InterfaceModule2/customPackIntersects.json');
+
+   /**
+    * Удаляем записанные тестом файлы(если были записаны)
+    */
+   await pMap(
+      pathsToRemove,
+      async(fileName) => {
+         if (!fileName.endsWith('.package.json')) {
+            await fs.remove(path.join(applicationRoot, fileName));
+         }
+      },
+      {
+         concurrency: 10
+      }
+   );
+}
+
+describe('custompack-intersects', () => {
+   let moduleDeps, currentNodes, currentLinks, depsTree;
+
+   before(async() => {
+      moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json'));
+      currentNodes = Object.keys(moduleDeps.nodes);
+      currentLinks = Object.keys(moduleDeps.links);
+      depsTree = new DependencyGraph();
+      if (currentLinks.length > 0) {
+         currentLinks.forEach((link) => {
+            depsTree.setLink(link, moduleDeps.links[link]);
+         });
+      }
+      if (currentNodes.length > 0) {
+         currentNodes.forEach((node) => {
+            const currentNode = moduleDeps.nodes[node];
+            currentNode.path = currentNode.path.replace(/^resources\//, '');
+            depsTree.setNode(node, currentNode);
+         });
+      }
+
+      await removeResultFiles();
+      await initTest();
+   });
+
+   it('intersects-should-be-founded-and-splitted-by-interface-modules', async() => {
+      const
+         configs = await fs.readJson(path.join(applicationRoot, 'configs/intersects.package.json')),
+         taskParams = {
+            config: {
+               defaultLocalization: '',
+               localizations: []
+            }
+         },
+         results = {
+            bundles: {},
+            bundlesRoute: {},
+            excludedCSS: {}
+         };
+
+      await customPacker.generateAllCustomPackages(
+         {
+            priorityConfigs: [],
+            normalConfigs: configs
+         },
+
+         // taskParameters, тут не нужны, это для локализации
+         taskParams,
+         depsTree,
+         results,
+         applicationRoot
+      );
+
+      await customPacker.collectAllIntersects(applicationRoot, results);
+
+      /**
+       * Проверка на существование помодульных результатов пересечений между кастомными пакетами
+       */
+      const
+         firstModuleIntersectsOutput = path.join(applicationRoot, 'InterfaceModule1/customPackIntersects.json'),
+         secondModuleIntersectsOutput = path.join(applicationRoot, 'InterfaceModule2/customPackIntersects.json');
+
+      (await fs.pathExists(firstModuleIntersectsOutput)).should.equal(true);
+      (await fs.pathExists(secondModuleIntersectsOutput)).should.equal(true);
+
+      const
+         firstModuleIntersects = await fs.readFile(firstModuleIntersectsOutput, 'utf8'),
+         secondModuleIntersects = await fs.readFile(secondModuleIntersectsOutput, 'utf8'),
+         correctFirstModuleIntersects = await fs.readFile(
+            path.join(path.dirname(firstModuleIntersectsOutput), 'correctCustomPackIntersects.json'),
+            'utf8'
+         ),
+         correctSecondModuleIntersects = await fs.readFile(
+            path.join(path.dirname(secondModuleIntersectsOutput), 'correctCustomPackIntersects.json'),
+            'utf8'
+         );
+      removeAllNewLines(firstModuleIntersects).should.equal(removeAllNewLines(correctFirstModuleIntersects));
+      removeAllNewLines(secondModuleIntersects).should.equal(removeAllNewLines(correctSecondModuleIntersects));
+      await removeResultFiles();
    });
 });
