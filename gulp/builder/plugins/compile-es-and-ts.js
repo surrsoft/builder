@@ -58,7 +58,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             const jsInSources = file.history[0].replace(esExt, '.js');
-            if (await fs.pathExists(jsInSources)) {
+
+            /**
+             * будем в любом случае перезатирать файл результатом компиляции(для .es модулей, .ts лучше не трогать),
+             * поскольку в противном случае до таски паковки библиотек мы не дойдём в виду отсутствия
+             * скомпилированного модуля в потоке
+             */
+            if (await fs.pathExists(jsInSources) && file.extname === '.ts') {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
