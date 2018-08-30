@@ -53,7 +53,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]*(?:\.\d+)?)(?:{{[^{}]+}})?(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]*(?:\.\d+)?(?:{{[^{}]+}})?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
                         // если в пути уже есть .min, то дублировать не нужно
