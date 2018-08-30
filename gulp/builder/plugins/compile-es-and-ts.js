@@ -11,7 +11,8 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   esExt = /\.(es|ts)$/;
+   esExt = /\.(es|ts)$/,
+   jsExt = /\.js$/;
 
 /**
  * Объявление плагина
@@ -27,6 +28,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          try {
             if (!file.contents) {
                callback();
+               return;
+            }
+
+            /**
+             * Если имеется скомпилированный вариант для .es уже в исходниках, нам необходимо
+             * выкинуть его из потока Gulp, чтобы не возникало ситуации, когда в потоке будут
+             * 2 одинаковых модуля и билдер попытается создать 2 симлинка.
+             */
+            if (file.extname === '.js') {
+               const esInSource = await fs.pathExists(file.path.replace(jsExt, '.es'));
+               if (esInSource) {
+                  callback(null);
+               } else {
+                  callback(null, file);
+               }
                return;
             }
 
