@@ -9,6 +9,7 @@ const through = require('through2'),
    fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
 
@@ -31,13 +32,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            let isLangCss = false;
+            const isLangCss = helpers.isLocalizationFile(moduleInfo, file);
             const allThemes = taskParameters.cache.currentStore.styleThemes;
-
-            if (moduleInfo.contents.availableLanguage) {
-               const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
-               isLangCss = avlLang.includes(file.basename.replace('.less', ''));
-            }
 
             if (!file.path.endsWith('.less')) {
                callback(null, file);
