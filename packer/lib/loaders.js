@@ -31,6 +31,7 @@ const loaders = {
    optional: optionalLoader,
    i18n: i18nLoader,
    tmpl: tmplLoader,
+   wml: tmplLoader,
    default: baseTextLoader
 };
 
