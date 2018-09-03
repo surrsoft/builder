@@ -1,6 +1,6 @@
 {
    "name": "sbis3-builder",
-   "version": "3.18.500-BUILD",
+   "version": "3.18.510-BUILD",
    "private": true,
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
    "files": [
@@ -68,10 +68,10 @@
       "eslint-plugin-promise": "3.8.0",
       "mocha": "5.2.0",
       "nyc": "12.0.2",
-      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.500",
-      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.500",
-      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.500",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.500"
+      "sbis3-controls": "git+ssh://git@git.sbis.ru:sbis/controls.git#rc-3.18.510",
+      "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.18.510",
+      "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.18.510",
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.18.510"
    },
    "engines": {
       "node": ">=8.9.3"
