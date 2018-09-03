@@ -71,10 +71,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                nodes: {}
             };
 
-            const filePathToRelativeInResources = (filePath) => {
+            const filePathToRelativeInAppRoot = (filePath) => {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
+               const prettyPath = helpers.prettifyPath(transliterate(relativePath));
                return prettyPath.replace(ext, `.min${ext}`);
             };
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
@@ -101,7 +101,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   json.links[info.componentName] = [...depsOfLink];
                   json.nodes[info.componentName] = {
                      amd: true,
-                     path: filePathToRelativeInResources(filePath).replace(/(\.ts|\.es)$/, '.js')
+                     path: filePathToRelativeInAppRoot(filePath).replace(/(\.ts|\.es)$/, '.js')
                   };
                }
             });
@@ -115,7 +115,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   }
                   json.nodes[markupObj.nodeName] = {
                      amd: true,
-                     path: filePathToRelativeInResources(filePath)
+                     path: filePathToRelativeInAppRoot(filePath)
                   };
                }
             }
@@ -129,7 +129,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
                json.nodes[nodeName] = {
-                  path: filePathToRelativeInResources(filePath)
+                  path: filePathToRelativeInAppRoot(filePath)
                };
             }
 
