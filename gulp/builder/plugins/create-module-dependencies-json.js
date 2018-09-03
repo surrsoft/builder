@@ -71,10 +71,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                nodes: {}
             };
 
-            const filePathToRelativeInAppRoot = (filePath) => {
+            const filePathToRelativeInResources = (filePath) => {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const prettyPath = helpers.prettifyPath(transliterate(relativePath));
+               const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
                return prettyPath.replace(ext, `.min${ext}`);
             };
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
@@ -101,7 +101,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   json.links[info.componentName] = [...depsOfLink];
                   json.nodes[info.componentName] = {
                      amd: true,
-                     path: filePathToRelativeInAppRoot(filePath).replace(/(\.ts|\.es)$/, '.js')
+                     path: filePathToRelativeInResources(filePath).replace(/(\.ts|\.es)$/, '.js')
                   };
                }
             });
@@ -115,7 +115,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   }
                   json.nodes[markupObj.nodeName] = {
                      amd: true,
-                     path: filePathToRelativeInAppRoot(filePath)
+                     path: filePathToRelativeInResources(filePath)
                   };
                }
             }
@@ -129,7 +129,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
                json.nodes[nodeName] = {
-                  path: filePathToRelativeInAppRoot(filePath)
+                  path: filePathToRelativeInResources(filePath)
                };
             }
 
