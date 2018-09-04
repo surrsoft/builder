@@ -104,9 +104,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                );
                if (errorUglify) {
                   taskParameters.cache.markFileAsFailed(file.history[0]);
+
+                  /**
+                   * ошибку uglify-js возвращает в виде объекта с 2мя свойствами:
+                   * 1)message - простое сообщение ошибки.
+                   * 2)stack - сообщение об ошибке + стек вызовов.
+                   * Воспользуемся для вывода вторым.
+                   */
                   logger.error({
-                     message: 'Ошибка минификации скомпилированного TMPL',
-                     errorUglify,
+                     message: `Ошибка минификации скомпилированного TMPL: ${errorUglify.stack}`,
                      moduleInfo,
                      filePath: relativeFilePath.replace(templateExtReg, '.min$1')
                   });
