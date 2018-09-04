@@ -16,7 +16,7 @@ const through = require('through2'),
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(config, moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
@@ -26,8 +26,8 @@ module.exports = function declarePlugin(config, moduleInfo) {
       function onFlush(callback) {
          try {
             // подготовим contents.json и contents.js
-            if (config.version) {
-               moduleInfo.contents.buildnumber = config.version;
+            if (taskParameters.config.version) {
+               moduleInfo.contents.buildnumber = taskParameters.config.version;
             }
 
             const contentsJsFile = new Vinyl({
