@@ -90,7 +90,7 @@ node ('controls') {
                 echo " Выкачиваем сборочные скрипты"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
-                    branches: [[name: "3.18.500/feature/branch_builder"]],
+                    branches: [[name: "rc-${version}"]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [[
                         $class: 'RelativeTargetDirectory',
