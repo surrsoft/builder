@@ -21,7 +21,6 @@ const through = require('through2'),
    path = require('path'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
    esExt = /\.(es|ts)$/;
@@ -72,10 +71,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
-            const isLangJs = helpers.isLocalizationFile(moduleInfo, file);
             const extName = esExt.test(file.history[0]) ? esExt : file.extname;
-            const filePath = isLangJs ? moduleInfo.output : moduleInfo.path;
-            const relativePathWoExt = path.relative(filePath, file.history[0]).replace(extName, '');
+            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
             const outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
             const outputMinJsFile = `${outputFileWoExt}.min.js`;
             const outputMinOriginalJsFile = `${outputFileWoExt}.min.original.js`;

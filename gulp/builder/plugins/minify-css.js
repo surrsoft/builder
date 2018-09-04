@@ -8,7 +8,6 @@
 const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
 
@@ -40,9 +39,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
-            const isLangCss = helpers.isLocalizationFile(moduleInfo, file);
             const lastHistory = file.history[file.history.length - 1];
-            const filePath = (/\.css$/.test(file.history[0]) && !isLangCss) ? moduleInfo.path : moduleInfo.output;
+            const filePath = /\.css$/.test(file.history[0]) ? moduleInfo.path : moduleInfo.output;
             const relativePath = path.relative(filePath, lastHistory).replace(/\.css$/, '.min.css');
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
             if (file.cached) {
