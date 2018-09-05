@@ -9,6 +9,7 @@ def gitlabStatusUpdate() {
         updateGitlabCommitStatus state: 'success'
     }
 }
+echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
 node ('controls') {
     def version = "3.18.500"
     def ver = version.replaceAll('.','')
