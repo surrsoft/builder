@@ -9,6 +9,7 @@ def gitlabStatusUpdate() {
         updateGitlabCommitStatus state: 'success'
     }
 }
+echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
 node ('controls') {
     def version = "3.18.500"
     def ver = version.replaceAll('.','')
@@ -133,6 +134,13 @@ node ('controls') {
                             url: 'git@git.sbis.ru:root/sbis3-builder.git']]
                     ])
                 }
+                dir("./builder"){
+                    sh """
+                    git fetch
+                    git merge origin/rc-${version}
+                    """
+                }
+                updateGitlabCommitStatus state: 'running'
             },
             checkout3: {
                 echo " Выкачиваем сборочные скрипты"
