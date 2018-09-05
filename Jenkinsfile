@@ -133,6 +133,13 @@ node ('controls') {
                             url: 'git@git.sbis.ru:root/sbis3-builder.git']]
                     ])
                 }
+                dir("./builder"){
+                    sh """
+                    git fetch
+                    git merge origin/rc-${version}
+                    """
+                }
+                updateGitlabCommitStatus state: 'running'
             },
             checkout3: {
                 echo " Выкачиваем сборочные скрипты"
