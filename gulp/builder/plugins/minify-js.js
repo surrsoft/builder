@@ -71,9 +71,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
+            let outputFileWoExt;
             const extName = esExt.test(file.history[0]) ? esExt : file.extname;
-            const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
-            const outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
+
+            /**
+             * объединённый словарь локализации пишется сразу же в кэш, поэтому для
+             * него будет неправильно вычислен относительный путь. В данном случае нам просто
+             * необходимо взять путь объединённого словаря и сделать .min расширение. Для всех
+             * остальных css всё остаётся по старому.
+             */
+            if (file.unitedDict) {
+               outputFileWoExt = file.path.replace(extName, '');
+            } else {
+               const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
+               outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
+            }
             const outputMinJsFile = `${outputFileWoExt}.min.js`;
             const outputMinOriginalJsFile = `${outputFileWoExt}.min.original.js`;
             const outputMinJsMapFile = `${outputFileWoExt}.min.js.map`;
