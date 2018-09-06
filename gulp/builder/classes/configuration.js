@@ -56,6 +56,9 @@ class BuildConfiguration {
 
       // папка, куда сохраняются все логи
       this.logFolder = '';
+
+      // создание gz для сконвертированных ресурсов, по умолчанию true
+      this.createArchiveVersions = true;
    }
 
    /**
@@ -74,9 +77,9 @@ class BuildConfiguration {
          this.version = this.rawConfig.version;
       }
 
-      // desktopApplication нужен только при сборке десктопного приложения
-      if (this.rawConfig.hasOwnProperty('desktop-application') && typeof this.rawConfig['desktop-application'] === 'boolean') {
-         this.desktopApplication = this.rawConfig['desktop-application'];
+      // установим переданное в конфиге значение createArchiveVersions, если такое имеется
+      if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
+         this.createArchiveVersions = this.rawConfig.createArchiveVersions;
       }
 
       this.cachePath = this.rawConfig.cache;
