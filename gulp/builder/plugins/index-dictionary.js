@@ -59,7 +59,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      new Vinyl({
                         base: moduleInfo.output,
                         path: mergedCSSPath,
-                        contents: Buffer.from(mergedCSSCode)
+                        contents: Buffer.from(mergedCSSCode),
+                        unitedDict: true
                      })
                   );
                }
@@ -71,7 +72,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      new Vinyl({
                         base: moduleInfo.output,
                         path: loaderPath,
-                        contents: Buffer.from(loaderCode)
+                        contents: Buffer.from(loaderCode),
+                        unitedDict: true
                      })
                   );
                }

@@ -39,10 +39,22 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
-            const lastHistory = file.history[file.history.length - 1];
-            const filePath = /\.css$/.test(file.history[0]) ? moduleInfo.path : moduleInfo.output;
-            const relativePath = path.relative(filePath, lastHistory).replace(/\.css$/, '.min.css');
-            const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
+            let outputMinFile;
+
+            /**
+             * объединённый словарь локализации пишется сразу же в кэш, поэтому для
+             * него будет неправильно вычислен относительный путь. В данном случае нам просто
+             * необходимо взять путь объединённого словаря и сделать .min расширение. Для всех
+             * остальных css всё остаётся по старому.
+             */
+            if (file.unitedDict) {
+               outputMinFile = file.path.replace(/\.css$/, '.min.css');
+            } else {
+               const lastHistory = file.history[file.history.length - 1];
+               const filePath = /\.css$/.test(file.history[0]) ? moduleInfo.path : moduleInfo.output;
+               const relativePath = path.relative(filePath, lastHistory).replace(/\.css$/, '.min.css');
+               outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
+            }
             if (file.cached) {
                taskParameters.cache.getOutputForFile(file.history[0]).forEach((outputFile) => {
                   taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo);
