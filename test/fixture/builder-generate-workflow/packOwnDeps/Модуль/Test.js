@@ -1,3 +1,4 @@
+/* eslint-disable */
 define('Modul/Test', [
    'tmpl!Modul/Test',
    'wml!Modul/Test'
