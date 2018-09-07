@@ -649,34 +649,56 @@ describe('gulp/builder/generate-workflow.js', () => {
       const testJsOutputPath = path.join(moduleOutputFolder, 'Test.min.js');
       let testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
 
-      // проверим, что js файл содержит актуальные данные из js и tmpl
-      testJsOutputContent.includes('TestClassOld').should.equal(true);
-      testJsOutputContent.includes('testFunctionOld').should.equal(true);
+      // проверим, что js файл содержит актуальные данные из js, tmpl и wml
+      testJsOutputContent.includes('TestClassTmplOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionTmplOld').should.equal(true);
+      testJsOutputContent.includes('TestClassWmlOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionWmlOld').should.equal(true);
 
       // поменяем js
       const testJsInputPath = path.join(moduleSourceFolder, 'Test.js');
       const testJsInputContent = await fs.readFile(testJsInputPath);
-      await fs.writeFile(testJsInputPath, testJsInputContent.toString().replace(/testFunctionOld/g, 'testFunctionNew'));
+      const newTestJsInputContent = testJsInputContent.toString()
+         .replace(/testFunctionTmplOld/g, 'testFunctionTmplNew')
+         .replace(/testFunctionWmlOld/g, 'testFunctionWmlNew');
+      await fs.writeFile(testJsInputPath, newTestJsInputContent);
 
       await runWorkflow();
 
-      // проверим, что js файл содержит актуальные данные из js и tmpl
+      // проверим, что js файл содержит актуальные данные из js, tmpl и wml
       testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
-      testJsOutputContent.includes('TestClassOld').should.equal(true);
-      testJsOutputContent.includes('testFunctionNew').should.equal(true);
+      testJsOutputContent.includes('TestClassTmplOld').should.equal(true);
+      testJsOutputContent.includes('TestClassWmlOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionTmplNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionWmlNew').should.equal(true);
 
       // поменяем tmpl
       const testTmplInputPath = path.join(moduleSourceFolder, 'Test.tmpl');
       const testTmplInputContent = await fs.readFile(testTmplInputPath);
-      await fs.writeFile(testTmplInputPath, testTmplInputContent.toString().replace(/TestClassOld/g, 'TestClassNew'));
+      await fs.writeFile(testTmplInputPath, testTmplInputContent.toString().replace(/TestClassTmplOld/g, 'TestClassTmplNew'));
 
       await runWorkflow();
 
-      // проверим, что js файл содержит актуальные данные из js и tmpl
+      // проверим, что js файл содержит актуальные данные из js, tmpl и wml
       testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
-      testJsOutputContent.includes('TestClassNew').should.equal(true);
-      testJsOutputContent.includes('testFunctionNew').should.equal(true);
+      testJsOutputContent.includes('TestClassTmplNew').should.equal(true);
+      testJsOutputContent.includes('TestClassWmlOld').should.equal(true);
+      testJsOutputContent.includes('testFunctionTmplNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionWmlNew').should.equal(true);
 
+      // поменяем wml
+      const testWmlInputPath = path.join(moduleSourceFolder, 'Test.wml');
+      const testWmlInputContent = await fs.readFile(testWmlInputPath);
+      await fs.writeFile(testWmlInputPath, testWmlInputContent.toString().replace(/TestClassWmlOld/g, 'TestClassWmlNew'));
+
+      await runWorkflow();
+
+      // проверим, что js файл содержит актуальные данные из js, tmpl и wml
+      testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
+      testJsOutputContent.includes('TestClassTmplNew').should.equal(true);
+      testJsOutputContent.includes('TestClassWmlNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionTmplNew').should.equal(true);
+      testJsOutputContent.includes('testFunctionWmlNew').should.equal(true);
       await clearWorkspace();
    });
 
