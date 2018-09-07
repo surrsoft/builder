@@ -56,6 +56,9 @@ class BuildConfiguration {
 
       // папка, куда сохраняются все логи
       this.logFolder = '';
+
+      // создание gz для сконвертированных ресурсов, по умолчанию true
+      this.createArchiveVersions = true;
    }
 
    /**
@@ -72,6 +75,11 @@ class BuildConfiguration {
       // version есть только при сборке дистрибутива
       if (this.rawConfig.hasOwnProperty('version') && typeof this.rawConfig.version === 'string') {
          this.version = this.rawConfig.version;
+      }
+
+      // установим переданное в конфиге значение createArchiveVersions, если такое имеется
+      if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
+         this.createArchiveVersions = this.rawConfig.createArchiveVersions;
       }
 
       this.cachePath = this.rawConfig.cache;
