@@ -1,8 +1,13 @@
+/* eslint-disable */
 define('Modul/Test', [
-   'tmpl!Modul/Test'
+   'tmpl!Modul/Test',
+   'wml!Modul/Test'
 ], function() {
    return {
-      'testFunctionOld': function() {
+      'testFunctionTmplOld': function() {
+         return '';
+      },
+      'testFunctionWmlOld': function() {
          return '';
       }
    };
