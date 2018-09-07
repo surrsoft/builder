@@ -19,7 +19,7 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
-   // js файлы можно паковать только после сборки xhtml и tmpl файлов.
+   // js файлы можно паковать только после сборки xhtml, tmpl и wml файлов.
    // поэтому переместим обработку в самый конец
    const jsFiles = [];
    return through.obj(
@@ -52,8 +52,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                let relativeFileName = '';
                if (dep.startsWith('html!')) {
                   relativeFileName = `${relativeFileName.replace('html!', '')}.xhtml`;
-               } else {
+               } else if (dep.startsWith('tmpl!')) {
                   relativeFileName = `${relativeFileName.replace('tmpl!', '')}.tmpl`;
+               } else {
+                  relativeFileName = `${relativeFileName.replace('wml!', '')}.wml`;
                }
                if (relativeFileName.startsWith(moduleNameOutput)) {
                   const relativeFileNameWoModule = relativeFileName
@@ -74,7 +76,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   const componentInfo = componentsInfo[prettyFilePath];
                   if (componentInfo.componentName && componentInfo.componentDep) {
                      for (const dep of componentInfo.componentDep) {
-                        if (dep.startsWith('html!') || dep.startsWith('tmpl!')) {
+                        if (dep.startsWith('html!') || dep.startsWith('tmpl!') || dep.startsWith('wml!')) {
                            ownDeps.push(dep);
                            const fullPath = getFullPathInSource(dep);
                            if (fullPath) {
