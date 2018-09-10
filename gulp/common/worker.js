@@ -6,14 +6,14 @@
 /* eslint-disable global-require, no-inner-declarations */
 'use strict';
 
+// не всегда понятно по 10 записям, откуда пришёл вызов.
+Error.stackTraceLimit = 100;
+
 // логгер - прежде всего
 require('../../lib/logger').setWorkerLogger();
 
 const logger = require('../../lib/logger').logger();
 try {
-   // не всегда понятно по 10 записям, откуда пришёл вызов.
-   Error.stackTraceLimit = 100;
-
    process.on('unhandledRejection', (reason, p) => {
       // eslint-disable-next-line no-console
       console.log(
