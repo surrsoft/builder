@@ -26,6 +26,7 @@ const supportedPluginsForLinks = new Set([
    'optional',
    'i18n',
    'tmpl',
+   'wml',
    'cdn',
    'preload',
    'remote'
@@ -110,7 +111,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
                if (markupObj) {
-                  if (markupObj.nodeName.startsWith('tmpl!')) {
+                  /**
+                   * добавляем в module-dependencies в links только информацию о tmpl и wml.
+                   * Остальное незачем там хранить.
+                   */
+                  if (markupObj.nodeName.startsWith('tmpl!') || markupObj.nodeName.startsWith('wml!')) {
                      json.links[markupObj.nodeName] = markupObj.dependencies || [];
                   }
                   json.nodes[markupObj.nodeName] = {
