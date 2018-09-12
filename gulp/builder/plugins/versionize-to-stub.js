@@ -12,7 +12,7 @@ const through = require('through2'),
 const VERSION_STUB = '.vBUILDER_VERSION_STUB';
 const VERSION_MIN_STUB = '.vBUILDER_VERSION_MIN_STUB';
 
-const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
+const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
  * Объявление плагина
@@ -50,7 +50,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|ws:\/)[\w/+-.]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg)/g,
                `$1${VERSION_STUB}$2`
             );
-         } else if (['.html', '.tmpl', '.xhtml'].includes(file.extname)) {
+         } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
             newText = newText
                .replace(
                   /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]*(?:\.\d+)?(?:{{[^{}]+}})?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
