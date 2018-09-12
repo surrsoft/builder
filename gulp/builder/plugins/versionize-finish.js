@@ -12,7 +12,7 @@ const through = require('through2'),
 const VERSION_STUB = /\.vBUILDER_VERSION_STUB/g;
 const VERSION_MIN_STUB = /\.vBUILDER_VERSION_MIN_STUB/g;
 
-const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml'];
+const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
  * Объявление плагина
