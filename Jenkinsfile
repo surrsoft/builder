@@ -430,12 +430,18 @@ node ('controls') {
             sudo chmod -R 0777 ${workspace}
             sudo chmod -R 0777 /home/sbis/Controls
         """
+        dir(workspace){
+            sh """
+            7za a log_jinnee -t7z ${workspace}/jinnee/logs
+            """
+        }
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
             if ( integ ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
             }
 
         gitlabStatusUpdate()
