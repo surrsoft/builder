@@ -6,7 +6,7 @@
 'use strict';
 const gulp = require('gulp'),
    path = require('path'),
-   generateCollectPackageJson = require('../plugins/collect-custom-packages'),
+   generateCollectPackageJson = require('../plugins/collect-custom-packs'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependency-graph'),
    plumber = require('gulp-plumber'),
@@ -24,10 +24,7 @@ const gulp = require('gulp'),
 function generateTaskForCustomPack(taskParameters) {
    const root = taskParameters.config.rawConfig.output,
       depsTree = new DependencyGraph(),
-      configs = {
-         priorityConfigs: [],
-         normalConfigs: []
-      },
+      configs = taskParameters.config.customPackages,
       results = {
          bundles: {},
          bundlesRoute: {},
@@ -40,31 +37,8 @@ function generateTaskForCustomPack(taskParameters) {
       };
    }
 
-   const generateCollectPackagesTasks = taskParameters.config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(root, path.basename(moduleInfo.output));
-      const input = path.join(moduleOutput, '/**/*.package.json');
-      return function collectPackageJson() {
-         return gulp
-            .src(input, { dot: false, nodir: true })
-            .pipe(
-               plumber({
-                  errorHandler(err) {
-                     logger.error({
-                        message: 'Задача custompack завершилась с ошибкой',
-                        error: err,
-                        moduleInfo
-                     });
-                     this.emit('end');
-                  }
-               })
-            )
-            .pipe(generateCollectPackageJson(configs, root));
-      };
-   });
-
    return gulp.series(
       generateDepsGraphTask(depsTree, taskParameters.cache),
-      gulp.parallel(generateCollectPackagesTasks),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateInterceptCollectorTask(root, results),
       generateSaveResultsTask(taskParameters.config, results, root)

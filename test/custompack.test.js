@@ -46,7 +46,6 @@ describe('custompack', () => {
          const config = await fs.readJson(path.join(applicationRoot, 'configs/without-include.package.json'));
          const configsArray = packHelpers.getConfigsFromPackageJson(
             path.normalize('configs/without-include.package.json'),
-            applicationRoot,
             config
          );
          const currentResult = await customPacker.generateCustomPackage(
@@ -75,7 +74,6 @@ describe('custompack', () => {
          const config = await fs.readJson(path.join(applicationRoot, 'configs/without-data.package.json'));
          const configsArray = packHelpers.getConfigsFromPackageJson(
             path.normalize('configs/without-data.package.json'),
-            applicationRoot,
             config
          );
          const currentResult = await customPacker.generateCustomPackage(
@@ -104,7 +102,6 @@ describe('custompack', () => {
          const config = await fs.readJson(path.join(applicationRoot, 'configs/only-styles.package.json'));
          const configsArray = packHelpers.getConfigsFromPackageJson(
             path.normalize('configs/only-styles.package.json'),
-            applicationRoot,
             config
          );
          const currentResult = await customPacker.generateCustomPackage(
