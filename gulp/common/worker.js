@@ -3,11 +3,34 @@
  * @author Бегунов Ал. В.
  */
 
-/* eslint-disable global-require, no-inner-declarations */
+/* eslint-disable no-console, global-require, no-inner-declarations */
 'use strict';
+
+/**
+ * Попытаемся получить текущую рабочую директорию Node.js.
+ * Если произойдёт ошибка, возьмём в качестве CWD директорию
+ * основного процесса Node.js, которую мы получим из окружения
+ * пула воркеров
+ * @returns {*}
+ */
+function checkCWDAvailability() {
+   try {
+      const currentDir = process.cwd();
+      return currentDir;
+   } catch (error) {
+      console.log('cwd потеряна. Скорее всего директория, из которой был запущен воркер, была удалена.' +
+         'В таком случае возьмём cwd основного процесса Node.js');
+      return false;
+   }
+}
 
 // не всегда понятно по 10 записям, откуда пришёл вызов.
 Error.stackTraceLimit = 100;
+
+if (!checkCWDAvailability()) {
+   console.log('Меняем cwd воркера на cwd основного процесса Node.js');
+   process.chdir(process.env['main-process-cwd']);
+}
 
 // логгер - прежде всего
 require('../../lib/logger').setWorkerLogger();
@@ -15,7 +38,6 @@ require('../../lib/logger').setWorkerLogger();
 const logger = require('../../lib/logger').logger();
 try {
    process.on('unhandledRejection', (reason, p) => {
-      // eslint-disable-next-line no-console
       console.log(
          "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
          'Unhandled Rejection at:\n',

@@ -100,7 +100,8 @@ function generateTaskForInitWorkerPool(taskParameters) {
             maxWorkers: os.cpus().length - 1 || 1,
             forkOpts: {
                env: {
-                  'ws-core-path': wsCorePath
+                  'ws-core-path': wsCorePath,
+                  'main-process-cwd': process.cwd()
                }
             }
          })
