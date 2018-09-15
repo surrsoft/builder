@@ -53,7 +53,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
             newText = newText
                .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})+[\w{}/+-.]*(?:\.\d+)?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
+                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]*(?:\.\d+)?(?:{{[^{}]+}})?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
                   (match, partFilePath, partExt) => {
                      if (partExt === '.css') {
                         // если в пути уже есть .min, то дублировать не нужно
@@ -64,7 +64,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   }
                )
                .replace(
-                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+}|{{[^{}]*}})+[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
+                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+}|{{[^{}]*}})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
                   (match, partEqual, partFilePath, partExt) => {
                      // ignore cdn and data-providers
                      if (
