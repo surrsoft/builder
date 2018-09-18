@@ -129,10 +129,18 @@ describe('gulp/common/worker.js', () => {
          [error] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = error.message.replace(/\\/g, '/');
-         lib.trimLessError(errorMessage).should.equal(
-            `Ошибка компиляции ${filePath} на строке 1: 'notExist' wasn't found.`
-         );
+         const errorMessage = lib.trimLessError(error.message.replace(/\\/g, '/'));
+         const lessErrorsByThemes = [];
+         Object.keys(themes).forEach((currentTheme) => {
+            lessErrorsByThemes.push(`Ошибка компиляции ${filePath} для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
+         });
+         let result = false;
+         lessErrorsByThemes.forEach((currentMessage) => {
+            if (currentMessage === errorMessage) {
+               result = true;
+            }
+         });
+         result.should.equal(true);
       } finally {
          await clearWorkspace();
          await pool.terminate();

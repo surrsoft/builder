@@ -78,7 +78,7 @@ describe('build less', () => {
          return lib
             .trimLessError(errorMessage)
             .should.equal(
-               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
                   "'notExist' wasn't found."
             );
       });
@@ -95,7 +95,7 @@ describe('build less', () => {
          return lib
             .trimLessError(errorMessage)
             .should.equal(
-               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less на строке 1: ` +
+               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
                   "'notExist' wasn't found."
             );
       });
@@ -104,16 +104,22 @@ describe('build less', () => {
    it('less with internal error', () => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
       const text = '@import "Error";';
+      const lessErrorsByThemes = [];
+      Object.keys(themes).forEach((currentTheme) => {
+         lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
+      });
 
       const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
       return expect(promise).to.be.rejected.then((error) => {
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = error.message.replace(/\\/g, '/');
-         return lib
-            .trimLessError(errorMessage)
-            .should.equal(
-               `Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less на строке 1: 'notExist' wasn't found.`
-            );
+         const errorMessage = lib.trimLessError(error.message.replace(/\\/g, '/'));
+         let result = false;
+         lessErrorsByThemes.forEach((currentMessage) => {
+            if (currentMessage === errorMessage) {
+               result = true;
+            }
+         });
+         return result.should.equals(true);
       });
    });
 
