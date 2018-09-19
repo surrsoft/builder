@@ -60,10 +60,10 @@ describe('gulp/common/worker.js', () => {
             [workspaceFolder],
             themes
          ]);
-         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].imports.length.should.equal(2);
-         resultsBuildLess[0].text.should.equal('');
+         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.text.should.equal('');
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -101,10 +101,10 @@ describe('gulp/common/worker.js', () => {
             [workspaceFolder],
             themes
          ]);
-         resultsBuildLess[0].hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].imports.length.should.equal(2);
-         resultsBuildLess[0].text.should.equal(
+         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.text.should.equal(
             ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );
       } finally {
@@ -126,10 +126,10 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         [error] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
+         const [, compiledResult] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = lib.trimLessError(error.message.replace(/\\/g, '/'));
+         const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
          const lessErrorsByThemes = [];
          Object.keys(themes).forEach((currentTheme) => {
             lessErrorsByThemes.push(`Ошибка компиляции ${filePath} для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
