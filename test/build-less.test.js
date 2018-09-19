@@ -1,16 +1,12 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 'use strict';
 
 const initTest = require('./init-test');
 
-const chai = require('chai'),
+const
    path = require('path'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
    buildLess = require('../lib/build-less');
-
-const { expect } = chai;
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
@@ -32,76 +28,74 @@ describe('build less', () => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal('');
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal('');
    });
-   it('less with default theme', async() => {
+   it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
    it('less from retail', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, {});
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
    it('less from retail with presto theme', async() => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, {});
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, sbis3ControlsPath, sbis3ControlsPath, pathsForImport, themes);
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
 
    // важно отобразить корректно строку в которой ошибка
-   it('less with error', () => {
+   it('less with error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
-      return expect(promise).to.be.rejected.then((error) => {
-         // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = error.message.replace(/\\/g, '/');
-         return lib
-            .trimLessError(errorMessage)
-            .should.equal(
-               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
-                  "'notExist' wasn't found."
-            );
-      });
+      const results = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
+
+      // заменяем слеши, иначе не сравнить на linux и windows одинаково
+      const errorMessage = results[0].error.replace(/\\/g, '/');
+      return lib
+         .trimLessError(errorMessage)
+         .should.equal(
+            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
+            "'notExist' wasn't found."
+         );
    });
 
-   it('less with error from SBIS3.CONTROLS', () => {
+   it('less with error from SBIS3.CONTROLS', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
-      return expect(promise).to.be.rejected.then((error) => {
-         // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = error.message.replace(/\\/g, '/');
-         return lib
-            .trimLessError(errorMessage)
-            .should.equal(
-               `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
-                  "'notExist' wasn't found."
-            );
-      });
+      const results = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
+
+      // заменяем слеши, иначе не сравнить на linux и windows одинаково
+      const errorMessage = results[0].error.replace(/\\/g, '/');
+      return lib
+         .trimLessError(errorMessage)
+         .should.equal(
+            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
+            "'notExist' wasn't found."
+         );
    });
 
-   it('less with internal error', () => {
+   it('less with internal error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
       const text = '@import "Error";';
       const lessErrorsByThemes = [];
@@ -109,18 +103,17 @@ describe('build less', () => {
          lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
       });
 
-      const promise = buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
-      return expect(promise).to.be.rejected.then((error) => {
-         // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = lib.trimLessError(error.message.replace(/\\/g, '/'));
-         let result = false;
-         lessErrorsByThemes.forEach((currentMessage) => {
-            if (currentMessage === errorMessage) {
-               result = true;
-            }
-         });
-         return result.should.equals(true);
+      const compiledResult = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
+
+      // заменяем слеши, иначе не сравнить на linux и windows одинаково
+      const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
+      let result = false;
+      lessErrorsByThemes.forEach((currentMessage) => {
+         if (currentMessage === errorMessage) {
+            result = true;
+         }
       });
+      return result.should.equals(true);
    });
 
    it('variables.less from themes', async() => {
@@ -151,8 +144,8 @@ describe('build less', () => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath, pathsForImport, themes);
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
    });
@@ -162,10 +155,10 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, themes);
 
-      result[0].imports.length.should.equal(2);
-      result[0].text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
-      result[2].imports.length.should.equal(2);
-      result[2].text.should.equal(
+      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
+      result[2].compiled.imports.length.should.equal(2);
+      result[2].compiled.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
       );
    });

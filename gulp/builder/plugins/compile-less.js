@@ -72,7 +72,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            const [error, results] = await execInPool(
+            const [, results] = await execInPool(
                taskParameters.pool,
                'buildLess',
                [
@@ -86,28 +86,25 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                file.history[0],
                moduleInfo
             );
-            if (error) {
-               taskParameters.cache.markFileAsFailed(file.history[0]);
-               logger.error({
-                  error,
-                  filePath: file.history[0],
-                  moduleInfo
-               });
-               callback(null, file);
-               return;
-            }
 
             for (const result of results) {
                if (result.ignoreMessage) {
                   logger.debug(result.ignoreMessage);
+               } else if (result.error) {
+                  logger.error({
+                     error: result.error,
+                     filePath: file.history[0],
+                     moduleInfo
+                  });
                } else {
-                  const outputPath = getOutput(file, result.defaultTheme ? '.css' : `_${result.nameTheme}.css`);
+                  const { compiled } = result;
+                  const outputPath = getOutput(file, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
 
                   taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-                  taskParameters.cache.addDependencies(file.history[0], result.imports);
+                  taskParameters.cache.addDependencies(file.history[0], compiled.imports);
 
                   const newFile = file.clone();
-                  newFile.contents = Buffer.from(result.text);
+                  newFile.contents = Buffer.from(compiled.text);
                   newFile.path = outputPath;
                   newFile.base = moduleInfo.output;
                   this.push(newFile);
