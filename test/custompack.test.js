@@ -166,7 +166,8 @@ describe('custompack', () => {
       );
    });
 
-   it('should exclude bundlesRoutes', async() => {
+   it(`should include css-modules in bundle even if they excluded 
+   by exclude section in case when they have the same name with js-module`, async() => {
       let result;
       try {
          const config = await fs.readJson(path.join(applicationRoot, 'configs/exclude-css.package.json'));
