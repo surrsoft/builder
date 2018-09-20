@@ -214,8 +214,6 @@ describe('custompack', () => {
       (includesCssInbBundles && !includesCssInbBundlesRoute).should.equal(true);
 
       await fs.remove(resultToRead);
-
-   });
 });
 
 async function removeResultFiles() {
