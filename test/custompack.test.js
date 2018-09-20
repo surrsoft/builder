@@ -165,6 +165,57 @@ describe('custompack', () => {
          '.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}'
       );
    });
+
+   it('should exclude bundlesRoutes', async() => {
+      let result;
+      try {
+         const config = await fs.readJson(path.join(applicationRoot, 'configs/exclude-css.package.json'));
+         const configsArray = packHelpers.getConfigsFromPackageJson(
+            path.normalize('configs/exclude-css.package.json'),
+            applicationRoot,
+            config
+         );
+         const currentResult = await customPacker.generateCustomPackage(
+            depsTree,
+            {},
+            root,
+            application,
+            configsArray[0],
+            true,
+            true,
+            []
+         );
+         result = currentResult;
+      } catch (err) {
+         result = err;
+      }
+
+      (result instanceof Error).should.equal(false);
+      const resultToRead = path.join(applicationRoot, 'configs/exclude-css.package.min.js');
+
+      const jsPackageResult = await fs.readFile(resultToRead, 'utf8');
+
+      const includeJs = jsPackageResult.includes('define(\'css!InterfaceModule3/amdModule\'');
+      const includeCss = jsPackageResult.includes('define(\'InterfaceModule3/amdModule\'');
+
+      (includeJs && includeCss).should.equal(true);
+
+      const resultBundles = result.bundles['resources/configs/exclude-css.package.min'];
+      const includesCssInbBundles = resultBundles.includes('css!InterfaceModule3/amdModule');
+      let includesCssInbBundlesRoute = false;
+
+      for (const module in result.bundlesRoute) {
+         if (module === 'css!InterfaceModule3/amdModule') {
+            includesCssInbBundlesRoute = true;
+            break;
+         }
+      }
+
+      (includesCssInbBundles && !includesCssInbBundlesRoute).should.equal(true);
+
+      await fs.remove(resultToRead);
+
+   });
 });
 
 async function removeResultFiles() {
