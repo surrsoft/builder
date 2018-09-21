@@ -11,7 +11,7 @@ def gitlabStatusUpdate() {
 }
 echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
 node ('controls') {
-    def version = "3.18.500"
+    def version = "3.18.600"
     def ver = version.replaceAll('.','')
     echo "Читаем настройки из файла version_application.txt"
     def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
