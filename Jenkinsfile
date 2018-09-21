@@ -435,6 +435,18 @@ node ('controls') {
             7za a log_jinnee -t7z ${workspace}/jinnee/logs
             """
         }
+		def exist_logs = fileExists '/home/sbis/Controls/intest/logs'
+		def exist_logs_ps = fileExists  '/home/sbis/Controls/intest-ps/logs'
+		
+		if ( exist_logs ){
+			sh """7za a log_intest -t7z /home/sbis/Controls/intest/logs """
+			archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_intest.7z', caseSensitive: false
+		}
+		
+		if ( exist_logs_ps ){
+			sh """7za a log_intest_ps -t7z /home/sbis/Controls/intest-ps/logs"""
+			archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_intest_ps.7z', caseSensitive: false
+		}
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
