@@ -534,7 +534,7 @@ function asModuleWithContent(f, modName) {
       if (err) {
          f(err);
       } else {
-         f(null, `define("${modName}", ${res});`);
+         f(null, `define('${modName}', ${res});`);
       }
    };
 }
