@@ -78,10 +78,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * объединённый словарь локализации пишется сразу же в кэш, поэтому для
              * него будет неправильно вычислен относительный путь. В данном случае нам просто
              * необходимо взять путь объединённого словаря и сделать .min расширение. Для всех
-             * остальных css всё остаётся по старому.
+             * остальных css всё остаётся по старому. Также необходимо записать данные об исходном
+             * объединённом словаре в кэш, чтобы при удалении/перемещении локализации объединённый
+             * словарь был удалён из кэша за ненадобностью.
              */
             if (file.unitedDict) {
                outputFileWoExt = file.path.replace(extName, '');
+               taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.js`, moduleInfo);
             } else {
                const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
                outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
