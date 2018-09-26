@@ -72,7 +72,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                return;
             }
 
-            const [, results] = await execInPool(
+            const [error, results] = await execInPool(
                taskParameters.pool,
                'buildLess',
                [
@@ -87,27 +87,41 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                moduleInfo
             );
 
-            for (const result of results) {
-               if (result.ignoreMessage) {
-                  logger.debug(result.ignoreMessage);
-               } else if (result.error) {
-                  logger.error({
-                     error: result.error,
-                     filePath: file.history[0],
-                     moduleInfo
-                  });
-               } else {
-                  const { compiled } = result;
-                  const outputPath = getOutput(file, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
+            /**
+             * нужно выводить ошибку из пулла, это будет означать неотловленную ошибку,
+             * и она не будет связана с ошибкой компиляции непосредственно less-файла.
+             */
+            if (error) {
+               taskParameters.cache.markFileAsFailed(file.history[0]);
+               logger.error({
+                  message: "Необработанная ошибка builder'а при компиляции less",
+                  error,
+                  moduleInfo,
+                  filePath: file.history[0]
+               });
+            } else {
+               for (const result of results) {
+                  if (result.ignoreMessage) {
+                     logger.debug(result.ignoreMessage);
+                  } else if (result.error) {
+                     logger.error({
+                        error: result.error,
+                        filePath: file.history[0],
+                        moduleInfo
+                     });
+                  } else {
+                     const { compiled } = result;
+                     const outputPath = getOutput(file, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
 
-                  taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-                  taskParameters.cache.addDependencies(file.history[0], compiled.imports);
+                     taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+                     taskParameters.cache.addDependencies(file.history[0], compiled.imports);
 
-                  const newFile = file.clone();
-                  newFile.contents = Buffer.from(compiled.text);
-                  newFile.path = outputPath;
-                  newFile.base = moduleInfo.output;
-                  this.push(newFile);
+                     const newFile = file.clone();
+                     newFile.contents = Buffer.from(compiled.text);
+                     newFile.path = outputPath;
+                     newFile.base = moduleInfo.output;
+                     this.push(newFile);
+                  }
                }
             }
          } catch (error) {
