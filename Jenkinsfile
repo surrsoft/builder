@@ -241,6 +241,7 @@ node ('controls') {
                     ЧислоСлужебныхРабочихПроцессов=0
                     ЧислоДополнительныхПроцессов=0
                     ЧислоПотоковВРабочихПроцессах=10
+					МаксимальныйРазмерВыборкиСписочныхМетодов=0
 
                     [Presentation Service]
                     WarmUpEnabled=No
@@ -259,6 +260,7 @@ node ('controls') {
                     ПосылатьОтказВОбслуживанииПриОтсутствииРабочихПроцессов=Нет
                     МаксимальноеВремяЗапросаВОчереди=60000
                     ЧислоРабочихПроцессов=4
+					МаксимальныйРазмерВыборкиСписочныхМетодов=0
                     [Ядро.Права]
                     Проверять=Нет
                     [Ядро.Асинхронные сообщения]
@@ -430,18 +432,34 @@ node ('controls') {
             sudo chmod -R 0777 ${workspace}
             sudo chmod -R 0777 /home/sbis/Controls
         """
-        dir(workspace){
-            sh """
-            7za a log_jinnee -t7z ${workspace}/jinnee/logs
-            """
-        }
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
             if ( integ ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
+				
+				dir(workspace){
+					sh """
+					7za a log_jinnee -t7z ${workspace}/jinnee/logs
+					"""			
+					archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
+					
+					sh "mkdir logs_ps"
+					
+					dir('/home/sbis/Controls'){
+						def files_err = findFiles(glob: 'intest*/logs/**/*_errors.log')
+						
+						if ( files_err.length > 0 ){
+							sh "sudo cp -R /home/sbis/Controls/intest/logs/**/*_errors.log ${workspace}/logs_ps/intest_errors.log"
+							sh "sudo cp -R /home/sbis/Controls/intest-ps/logs/**/*_errors.log ${workspace}/logs_ps/intest_ps_errors.log"
+							dir ( workspace ){
+								sh """7za a logs_ps -t7z ${workspace}/logs_ps """
+								archiveArtifacts allowEmptyArchive: true, artifacts: '**/logs_ps.7z', caseSensitive: false
+							}					
+						}
+					}
+				}
             }
 
         gitlabStatusUpdate()
