@@ -105,7 +105,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                      logger.debug(result.ignoreMessage);
                   } else if (result.error) {
                      logger.error({
-                        error: result.error,
+                        message: `Ошибка компиляции less: ${result.error}`,
                         filePath: file.history[0],
                         moduleInfo
                      });
