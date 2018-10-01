@@ -16,6 +16,13 @@ const gulp = require('gulp'),
       collectAllIntersects
    } = require('../../../lib/pack/custom-packer');
 
+/**
+ * Получаем набор путь до бандла - конфигурация пакета
+ * по пути, прописанном в супербандле
+ * @param bundlePath - путь до бандла в конфигурации супербандла
+ * @param configs - набор конфигураций кастомной паковки
+ * @returns {*}
+ */
 function getCommonBundleByPath(bundlePath, configs) {
    let result = null;
    Object.entries(configs).forEach((currentEntry) => {
@@ -26,6 +33,12 @@ function getCommonBundleByPath(bundlePath, configs) {
    return result;
 }
 
+/**
+ * Задаёт modules, include и exclude для супербандла,
+ * включая в него все пакеты, переданные в конфигурации супербандла.
+ * Удаляет из обработки все пакеты, попавшие в супербандл.
+ * @param configs - полный набор конфигураций кастомных пакетов
+ */
 function setSuperBundle(configs) {
    const { commonBundles, superBundles } = configs;
    superBundles.forEach((currentSuperBundle) => {
@@ -61,9 +74,10 @@ function generateSetSuperBundles(configs) {
 }
 
 /**
- * Генерация задачи поиска тем
- * @param {TaskParameters} taskParameters кеш сборки статики
- * @param {BuildConfiguration} config конфигурация сборки
+ * Генерация задачи сбора кастомных пакетов
+ * @param {TaskParameters} taskParameters набор параметров Gulp - конфигурация, кэш
+ * @param {BuildConfiguration} configs набор кастомных пакетов проекта.
+ * @param {String} root корень приложения
  * @returns {Undertaker.TaskFunction}
  */
 function generateCollectPackagesTasks(configs, taskParameters, root) {
