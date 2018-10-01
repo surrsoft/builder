@@ -93,7 +93,6 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
       gulp.parallel(tasks),
       generateSetSuperBundles(configs)
    );
-
 }
 
 /**
