@@ -50,7 +50,6 @@ describe('custompack', () => {
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
-            {},
             root,
             application,
             configsArray[0],
@@ -78,7 +77,6 @@ describe('custompack', () => {
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
-            {},
             root,
             application,
             configsArray[0],
@@ -106,7 +104,6 @@ describe('custompack', () => {
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
-            {},
             root,
             application,
             configsArray[0],
@@ -228,8 +225,7 @@ describe('custompack-intersects', () => {
 
       await customPacker.generateAllCustomPackages(
          {
-            priorityConfigs: [],
-            normalConfigs: configs
+            commonBundles: configs
          },
 
          // taskParameters, тут не нужны, это для локализации

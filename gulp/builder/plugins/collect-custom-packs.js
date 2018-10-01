@@ -19,22 +19,25 @@ const
  * @param {string} root корень развернутого приложения
  * @returns {stream}
  */
-module.exports = function collectPackageJson(taskParameters, moduleInfo, root) {
-   const
-      allConfigs = {},
-      superBundles = [];
+module.exports = function collectPackageJson(applicationRoot, commonBundles, superBundles) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          let currentPackageJson;
          try {
             currentPackageJson = JSON.parse(file.contents);
-            const test = path.relative(path.dirname(moduleInfo.path), file.path);
+            const test = helpers.unixifyPath(file.path).replace(applicationRoot, '');
             const configsArray = packHelpers.getConfigsFromPackageJson(
                test,
                currentPackageJson
             );
             configsArray.forEach((currentConfig) => {
-               taskParameters.config.customPackages.push(currentConfig);
+               if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {
+                  superBundles.push(currentConfig);
+               } else {
+                  commonBundles[helpers.unixifyPath(
+                     path.join(path.dirname(file.path), currentConfig.output)
+                  )] = currentConfig;
+               }
             });
          } catch (err) {
             logger.error({
@@ -42,9 +45,6 @@ module.exports = function collectPackageJson(taskParameters, moduleInfo, root) {
                filePath: file.path
             });
          }
-         callback();
-      },
-      function onFlush(callback) {
          callback();
       }
    );
