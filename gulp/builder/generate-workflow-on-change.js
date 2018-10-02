@@ -21,7 +21,6 @@ const Cache = require('./classes/cache'),
    generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    TaskParameters = require('../common/classes/task-parameters'),
    compileLess = require('./plugins/compile-less'),
-   filterUnused = require('./plugins/filter-unused'),
    generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
@@ -119,7 +118,6 @@ function generateTaskForBuildFile(taskParameters, filePath) {
                file.basename = transliterate(file.basename);
             })
          )
-         .pipe(filterUnused())
          .pipe(gulpChmod({ read: true, write: true }))
          .pipe(
             gulpIf(

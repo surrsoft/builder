@@ -30,7 +30,6 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
    filterCached = require('../plugins/filter-cached'),
-   filterUnused = require('../plugins/filter-unused'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
    minifyJs = require('../plugins/minify-js'),
@@ -146,7 +145,6 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(isReleaseMode, createModuleDependenciesJson(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
-            .pipe(filterUnused())
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(
