@@ -167,12 +167,10 @@ describe('custompack', () => {
          const config = await fs.readJson(path.join(applicationRoot, 'configs/exclude-css.package.json'));
          const configsArray = packHelpers.getConfigsFromPackageJson(
             path.normalize('configs/exclude-css.package.json'),
-            applicationRoot,
             config
          );
          const currentResult = await customPacker.generateCustomPackage(
             depsTree,
-            {},
             root,
             application,
             configsArray[0],
