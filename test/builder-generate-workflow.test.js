@@ -81,11 +81,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'Error.less',
          'ForChange.css',
+         'ForChange.less',
          'ForChange_online.css',
          'ForRename_old.css',
+         'ForRename_old.less',
          'ForRename_old_online.css',
          'Stable.css',
+         'Stable.less',
          'Stable_online.css',
          'contents.js',
          'contents.json',
@@ -110,11 +114,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'Error.less',
          'ForChange.css',
+         'ForChange.less',
          'ForChange_online.css',
          'ForRename_new.css',
+         'ForRename_new.less',
          'ForRename_new_online.css',
          'Stable.css',
+         'Stable.less',
          'Stable_online.css',
          'contents.js',
          'contents.json',
