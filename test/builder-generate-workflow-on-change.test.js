@@ -86,6 +86,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_old.css',
+         'ForRename_old.less',
          'ForRename_old_online.css',
          'contents.js',
          'contents.json',
@@ -104,8 +105,10 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_old.css',
+         'ForRename_old.less',
          'ForRename_old_online.css',
          'ForRename_new.css',
+         'ForRename_new.less',
          'ForRename_new_online.css',
          'contents.js',
          'contents.json',
@@ -122,6 +125,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'ForRename_new.css',
+         'ForRename_new.less',
          'ForRename_new_online.css',
          'contents.js',
          'contents.json',
