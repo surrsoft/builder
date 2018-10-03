@@ -97,6 +97,9 @@ function initWs() {
          View: {
             path: path.join(appRoot, 'View')
          },
+         Vdom: {
+            path: path.join(appRoot, 'Vdom')
+         },
          Controls: {
             path: path.join(appRoot, 'Controls')
          },
