@@ -24,7 +24,7 @@ const gulp = require('gulp'),
  * @returns {*}
  */
 function getCommonBundleByPath(bundlePath, configs) {
-   let result = null;
+   let result = [null, null];
    Object.entries(configs).forEach((currentEntry) => {
       if (currentEntry[0].includes(bundlePath)) {
          result = currentEntry;
