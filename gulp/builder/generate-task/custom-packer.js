@@ -158,7 +158,7 @@ function generateInterceptCollectorTask(root, results) {
 function generateSaveResultsTask(config, results, applicationRoot) {
    return function saveCustomPackerResults() {
       results.bundlesJson = results.bundles;
-      return saveCustomPackResults(results, applicationRoot, true, true);
+      return saveCustomPackResults(results, applicationRoot, true);
    };
 }
 
