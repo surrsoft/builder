@@ -8,7 +8,8 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers');
+   helpers = require('../../../lib/helpers'),
+   { promiseWithTimeout } = require('../../../lib/promise-with-timeout');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
@@ -54,7 +55,7 @@ module.exports = function declarePlugin(moduleInfo) {
             }
 
             file.path = `${file.path}.gz`;
-            file.contents = Buffer.from(await helpers.gzip(file.contents));
+            file.contents = Buffer.from(await promiseWithTimeout(helpers.gzip(file.contents), 90000));
             this.push(file);
          } catch (error) {
             logger.error({
