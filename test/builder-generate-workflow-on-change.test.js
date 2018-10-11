@@ -16,7 +16,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
-const { isSymlink } = require('./lib');
+const { isSymlink, isRegularFile } = require('./lib');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -87,6 +87,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRename_old.css',
          'ForRename_old.less',
+         'ForRename_old_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -105,14 +106,17 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRename_old.css',
          'ForRename_old.less',
+         'ForRename_old_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
+         'ForRename_new_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(true);
 
       // запустим таску повторно
       await runWorkflowBuild();
@@ -122,6 +126,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRename_new.css',
          'ForRename_new.less',
+         'ForRename_new_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',

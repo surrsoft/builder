@@ -84,10 +84,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
+         'ForChange_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
+         'ForRename_old_online.css',
          'Stable.css',
          'Stable.less',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -114,10 +117,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
+         'ForChange_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
+         'ForRename_new_online.css',
          'Stable.css',
          'Stable.less',
+         'Stable_online.css',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -554,6 +560,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
