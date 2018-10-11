@@ -157,9 +157,5 @@ describe('build less', () => {
 
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
-      result[2].compiled.imports.length.should.equal(2);
-      result[2].compiled.text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
-      );
    });
 });
