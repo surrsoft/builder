@@ -42,6 +42,10 @@ node ('controls') {
                 description: '',
                 name: 'branch_engine'),
             string(
+                defaultValue: props["navigation"],
+                description: '',
+                name: 'branch_navigation'),
+            string(
                 defaultValue: props["atf_co"],
                 description: '',
                 name: "branch_atf"),
@@ -76,6 +80,14 @@ node ('controls') {
         def only_fail = params.RUN_ONLY_FAIL_TEST
         def run_test_fail = ""
         def stream_number=props["snit"]
+
+        def branch_navigation
+        if (params.branch_navigation) {
+            branch_navigation = params.branch_navigation
+        } else {
+            branch_navigation = props["navigation"]
+        }
+
         if ("${env.BUILD_NUMBER}" == "1"){
             integ = true
             regr = true
@@ -190,6 +202,23 @@ node ('controls') {
                                 userRemoteConfigs: [[
                                     credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
                                     url: 'git@git.sbis.ru:sbis/engine.git']]
+                            ])
+                        }
+                    },
+                    checkout_navigation: {
+                        echo " Выкачиваем Navigation"
+                        dir("./controls/tests"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_navigation]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "navigation"
+                            ]],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[
+                                credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                url: 'git@git.sbis.ru:navigation-configuration/navigation.git']]
                             ])
                         }
                     }
