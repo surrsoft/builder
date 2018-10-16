@@ -12,7 +12,8 @@ const path = require('path'),
    customPacker = require('../lib/pack/custom-packer'),
    { rebaseCSS } = require('../lib/pack/custom-packer'),
    DependencyGraph = require('../packer/lib/dependency-graph'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   builderConstants = require('../lib/builder-constants');
 
 const removeAllNewLines = function(str) {
    return str.replace(/\n|\r/g, '');
@@ -213,8 +214,8 @@ describe('custompack', () => {
 async function removeResultFiles() {
    const configsPath = path.join(applicationRoot, 'configs');
    const pathsToRemove = [...(await fs.readdir(configsPath)).map(fileName => path.join('configs', fileName))];
-   pathsToRemove.push('InterfaceModule1/customPackIntersects.json');
-   pathsToRemove.push('InterfaceModule2/customPackIntersects.json');
+   pathsToRemove.push(`InterfaceModule1${builderConstants.metaFolder}customPackIntersects.json`);
+   pathsToRemove.push(`InterfaceModule2${builderConstants.metaFolder}customPackIntersects.json`);
 
    /**
     * Удаляем записанные тестом файлы(если были записаны)
@@ -290,8 +291,8 @@ describe('custompack-intersects', () => {
        * Проверка на существование помодульных результатов пересечений между кастомными пакетами
        */
       const
-         firstModuleIntersectsOutput = path.join(applicationRoot, 'InterfaceModule1/customPackIntersects.json'),
-         secondModuleIntersectsOutput = path.join(applicationRoot, 'InterfaceModule2/customPackIntersects.json');
+         firstModuleIntersectsOutput = path.join(applicationRoot, `InterfaceModule1${builderConstants.metaFolder}customPackIntersects.json`),
+         secondModuleIntersectsOutput = path.join(applicationRoot, `InterfaceModule2${builderConstants.metaFolder}customPackIntersects.json`);
 
       (await fs.pathExists(firstModuleIntersectsOutput)).should.equal(true);
       (await fs.pathExists(secondModuleIntersectsOutput)).should.equal(true);
