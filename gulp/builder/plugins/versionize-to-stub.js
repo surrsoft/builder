@@ -9,8 +9,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const VERSION_STUB = '.vBUILDER_VERSION_STUB';
-const VERSION_MIN_STUB = '.vBUILDER_VERSION_MIN_STUB';
+const versionHeader = '?x_version=BUILDER_VERSION_STUB';
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
@@ -42,13 +41,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   if (partFilePath.indexOf('cdn/') > -1) {
                      return match;
                   }
-                  return partUrl + partFilePath + VERSION_STUB + partExt;
+                  return `${partUrl}${partFilePath}${partExt}${versionHeader}`;
                }
             );
          } else if (file.extname === '.js') {
             newText = newText.replace(
                /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|ws:\/)[\w/+-.]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg)/g,
-               `$1${VERSION_STUB}$2`
+               `$1$2${versionHeader}`
             );
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
             newText = newText
@@ -58,9 +57,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      if (partExt === '.css') {
                         // если в пути уже есть .min, то дублировать не нужно
                         const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                        return partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
+                        return `${partFilePathWithoutMin}.min${partExt}${versionHeader}`;
                      }
-                     return partFilePath + VERSION_STUB + partExt;
+                     return `${partFilePath}${partExt}${versionHeader}`;
                   }
                )
                .replace(
@@ -71,14 +70,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                         partFilePath.indexOf('cdn/') > -1 ||
                         partFilePath.indexOf('//') === 1 ||
                         !/^src|^href/i.test(match) ||
-                        partFilePath.indexOf(VERSION_STUB) > -1
+                        partFilePath.indexOf('?x_version=') > -1
                      ) {
                         return match;
                      }
 
                      // если в пути уже есть .min, то дублировать не нужно
                      const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                     return partEqual + partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
+                     return `${partEqual}${partFilePathWithoutMin}.min${partExt}${versionHeader}`;
                   }
                );
          }
