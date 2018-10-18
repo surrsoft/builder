@@ -9,7 +9,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const VERSION_STUB = /BUILDER_VERSION_STUB/g;
+const VERSION_STUB = /\?x_version=BUILDER_VERSION_STUB/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
@@ -30,8 +30,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          let version = '';
 
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
-            // eslint-disable-next-line prefer-destructuring
-            version = taskParameters.config.version;
+            version = `?x_version=${taskParameters.config.version}`;
          }
          const text = file.contents.toString();
          file.contents = Buffer.from(text.replace(VERSION_STUB, version));
