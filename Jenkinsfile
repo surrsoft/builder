@@ -148,7 +148,7 @@ node ('controls') {
                     """
                 }
                 updateGitlabCommitStatus state: 'running'
-                if ( "${env.BUILD_NUMBER}" != "1" && !(run_int || run_unit || run_reg || only_fail)) {
+                if ( "${env.BUILD_NUMBER}" != "1" && !(inte || unit || regr || only_fail)) {
                     exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
                 }
             },
