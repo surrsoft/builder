@@ -68,6 +68,10 @@ node ('controls') {
 
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
+
+        echo "Чистим рабочую директорию"
+        deleteDir()
+
         def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
