@@ -1,5 +1,6 @@
 #!groovy
 
+def version = "3.18.600"
 def gitlabStatusUpdate() {
     if ( currentBuild.currentResult == "ABORTED" ) {
         updateGitlabCommitStatus state: 'canceled'
@@ -9,9 +10,15 @@ def gitlabStatusUpdate() {
         updateGitlabCommitStatus state: 'success'
     }
 }
+
+def exception(err, reason) {
+    currentBuild.displayName = "#${env.BUILD_NUMBER} ${reason}"
+    error(err)
+}
+
 echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
+
 node ('controls') {
-    def version = "3.18.600"
     def ver = version.replaceAll('.','')
     echo "Читаем настройки из файла version_application.txt"
     def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
@@ -53,17 +60,16 @@ node ('controls') {
             booleanParam(defaultValue: false, description: "Запуск тестов верстки", name: 'run_reg'),
             booleanParam(defaultValue: false, description: "Запускать интеграционные тесты?", name: 'run_int'),
             booleanParam(defaultValue: false, description: "Запускать юнит тесты?", name: 'run_unit'),
-            booleanParam(defaultValue: false, description: "Запуск только упавших тестов из последней сборки?", name: 'RUN_ONLY_FAIL_TEST')]),
+            booleanParam(defaultValue: false, description: "Пропустить тесты, которые падают в RC по функциональным ошибкам на текущий момент", name: 'skip'),
+           booleanParam(defaultValue: false, description: "Запуск ТОЛЬКО УПАВШИХ тестов из предыдущего билда. Опции run_int и run_reg можно не отмечать", name: 'run_only_fail_test')
+            ]),
         pipelineTriggers([])
     ])
-    if ( "${env.BUILD_NUMBER}" != "1" && params.run_int == false && params.run_unit == false ) {
-        currentBuild.result = 'FAILURE'
-        currentBuild.displayName = "#${env.BUILD_NUMBER} TESTS NOT BUILD"
-        error('Ветка запустилась по пушу, либо запуск с некоректными параметрами')
+    
     }
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
-        def integ = params.run_int
+        def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
         def branch_atf = params.branch_atf
@@ -73,11 +79,13 @@ node ('controls') {
         def items
         def branch_engine
         def changed_files
-        def only_fail = params.RUN_ONLY_FAIL_TEST
+        def only_fail = params.run_only_fail_test
         def run_test_fail = ""
         def stream_number=props["snit"]
+        
+        
         if ("${env.BUILD_NUMBER}" == "1"){
-            integ = true
+            inte = true
             regr = true
             unit = true
         }
@@ -141,7 +149,9 @@ node ('controls') {
                     """
                 }
                 updateGitlabCommitStatus state: 'running'
-            },
+                if ( "${env.BUILD_NUMBER}" != "1" && !(run_int || run_unit || run_reg || only_fail) {
+                    exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
+                    },
             checkout3: {
                 echo " Выкачиваем сборочные скрипты"
                 dir(workspace) {
@@ -213,6 +223,37 @@ node ('controls') {
                 }
             }
         )
+        if ( only_fail ) {
+            run_test_fail = "-sf"
+            // если галки не отмечены, сами определим какие тесты перезапустить
+            if ( !inte && !regr  ) {
+                step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
+                script = "python3 ../fail_tests.py"
+                for ( type in ["int", "reg"] ) {
+                    dir("./controls/tests/${type}") {
+                    def result = sh returnStdout: true, script: script
+                    echo "${result}"
+                    if (type == "int") {
+                        if ( result.toBoolean() ) {
+                            inte = true
+                        } else {
+                            inte = false
+                            }
+                        }
+                    if (type == "reg") {
+                        if ( result.toBoolean() ) {
+                            regr = true
+                        } else {
+                            regr = false
+                            }
+                        }
+                    }
+                }
+                if (!inte && !regr) {
+                    exception('Нет тестов для перезапуска.', 'USER FAIL')
+                }
+            }
+        }
         try {
             echo " Определяем SDK"
             dir("./constructor/Constructor/SDK") {
@@ -301,7 +342,7 @@ node ('controls') {
                     }
                 },
                 int_reg: {
-                        if ( regr || integ ) {
+                        if ( regr || inte ) {
                             def soft_restart = "True"
                             if ( params.browser_type in ['ie', 'edge'] ){
                                 soft_restart = "False"
@@ -383,18 +424,21 @@ node ('controls') {
                         }
                         if ( only_fail ) {
                             step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
-                            run_test_fail = "-sf"
                         }
                         def tests_for_run = ""
+                        if ( skip ) {
+                         skip_tests_int = "--SKIP_TESTS_FROM_JOB '(int-chrome) ${version} controls'"
+                         skip_tests_reg = "--SKIP_TESTS_FROM_JOB '(reg-chrome) ${version} controls'"
+                    }
                         parallel (
                             int_test: {
                                 stage("Инт.тесты"){
-                                    if (  integ ){
+                                    if (  inte ){
                                         echo "Запускаем интеграционные тесты"
                                         dir("./controls/tests/int"){
                                             sh """
                                             source /home/sbis/venv_for_test/bin/activate
-                                            python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+                                            python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} ${skip_tests_int} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
                                             deactivate
                                             """
                                         }
@@ -410,7 +454,7 @@ node ('controls') {
                                         dir("./controls/tests/reg"){
                                             sh """
                                                 source /home/sbis/venv_for_test/bin/activate
-                                                python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+                                                python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} ${skip_tests_int} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
                                                 deactivate
                                             """
                                         }
@@ -435,7 +479,7 @@ node ('controls') {
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
-            if ( integ ) {
+            if ( inte ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 				
