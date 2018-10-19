@@ -75,6 +75,7 @@ node ('controls') {
         def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
+        def skip = params.skip
         def branch_atf = params.branch_atf
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
@@ -85,6 +86,8 @@ node ('controls') {
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
         def stream_number=props["snit"]
+        def skip_tests_int = ""
+        def skip_tests_reg = ""
         
     try {
 
