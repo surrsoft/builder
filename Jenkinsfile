@@ -98,6 +98,32 @@ node ('controls') {
 		} else {
 			branch_engine = props["engine"]
 		}
+
+		dir(workspace) {
+            checkout([$class: 'GitSCM',
+            branches: [[name: env.BRANCH_NAME]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[
+                $class: 'RelativeTargetDirectory',
+                relativeTargetDir: "builder"
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                    url: 'git@git.sbis.ru:root/sbis3-builder.git']]
+            ])
+        }
+        dir("./builder"){
+            sh """
+            git fetch
+            git merge origin/rc-${version}
+            """
+        }
+        updateGitlabCommitStatus state: 'running'
+        if ( "${env.BUILD_NUMBER}" != "1" && !(inte || unit || regr || only_fail)) {
+            exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
+        }
+
         parallel (
             checkout1: {
                 echo " Выкачиваем сборочные скрипты"
@@ -131,33 +157,6 @@ node ('controls') {
                 }
             },
             checkout2: {
-                echo " Выкачиваем сборочные скрипты"
-                dir(workspace) {
-                    checkout([$class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[
-                        $class: 'RelativeTargetDirectory',
-                        relativeTargetDir: "builder"
-                        ]],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[
-                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                            url: 'git@git.sbis.ru:root/sbis3-builder.git']]
-                    ])
-                }
-                dir("./builder"){
-                    sh """
-                    git fetch
-                    git merge origin/rc-${version}
-                    """
-                }
-                updateGitlabCommitStatus state: 'running'
-                if ( "${env.BUILD_NUMBER}" != "1" && !(inte || unit || regr || only_fail)) {
-                    exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
-                }
-            },
-            checkout3: {
                 echo " Выкачиваем сборочные скрипты"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
@@ -210,7 +209,7 @@ node ('controls') {
                     }
                 )
             },
-            checkout4: {
+            checkout3: {
                 dir(workspace) {
                     echo "Выкачиваем cdn"
                     checkout([$class: 'GitSCM',
