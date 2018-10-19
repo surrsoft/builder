@@ -69,7 +69,6 @@ node ('controls') {
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
 
-    try {
         echo "Чистим рабочую директорию"
         deleteDir()
 
@@ -87,7 +86,8 @@ node ('controls') {
         def run_test_fail = ""
         def stream_number=props["snit"]
         
-        
+    try {
+
         if ("${env.BUILD_NUMBER}" == "1"){
             inte = true
             regr = true
