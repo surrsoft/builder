@@ -7,10 +7,12 @@
 'use strict';
 
 const through = require('through2'),
-   logger = require('../../../lib/logger').logger();
-
-const VERSION_STUB = '.vBUILDER_VERSION_STUB';
-const VERSION_MIN_STUB = '.vBUILDER_VERSION_MIN_STUB';
+   logger = require('../../../lib/logger').logger(),
+   {
+      versionizeStyles,
+      versionizeJs,
+      versionizeTemplates
+   } = require('../../../lib/versionize-content');
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
@@ -36,51 +38,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          let newText = file.contents.toString();
 
          if (file.extname === '.css') {
-            newText = newText.replace(
-               /(url\(['"]?)([\w/.\-@{}]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg|\.css|\.woff|\.eot|\.ttf)/g,
-               (match, partUrl, partFilePath, partExt) => {
-                  if (partFilePath.indexOf('cdn/') > -1) {
-                     return match;
-                  }
-                  return partUrl + partFilePath + VERSION_STUB + partExt;
-               }
-            );
+            newText = versionizeStyles(newText);
          } else if (file.extname === '.js') {
-            newText = newText.replace(
-               /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|ws:\/)[\w/+-.]+)(\.svg|\.gif|\.png|\.jpg|\.jpeg)/g,
-               `$1${VERSION_STUB}$2`
-            );
+            newText = versionizeJs(newText);
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
-            newText = newText
-               .replace(
-                  /((?:"|')(?:[A-z]+(?!:\/)|\/|\.\/|%[^}]+}|{{[^{}]+}})[\w{}/+-.]*(?:\.\d+)?(?:{{[^{}]+}})?)(\.svg|\.css|\.gif|\.png|\.jpg|\.jpeg)/gi,
-                  (match, partFilePath, partExt) => {
-                     if (partExt === '.css') {
-                        // если в пути уже есть .min, то дублировать не нужно
-                        const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                        return partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
-                     }
-                     return partFilePath + VERSION_STUB + partExt;
-                  }
-               )
-               .replace(
-                  /([\w]+[\s]*=[\s]*)((?:"|')(?:[A-z]+(?!:\/)|\/|(?:\.|\.\.)\/|%[^}]+}|{{[^{}]*}})[\w/+-.]+(?:\.\d+)?)(\.js)/gi,
-                  (match, partEqual, partFilePath, partExt) => {
-                     // ignore cdn and data-providers
-                     if (
-                        partFilePath.indexOf('cdn/') > -1 ||
-                        partFilePath.indexOf('//') === 1 ||
-                        !/^src|^href/i.test(match) ||
-                        partFilePath.indexOf(VERSION_STUB) > -1
-                     ) {
-                        return match;
-                     }
-
-                     // если в пути уже есть .min, то дублировать не нужно
-                     const partFilePathWithoutMin = partFilePath.replace(/\.min$/, '');
-                     return partEqual + partFilePathWithoutMin + VERSION_MIN_STUB + partExt;
-                  }
-               );
+            newText = versionizeTemplates(newText);
          }
 
          file.contents = Buffer.from(newText);
