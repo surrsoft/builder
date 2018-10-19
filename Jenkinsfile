@@ -65,8 +65,7 @@ node ('controls') {
             ]),
         pipelineTriggers([])
     ])
-    
-    }
+
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
         def inte = params.run_int
