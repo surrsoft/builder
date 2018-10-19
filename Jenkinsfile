@@ -69,6 +69,7 @@ node ('controls') {
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
 
+    try {
         echo "Чистим рабочую директорию"
         deleteDir()
 
@@ -258,7 +259,7 @@ node ('controls') {
                 }
             }
         }
-        try {
+
             echo " Определяем SDK"
             dir("./constructor/Constructor/SDK") {
                 SDK = sh returnStdout: true, script: "export PLATFORM_version=${version} && source ${workspace}/constructor/Constructor/SDK/setToSDK.sh linux_x86_64"
@@ -510,7 +511,7 @@ node ('controls') {
 				}
             }
 
-        gitlabStatusUpdate()
         }
+        gitlabStatusUpdate()
     }
 }
