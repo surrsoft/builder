@@ -14,6 +14,7 @@ const through = require('through2'),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
    pMap = require('p-map'),
+   helpers = require('../../../lib/helpers'),
    esExt = /\.(es|ts)$/;
 
 /**
@@ -92,8 +93,23 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
                   ));
                }
-               library.modulepack = result;
+               library.modulepack = result.compiled;
                this.push(library);
+
+               /**
+                * Для запакованных библиотек нужно обновить информацию в кэше о
+                * зависимостях, чтобы при создании module-dependencies учитывалась
+                * информация о запакованных библиотеках и приватные модули из
+                * библиотек не вставлялись при Серверном рендеринге на VDOM
+                * @type {string}
+                */
+               const
+                  prettyPath = helpers.unixifyPath(library.history[0]),
+                  currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
+
+               if (currentModuleStore.componentsInfo[prettyPath] && result.newDependencies) {
+                  currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
+               }
             },
             {
                concurrency: 10
