@@ -47,7 +47,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   file.history[0],
                   relativeTmplPathWithModuleName,
                   componentsPropertiesFilePath,
-                  !taskParameters.config.multiService,
+                  taskParameters.config.multiService,
                   servicesPath
                ],
                file.history[0],
