@@ -83,9 +83,27 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      library.contents.toString(),
                      privatePartsCache
                   );
+                  library.modulepack = result.compiled;
+
+                  /**
+                   * Для запакованных библиотек нужно обновить информацию в кэше о
+                   * зависимостях, чтобы при создании module-dependencies учитывалась
+                   * информация о запакованных библиотеках и приватные модули из
+                   * библиотек не вставлялись при Серверном рендеринге на VDOM
+                   * @type {string}
+                   */
+                  const
+                     prettyPath = helpers.unixifyPath(library.history[0]),
+                     currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
+
+                  if (currentModuleStore.componentsInfo[prettyPath] && result.newDependencies) {
+                     currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
+                  }
                } catch (error) {
                   logger.error({
-                     error
+                     message: 'Ошибка при паковке библиотеки',
+                     error,
+                     filePath: library.history[0]
                   });
                }
                if (privatePartsForCache.length > 0) {
@@ -93,23 +111,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
                   ));
                }
-               library.modulepack = result.compiled;
                this.push(library);
-
-               /**
-                * Для запакованных библиотек нужно обновить информацию в кэше о
-                * зависимостях, чтобы при создании module-dependencies учитывалась
-                * информация о запакованных библиотеках и приватные модули из
-                * библиотек не вставлялись при Серверном рендеринге на VDOM
-                * @type {string}
-                */
-               const
-                  prettyPath = helpers.unixifyPath(library.history[0]),
-                  currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
-
-               if (currentModuleStore.componentsInfo[prettyPath] && result.newDependencies) {
-                  currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
-               }
             },
             {
                concurrency: 10
