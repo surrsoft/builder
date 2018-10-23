@@ -22,7 +22,7 @@ describe('versionize-content', () => {
       result.should.equal('message:rk("Загрузка"),loadingPicture:"/cdn/img/common/1.0.0/ajax-loader-indicator.gif?x_version=BUILDER_VERSION_STUB');
    });
 
-   it('versionize javascript content', () => {
+   it('versionize templates content', () => {
       let result;
 
       const versionedMinLink = 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js?x_version=BUILDER_VERSION_STUB">';
