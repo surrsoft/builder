@@ -55,7 +55,8 @@ module.exports = function declarePlugin(moduleInfo) {
             }
 
             file.path = `${file.path}.gz`;
-            file.contents = Buffer.from(await promiseWithTimeout(helpers.gzip(file.contents), 90000));
+            const gzippedContent = await promiseWithTimeout(helpers.gzip(file.contents), 90000);
+            file.contents = Buffer.from(gzippedContent);
             this.push(file);
          } catch (error) {
             logger.error({
