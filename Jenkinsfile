@@ -334,7 +334,7 @@ node ('controls') {
                 sudo chmod -R 0777 ${workspace}
                 ${python_ver} "${workspace}/constructor/updater.py" "${version}" "/home/sbis/Controls" "css_${env.NODE_NAME}${ver}" "${workspace}/controls/tests/stand/conf/sbis-rpc-service.ini" "${workspace}/controls/tests/stand/distrib_branch_ps" --sdk_path "${SDK}" --items "${items}" --host test-autotest-db1 --stand nginx_branch --daemon_name Controls --use_ps --conf x86_64
                 sudo chmod -R 0777 ${workspace}
-                sudo chmod -R 0777 /home/sbis/Controls
+                sudo chmod -fR 0777 /home/sbis/Controls
             """
             }
             parallel(
@@ -481,7 +481,7 @@ node ('controls') {
         } finally {
         sh """
             sudo chmod -R 0777 ${workspace}
-            sudo chmod -R 0777 /home/sbis/Controls
+            sudo chmod -fR 0777 /home/sbis/Controls
         """
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
@@ -512,7 +512,12 @@ node ('controls') {
 					}
 				}
             }
-
+            if ( regr ){
+                dir("./controls") {
+                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: './tests/reg/capture_report/', reportFiles: 'report.html', reportName: 'Regression Report', reportTitles: ''])
+                }
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/report.zip', caseSensitive: false
+            }
         }
         gitlabStatusUpdate()
     }
