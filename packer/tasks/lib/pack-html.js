@@ -265,6 +265,7 @@ function generatePackage(
 
          const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));
 
+         // eslint-disable-next-line no-sync
          fs.outputFileSync(packedFilePath.replace(ext, extWithoutVersion), text);
 
          let newName = `/${path.relative(siteRoot, packedFilePath)}`;
@@ -319,7 +320,7 @@ function getStartNodes(divs) {
  * @param key
  */
 function getKey(buildNumber, key) {
-   return buildNumber ? `v${buildNumber}.${key}` : key;
+   return buildNumber ? `${key}?x_version=${buildNumber}` : key;
 }
 
 /**
