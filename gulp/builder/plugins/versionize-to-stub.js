@@ -10,11 +10,10 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    {
       versionizeStyles,
-      versionizeJs,
       versionizeTemplates
    } = require('../../../lib/versionize-content');
 
-const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
+const includeExts = ['.css', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
  * Объявление плагина
@@ -39,8 +38,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
          if (file.extname === '.css') {
             newText = versionizeStyles(newText);
-         } else if (file.extname === '.js') {
-            newText = versionizeJs(newText);
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
             newText = versionizeTemplates(newText);
          }
