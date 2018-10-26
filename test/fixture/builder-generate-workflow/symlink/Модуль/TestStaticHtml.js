@@ -1,3 +1,4 @@
+/* eslint-disable */
 define('Modul/TestStaticHtml',
    ['css!theme?Modul/TestLess'],
 function() {
