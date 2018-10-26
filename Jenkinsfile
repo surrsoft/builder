@@ -60,7 +60,6 @@ node ('controls') {
             booleanParam(defaultValue: false, description: "Запуск тестов верстки", name: 'run_reg'),
             booleanParam(defaultValue: false, description: "Запускать интеграционные тесты?", name: 'run_int'),
             booleanParam(defaultValue: false, description: "Запускать юнит тесты?", name: 'run_unit'),
-            booleanParam(defaultValue: false, description: "Пропустить тесты, которые падают в RC по функциональным ошибкам на текущий момент", name: 'skip'),
            booleanParam(defaultValue: false, description: "Запуск ТОЛЬКО УПАВШИХ тестов из предыдущего билда. Опции run_int и run_reg можно не отмечать", name: 'run_only_fail_test')
             ]),
         pipelineTriggers([])
@@ -75,8 +74,8 @@ node ('controls') {
         def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
-        def skip = params.skip
         def branch_atf = params.branch_atf
+        def controls_revision = params.controls_revision
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
@@ -86,9 +85,7 @@ node ('controls') {
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
         def stream_number=props["snit"]
-        def skip_tests_int = ""
-        def skip_tests_reg = ""
-        
+
     try {
 
         if ("${env.BUILD_NUMBER}" == "1"){
@@ -127,43 +124,55 @@ node ('controls') {
             exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
         }
 
+
+
+
+        echo " Выкачиваем сборочные скрипты"
+        dir(workspace) {
+            checkout([$class: 'GitSCM',
+            branches: [[name: "rc-${version}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[
+                $class: 'RelativeTargetDirectory',
+                relativeTargetDir: "constructor"
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                    url: 'git@git.sbis.ru:sbis-ci/platform.git']]
+            ])
+        }
+        dir("./constructor") {
+            checkout([$class: 'GitSCM',
+            branches: [[name: "rc-${version}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[
+                $class: 'RelativeTargetDirectory',
+                relativeTargetDir: "Constructor"
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                    url: 'git@git.sbis.ru:sbis-ci/constructor.git']]
+            ])
+        }
+        echo " Определяем SDK"
+        dir("./constructor/Constructor/SDK") {
+            SDK = sh returnStdout: true, script: "export PLATFORM_version=${version} && source ${workspace}/constructor/Constructor/SDK/setToSDK.sh linux_x86_64"
+            SDK = SDK.trim()
+            echo SDK
+        }
+
         parallel (
-            checkout1: {
+            controls: {
+                if ("${controls_revision}" == "sdk"){
+                controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
+                }
+
                 echo " Выкачиваем сборочные скрипты"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
-                    branches: [[name: "rc-${version}"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[
-                        $class: 'RelativeTargetDirectory',
-                        relativeTargetDir: "constructor"
-                        ]],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[
-                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                            url: 'git@git.sbis.ru:sbis-ci/platform.git']]
-                    ])
-                }
-                dir("./constructor") {
-                    checkout([$class: 'GitSCM',
-                    branches: [[name: "rc-${version}"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[
-                        $class: 'RelativeTargetDirectory',
-                        relativeTargetDir: "Constructor"
-                        ]],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[
-                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                            url: 'git@git.sbis.ru:sbis-ci/constructor.git']]
-                    ])
-                }
-            },
-            checkout2: {
-                echo " Выкачиваем сборочные скрипты"
-                dir(workspace) {
-                    checkout([$class: 'GitSCM',
-                    branches: [[name: "rc-${version}"]],
+                    branches: [[name: controls_revision]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [[
                         $class: 'RelativeTargetDirectory',
@@ -212,7 +221,7 @@ node ('controls') {
                     }
                 )
             },
-            checkout3: {
+            cdn: {
                 dir(workspace) {
                     echo "Выкачиваем cdn"
                     checkout([$class: 'GitSCM',
@@ -262,12 +271,6 @@ node ('controls') {
             }
         }
 
-            echo " Определяем SDK"
-            dir("./constructor/Constructor/SDK") {
-                SDK = sh returnStdout: true, script: "export PLATFORM_version=${version} && source ${workspace}/constructor/Constructor/SDK/setToSDK.sh linux_x86_64"
-                SDK = SDK.trim()
-                echo SDK
-            }
             stage("Собираем builder"){
                 sh """
                     python3 ${workspace}/constructor/build_builder.py ${version} ${env.BUILD_NUMBER} "${workspace}/deploy_builder" "linux_x86_64" ${env.BUILD_URL} ${env.BUILD_ID} --branch
@@ -334,7 +337,7 @@ node ('controls') {
                 sudo chmod -R 0777 ${workspace}
                 ${python_ver} "${workspace}/constructor/updater.py" "${version}" "/home/sbis/Controls" "css_${env.NODE_NAME}${ver}" "${workspace}/controls/tests/stand/conf/sbis-rpc-service.ini" "${workspace}/controls/tests/stand/distrib_branch_ps" --sdk_path "${SDK}" --items "${items}" --host test-autotest-db1 --stand nginx_branch --daemon_name Controls --use_ps --conf x86_64
                 sudo chmod -R 0777 ${workspace}
-                sudo chmod -fR 0777 /home/sbis/Controls
+                sudo chmod -R 0777 /home/sbis/Controls
             """
             }
             parallel(
@@ -433,10 +436,6 @@ node ('controls') {
                             step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
                         }
                         def tests_for_run = ""
-                        if ( skip ) {
-                         skip_tests_int = "--SKIP_TESTS_FROM_JOB '(int-chrome) ${version} controls'"
-                         skip_tests_reg = "--SKIP_TESTS_FROM_JOB '(reg-chrome) ${version} controls'"
-                    }
                         parallel (
                             int_test: {
                                 stage("Инт.тесты"){
@@ -445,7 +444,7 @@ node ('controls') {
                                         dir("./controls/tests/int"){
                                             sh """
                                             source /home/sbis/venv_for_test/bin/activate
-                                            python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} ${skip_tests_int} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+                                            python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
                                             deactivate
                                             """
                                         }
@@ -461,7 +460,7 @@ node ('controls') {
                                         dir("./controls/tests/reg"){
                                             sh """
                                                 source /home/sbis/venv_for_test/bin/activate
-                                                python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} ${skip_tests_int} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+                                                python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
                                                 deactivate
                                             """
                                         }
@@ -481,7 +480,7 @@ node ('controls') {
         } finally {
         sh """
             sudo chmod -R 0777 ${workspace}
-            sudo chmod -fR 0777 /home/sbis/Controls
+            sudo chmod -R 0777 /home/sbis/Controls
         """
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
