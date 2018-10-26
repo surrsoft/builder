@@ -109,8 +109,10 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(compileEsAndTs(taskParameters, moduleInfo))
             .pipe(packLibrary(taskParameters, moduleInfo))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
-            .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
+
+            // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
+            .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
             .pipe(gulpBuildHtmlTmpl(taskParameters, moduleInfo))
             .pipe(buildStaticHtml(taskParameters, moduleInfo, modulesMap))
 

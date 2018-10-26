@@ -1,4 +1,6 @@
-define('Modul/TestStaticHtml', function() {
+define('Modul/TestStaticHtml',
+   ['css!theme?Modul/TestLess'],
+function() {
    var component = {};
    component.webPage = {
       htmlTemplate: 'Модуль/template.html',
