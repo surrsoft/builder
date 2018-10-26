@@ -33,19 +33,7 @@ node ('controls') {
             numToKeepStr: '3')),
         parameters([
             string(
-                defaultValue: 'sdk',
-                description: '',
-                name: 'controls_revision'),
-            string(
-                defaultValue: 'sdk',
-                description: '',
-                name: 'ws_data_revision'),
-            string(
-                defaultValue: 'sdk',
-                description: '',
-                name: 'ws_revision'),
-            string(
-                defaultValue: "rc-${version}",
+                defaultValue: props["engine"],
                 description: '',
                 name: 'branch_engine'),
             string(
@@ -75,7 +63,7 @@ node ('controls') {
         def regr = params.run_reg
         def unit = params.run_unit
         def branch_atf = params.branch_atf
-        def controls_revision = params.controls_revision
+        branch_engine = params.branch_engine
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
@@ -93,11 +81,6 @@ node ('controls') {
             regr = true
             unit = true
         }
-		if (params.branch_engine) {
-			branch_engine = params.branch_engine
-		} else {
-			branch_engine = props["engine"]
-		}
 
 		dir(workspace) {
             checkout([$class: 'GitSCM',
@@ -123,9 +106,6 @@ node ('controls') {
         if ( "${env.BUILD_NUMBER}" != "1" && !(inte || unit || regr || only_fail)) {
             exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
         }
-
-
-
 
         echo " Выкачиваем сборочные скрипты"
         dir(workspace) {
@@ -165,11 +145,8 @@ node ('controls') {
 
         parallel (
             controls: {
-                if ("${controls_revision}" == "sdk"){
-                controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
-                }
 
-                echo " Выкачиваем сборочные скрипты"
+                def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
                     branches: [[name: controls_revision]],
@@ -203,7 +180,7 @@ node ('controls') {
                         }
                     },
                     checkout_engine: {
-                        echo " Выкачиваем engine"
+                        echo "Выкачиваем engine"
                         dir("./controls/tests"){
                             checkout([$class: 'GitSCM',
                             branches: [[name: branch_engine]],
