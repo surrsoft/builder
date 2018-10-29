@@ -63,12 +63,11 @@ node ('controls') {
         def regr = params.run_reg
         def unit = params.run_unit
         def branch_atf = params.branch_atf
-        branch_engine = params.branch_engine
+        def branch_engine = params.branch_engine
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
         def items
-        def branch_engine
         def changed_files
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
@@ -145,7 +144,6 @@ node ('controls') {
 
         parallel (
             controls: {
-
                 def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
@@ -161,41 +159,41 @@ node ('controls') {
                             url: 'git@git.sbis.ru:sbis/controls.git']]
                     ])
                 }
-
-
-                        echo " Выкачиваем atf"
-                        dir("./controls/tests/int") {
-                        checkout([$class: 'GitSCM',
-                            branches: [[name: branch_atf]],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [[
-                                $class: 'RelativeTargetDirectory',
-                                relativeTargetDir: "atf"
-                                ]],
-                                submoduleCfg: [],
-                                userRemoteConfigs: [[
-                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                                    url: 'git@git.sbis.ru:autotests/atf.git']]
-                            ])
-                        }
-
-
-                        echo "Выкачиваем engine"
-                        dir("./controls/tests"){
-                            checkout([$class: 'GitSCM',
-                            branches: [[name: branch_engine]],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [[
-                                $class: 'RelativeTargetDirectory',
-                                relativeTargetDir: "sbis3-app-engine"
-                                ]],
-                                submoduleCfg: [],
-                                userRemoteConfigs: [[
-                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                                    url: 'git@git.sbis.ru:sbis/engine.git']]
-                            ])
-                        }
-
+                parallel (
+                echo " Выкачиваем atf"
+                atf: {
+                    dir("./controls/tests/int") {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: branch_atf]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [[
+                            $class: 'RelativeTargetDirectory',
+                            relativeTargetDir: "atf"
+                            ]],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[
+                                credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                url: 'git@git.sbis.ru:autotests/atf.git']]
+                        ])
+                    }
+                },
+                engine: {
+                echo "Выкачиваем engine"
+                dir("./controls/tests"){
+                    checkout([$class: 'GitSCM',
+                    branches: [[name: branch_engine]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[
+                        $class: 'RelativeTargetDirectory',
+                        relativeTargetDir: "sbis3-app-engine"
+                        ]],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                            url: 'git@git.sbis.ru:sbis/engine.git']]
+                    ])
+                }
+            })
             },
             cdn: {
                 dir(workspace) {
