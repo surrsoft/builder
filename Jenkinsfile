@@ -160,8 +160,8 @@ node ('controls') {
                     ])
                 }
                 parallel (
-                echo " Выкачиваем atf"
                 atf: {
+                echo " Выкачиваем atf"
                     dir("./controls/tests/int") {
                     checkout([$class: 'GitSCM',
                         branches: [[name: branch_atf]],
