@@ -161,8 +161,8 @@ node ('controls') {
                             url: 'git@git.sbis.ru:sbis/controls.git']]
                     ])
                 }
-                parallel (
-                    checkout_atf:{
+
+
                         echo " Выкачиваем atf"
                         dir("./controls/tests/int") {
                         checkout([$class: 'GitSCM',
@@ -178,8 +178,8 @@ node ('controls') {
                                     url: 'git@git.sbis.ru:autotests/atf.git']]
                             ])
                         }
-                    },
-                    checkout_engine: {
+
+
                         echo "Выкачиваем engine"
                         dir("./controls/tests"){
                             checkout([$class: 'GitSCM',
@@ -196,7 +196,6 @@ node ('controls') {
                             ])
                         }
                     }
-                )
             },
             cdn: {
                 dir(workspace) {
