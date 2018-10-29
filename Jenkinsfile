@@ -77,8 +77,7 @@ node ('controls') {
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
         def stream_number=props["snit"]
-        def skip_tests_int = ""
-        def skip_tests_reg = ""
+
 
         def branch_navigation
         if (params.branch_navigation) {
@@ -86,8 +85,6 @@ node ('controls') {
         } else {
             branch_navigation = props["navigation"]
         }
-
-
 
 
     try {
