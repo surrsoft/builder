@@ -160,40 +160,40 @@ node ('controls') {
                     ])
                 }
                 parallel (
-                atf: {
-                echo " Выкачиваем atf"
-                    dir("./controls/tests/int") {
-                    checkout([$class: 'GitSCM',
-                        branches: [[name: branch_atf]],
+                    atf: {
+                    echo " Выкачиваем atf"
+                        dir("./controls/tests/int") {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: branch_atf]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "atf"
+                                ]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[
+                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                    url: 'git@git.sbis.ru:autotests/atf.git']]
+                            ])
+                        }
+                    },
+                    engine: {
+                    echo "Выкачиваем engine"
+                    dir("./controls/tests"){
+                        checkout([$class: 'GitSCM',
+                        branches: [[name: branch_engine]],
                         doGenerateSubmoduleConfigurations: false,
                         extensions: [[
                             $class: 'RelativeTargetDirectory',
-                            relativeTargetDir: "atf"
+                            relativeTargetDir: "sbis3-app-engine"
                             ]],
                             submoduleCfg: [],
                             userRemoteConfigs: [[
                                 credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                                url: 'git@git.sbis.ru:autotests/atf.git']]
+                                url: 'git@git.sbis.ru:sbis/engine.git']]
                         ])
                     }
-                },
-                engine: {
-                echo "Выкачиваем engine"
-                dir("./controls/tests"){
-                    checkout([$class: 'GitSCM',
-                    branches: [[name: branch_engine]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[
-                        $class: 'RelativeTargetDirectory',
-                        relativeTargetDir: "sbis3-app-engine"
-                        ]],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[
-                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                            url: 'git@git.sbis.ru:sbis/engine.git']]
-                    ])
-                }
-            })
+                })
             },
             cdn: {
                 dir(workspace) {
