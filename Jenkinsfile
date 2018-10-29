@@ -67,12 +67,11 @@ node ('controls') {
         def regr = params.run_reg
         def unit = params.run_unit
         def branch_atf = params.branch_atf
-        branch_engine = params.branch_engine
+        def branch_engine = params.branch_engine
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
         def items
-        def branch_engine
         def changed_files
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
