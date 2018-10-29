@@ -195,7 +195,7 @@ node ('controls') {
                                     url: 'git@git.sbis.ru:sbis/engine.git']]
                             ])
                         }
-                    }
+
             },
             cdn: {
                 dir(workspace) {
