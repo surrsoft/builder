@@ -18,7 +18,7 @@ def exception(err, reason) {
 
 echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
 
-node ('controls') {
+node ('test-autotest86') {
     def ver = version.replaceAll('.','')
     echo "Читаем настройки из файла version_application.txt"
     def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
