@@ -151,7 +151,7 @@ node ('test-autotest86') {
                 def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
-                    branches: [[name: controls_revision]],
+                    branches: [[name: "3.18.610/bugfix/bls/break_tests_for_check"]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [[
                         $class: 'RelativeTargetDirectory',
