@@ -69,7 +69,7 @@ node ('test-autotest86') {
         def changed_files
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
-        def def tests_for_run = ""
+        def tests_for_run = ""
         def stream_number=props["snit"]
 		def smoke_result = true
 
