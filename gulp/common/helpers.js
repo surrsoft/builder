@@ -69,6 +69,17 @@ function generateTaskForLoadCache(taskParameters) {
 }
 
 /**
+ * Проверяем наличие Интерфейсного модуля в проекте
+ * @param moduleName
+ * @param taskParameters
+ * @returns {boolean}
+ */
+function checkForModuleInProject(moduleName, taskParameters) {
+   const modulesList = taskParameters.config.modules.map(module => module.name);
+   return modulesList.includes(moduleName);
+}
+
+/**
  * Генерация задачи инициализации пула воркеров
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
@@ -94,10 +105,26 @@ function generateTaskForInitWorkerPool(taskParameters) {
          }
       }
 
+      /**
+       * временно уменьшаем число ядер воркеров для Интеграционных тестов
+       * TODO сделать по-нормальному по задаче
+       * https://online.sbis.ru/opendoc.html?guid=ea73c5d3-6ddb-4a67-afeb-bdba733af2a7
+       */
+      const isIntTest = checkForModuleInProject('Intest', taskParameters);
+      let maxWorkers;
+      if (isIntTest) {
+         maxWorkers = os.cpus().length - 2;
+         if (maxWorkers < 0) {
+            maxWorkers = 1;
+         }
+      } else {
+         maxWorkers = os.cpus().length - 1;
+      }
+
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       taskParameters.setWorkerPool(
          workerPool.pool(path.join(__dirname, '../common/worker.js'), {
-            maxWorkers: os.cpus().length - 1 || 1,
+            maxWorkers: maxWorkers || 1,
             forkOpts: {
                env: {
                   'ws-core-path': wsCorePath,
