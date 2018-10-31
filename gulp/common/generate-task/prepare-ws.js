@@ -22,7 +22,7 @@ const {
    generateTaskForTerminatePool
 } = require('../helpers');
 
-const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Vdom', 'Controls', 'WS.Data', 'Data'];
+const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Vdom', 'Controls', 'Router', 'WS.Data', 'Data'];
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
