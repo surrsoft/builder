@@ -83,6 +83,10 @@ node ('test-autotest86') {
 		dir(workspace){
 			echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
 			sh "ls | grep -v -E 'controls' | xargs rm -rf"
+			dir("./controls"){
+				sh "rm -rf ${workspace}/controls/atf"
+				sh "rm -rf ${workspace}/controls/sbis3-app-engine"
+			}
 		}
 
 		dir(workspace) {
@@ -165,6 +169,7 @@ node ('test-autotest86') {
 					dir("./controls"){
                         sh """
 							git clean -fd
+							git checkout 3.18.610/bugfix/bls/break_tests_for_check
 							git pull
                         """
 					}
