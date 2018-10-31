@@ -157,6 +157,7 @@ node ('controls') {
 
         parallel (
             controls: {
+
                 def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
@@ -173,8 +174,8 @@ node ('controls') {
                     ])
                 }
                 parallel (
-                    atf: {
-                    echo " Выкачиваем atf"
+                    checkout_atf:{
+                        echo " Выкачиваем atf"
                         dir("./controls/tests/int") {
                         checkout([$class: 'GitSCM',
                             branches: [[name: branch_atf]],
@@ -190,21 +191,22 @@ node ('controls') {
                             ])
                         }
                     },
-                    engine: {
-                    echo "Выкачиваем engine"
-                    dir("./controls/tests"){
-                        checkout([$class: 'GitSCM',
-                        branches: [[name: branch_engine]],
-                        doGenerateSubmoduleConfigurations: false,
-                        extensions: [[
-                            $class: 'RelativeTargetDirectory',
-                            relativeTargetDir: "sbis3-app-engine"
-                            ]],
-                            submoduleCfg: [],
-                            userRemoteConfigs: [[
-                                credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                                url: 'git@git.sbis.ru:sbis/engine.git']]
-                        ])
+                    checkout_engine: {
+                        echo " Выкачиваем engine"
+                        dir("./controls"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_engine]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "sbis3-app-engine"
+                                ]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[
+                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                    url: 'git@git.sbis.ru:sbis/engine.git']]
+                            ])
+                        }
                     },
                     checkout_navigation: {
                         echo " Выкачиваем Navigation"
@@ -223,7 +225,7 @@ node ('controls') {
                             ])
                         }
                     }
-                })
+                )
             },
             cdn: {
                 dir(workspace) {
