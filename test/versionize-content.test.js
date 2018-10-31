@@ -12,6 +12,14 @@ describe('versionize-content', () => {
       let result;
       result = versionizeContent.versionizeStyles('background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif)');
       result.should.equal('background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif?x_version=BUILDER_VERSION_STUB)');
+
+      // woff и woff2 должны правильно зарезолвиться
+      result = versionizeContent.versionizeStyles('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff\')');
+      result.should.equal('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=BUILDER_VERSION_STUB\')');
+      result = versionizeContent.versionizeStyles('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff2\')');
+      result.should.equal('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff2?x_version=BUILDER_VERSION_STUB\')');
+
+      // Проверим, чтобы игнорировался cdn
       const cdnData = 'src: url(\'/cdn/fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\') format(\'embedded-opentype\')';
       result = versionizeContent.versionizeStyles(cdnData);
       result.should.equal(cdnData);
