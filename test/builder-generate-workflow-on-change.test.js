@@ -16,7 +16,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль');
 
-const { isSymlink } = require('./lib');
+const { isSymlink, isRegularFile } = require('./lib');
 
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
@@ -85,8 +85,12 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
+         'MyComponent.js',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
@@ -95,7 +99,17 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
+      const forRenameThemedNewFilePath = path.join(moduleSourceFolder, 'ForRenameThemed_new.less');
+      const jsComponentPath = path.join(moduleSourceFolder, 'MyComponent.js');
+      const jsComponent = await fs.readFile(jsComponentPath, 'utf8');
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), forRenameNewFilePath);
+      await fs.rename(path.join(moduleSourceFolder, 'ForRenameThemed_old.less'), forRenameThemedNewFilePath);
+
+      // поменяем темизируемую зависимость
+      await fs.writeFile(
+         jsComponentPath,
+         jsComponent.replace('ForRenameThemed_old', 'ForRenameThemed_new')
+      );
 
       await runWorkflowBuildOnChange(forRenameNewFilePath);
 
@@ -103,16 +117,22 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
          'ForRename_new.css',
          'ForRename_new.less',
+         'MyComponent.js',
          'contents.js',
          'contents.json',
          'navigation-modules.json',
          'routes-info.json',
          'static_templates.json'
       ]);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(false);
 
       // запустим таску повторно
       await runWorkflowBuild();
@@ -120,8 +140,12 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         'ForRenameThemed_new.css',
+         'ForRenameThemed_new.less',
+         'ForRenameThemed_new_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
+         'MyComponent.js',
          'contents.js',
          'contents.json',
          'navigation-modules.json',

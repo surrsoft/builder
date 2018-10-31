@@ -99,7 +99,9 @@ describe('gulp/common/worker.js', () => {
             modulePath,
             sbis3ControlsPath,
             [workspaceFolder],
-            themes
+            {
+               'online': themes.online
+            }
          ]);
          resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);

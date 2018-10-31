@@ -1,6 +1,6 @@
 #!groovy
 
-def version = "3.18.610"
+def version = "3.18.700"
 def gitlabStatusUpdate() {
     if ( currentBuild.currentResult == "ABORTED" ) {
         updateGitlabCommitStatus state: 'canceled'
@@ -37,6 +37,10 @@ node ('controls') {
                 description: '',
                 name: 'branch_engine'),
             string(
+                defaultValue: props["navigation"],
+                description: '',
+                name: 'branch_navigation'),
+            string(
                 defaultValue: props["atf_co"],
                 description: '',
                 name: "branch_atf"),
@@ -72,6 +76,15 @@ node ('controls') {
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
         def stream_number=props["snit"]
+
+
+        def branch_navigation
+        if (params.branch_navigation) {
+            branch_navigation = params.branch_navigation
+        } else {
+            branch_navigation = props["navigation"]
+        }
+
 
     try {
 
@@ -192,6 +205,23 @@ node ('controls') {
                                 credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
                                 url: 'git@git.sbis.ru:sbis/engine.git']]
                         ])
+                    },
+                    checkout_navigation: {
+                        echo " Выкачиваем Navigation"
+                        dir("./controls/tests"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_navigation]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "navigation"
+                            ]],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[
+                                credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                url: 'git@git.sbis.ru:navigation-configuration/navigation.git']]
+                            ])
+                        }
                     }
                 })
             },
@@ -462,25 +492,25 @@ node ('controls') {
             if ( inte ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
-				
+
 				dir(workspace){
 					sh """
 					7za a log_jinnee -t7z ${workspace}/jinnee/logs
-					"""			
+					"""
 					archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
-					
+
 					sh "mkdir logs_ps"
-					
+
 					dir('/home/sbis/Controls'){
 						def files_err = findFiles(glob: 'intest*/logs/**/*_errors.log')
-						
+
 						if ( files_err.length > 0 ){
 							sh "sudo cp -R /home/sbis/Controls/intest/logs/**/*_errors.log ${workspace}/logs_ps/intest_errors.log"
 							sh "sudo cp -R /home/sbis/Controls/intest-ps/logs/**/*_errors.log ${workspace}/logs_ps/intest_ps_errors.log"
 							dir ( workspace ){
 								sh """7za a logs_ps -t7z ${workspace}/logs_ps """
 								archiveArtifacts allowEmptyArchive: true, artifacts: '**/logs_ps.7z', caseSensitive: false
-							}					
+							}
 						}
 					}
 				}

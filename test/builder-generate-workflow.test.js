@@ -86,6 +86,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.less',
          'ForRename_old.css',
          'ForRename_old.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
+         'MyComponent.js',
          'Stable.css',
          'Stable.less',
          'contents.js',
@@ -116,6 +120,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.less',
          'ForRename_new.css',
          'ForRename_new.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
+         'MyComponent.js',
          'Stable.css',
          'Stable.less',
          'contents.js',
@@ -554,6 +562,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
@@ -906,7 +915,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Modul.js.gz',
          'Modul.min.js',
          'Modul.min.js.gz',
-         'Modul.min.js.map',
          'Modul.min.original.js',
          'Modul.modulepack.js',
          '_Cycle_dependence',
@@ -921,7 +929,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'libraryCycle.js.gz',
          'libraryCycle.min.js',
          'libraryCycle.min.js.gz',
-         'libraryCycle.min.js.map',
          'libraryCycle.min.original.js',
          'libraryCycle.modulepack.js',
          'module-dependencies.json',
@@ -933,7 +940,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'privateDepCycle.js.gz',
          'privateDepCycle.min.js',
          'privateDepCycle.min.js.gz',
-         'privateDepCycle.min.js.map',
          'privateDepCycle.min.original.js',
          'privateDepCycle.modulepack.js',
          'routes-info.json',
