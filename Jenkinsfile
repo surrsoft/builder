@@ -165,6 +165,7 @@ node ('test-autotest86') {
 					dir("./controls"){
                         sh """
 							git clean -fd
+							git pull
                         """
 					}
                 }
