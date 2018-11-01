@@ -18,7 +18,7 @@ def exception(err, reason) {
 
 echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
 
-node ('test-autotest86') {
+node ('controls') {
     def ver = version.replaceAll('.','')
     echo "Читаем настройки из файла version_application.txt"
     def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
@@ -155,7 +155,7 @@ node ('test-autotest86') {
                 def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
-                    branches: [[name: "3.18.610/bugfix/bls/break_tests_for_check"]],
+                    branches: [[name: controls_revision]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [[
                         $class: 'RelativeTargetDirectory',
@@ -169,8 +169,8 @@ node ('test-autotest86') {
 					dir("./controls"){
                         sh """
 							git clean -fd
-							git checkout 3.18.610/bugfix/bls/break_tests_for_check
-							git pull
+							git checkout ${controls_revision}
+							git pull origin ${controls_revision}
                         """
 					}
                 }
