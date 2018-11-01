@@ -645,6 +645,10 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'Vdom')
             },
             {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
                name: 'WS.Data',
                path: path.join(sourceFolder, 'WS.Data')
             },
