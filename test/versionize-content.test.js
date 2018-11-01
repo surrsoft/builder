@@ -42,7 +42,7 @@ describe('versionize-content', () => {
 
       cdnSource = '<link rel="preload" as="font" href="/cdn/fonts/TensorFont/1.0.3/TensorFontBold/TensorFontBold.woff2" type="font/woff2"/>';
 
-      // проверим, чтобы игнорировался cdn для js
+      // проверим, чтобы игнорировался cdn для шрифтов
       result = versionizeContent.versionizeTemplates(cdnSource);
       result.should.equal(cdnSource);
 
