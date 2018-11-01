@@ -34,9 +34,15 @@ describe('versionize-content', () => {
       let result;
 
       const versionedMinLink = 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js?x_version=BUILDER_VERSION_STUB">';
-      const cdnSource = 'src="/cdn/jquery/3.3.1/jquery-min.js">';
+      let cdnSource = 'src="/cdn/jquery/3.3.1/jquery-min.js">';
 
-      // проверим, чтобы игнорировался cdn
+      // проверим, чтобы игнорировался cdn для js
+      result = versionizeContent.versionizeTemplates(cdnSource);
+      result.should.equal(cdnSource);
+
+      cdnSource = '<link rel="preload" as="font" href="/cdn/fonts/TensorFont/1.0.3/TensorFontBold/TensorFontBold.woff2" type="font/woff2"/>';
+
+      // проверим, чтобы игнорировался cdn для js
       result = versionizeContent.versionizeTemplates(cdnSource);
       result.should.equal(cdnSource);
 
@@ -47,5 +53,14 @@ describe('versionize-content', () => {
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
       result = versionizeContent.versionizeTemplates('src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">');
       result.should.equal(versionedMinLink);
+
+      // проверим версионирование рядовых шрифтов
+      result = versionizeContent.versionizeTemplates('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2"/>');
+      result.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=BUILDER_VERSION_STUB"/>');
+
+      // проверим что под регулярку не попадают свойства обьектов
+      const testSpanFromTemplate = '<span class="edo-TaskCol-date-number-mark-dot icon-16 icon-{{item[\'colorMarkState\'].icon}}"';
+      result = versionizeContent.versionizeTemplates(testSpanFromTemplate);
+      result.should.equal(testSpanFromTemplate);
    });
 });
