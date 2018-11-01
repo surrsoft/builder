@@ -484,8 +484,6 @@ node ('controls') {
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
             if ( inte || regr ) {
-                junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 
 				dir(workspace){
 					sh """
@@ -509,6 +507,9 @@ node ('controls') {
 						}
 					}
 				}
+				
+                junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
             }
             if ( regr ){
                 dir("./controls") {
