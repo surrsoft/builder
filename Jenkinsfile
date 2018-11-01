@@ -483,7 +483,7 @@ node ('controls') {
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
-            if ( inte ) {
+            if ( inte || regr ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 
