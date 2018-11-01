@@ -74,6 +74,7 @@ node ('controls') {
         def run_test_fail = ""
         def stream_number=props["snit"]
         def smoke_result=true
+        def tests_for_run=""
 
 
         def branch_navigation
