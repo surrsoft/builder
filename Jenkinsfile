@@ -391,10 +391,6 @@ node ('test-autotest86') {
 				if ( only_fail && smoke_result) {
 					step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
 				}
-				
-				parallel (
-
-				)
 			}
             parallel(
                 unit: {
@@ -457,7 +453,7 @@ node ('test-autotest86') {
             if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
-            if ( inte ) {
+            if ( inte || regr ) {
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 				
