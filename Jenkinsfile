@@ -450,9 +450,6 @@ node ('controls') {
 					sudo chmod -R 0777 /home/sbis/Controls
 				"""
 			}
-            if ( unit ){
-                junit keepLongStdio: true, testResults: "**/builder/*.xml"
-            }
             if ( inte || regr ) {
 				
 				dir(workspace){
@@ -486,6 +483,9 @@ node ('controls') {
                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: './tests/reg/capture_report/', reportFiles: 'report.html', reportName: 'Regression Report', reportTitles: ''])
                 }
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/report.zip', caseSensitive: false
+            }
+			if ( unit ){
+                junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
         }
         gitlabStatusUpdate()
