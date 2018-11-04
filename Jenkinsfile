@@ -441,7 +441,7 @@ node ('controls') {
 							dir("./controls/tests/int"){
 								sh """
 								source /home/sbis/venv_for_test/bin/activate
-								python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+								python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
 								deactivate
 								"""
 							}
@@ -457,7 +457,7 @@ node ('controls') {
 							dir("./controls/tests/reg"){
 								sh """
 									source /home/sbis/venv_for_test/bin/activate
-									python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+									python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
 									deactivate
 								"""
 							}
