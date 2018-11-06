@@ -128,7 +128,8 @@ function generateTaskForInitWorkerPool(taskParameters) {
             forkOpts: {
                env: {
                   'ws-core-path': wsCorePath,
-                  'main-process-cwd': process.cwd()
+                  'main-process-cwd': process.cwd(),
+                  'init-ws': taskParameters.config.needTemplates || taskParameters.config.builderTests
                }
             }
          })

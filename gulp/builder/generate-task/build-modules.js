@@ -30,6 +30,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
    filterCached = require('../plugins/filter-cached'),
+   filterSources = require('../plugins/filter-sources'),
    buildXhtml = require('../plugins/build-xhtml'),
    minifyCss = require('../plugins/minify-css'),
    minifyJs = require('../plugins/minify-js'),
@@ -107,14 +108,24 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
             .pipe(compileEsAndTs(taskParameters, moduleInfo))
-            .pipe(packLibrary(taskParameters, moduleInfo))
+            .pipe(gulpIf(isReleaseMode, packLibrary(taskParameters, moduleInfo)))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
             .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
-            .pipe(gulpBuildHtmlTmpl(taskParameters, moduleInfo))
-            .pipe(buildStaticHtml(taskParameters, moduleInfo, modulesMap))
+            .pipe(
+               gulpIf(
+                  taskParameters.config.needTemplates,
+                  gulpBuildHtmlTmpl(taskParameters, moduleInfo)
+               )
+            )
+            .pipe(
+               gulpIf(
+                  taskParameters.config.needTemplates,
+                  buildStaticHtml(taskParameters, moduleInfo, modulesMap)
+               )
+            )
 
             // versionizeToStub зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
             .pipe(gulpIf(!!taskParameters.config.version, versionizeToStub(taskParameters, moduleInfo)))
@@ -147,6 +158,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(isReleaseMode, createModuleDependenciesJson(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
+            .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(

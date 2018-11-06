@@ -78,7 +78,7 @@ function generateWorkflow(processArgv) {
 
 function generateTaskForClearCache(taskParameters) {
    return function clearCache() {
-      return taskParameters.cache.clearCacheIfNeeded();
+      return taskParameters.cache.clearCacheIfNeeded(taskParameters);
    };
 }
 
