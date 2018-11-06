@@ -32,13 +32,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             /**
-             * Если имеется скомпилированный вариант для .es уже в исходниках, нам необходимо
+             * Если имеется скомпилированный вариант для typescript или ES6 в исходниках, нам необходимо
              * выкинуть его из потока Gulp, чтобы не возникало ситуации, когда в потоке будут
-             * 2 одинаковых модуля и билдер попытается создать 2 симлинка.
+             * 2 одинаковых модуля и билдер попытается создать 2 симлинка. Актуально только для сборки в
+             * режиме debug
              */
-            if (file.extname === '.js') {
-               const esInSource = await fs.pathExists(file.path.replace(jsExt, '.es'));
-               if (esInSource) {
+            if (file.extname === '.js' && !taskParameters.config.isReleaseMode) {
+               const
+                  esInSource = await fs.pathExists(file.path.replace(jsExt, '.es')),
+                  tsInSource = await fs.pathExists(file.path.replace(jsExt, '.ts'));
+
+               if (esInSource || tsInSource) {
                   callback(null);
                } else {
                   callback(null, file);
@@ -76,11 +80,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const jsInSources = file.history[0].replace(esExt, '.js');
 
             /**
-             * будем в любом случае перезатирать файл результатом компиляции(для .es модулей, .ts лучше не трогать),
-             * поскольку в противном случае до таски паковки библиотек мы не дойдём в виду отсутствия
-             * скомпилированного модуля в потоке
+             * будем в любом случае перезатирать файл результатом компиляции(исключения только .ts в модуле
+             * WS.Core), поскольку в противном случае до таски паковки библиотек мы не дойдём в виду отсутствия
+             * скомпилированного модуля в потоке.
              */
-            if (await fs.pathExists(jsInSources) && file.extname === '.ts') {
+            if (await fs.pathExists(jsInSources) && file.extname === '.ts' && moduleInfo.name === 'WS.Core') {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +

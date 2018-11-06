@@ -108,9 +108,16 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
             .pipe(compileEsAndTs(taskParameters, moduleInfo))
-            .pipe(gulpIf(isReleaseMode, packLibrary(taskParameters, moduleInfo)))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
+
+            /**
+             * packLibrary зависит от addComponentInfo, поскольку нам
+             * необходимо правильно записать в кэш информацию о зависимостях
+             * запакованной библиотеки, что нужно делать именно после парсинга
+             * оригинальной скомпиленной библиотеки.
+             */
+            .pipe(gulpIf(isReleaseMode, packLibrary(taskParameters, moduleInfo)))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
             .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
