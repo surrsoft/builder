@@ -37,13 +37,14 @@ function readConfigFileSync(configPath) {
       throw new Error('Файл конфигурации не задан.');
    }
 
-   if (!fs.pathExistsSync(path.resolve(process.cwd(), configPath))) {
+   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
+   if (!fs.pathExistsSync(resolvedConfigPath)) {
       throw new Error(`Файл конфигурации '${configPath}' не существует.`);
    }
 
    let rawConfig = {};
    try {
-      rawConfig = fs.readJSONSync(path.resolve(process.cwd(), configPath));
+      rawConfig = fs.readJSONSync(resolvedConfigPath);
    } catch (e) {
       e.message = `Файл конфигурации ${configPath} не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
          e.message
