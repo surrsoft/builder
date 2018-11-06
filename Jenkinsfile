@@ -504,10 +504,11 @@ node ('controls') {
 							}
 						}
 					}
+					archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 				}
 				
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
+
             }
             if ( regr ){
                 dir("./controls") {
