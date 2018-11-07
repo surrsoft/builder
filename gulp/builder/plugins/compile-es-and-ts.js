@@ -132,6 +132,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             taskParameters.cache.storeCompiledES(file.history[0], moduleInfo.name, result);
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
+            newFile.compiled = true;
             newFile.path = outputPath;
             newFile.base = moduleInfo.output;
             this.push(newFile);

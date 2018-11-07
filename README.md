@@ -65,7 +65,8 @@ https://docs.npmjs.com/files/package-lock.json
          "output": "путь до папки с ресурсами статики стенда",
          "localization": ["ru-RU", "en-US"] | false,            //опционально. список локализаций
          "default-localization": "ru-RU",                       //опционально, если нет "localization"
-         "mode": "debug"|"release",
+         "mode": "debug"|"release",                             //опционально, если нет "compileEsAndTs"
+         "compileEsAndTs": true                                 //опционально, использовать если требуется компиляция в директорию с исходниками.
          "logs": "путь до папки для записи логов",              //опционально, используется для записи builder_report.json
          "multi-service": false|true,                           //опционально. по умолчанию false. Собираем один сервис или несколько. От этого зависит будем ли мы менять константы в статических html и пакетах.
          "url-service-path": "путь до текущего сервиса",        //опционально. по умолчанию "/"

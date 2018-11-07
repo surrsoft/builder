@@ -91,10 +91,13 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
       }
 
-      if (!this.rawConfig.hasOwnProperty('mode')) {
+      if (!this.rawConfig.hasOwnProperty('mode') && !this.rawConfig.hasOwnProperty('compileEsAndTs')) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
       }
-      const { mode } = this.rawConfig;
+      let { mode } = this.rawConfig;
+      if (!mode) {
+         mode = 'debug';
+      }
       if (mode !== 'release' && mode !== 'debug') {
          throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
       }
@@ -141,13 +144,18 @@ class BuildConfiguration {
          }
       }
 
+      const isSourcesOutput = buildConfigurationChecker.checkForSourcesOutput(this.rawConfig);
+      if (isSourcesOutput) {
+         this.isSourcesOutput = isSourcesOutput;
+      }
+
       const missedNecessaryModules = buildConfigurationChecker.checkForNecessaryModules(this.rawConfig.modules);
 
       /**
        * Если нету общеобязательного набора Интерфейсных модулей, сборку завершаем с ошибкой.
        * Исключение: тесты билдера.
        */
-      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests) {
+      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests && !this.rawConfig.compileEsAndTs) {
          throw new Error('В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp:' +
          `\n${missedNecessaryModules}` +
          '\nДобавьте их из $(SBISPlatformSDK)/ui-modules');
@@ -182,8 +190,19 @@ class BuildConfiguration {
          this.urlDefaultServicePath = this.urlServicePath;
       }
 
+      const needTemplates = this.rawConfig.hasOwnProperty('buildTemplates') ||
+         this.rawConfig.hasOwnProperty('buildStaticTemplates') ||
+         this.rawConfig.hasOwnProperty('mode');
+      if (needTemplates) {
+         this.needTemplates = needTemplates;
+      }
+
       if (this.rawConfig.hasOwnProperty('logs')) {
          this.logFolder = this.rawConfig.logs;
+      }
+
+      if (this.rawConfig.hasOwnProperty('builderTests')) {
+         this.builderTests = this.rawConfig.builderTests;
       }
    }
 }

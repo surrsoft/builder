@@ -30,6 +30,19 @@ const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Vdom', 'Controls', 'Ro
  * @returns {Undertaker.TaskFunction}
  */
 function generateTaskForPrepareWS(taskParameters) {
+   /**
+    * в случае отсутствия необоходимости сборки шаблонов
+    * нам не нужно совершать предварительную компиляцию
+    * ядра и его инициализацию в пуле воркеров, поэтому
+    * данную таску можно пропустить.
+    * Исключение - тесты билдера. Для них надо
+    * инициализировать ядро.
+    */
+   if (!taskParameters.config.needTemplates && !taskParameters.config.builderTests) {
+      return function skipPrepareWS(done) {
+         done();
+      };
+   }
    const modulesFromWS = taskParameters.config.modules.filter(moduleInfo => wsModulesNames.includes(moduleInfo.name));
 
    const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {

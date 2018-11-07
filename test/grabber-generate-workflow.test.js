@@ -17,6 +17,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
 const config = {
    cache: cacheFolder,
    output: outputJson,
+   builderTests: true,
    modules: [
       {
          name: 'Модуль',
