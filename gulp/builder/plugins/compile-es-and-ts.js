@@ -42,8 +42,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   esInSource = await fs.pathExists(file.path.replace(jsExt, '.es')),
                   tsInSource = await fs.pathExists(file.path.replace(jsExt, '.ts'));
 
-               if (esInSource || tsInSource) {
+               if (esInSource) {
                   callback(null);
+               } else if (tsInSource) {
+                  if (moduleInfo.name === 'WS.Core') {
+                     callback(null, file);
+                  } else {
+                     callback();
+                  }
                } else {
                   callback(null, file);
                }
