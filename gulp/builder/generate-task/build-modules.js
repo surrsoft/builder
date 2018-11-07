@@ -107,10 +107,10 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
             .pipe(compileEsAndTs(taskParameters, moduleInfo))
-            .pipe(packLibrary(taskParameters, moduleInfo))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
+            .pipe(packLibrary(taskParameters, moduleInfo))
             .pipe(gulpBuildHtmlTmpl(taskParameters, moduleInfo))
             .pipe(buildStaticHtml(taskParameters, moduleInfo, modulesMap))
 
