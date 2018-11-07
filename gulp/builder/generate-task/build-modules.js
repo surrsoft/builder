@@ -107,9 +107,9 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
             .pipe(compileEsAndTs(taskParameters, moduleInfo))
-            .pipe(packLibrary(taskParameters, moduleInfo))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
+            .pipe(packLibrary(taskParameters, moduleInfo))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
             .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
