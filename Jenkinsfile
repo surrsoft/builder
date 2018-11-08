@@ -16,13 +16,16 @@ def exception(err, reason) {
     error(err)
 }
 
-echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
+def send_status_in_gitlab(state) {
+    def request_url = "http://ci-platform.sbis.ru:8000/set_status"
+    def request_data = """{"project_name":"root/sbis3-builder", "branch_name":"${BRANCH_NAME}", "state": "${state}", "build_url":"${BUILD_URL}"}"""
+    echo "${request_data}"
+    sh """curl -sS --header \"Content-Type: application/json\" --request POST --data  '${request_data}' ${request_url}"""
+}
 
-node ('controls') {
-    def ver = version.replaceAll('.','')
-    echo "Читаем настройки из файла version_application.txt"
-    def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
-    properties([
+echo "Ветка в GitLab: https://git.sbis.ru/root/sbis3-builder/tree/${env.BRANCH_NAME}"
+echo "Генерируем параметры"
+properties([
     disableConcurrentBuilds(),
     gitLabConnection('git'),
     buildDiscarder(
@@ -33,15 +36,15 @@ node ('controls') {
             numToKeepStr: '3')),
         parameters([
             string(
-                defaultValue: props["engine"],
+                defaultValue: '',
                 description: '',
                 name: 'branch_engine'),
             string(
-                defaultValue: props["navigation"],
+                defaultValue: '',
                 description: '',
                 name: 'branch_navigation'),
             string(
-                defaultValue: props["atf_co"],
+                defaultValue: '',
                 description: '',
                 name: "branch_atf"),
             choice(
@@ -57,14 +60,39 @@ node ('controls') {
         pipelineTriggers([])
     ])
 
+node('master') {
+
+    if ( "${env.BUILD_NUMBER}" != "1" && !( params.run_reg || params.run_unit || params.run_int || params.run_only_fail_test )) {
+        send_status_in_gitlab("failed")
+        exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
+    }else {
+        // если встала в очередь на билдере
+        send_status_in_gitlab("running")
+    }
+}
+
+node ('controls') {
+    def ver = version.replaceAll('.','')
+    echo "Читаем настройки из файла version_application.txt"
+    def props = readProperties file: "/home/sbis/mount_test-osr-source_d/Платформа/${version}/version_application.txt"
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
 
         def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
-        def branch_atf = params.branch_atf
-        def branch_engine = params.branch_engine
+        def branch_atf
+        if (params.branch_atf) {
+            branch_atf = params.branch_atf
+        } else {
+            branch_atf = props["atf_co"]
+        }
+        def branch_engine
+        if (params.branch_engine) {
+            branch_engine = params.branch_engine
+        } else {
+            branch_engine = props["engine"]
+        }
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
@@ -122,10 +150,6 @@ node ('controls') {
             """
         }
         updateGitlabCommitStatus state: 'running'
-        if ( "${env.BUILD_NUMBER}" != "1" && !(inte || unit || regr || only_fail)) {
-            exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
-        }
-
         echo " Выкачиваем сборочные скрипты"
         dir(workspace) {
             checkout([$class: 'GitSCM',
