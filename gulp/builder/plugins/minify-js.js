@@ -73,6 +73,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             let outputFileWoExt;
             const extName = esExt.test(file.history[0]) ? esExt : file.extname;
+            const isLibrary = file.history[0].endsWith('.ts') || file.history[0].endsWith('.es');
 
             /**
              * объединённый словарь локализации пишется сразу же в кэш, поэтому для
@@ -147,14 +148,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   minOriginalText = minifiedOriginal.code;
                }
-               this.push(
-                  new Vinyl({
-                     base: moduleInfo.output,
-                     path: outputMinOriginalJsFile,
-                     contents: Buffer.from(minOriginalText)
-                  })
-               );
-               taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+
+               // в случае библиотек в минифицированном виде нам всегда нужна только запакованная
+               if (!isLibrary) {
+                  this.push(
+                     new Vinyl({
+                        base: moduleInfo.output,
+                        path: outputMinOriginalJsFile,
+                        contents: Buffer.from(minOriginalText)
+                     })
+                  );
+                  taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
+               }
 
                // минимизируем JS c пакованными зависимостями
                // если файл не возможно минифицировать, то запишем оригинал
