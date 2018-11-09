@@ -8,6 +8,7 @@
 'use strict';
 
 const fs = require('fs-extra');
+const path = require('path');
 
 /**
  * Получить параметры командной строки, что начинаются с --
@@ -36,13 +37,14 @@ function readConfigFileSync(configPath) {
       throw new Error('Файл конфигурации не задан.');
    }
 
-   if (!fs.pathExistsSync(configPath)) {
+   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
+   if (!fs.pathExistsSync(resolvedConfigPath)) {
       throw new Error(`Файл конфигурации '${configPath}' не существует.`);
    }
 
    let rawConfig = {};
    try {
-      rawConfig = fs.readJSONSync(configPath);
+      rawConfig = fs.readJSONSync(resolvedConfigPath);
    } catch (e) {
       e.message = `Файл конфигурации ${configPath} не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
          e.message

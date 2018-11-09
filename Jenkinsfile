@@ -1,6 +1,6 @@
 #!groovy
 
-def version = "3.18.620"
+def version = "3.18.700"
 def gitlabStatusUpdate() {
     if ( currentBuild.currentResult == "ABORTED" ) {
         updateGitlabCommitStatus state: 'canceled'
@@ -42,6 +42,10 @@ properties([
             string(
                 defaultValue: '',
                 description: '',
+                name: 'branch_navigation'),
+            string(
+                defaultValue: '',
+                description: '',
                 name: "branch_atf"),
             choice(
                 choices: "online\npresto\ncarry\ngenie",
@@ -49,7 +53,7 @@ properties([
                 name: 'theme'),
             choice(choices: "chrome\nff\nie\nedge", description: '', name: 'browser_type'),
             booleanParam(defaultValue: false, description: "Запуск тестов верстки", name: 'run_reg'),
-            booleanParam(defaultValue: false, description: "Запуск интеграционных тестов", name: 'run_int'),
+            booleanParam(defaultValue: false, description: "Запускать интеграционные тесты?", name: 'run_int'),
             booleanParam(defaultValue: false, description: "Запускать юнит тесты?", name: 'run_unit'),
            booleanParam(defaultValue: false, description: "Запуск ТОЛЬКО УПАВШИХ тестов из предыдущего билда. Опции run_int и run_reg можно не отмечать", name: 'run_only_fail_test')
             ]),
@@ -58,7 +62,7 @@ properties([
 
 node('master') {
 
-    if ( "${env.BUILD_NUMBER}" != "1" && !( params.run_reg || params.run_int || params.run_unit ||params.run_only_fail_test )) {
+    if ( "${env.BUILD_NUMBER}" != "1" && !( params.run_reg || params.run_unit || params.run_int || params.run_only_fail_test )) {
         send_status_in_gitlab("failed")
         exception('Ветка запустилась по пушу, либо запуск с некоректными параметрами', 'TESTS NOT BUILD')
     }else {
@@ -74,19 +78,17 @@ node ('controls') {
     def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws(workspace) {
 
-
         def inte = params.run_int
         def regr = params.run_reg
         def unit = params.run_unit
         def branch_atf
-        if ( params.branch_atf ) {
+        if (params.branch_atf) {
             branch_atf = params.branch_atf
         } else {
             branch_atf = props["atf_co"]
         }
-
         def branch_engine
-        if ( params.branch_engine ) {
+        if (params.branch_engine) {
             branch_engine = params.branch_engine
         } else {
             branch_engine = props["engine"]
@@ -98,9 +100,26 @@ node ('controls') {
         def changed_files
         def only_fail = params.run_only_fail_test
         def run_test_fail = ""
-        def tests_for_run = ""
         def stream_number=props["snit"]
-		def smoke_result = true
+        def smoke_result=true
+        def tests_for_run=""
+
+
+        def branch_navigation
+        if (params.branch_navigation) {
+            branch_navigation = params.branch_navigation
+        } else {
+            branch_navigation = props["navigation"]
+        }
+		dir(workspace){
+			echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
+			sh "ls | grep -v -E 'controls' | xargs rm -rf"
+			dir("./controls"){
+				sh "rm -rf ${workspace}/controls/tests/int/atf"
+				sh "rm -rf ${workspace}/controls/tests/navigation"
+				sh "rm -rf ${workspace}/controls/sbis3-app-engine"
+			}
+		}
 
     try {
 
@@ -109,14 +128,6 @@ node ('controls') {
             regr = true
             unit = true
         }
-		dir(workspace){
-			echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
-			sh "ls | grep -v -E 'controls' | xargs rm -rf"
-			dir("./controls/tests"){
-				sh "rm -rf ${workspace}/controls/tests/int/atf"
-				sh "rm -rf ${workspace}/controls/tests/sbis3-app-engine"
-			}
-		}
 
 		dir(workspace) {
             checkout([$class: 'GitSCM',
@@ -139,7 +150,6 @@ node ('controls') {
             """
         }
         updateGitlabCommitStatus state: 'running'
-
         echo " Выкачиваем сборочные скрипты"
         dir(workspace) {
             checkout([$class: 'GitSCM',
@@ -178,6 +188,7 @@ node ('controls') {
 
         parallel (
             controls: {
+
                 def controls_revision = sh returnStdout: true, script: "${python_ver} ${workspace}/constructor/read_meta.py -rev ${SDK}/meta.info controls"
                 dir(workspace) {
                     checkout([$class: 'GitSCM',
@@ -193,16 +204,16 @@ node ('controls') {
                             url: 'git@git.sbis.ru:sbis/controls.git']]
                     ])
 					dir("./controls"){
-                        sh """
+						sh """
 							git clean -fd
 							git checkout ${controls_revision}
 							git pull origin ${controls_revision}
-                        """
+						"""
 					}
                 }
                 parallel (
-                    atf: {
-                    echo " Выкачиваем atf"
+                    checkout_atf:{
+                        echo " Выкачиваем atf"
                         dir("./controls/tests/int") {
                         checkout([$class: 'GitSCM',
                             branches: [[name: branch_atf]],
@@ -218,23 +229,41 @@ node ('controls') {
                             ])
                         }
                     },
-                    engine: {
-                    echo "Выкачиваем engine"
-                    dir("./controls/tests"){
-                        checkout([$class: 'GitSCM',
-                        branches: [[name: branch_engine]],
-                        doGenerateSubmoduleConfigurations: false,
-                        extensions: [[
-                            $class: 'RelativeTargetDirectory',
-                            relativeTargetDir: "sbis3-app-engine"
+                    checkout_engine: {
+                        echo " Выкачиваем engine"
+                        dir("./controls"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_engine]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "sbis3-app-engine"
+                                ]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[
+                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                    url: 'git@git.sbis.ru:sbis/engine.git']]
+                            ])
+                        }
+                    },
+                    checkout_navigation: {
+                        echo " Выкачиваем Navigation"
+                        dir("./controls/tests"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_navigation]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "navigation"
                             ]],
                             submoduleCfg: [],
                             userRemoteConfigs: [[
                                 credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
-                                url: 'git@git.sbis.ru:sbis/engine.git']]
-                        ])
+                                url: 'git@git.sbis.ru:navigation-configuration/navigation.git']]
+                            ])
+                        }
                     }
-                })
+                )
             },
             cdn: {
                 dir(workspace) {
@@ -355,7 +384,7 @@ node ('controls') {
                 sudo chmod -R 0777 /home/sbis/Controls
             """
             }
-			if ( regr || inte ) {
+            if ( regr || inte ) {
 				def soft_restart = "True"
 				if ( params.browser_type in ['ie', 'edge'] ){
 					soft_restart = "False"
@@ -436,7 +465,7 @@ node ('controls') {
 							dir("./controls/tests/int"){
 								sh """
 								source /home/sbis/venv_for_test/bin/activate
-								python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+								python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
 								deactivate
 								"""
 							}
@@ -452,7 +481,7 @@ node ('controls') {
 							dir("./controls/tests/reg"){
 								sh """
 									source /home/sbis/venv_for_test/bin/activate
-									python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number}
+									python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
 									deactivate
 								"""
 							}
@@ -477,32 +506,33 @@ node ('controls') {
 				"""
 			}
             if ( inte || regr ) {
-				
+
 				dir(workspace){
 					sh """
 					7za a log_jinnee -t7z ${workspace}/jinnee/logs
-					"""			
+					"""
 					archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
-					
+
 					sh "mkdir logs_ps"
 					if ( exists_dir ){
 						dir('/home/sbis/Controls'){
 							def files_err = findFiles(glob: 'intest*/logs/**/*_errors.log')
-							
+
 							if ( files_err.length > 0 ){
 								sh "sudo cp -R /home/sbis/Controls/intest/logs/**/*_errors.log ${workspace}/logs_ps/intest_errors.log"
 								sh "sudo cp -R /home/sbis/Controls/intest-ps/logs/**/*_errors.log ${workspace}/logs_ps/intest_ps_errors.log"
 								dir ( workspace ){
 									sh """7za a logs_ps -t7z ${workspace}/logs_ps """
 									archiveArtifacts allowEmptyArchive: true, artifacts: '**/logs_ps.7z', caseSensitive: false
-								}					
+								}
 							}
 						}
 					}
+					archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
 				}
 				
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
+
             }
             if ( regr ){
                 dir("./controls") {

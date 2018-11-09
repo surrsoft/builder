@@ -27,6 +27,7 @@ function copyWS() {
 
    const config = new Config();
    config.cachePath = fixtureWSPath;
+   config.needTemplates = true;
    config.modules = [
       new ModuleInfo('ws', '', path.join(nodeModulesPath, 'sbis3-ws/ws')),
       new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data')),

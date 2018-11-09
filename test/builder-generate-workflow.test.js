@@ -86,6 +86,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.less',
          'ForRename_old.css',
          'ForRename_old.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
+         'MyComponent.js',
          'Stable.css',
          'Stable.less',
          'contents.js',
@@ -116,6 +120,10 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.less',
          'ForRename_new.css',
          'ForRename_new.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRenameThemed_old_online.css',
+         'MyComponent.js',
          'Stable.css',
          'Stable.less',
          'contents.js',
@@ -554,6 +562,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);

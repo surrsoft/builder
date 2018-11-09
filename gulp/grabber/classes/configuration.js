@@ -52,6 +52,10 @@ class GrabberConfiguration {
       if (!this.outputPath.endsWith('.json')) {
          throw new Error(`${startErrorMessage} Параметр output должен быть json-файлом.`);
       }
+
+      if (this.rawConfig.hasOwnProperty('builderTests')) {
+         this.builderTests = this.rawConfig.builderTests;
+      }
    }
 }
 

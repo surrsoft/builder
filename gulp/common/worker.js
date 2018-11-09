@@ -36,6 +36,8 @@ if (!checkCWDAvailability()) {
 require('../../lib/logger').setWorkerLogger();
 
 const logger = require('../../lib/logger').logger();
+const needInitWs = process.env['init-ws'] === 'true';
+
 try {
    process.on('unhandledRejection', (reason, p) => {
       console.log(
@@ -48,23 +50,35 @@ try {
       process.exit(1);
    });
 
-   // ws должен быть вызван раньше чем первый global.requirejs
-   const nodeWS = require('./node-ws');
-   nodeWS.init();
+   if (needInitWs) {
+      // ws должен быть вызван раньше чем первый global.requirejs
+      const nodeWS = require('./node-ws');
+      nodeWS.init();
+   }
+
+   /**
+    * require данного набора функционала требует инициализации ядра
+    * для работы. Поэтому обьявление данных функций выполняем только
+    * в случае инициализации ядра.
+    */
+   let processingTmpl, prepareXHTMLPrimitive,
+      buildXhtmlPrimitive, collectWordsPrimitive;
+   if (needInitWs) {
+      processingTmpl = require('../../lib/processing-tmpl');
+      prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
+      buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml;
+      collectWordsPrimitive = require('../../lib/i18n/collect-words');
+   }
 
    const fs = require('fs-extra'),
       workerPool = require('workerpool'),
       compileEsAndTs = require('../../lib/compile-es-and-ts'),
       buildLess = require('../../lib/build-less'),
-      processingTmpl = require('../../lib/processing-tmpl'),
       parseJsComponent = require('../../lib/parse-js-component'),
       processingRoutes = require('../../lib/processing-routes'),
-      prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml'),
-      buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml,
       runMinifyCss = require('../../lib/run-minify-css'),
       runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
       uglifyJs = require('../../lib/run-uglify-js'),
-      collectWordsPrimitive = require('../../lib/i18n/collect-words'),
       { wrapWorkerFunction } = require('./helpers');
 
    let componentsProperties;
