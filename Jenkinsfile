@@ -55,7 +55,7 @@ properties([
             booleanParam(defaultValue: false, description: "Запуск тестов верстки", name: 'run_reg'),
             booleanParam(defaultValue: false, description: "Запускать интеграционные тесты?", name: 'run_int'),
             booleanParam(defaultValue: false, description: "Запускать юнит тесты?", name: 'run_unit'),
-           booleanParam(defaultValue: false, description: "Запуск ТОЛЬКО УПАВШИХ тестов из предыдущего билда. Опции run_int и run_reg можно не отмечать", name: 'run_only_fail_test')
+           booleanParam(defaultValue: false, description: "Запуск ТОЛЬКО УПАВШИХ тестов из предыдущего билда. Укажите опции run_int и/или run_reg", name: 'run_only_fail_test')
             ]),
         pipelineTriggers([])
     ])
@@ -285,33 +285,8 @@ node ('controls') {
         )
         if ( only_fail ) {
             run_test_fail = "-sf"
-            // если галки не отмечены, сами определим какие тесты перезапустить
-            if ( !inte && !regr  ) {
-                step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
-                script = "python3 ../fail_tests.py"
-                for ( type in ["int", "reg"] ) {
-                    dir("./controls/tests/${type}") {
-                    def result = sh returnStdout: true, script: script
-                    echo "${result}"
-                    if (type == "int") {
-                        if ( result.toBoolean() ) {
-                            inte = true
-                        } else {
-                            inte = false
-                            }
-                        }
-                    if (type == "reg") {
-                        if ( result.toBoolean() ) {
-                            regr = true
-                        } else {
-                            regr = false
-                            }
-                        }
-                    }
-                }
-                if (!inte && !regr) {
-                    exception('Нет тестов для перезапуска.', 'USER FAIL')
-                }
+            if (!inte && !regr) {
+                exception('Не отмечены тип тестов для перезапуска. Укажите опции run_int и/или run_reg', 'USER FAIL')
             }
         }
 
