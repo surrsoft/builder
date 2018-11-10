@@ -94,10 +94,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                    */
                   const
                      prettyPath = helpers.unixifyPath(library.history[0]),
+                     prettyCompiledPath = prettyPath.replace(/\.(ts|es)$/, '.js'),
                      currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
 
-                  if (currentModuleStore.componentsInfo[prettyPath] && result.newDependencies) {
-                     currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
+                  if (result.newDependencies) {
+                     if (currentModuleStore.componentsInfo[prettyPath]) {
+                        currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
+                     }
+                     if (currentModuleStore.componentsInfo[prettyCompiledPath]) {
+                        currentModuleStore.componentsInfo[prettyCompiledPath].componentDep = result.newDependencies;
+                     }
                   }
                } catch (error) {
                   logger.error({
