@@ -138,7 +138,7 @@ function generateTaskForCustomPack(taskParameters) {
       generateCollectPackagesTasks(configs, taskParameters, root),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateInterceptCollectorTask(root, results),
-      generateSaveResultsTask(taskParameters.config, results, root)
+      generateSaveResultsTask(taskParameters.cache, results, root)
    );
 }
 
@@ -155,10 +155,10 @@ function generateInterceptCollectorTask(root, results) {
    };
 }
 
-function generateSaveResultsTask(config, results, applicationRoot) {
+function generateSaveResultsTask(cache, results, applicationRoot) {
    return function saveCustomPackerResults() {
       results.bundlesJson = results.bundles;
-      return saveCustomPackResults(results, applicationRoot, true);
+      return saveCustomPackResults(cache, results, applicationRoot, true);
    };
 }
 
