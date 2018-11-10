@@ -97,7 +97,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
             }
 
             const cssInSources = file.history[0].replace(/\.less$/, '.css');
-            if (await fs.pathExists(cssInSources)) {
+            if (moduleInfo.name !== 'WS.Deprecated' && (await fs.pathExists(cssInSources))) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
