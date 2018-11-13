@@ -14,7 +14,8 @@ const gulp = require('gulp'),
       saveCustomPackResults,
       generateAllCustomPackages,
       collectAllIntersects
-   } = require('../../../lib/pack/custom-packer');
+   } = require('../../../lib/pack/custom-packer'),
+   transliterate = require('../../../lib/transliterate');
 
 /**
  * Получаем набор путь до бандла - конфигурация пакета
@@ -83,7 +84,7 @@ function generateSetSuperBundles(configs) {
 function generateCollectPackagesTasks(configs, taskParameters, root) {
    const { commonBundles, superBundles } = configs;
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(root, moduleInfo.name);
+      const moduleOutput = path.join(root, transliterate(moduleInfo.name));
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function collectPackageJson() {
          return gulp
