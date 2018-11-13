@@ -6,7 +6,6 @@
 'use strict';
 
 const through = require('through2'),
-   fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
@@ -68,7 +67,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    return through.obj(
 
       /* @this Stream */
-      async function onTransform(file, encoding, callback) {
+      function onTransform(file, encoding, callback) {
          try {
             let isLangCss = false;
 
