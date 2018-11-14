@@ -6,7 +6,6 @@
 'use strict';
 
 const through = require('through2'),
-   fs = require('fs-extra'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
@@ -68,7 +67,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    return through.obj(
 
       /* @this Stream */
-      async function onTransform(file, encoding, callback) {
+      function onTransform(file, encoding, callback) {
          try {
             let isLangCss = false;
 
@@ -92,21 +91,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                   });
                }
 
-               callback(null, file);
-               return;
-            }
-
-            const cssInSources = file.history[0].replace(/\.less$/, '.css');
-            if (moduleInfo.name !== 'WS.Deprecated' && (await fs.pathExists(cssInSources))) {
-               taskParameters.cache.markFileAsFailed(file.history[0]);
-               const message =
-                  `Существующий CSS-файл мешает записи результата компиляции '${file.path}'. ` +
-                  'Необходимо удалить лишний CSS-файл';
-               logger.warning({
-                  message,
-                  filePath: cssInSources,
-                  moduleInfo
-               });
                callback(null, file);
                return;
             }
