@@ -62,6 +62,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          builderTests: true,
          mode: 'debug',
+         themes: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -78,8 +79,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       // запустим таску
       await runWorkflow();
 
+      let resultsFiles;
+
       // проверим, что все нужные файлы появились в "стенде"
-      let resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
@@ -105,8 +108,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          path.join(moduleSourceFolder, 'ForRename_old.less'),
          path.join(moduleSourceFolder, 'ForRename_new.less')
       );
-      const filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
-      const data = await fs.readFile(filePathForChange);
+      let filePathForChange, data;
+      filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
+      data = await fs.readFile(filePathForChange);
       await fs.writeFile(filePathForChange, `${data.toString()}\n.test-selector2 {}`);
 
       // запустим повторно таску
@@ -123,6 +127,73 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
          'ForRenameThemed_old_online.css',
+         'MyComponent.js',
+         'Stable.css',
+         'Stable.less',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+      config.themes = false;
+
+      // изменим "исходники"
+      await timeoutForMacOS();
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_new.less'),
+         path.join(moduleSourceFolder, 'ForRename_old.less')
+      );
+
+      // теперь прогоним тот же самый тест без темизации
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      // проверим, что все нужные файлы появились в "стенде"
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'MyComponent.js',
+         'Stable.css',
+         'Stable.less',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      // изменим "исходники"
+      await timeoutForMacOS();
+      await fs.rename(
+         path.join(moduleSourceFolder, 'ForRename_old.less'),
+         path.join(moduleSourceFolder, 'ForRename_new.less')
+      );
+      filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
+      data = await fs.readFile(filePathForChange);
+      await fs.writeFile(filePathForChange, `${data.toString()}\n.test-selector2 {}`);
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      // проверим, что все нужные файлы появились в "стенде", лишние удалились
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange.less',
+         'ForRename_new.css',
+         'ForRename_new.less',
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
          'MyComponent.js',
          'Stable.css',
          'Stable.less',
@@ -536,6 +607,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          mode: 'debug',
+         themes: true,
          builderTests: true,
          modules: [
             {

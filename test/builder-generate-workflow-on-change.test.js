@@ -57,7 +57,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       await initTest();
    });
 
-   it('compile less', async() => {
+   it('compile less with themes', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/less');
       await prepareTest(fixtureFolder);
 
@@ -66,6 +66,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          output: outputFolder,
          mode: 'debug',
          builderTests: true,
+         themes: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -143,6 +144,101 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRenameThemed_new.css',
          'ForRenameThemed_new.less',
          'ForRenameThemed_new_online.css',
+         'ForRename_new.css',
+         'ForRename_new.less',
+         'MyComponent.js',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      await clearWorkspace();
+   });
+   it('compile less without themes', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/less');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'debug',
+         builderTests: true,
+         themes: false,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflowBuild();
+
+      // проверим, что все нужные файлы есть в "стенде"
+      let resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'MyComponent.js',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+
+      const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
+      const forRenameThemedNewFilePath = path.join(moduleSourceFolder, 'ForRenameThemed_new.less');
+      const jsComponentPath = path.join(moduleSourceFolder, 'MyComponent.js');
+      const jsComponent = await fs.readFile(jsComponentPath, 'utf8');
+      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), forRenameNewFilePath);
+      await fs.rename(path.join(moduleSourceFolder, 'ForRenameThemed_old.less'), forRenameThemedNewFilePath);
+
+      // поменяем темизируемую зависимость
+      await fs.writeFile(
+         jsComponentPath,
+         jsComponent.replace('ForRenameThemed_old', 'ForRenameThemed_new')
+      );
+
+      await runWorkflowBuildOnChange(forRenameNewFilePath);
+
+      // проверим, что все нужные файлы появились в "стенде"
+      // старый файл ForRename_old остаётся. это нормально
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'ForRenameThemed_old.css',
+         'ForRenameThemed_old.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'ForRename_new.css',
+         'ForRename_new.less',
+         'MyComponent.js',
+         'contents.js',
+         'contents.json',
+         'navigation-modules.json',
+         'routes-info.json',
+         'static_templates.json'
+      ]);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
+
+      // запустим таску повторно
+      await runWorkflowBuild();
+
+      // проверим, что все лишние файлы (ForRename_old.css) удалились
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'ForRenameThemed_new.css',
+         'ForRenameThemed_new.less',
          'ForRename_new.css',
          'ForRename_new.less',
          'MyComponent.js',

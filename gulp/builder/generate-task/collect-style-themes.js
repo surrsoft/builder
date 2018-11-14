@@ -26,6 +26,11 @@ const logger = require('../../../lib/logger').logger();
 function generateTaskForCollectThemes(taskParameters, config) {
    const tasks = config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.path, '/themes/*/*.less');
+      if (!taskParameters.config.themes) {
+         return function skipCollectStyleThemes(done) {
+            done();
+         };
+      }
 
       return function collectStyleThemes() {
          return gulp
