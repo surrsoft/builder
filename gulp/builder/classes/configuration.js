@@ -59,6 +59,9 @@ class BuildConfiguration {
 
       // создание gz для сконвертированных ресурсов, по умолчанию true
       this.createArchiveVersions = true;
+
+      // компиляция темизируемых css.
+      this.themes = false;
    }
 
    /**
@@ -80,6 +83,11 @@ class BuildConfiguration {
       // установим переданное в конфиге значение createArchiveVersions, если такое имеется
       if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
          this.createArchiveVersions = this.rawConfig.createArchiveVersions;
+      }
+
+      // флаг themes
+      if (this.rawConfig.hasOwnProperty('themes') && typeof this.rawConfig.themes === 'boolean') {
+         this.themes = this.rawConfig.themes;
       }
 
       this.cachePath = this.rawConfig.cache;
