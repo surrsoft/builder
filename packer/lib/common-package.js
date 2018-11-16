@@ -302,10 +302,13 @@ async function limitingNativePackFiles(
    filesToPack,
    root,
    application,
-   availableLanguage,
-   defaultLanguage,
+   taskParameters,
    isGulp
 ) {
+   const
+      availableLanguage = taskParameters.config.localizations,
+      defaultLanguage = taskParameters.config.defaultLocalization;
+
    if (filesToPack && filesToPack.length) {
       const
          result = [],
@@ -346,6 +349,9 @@ async function limitingNativePackFiles(
                   root,
                   application
                ));
+               if (!taskParameters.config.sources && fullPath) {
+                  taskParameters.filesToRemove.push(fullPath);
+               }
             } catch (error) {
                logger.warning({
                   message: 'Ошибка при чтении файла во время кастомной паковки',
