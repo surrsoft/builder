@@ -21,6 +21,12 @@ const removeAllNewLines = function(str) {
 
 describe('custompack', () => {
    let moduleDeps, currentNodes, currentLinks, depsTree;
+   const customPackParameters = {
+      config: {
+         localizations: [],
+         sources: true
+      }
+   };
    before(async() => {
       moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json'));
       currentNodes = Object.keys(moduleDeps.nodes);
@@ -56,7 +62,7 @@ describe('custompack', () => {
             configsArray[0],
             true,
             true,
-            []
+            customPackParameters
          );
          result = currentResult;
       } catch (err) {
@@ -83,7 +89,7 @@ describe('custompack', () => {
             configsArray[0],
             true,
             true,
-            []
+            customPackParameters
          );
          result = currentResult;
       } catch (err) {
@@ -110,7 +116,7 @@ describe('custompack', () => {
             configsArray[0],
             true,
             true,
-            []
+            customPackParameters
          );
          result = currentResult;
       } catch (err) {
@@ -177,7 +183,7 @@ describe('custompack', () => {
             configsArray[0],
             true,
             true,
-            []
+            customPackParameters
          );
          result = currentResult;
       } catch (err) {
@@ -264,7 +270,8 @@ describe('custompack-intersects', () => {
          taskParams = {
             config: {
                defaultLocalization: '',
-               localizations: []
+               localizations: [],
+               sources: true
             }
          },
          results = {

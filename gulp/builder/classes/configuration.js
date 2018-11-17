@@ -58,10 +58,38 @@ class BuildConfiguration {
       this.logFolder = '';
 
       // создание gz для сконвертированных ресурсов, по умолчанию true
-      this.createArchiveVersions = true;
+      this.gzip = true;
 
       // компиляция темизируемых css.
-      this.themes = false;
+      this.themes = true;
+
+      // копирование исходников в output
+      this.sources = true;
+   }
+
+   /**
+    * конфигурируем весь набор флагов для плагинов Gulp.
+    */
+   configureBuildFlags() {
+      // флаг gzip
+      if (this.rawConfig.hasOwnProperty('gzip') && typeof this.rawConfig.gzip === 'boolean') {
+         this.gzip = this.rawConfig.gzip;
+      }
+
+      // алиас на флаг gzip, чтобы не порушить уже существующее поведение со стороны jinnee.
+      if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
+         this.gzip = this.rawConfig.createArchiveVersions;
+      }
+
+      // флаг themes
+      if (this.rawConfig.hasOwnProperty('themes') && typeof this.rawConfig.themes === 'boolean') {
+         this.themes = this.rawConfig.themes;
+      }
+
+      // флаг sources
+      if (this.rawConfig.hasOwnProperty('sources') && typeof this.rawConfig.sources === 'boolean') {
+         this.sources = this.rawConfig.sources;
+      }
    }
 
    /**
@@ -80,16 +108,7 @@ class BuildConfiguration {
          this.version = this.rawConfig.version;
       }
 
-      // установим переданное в конфиге значение createArchiveVersions, если такое имеется
-      if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
-         this.createArchiveVersions = this.rawConfig.createArchiveVersions;
-      }
-
-      // флаг themes
-      if (this.rawConfig.hasOwnProperty('themes') && typeof this.rawConfig.themes === 'boolean') {
-         this.themes = this.rawConfig.themes;
-      }
-
+      this.configureBuildFlags();
       this.cachePath = this.rawConfig.cache;
       if (!this.cachePath) {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);

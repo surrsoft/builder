@@ -29,6 +29,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createContentsJson = require('../plugins/create-contents-json'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
+   copySources = require('../plugins/copy-sources'),
    filterCached = require('../plugins/filter-cached'),
    filterSources = require('../plugins/filter-sources'),
    buildXhtml = require('../plugins/build-xhtml'),
@@ -166,6 +167,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(isReleaseMode, createPreloadUrlsJson(moduleInfo)))
             .pipe(filterCached())
             .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
+            .pipe(copySources(taskParameters))
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(
