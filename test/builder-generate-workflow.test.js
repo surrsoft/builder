@@ -84,6 +84,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -119,6 +120,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -154,6 +156,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -187,6 +190,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -231,6 +235,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.routes.js',
          'ForRename_old.routes.js',
          'Stable.routes.js',
@@ -286,6 +291,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.routes.js',
          'ForRename_new.routes.js',
          'Stable.routes.js',
@@ -354,6 +360,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.js',
          'ForChange_old.html',
          'ForRename_old.js',
@@ -486,6 +493,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.js',
          'ForChange_new.html',
          'ForRename_new.js',
@@ -696,6 +704,53 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('versionize-meta', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/versionize-meta');
+      const builderMetaOutput = path.join(moduleOutputFolder, '.builder');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         mode: 'release',
+         builderTests: true,
+         version: 'builder-test',
+         localization: false,
+         'default-localization': false,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+      (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
+      let versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
+      versionedModules.should.have.members([
+         'Modul/TimeTester.min.tmpl',
+         'Modul/browser.min.css',
+         'Modul/demo.html'
+      ]);
+
+      // прогоним ещё раз, создание мета-файла версионирования должно нормально работать в инкрементальной сборке
+      await runWorkflow();
+      (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
+      versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
+      versionedModules.should.have.members([
+         'Modul/TimeTester.min.tmpl',
+         'Modul/browser.min.css',
+         'Modul/demo.html'
+      ]);
+      await clearWorkspace();
+   });
+
    // проверим, что паковка собственных зависимостей корректно работает при пересборке
    it('packOwnDeps', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packOwnDeps');
@@ -804,6 +859,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
+            '.builder',
             'StableES.js',
             'StableTS.js',
             'StableES.es',
@@ -881,6 +937,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
+            '.builder',
             'contents.js',
             'contents.js.gz',
             'contents.json',
@@ -982,6 +1039,7 @@ describe('gulp/builder/generate-workflow.js', () => {
        * @type {string[]}
        */
       const correctOutputContentList = [
+         '.builder',
          'Modul.es',
          'Modul.js',
          'Modul.js.gz',

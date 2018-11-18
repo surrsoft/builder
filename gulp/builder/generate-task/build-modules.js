@@ -23,6 +23,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    createNavigationModulesJson = require('../plugins/create-navigation-modules-json'),
+   createVersionedModules = require('../plugins/create-versioned-modules'),
    indexDictionary = require('../plugins/index-dictionary'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
@@ -156,6 +157,9 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(createRoutesInfoJson(taskParameters, moduleInfo))
             .pipe(createNavigationModulesJson(moduleInfo))
+
+            // createVersionedModules зависит от versionizeToStub
+            .pipe(createVersionedModules(taskParameters, moduleInfo))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
             .pipe(createContentsJson(taskParameters, moduleInfo))

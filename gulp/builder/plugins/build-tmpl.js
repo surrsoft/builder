@@ -123,6 +123,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
 
          if (outputMinFile) {
+            if (file.versioned) {
+               taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
+               file.versioned = false;
+            }
             this.push(
                new Vinyl({
                   base: moduleInfo.output,

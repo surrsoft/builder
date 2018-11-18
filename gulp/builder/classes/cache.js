@@ -49,7 +49,8 @@ class Cache {
             componentsInfo: {},
             routesInfo: {},
             markupCache: {},
-            esCompileCache: {}
+            esCompileCache: {},
+            versionedModules: {}
          };
          this.currentStore.inputPaths[moduleInfo.path] = {
             hash: '',
@@ -186,6 +187,9 @@ class Cache {
          }
          if (lastModuleCache.routesInfo.hasOwnProperty(prettyPath)) {
             currentModuleCache.routesInfo[prettyPath] = lastModuleCache.routesInfo[prettyPath];
+         }
+         if (lastModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
+            currentModuleCache.versionedModules[prettyPath] = lastModuleCache.versionedModules[prettyPath];
          }
          if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
             this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
@@ -426,6 +430,22 @@ class Cache {
    }
 
    /**
+    * Сохранить в кеше версионированный модуль. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {string} outputName результат работы сборщика для файла
+    * @param {Object}
+    */
+   storeVersionedModule(filePath, moduleName, outputName) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      if (!currentModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
+         currentModuleCache.versionedModules[prettyPath] = [];
+      }
+      currentModuleCache.versionedModules[prettyPath].push(outputName);
+   }
+
+   /**
     * Получить всю скомпилированную верстку для конкретного модуля
     * @param {string} moduleName имя модуля
     * @returns {Object} Информация о скомпилированной верстки модуля в виде
@@ -456,6 +476,16 @@ class Cache {
    getCompiledEsModuleCache(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.esCompileCache;
+   }
+
+   /**
+    * Получить все версионированные модули для конкретного Интерфейсного модуля.
+    * @param {string} moduleName имя модуля
+    * @returns {Array} Набор файлов, в которые был скомпилирован исходник
+    */
+   getVersionedModulesCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.versionedModules;
    }
 
    /**
