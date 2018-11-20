@@ -36,6 +36,9 @@ function generateTaskForLock(taskParameters) {
          }
          await fs.ensureFile(lockFile);
          logger.debug(`Создали файл '${lockFile}'`);
+
+         // задаём в логгере информацию о приложении и ответственном
+         logger.setBaseInfo(taskParameters.config.rawConfig.cld_name, taskParameters.config.rawConfig.cld_responsible);
          resolve();
       });
    };
