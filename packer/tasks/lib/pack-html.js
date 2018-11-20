@@ -264,7 +264,16 @@ function generatePackage(
          const packageName = namePrefix + domHelpers.uniqname(text, ext),
             packedFileName = path.join(packageTarget, packageName);
 
-         taskParameters.versionedModules[packageTarget.split('/')[0]].push(
+         const moduleName = packageTarget.split('/')[0];
+
+         /**
+          * создадим мета-данные для модуля, если этого не было сделано в рамках
+          * Инкрементальной сборки
+          */
+         if (!taskParameters.versionedModules[moduleName]) {
+            taskParameters.versionedModules[moduleName] = [];
+         }
+         taskParameters.versionedModules[moduleName].push(
             helpers.prettifyPath(packedFileName.replace(ext, extWithoutVersion))
          );
          const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));
