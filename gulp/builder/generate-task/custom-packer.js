@@ -9,12 +9,15 @@ const gulp = require('gulp'),
    logger = require('../../../lib/logger').logger(),
    DependencyGraph = require('../../../packer/lib/dependency-graph'),
    collectCustomPacks = require('../plugins/collect-custom-packs'),
+   finalizeOptimizeDistrib = require('../plugins/finalize-optimize-distrib'),
    plumber = require('gulp-plumber'),
    {
       saveCustomPackResults,
       generateAllCustomPackages,
       collectAllIntersects
    } = require('../../../lib/pack/custom-packer'),
+   pMap = require('p-map'),
+   fs = require('fs-extra'),
    transliterate = require('../../../lib/transliterate');
 
 /**
@@ -138,9 +141,72 @@ function generateTaskForCustomPack(taskParameters) {
       generateDepsGraphTask(depsTree, taskParameters.cache),
       generateCollectPackagesTasks(configs, taskParameters, root),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
-      generateInterceptCollectorTask(root, results),
-      generateSaveResultsTask(taskParameters.cache, results, root)
+      generateInterceptCollectorTask(taskParameters, root, results),
+      generateSaveResultsTask(taskParameters, results, root),
+      generateFinalizeOptimizing(taskParameters, root)
    );
+}
+
+/**
+ * мини-таска для пост-обработки конечной директории.
+ * Удаляем файлы, которые были необходимы исключительно
+ * для паковки, а также все минифицированные AMD-модули
+ * и стили, попавшие в публичные(содержатся в оглавлении бандлов)
+ * кастомные пакеты.
+ * @param taskParameters - набор параметров текущей сборки.
+ * @param root
+ * @returns {*}
+ */
+function generateFinalizeOptimizing(taskParameters, root) {
+   if (taskParameters.config.sources) {
+      return function skipFinalizeOptimizing(done) {
+         done();
+      };
+   }
+   taskParameters.filesToRemove = [];
+   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+      const moduleOutput = path.join(root, transliterate(moduleInfo.name));
+      const input = path.join(moduleOutput, '/**/*.*');
+      return function finalizeOptimizing() {
+         return gulp
+            .src(input, { dot: false, nodir: true })
+            .pipe(
+               plumber({
+                  errorHandler(err) {
+                     logger.error({
+                        message: 'Задача finalizeOptimizing завершилась с ошибкой',
+                        error: err,
+                        moduleInfo
+                     });
+                     this.emit('end');
+                  }
+               })
+            )
+            .pipe(finalizeOptimizeDistrib(taskParameters));
+      };
+   });
+   return gulp.series(
+      gulp.parallel(tasks),
+      generateRemoveMinInPackages(taskParameters)
+   );
+}
+
+async function removeMinInPackages(taskParameters) {
+   await pMap(
+      taskParameters.filesToRemove,
+      async(modulePath) => {
+         await fs.remove(modulePath);
+      },
+      {
+         concurrency: 20
+      }
+   );
+}
+
+function generateRemoveMinInPackages(taskParameters) {
+   return function removeMinInPackagesTask() {
+      return removeMinInPackages(taskParameters);
+   };
 }
 
 function generateCustomPackageTask(configs, taskParameters, depsTree, results, root) {
@@ -150,16 +216,26 @@ function generateCustomPackageTask(configs, taskParameters, depsTree, results, r
 }
 
 
-function generateInterceptCollectorTask(root, results) {
-   return function collectIntercepts() {
-      return collectAllIntersects(root, results);
+function generateInterceptCollectorTask(taskParameters, root, results) {
+   if (taskParameters.config.sources) {
+      return function collectIntercepts() {
+         return collectAllIntersects(root, results);
+      };
+   }
+   return function skipCollectIntersects(done) {
+      done();
    };
 }
 
-function generateSaveResultsTask(cache, results, applicationRoot) {
-   return function saveCustomPackerResults() {
-      results.bundlesJson = results.bundles;
-      return saveCustomPackResults(cache, results, applicationRoot, true);
+function generateSaveResultsTask(taskParameters, results, applicationRoot) {
+   if (taskParameters.config.sources) {
+      return function saveCustomPackerResults() {
+         results.bundlesJson = results.bundles;
+         return saveCustomPackResults(taskParameters.cache, results, applicationRoot, true);
+      };
+   }
+   return function skipSaveCustomPackResults(done) {
+      done();
    };
 }
 
