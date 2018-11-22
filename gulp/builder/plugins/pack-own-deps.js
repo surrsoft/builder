@@ -10,8 +10,7 @@
 const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
-   transliterate = require('../../../lib/transliterate');
+   helpers = require('../../../lib/helpers');
 
 /**
  * Объявление плагина
