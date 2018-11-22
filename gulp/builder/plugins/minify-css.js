@@ -95,7 +95,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             if (file.versioned) {
                taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
-               file.versioned = false;
             }
 
             const newFile = file.clone();

@@ -89,6 +89,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
             }
          } else {
+            /**
+             * запишем в markupCache информацию о версионировании, поскольку
+             * markupCache извлекаем при паковке собственных зависимостей. Так
+             * можно легко обьединить, помечать компонент как версионированный или нет.
+             */
+            if (file.versioned) {
+               result.versioned = true;
+            }
             taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
             newText = result.text;
 

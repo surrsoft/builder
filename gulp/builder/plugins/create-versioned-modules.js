@@ -25,7 +25,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
           * для оставшихся модулей(минифицированные css, статические html) также
           * не забываем записать в кэш информацию
           */
-         if (file.versioned) {
+         if (file.versioned && (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`))) {
             taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, file.history[0]);
          }
          callback(null, file);

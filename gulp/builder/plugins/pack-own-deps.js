@@ -10,7 +10,8 @@
 const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers');
+   helpers = require('../../../lib/helpers'),
+   transliterate = require('../../../lib/transliterate');
 
 /**
  * Объявление плагина
@@ -43,6 +44,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (markupObj) {
                   nodenameToMarkup.set(markupObj.nodeName, {
                      text: markupObj.text,
+                     versioned: markupObj.versioned,
                      filePath
                   });
                }
@@ -88,16 +90,28 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
                if (ownDeps.length > 0) {
                   const modulepackContent = [];
+                  let hasVersionedMarkup = false;
                   for (const dep of ownDeps) {
                      if (nodenameToMarkup.has(dep)) {
                         const markupObj = nodenameToMarkup.get(dep);
                         filesDepsForCache.add(markupObj.filePath);
                         modulepackContent.push(markupObj.text);
+                        if (markupObj.versioned) {
+                           hasVersionedMarkup = true;
+                        }
                      }
                   }
                   if (modulepackContent.length > 0) {
                      modulepackContent.push(jsFile.contents.toString());
                      jsFile.modulepack = modulepackContent.join('\n');
+                  }
+
+                  /**
+                   * добавляем в кэш версионирования информацию о компонентах, в которые
+                   * были запакованы версионированные шаблоны
+                   */
+                  if (hasVersionedMarkup) {
+                     jsFile.versioned = true;
                   }
                }
                if (filesDepsForCache.size > 0) {

@@ -23,6 +23,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
+   helpers = require('../../../lib/helpers'),
    esExt = /\.(es|ts)$/;
 
 const excludeRegexes = [
@@ -189,6 +190,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   })
                );
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
+
+               // сохраним информацию о версионированном пакованном компоненте в кэше
+               if (file.versioned) {
+                  taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinJsFile);
+                  const moduleName = transliterate(moduleInfo.name);
+                  const relativePath = path.relative(moduleInfo.output, outputMinJsFile);
+                  const componentName = helpers.prettifyPath(path.join(moduleName, relativePath));
+                  if (!taskParameters.versionedModules[moduleName].includes(componentName)) {
+                     taskParameters.versionedModules[moduleName].push(componentName);
+                  }
+               }
 
                /**
                 * В случае работы тестов нам нужно сохранить неминифицированный запакованный модуль,

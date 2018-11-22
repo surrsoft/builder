@@ -143,7 +143,10 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization || isReleaseMode, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, buildXhtml(taskParameters, moduleInfo)))
 
-            // packOwnDeps зависит от buildTmpl и buildXhtml
+            // createVersionedModules зависит от versionizeToStub
+            .pipe(createVersionedModules(taskParameters, moduleInfo))
+
+            // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
             .pipe(gulpIf(isReleaseMode, packOwnDeps(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, minifyCss(taskParameters, moduleInfo)))
 
@@ -158,9 +161,6 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(createRoutesInfoJson(taskParameters, moduleInfo))
             .pipe(createNavigationModulesJson(moduleInfo))
-
-            // createVersionedModules зависит от versionizeToStub
-            .pipe(createVersionedModules(taskParameters, moduleInfo))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
             .pipe(createContentsJson(taskParameters, moduleInfo))
