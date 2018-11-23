@@ -34,12 +34,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             return;
          }
 
-         let newText = file.contents.toString();
+         let newText;
 
          if (file.extname === '.css') {
-            newText = versionizeStyles(newText);
+            newText = versionizeStyles(file);
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
-            newText = versionizeTemplates(newText);
+            newText = versionizeTemplates(file);
          }
 
          file.contents = Buffer.from(newText);

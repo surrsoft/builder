@@ -36,10 +36,13 @@ function generateTaskForFinalizeDistrib(taskParameters) {
 function generateTaskForCopyResources(taskParameters) {
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
+
+      // необходимо, чтобы мы могли копировать содержимое .builder в output
+      const dotInput = path.join(moduleInfo.output, '/.*/*.*');
       const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
          return gulp
-            .src(input, { dot: false, nodir: true })
+            .src([input, dotInput], { dot: false, nodir: true })
             .pipe(
                plumber({
                   errorHandler(err) {

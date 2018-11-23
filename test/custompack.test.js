@@ -22,6 +22,7 @@ const removeAllNewLines = function(str) {
 describe('custompack', () => {
    let moduleDeps, currentNodes, currentLinks, depsTree;
    const customPackParameters = {
+      versionedModules: {},
       config: {
          localizations: [],
          sources: true
@@ -268,6 +269,7 @@ describe('custompack-intersects', () => {
       const
          configs = await fs.readJson(path.join(applicationRoot, 'configs/intersects.package.json')),
          taskParams = {
+            versionedModules: {},
             config: {
                defaultLocalization: '',
                localizations: [],

@@ -1,5 +1,6 @@
 /**
- * Плагин для версионирования после инкрементальной сборки. Меняет заглушку на нормальную версию.
+ * Плагин для версионирования после инкрементальной сборки. Убирает версионирование
+ * из исходников, оставляет placeholder в минифицированных модулях.
  * Связан с versionize-to-stub
  * @author Бегунов Ал. В.
  */
@@ -9,7 +10,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const VERSION_STUB = /\?x_version=BUILDER_VERSION_STUB/g;
+const VERSION_STUB = /\?x_version=%{BUILDER_VERSION_STUB}/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
@@ -27,13 +28,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             return;
          }
 
-         let version = '';
-
          if (file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html') {
-            version = `?x_version=${taskParameters.config.version}`;
+            callback(null, file);
+            return;
          }
          const text = file.contents.toString();
-         file.contents = Buffer.from(text.replace(VERSION_STUB, version));
+         file.contents = Buffer.from(text.replace(VERSION_STUB, ''));
       } catch (error) {
          logger.error({
             message: "Ошибка builder'а при версионировании",

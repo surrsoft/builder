@@ -38,7 +38,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                moduleInfo,
                filePath: file.path
             });
-         } else if (helpers.prettifyPath(path.dirname(path.dirname(file.path))) !== prettyOutput) {
+         } else if (
+            helpers.prettifyPath(path.dirname(path.dirname(file.path))) !== prettyOutput
+         ) {
             // если файл лежит не в корне модуля, то это скорее всего шаблон html.
             // используется в сервисе представлений для построения страниц на роутинге.
             // паковка тут не нужна, а минимизация нужна.
@@ -49,6 +51,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                replacePath = !taskParameters.config.multiService;
 
             dom = await packHtml.packageSingleHtml(
+               taskParameters,
                file.path,
                dom,
                root,

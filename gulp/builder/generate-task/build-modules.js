@@ -23,6 +23,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    createNavigationModulesJson = require('../plugins/create-navigation-modules-json'),
+   createVersionedModules = require('../plugins/create-versioned-modules'),
    indexDictionary = require('../plugins/index-dictionary'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
@@ -142,7 +143,10 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization || isReleaseMode, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, buildXhtml(taskParameters, moduleInfo)))
 
-            // packOwnDeps зависит от buildTmpl и buildXhtml
+            // createVersionedModules зависит от versionizeToStub
+            .pipe(createVersionedModules(taskParameters, moduleInfo))
+
+            // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
             .pipe(gulpIf(isReleaseMode, packOwnDeps(taskParameters, moduleInfo)))
             .pipe(gulpIf(isReleaseMode, minifyCss(taskParameters, moduleInfo)))
 
