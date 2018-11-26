@@ -95,7 +95,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             /**
-             * добавляем информацию о минифицированноой версионированнной cssке в
+             * добавляем информацию о минифицированной версионированнной cssке в
              * кэш версионирования.
              */
             if (file.versioned) {

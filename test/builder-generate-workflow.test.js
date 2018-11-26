@@ -83,7 +83,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -114,7 +113,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -145,7 +143,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -174,7 +171,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Error.less',
          'ForChange.css',
          'ForChange.less',
@@ -219,7 +215,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForChange.js',
          'ForChange_old.html',
          'ForRename_old.js',
@@ -352,7 +347,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForChange.js',
          'ForChange_new.html',
          'ForRename_new.js',
@@ -573,7 +567,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'release',
+         less: true,
+         minimize: true,
+         wml: true,
          builderTests: true,
          version: 'builder-test',
          localization: false,
@@ -722,7 +718,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
-            '.builder',
             'StableES.js',
             'StableTS.js',
             'StableES.es',
@@ -794,7 +789,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
-            '.builder',
             'currentLanguages.json',
             'currentLanguages.json.js',
             'currentLanguages.json.min.js',
@@ -880,7 +874,6 @@ describe('gulp/builder/generate-workflow.js', () => {
        * @type {string[]}
        */
       const correctOutputContentList = [
-         '.builder',
          'Modul.es',
          'Modul.js',
          'Modul.min.js',

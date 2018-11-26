@@ -147,9 +147,6 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization || taskParameters.config.wml, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(taskParameters.config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
 
-            // createVersionedModules зависит от versionizeToStub
-            .pipe(createVersionedModules(taskParameters, moduleInfo))
-
             // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
             .pipe(
                gulpIf(
@@ -162,6 +159,9 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             // minifyJs зависит от packOwnDeps
             .pipe(gulpIf(taskParameters.config.minimize, minifyJs(taskParameters, moduleInfo)))
             .pipe(gulpIf(taskParameters.config.minimize, minifyOther(taskParameters, moduleInfo)))
+
+            // createVersionedModules зависит от versionizeToStub
+            .pipe(gulpIf(!!taskParameters.config.version, createVersionedModules(taskParameters, moduleInfo)))
             .pipe(
                gulpRename((file) => {
                   file.dirname = transliterate(file.dirname);

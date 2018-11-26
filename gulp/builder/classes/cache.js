@@ -442,7 +442,9 @@ class Cache {
       if (!currentModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
          currentModuleCache.versionedModules[prettyPath] = [];
       }
-      currentModuleCache.versionedModules[prettyPath].push(outputName);
+      if (!currentModuleCache.versionedModules[prettyPath].includes(outputName)) {
+         currentModuleCache.versionedModules[prettyPath].push(outputName);
+      }
    }
 
    /**
