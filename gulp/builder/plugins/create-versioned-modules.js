@@ -26,7 +26,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
           * не забываем записать в кэш информацию
           */
          if (file.versioned && (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`))) {
-            taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, file.history[0]);
+            taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, transliterate(file.history[0]));
          }
          callback(null, file);
       },
