@@ -242,6 +242,7 @@ function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
 }
 
 function generatePackage(
+   taskParameters,
    extWithoutVersion,
    filesToPack,
    ext,
@@ -263,6 +264,18 @@ function generatePackage(
          const packageName = namePrefix + domHelpers.uniqname(text, ext),
             packedFileName = path.join(packageTarget, packageName);
 
+         const moduleName = packageTarget.split('/')[0];
+
+         /**
+          * создадим мета-данные для модуля, если этого не было сделано в рамках
+          * Инкрементальной сборки
+          */
+         if (!taskParameters.versionedModules[moduleName]) {
+            taskParameters.versionedModules[moduleName] = [];
+         }
+         taskParameters.versionedModules[moduleName].push(
+            helpers.prettifyPath(packedFileName.replace(ext, extWithoutVersion))
+         );
          const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));
 
          // eslint-disable-next-line no-sync
@@ -351,6 +364,7 @@ function getThemeFromWsConfig(wsConfig) {
    return themeName;
 }
 async function packageSingleHtml(
+   taskParameters,
    filePath,
    dom,
    root,
@@ -414,6 +428,7 @@ async function packageSingleHtml(
             filesToPack[key].forEach((content) => {
                packages[key] = packages[key].concat(
                   generatePackage(
+                     taskParameters,
                      key,
                      content,
                      getKey(buildNumber, key),
@@ -433,6 +448,7 @@ async function packageSingleHtml(
             Object.keys(filesToPack[key]).forEach((locale) => {
                packages[attr2ext[key]] = packages[attr2ext[key]].concat(
                   generatePackage(
+                     taskParameters,
                      attr2ext[key],
                      filesToPack[key][locale],
                      getKey(buildNumber, attr2ext[key]),
@@ -450,6 +466,7 @@ async function packageSingleHtml(
       } else {
          // "js": "..."
          const generatedScript = generatePackage(
+            taskParameters,
             key,
             filesToPack[key],
             getKey(buildNumber, key),

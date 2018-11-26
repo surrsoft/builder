@@ -233,14 +233,9 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
 }
 
 function generateSaveResultsTask(taskParameters, results, applicationRoot) {
-   if (taskParameters.config.sources) {
-      return function saveCustomPackerResults() {
-         results.bundlesJson = results.bundles;
-         return saveCustomPackResults(taskParameters.cache, results, applicationRoot, true);
-      };
-   }
-   return function skipSaveCustomPackResults(done) {
-      done();
+   return function saveCustomPackerResults() {
+      results.bundlesJson = results.bundles;
+      return saveCustomPackResults(taskParameters, results, applicationRoot, true);
    };
 }
 

@@ -25,9 +25,10 @@ module.exports = function collectPackageJson(applicationRoot, commonBundles, sup
          let currentPackageJson;
          try {
             currentPackageJson = JSON.parse(file.contents);
-            const test = helpers.unixifyPath(file.path).replace(applicationRoot, '');
+            const prettyApplicationRoot = helpers.unixifyPath(applicationRoot);
+            const configPath = helpers.unixifyPath(file.path).replace(prettyApplicationRoot, '');
             const configsArray = packHelpers.getConfigsFromPackageJson(
-               test,
+               configPath,
                currentPackageJson
             );
             configsArray.forEach((currentConfig) => {

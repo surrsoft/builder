@@ -23,6 +23,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    buildStaticHtml = require('../plugins/build-static-html'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    createNavigationModulesJson = require('../plugins/create-navigation-modules-json'),
+   createVersionedModules = require('../plugins/create-versioned-modules'),
    indexDictionary = require('../plugins/index-dictionary'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
@@ -50,6 +51,7 @@ const { needSymlink } = require('../../common/helpers');
  * @returns {Undertaker.TaskFunction}
  */
 function generateTaskForBuildModules(taskParameters) {
+   logger.info('Тестируем rcшную ветку, поскольку падает слишком много ошибок не связанных с билдером');
    const tasks = [];
    let countCompletedModules = 0;
 
@@ -145,7 +147,10 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization || taskParameters.config.wml, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(taskParameters.config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
 
-            // packOwnDeps зависит от buildTmpl и buildXhtml
+            // createVersionedModules зависит от versionizeToStub
+            .pipe(createVersionedModules(taskParameters, moduleInfo))
+
+            // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
             .pipe(
                gulpIf(
                   taskParameters.config.deprecatedOwnDependencies,
