@@ -37,8 +37,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    minifyJs = require('../plugins/minify-js'),
    minifyOther = require('../plugins/minify-other'),
    packOwnDeps = require('../plugins/pack-own-deps'),
-   versionizeToStub = require('../plugins/versionize-to-stub'),
-   createPreloadUrlsJson = require('../plugins/create-preload-urls-json');
+   versionizeToStub = require('../plugins/versionize-to-stub');
 
 const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
@@ -82,7 +81,6 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
    if (modulesMap.has('SBIS3.CONTROLS')) {
       sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
    }
-   const { isReleaseMode } = taskParameters.config;
    const hasLocalization = taskParameters.config.localizations.length > 0;
 
    const pathsForImportSet = new Set();
@@ -108,7 +106,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
                })
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
-            .pipe(compileEsAndTs(taskParameters, moduleInfo))
+            .pipe(gulpIf(taskParameters.config.typescript, compileEsAndTs(taskParameters, moduleInfo)))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
 
@@ -118,19 +116,24 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
              * запакованной библиотеки, что нужно делать именно после парсинга
              * оригинальной скомпиленной библиотеки.
              */
-            .pipe(gulpIf(isReleaseMode, packLibrary(taskParameters, moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
-            .pipe(compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport))
             .pipe(
                gulpIf(
-                  taskParameters.config.needTemplates,
+                  taskParameters.config.less,
+                  compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport)
+               )
+            )
+            .pipe(
+               gulpIf(
+                  taskParameters.config.htmlWml,
                   gulpBuildHtmlTmpl(taskParameters, moduleInfo)
                )
             )
             .pipe(
                gulpIf(
-                  taskParameters.config.needTemplates,
+                  taskParameters.config.deprecatedWebPageTemplates,
                   buildStaticHtml(taskParameters, moduleInfo, modulesMap)
                )
             )
@@ -139,35 +142,49 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(!!taskParameters.config.version, versionizeToStub(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, indexDictionary(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
-            .pipe(gulpIf(hasLocalization || isReleaseMode, buildTmpl(taskParameters, moduleInfo)))
-            .pipe(gulpIf(isReleaseMode, buildXhtml(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization || taskParameters.config.wml, buildTmpl(taskParameters, moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
 
             // packOwnDeps зависит от buildTmpl и buildXhtml
-            .pipe(gulpIf(isReleaseMode, packOwnDeps(taskParameters, moduleInfo)))
-            .pipe(gulpIf(isReleaseMode, minifyCss(taskParameters, moduleInfo)))
+            .pipe(
+               gulpIf(
+                  taskParameters.config.deprecatedOwnDependencies,
+                  packOwnDeps(taskParameters, moduleInfo)
+               )
+            )
+            .pipe(gulpIf(taskParameters.config.minimize, minifyCss(taskParameters, moduleInfo)))
 
             // minifyJs зависит от packOwnDeps
-            .pipe(gulpIf(isReleaseMode, minifyJs(taskParameters, moduleInfo)))
-            .pipe(gulpIf(isReleaseMode, minifyOther(taskParameters, moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.minimize, minifyJs(taskParameters, moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.minimize, minifyOther(taskParameters, moduleInfo)))
             .pipe(
                gulpRename((file) => {
                   file.dirname = transliterate(file.dirname);
                   file.basename = transliterate(file.basename);
                })
             )
-            .pipe(createRoutesInfoJson(taskParameters, moduleInfo))
-            .pipe(createNavigationModulesJson(moduleInfo))
+            .pipe(
+               gulpIf(
+                  taskParameters.config.presentationServiceMeta,
+                  createRoutesInfoJson(taskParameters, moduleInfo)
+               )
+            )
+            .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createNavigationModulesJson(moduleInfo)))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
-            .pipe(createContentsJson(taskParameters, moduleInfo))
+            .pipe(gulpIf(taskParameters.config.contents, createContentsJson(taskParameters, moduleInfo)))
 
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
-            .pipe(createStaticTemplatesJson(moduleInfo))
-            .pipe(gulpIf(isReleaseMode, createModuleDependenciesJson(taskParameters, moduleInfo)))
-            .pipe(gulpIf(isReleaseMode, createPreloadUrlsJson(moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
+            .pipe(
+               gulpIf(
+                  taskParameters.config.dependenciesGraph,
+                  createModuleDependenciesJson(taskParameters, moduleInfo)
+               )
+            )
             .pipe(filterCached())
             .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
-            .pipe(copySources(taskParameters))
+            .pipe(gulpIf(!taskParameters.config.sources, copySources(taskParameters)))
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(

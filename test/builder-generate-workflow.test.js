@@ -60,8 +60,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         builderTests: true,
-         mode: 'debug',
+         less: true,
          themes: true,
          modules: [
             {
@@ -94,12 +93,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRenameThemed_old_online.css',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Stable.less'
       ]);
 
       // изменим "исходники"
@@ -129,12 +123,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRenameThemed_old_online.css',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Stable.less'
       ]);
       config.themes = false;
 
@@ -163,12 +152,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRenameThemed_old.less',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Stable.less'
       ]);
 
       // изменим "исходники"
@@ -196,132 +180,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRenameThemed_old.less',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Stable.less'
       ]);
-
-      await clearWorkspace();
-   });
-
-   it('routes', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
-      await prepareTest(fixtureFolder);
-
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
-         modules: [
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
-
-      // запустим таску
-      await runWorkflow();
-
-      // проверим, что все нужные файлы появились в "стенде"
-      let resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForChange.routes.js',
-         'ForRename_old.routes.js',
-         'Stable.routes.js',
-         'Test1.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
-      ]);
-      const routesInfoOutputPath = path.join(moduleOutputFolder, 'routes-info.json');
-      let routesInfo = await fs.readJSON(routesInfoOutputPath);
-      await routesInfo.should.deep.equal({
-         'resources/Modul/ForChange.routes.js': {
-            '/ForChange_old.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         },
-         'resources/Modul/ForRename_old.routes.js': {
-            '/ForRename.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         },
-         'resources/Modul/Stable.routes.js': {
-            '/Stable.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         }
-      });
-
-      // запомним время модификации незменяемого файла и изменяемого в "стенде"
-      const stableFileOutputPath = path.join(moduleOutputFolder, 'Stable.routes.js');
-      const forChangeFileOutputPath = path.join(moduleOutputFolder, 'ForChange.routes.js');
-      const mTimeStableFile = await getMTime(stableFileOutputPath);
-      const mTimeForChangeFile = await getMTime(forChangeFileOutputPath);
-
-      // изменим "исходники"
-      await timeoutForMacOS();
-      await fs.rename(
-         path.join(moduleSourceFolder, 'ForRename_old.routes.js'),
-         path.join(moduleSourceFolder, 'ForRename_new.routes.js')
-      );
-      const filePathForChange = path.join(moduleSourceFolder, 'ForChange.routes.js');
-      const data = await fs.readFile(filePathForChange);
-      await fs.writeFile(filePathForChange, data.toString().replace(/\/ForChange_old.html/g, '/ForChange_new.html'));
-
-      // запустим повторно таску
-      await runWorkflow();
-
-      // проверим, что все нужные файлы появились в "стенде", лишние удалились
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForChange.routes.js',
-         'ForRename_new.routes.js',
-         'Stable.routes.js',
-         'Test1.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
-      ]);
-
-      // проверим время модификации незменяемого файла и изменяемого в "стенде"
-      (await getMTime(stableFileOutputPath)).should.equal(mTimeStableFile);
-      (await getMTime(forChangeFileOutputPath)).should.not.equal(mTimeForChangeFile);
-
-      routesInfo = await fs.readJSON(routesInfoOutputPath);
-      await routesInfo.should.deep.equal({
-         'resources/Modul/ForChange.routes.js': {
-            '/ForChange_new.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         },
-         'resources/Modul/ForRename_new.routes.js': {
-            '/ForRename.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         },
-         'resources/Modul/Stable.routes.js': {
-            '/Stable.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
-         }
-      });
 
       await clearWorkspace();
    });
@@ -333,8 +193,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
+         deprecatedWebPageTemplates: true,
+         contents: true,
+         presentationServiceMeta: true,
          modules: [
             {
                name: 'Модуль',
@@ -606,7 +467,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
+         presentationServiceMeta: true,
+         deprecatedWebPageTemplates: true,
+         htmlWml: true,
+         contents: true,
+         less: true,
          themes: true,
          builderTests: true,
          modules: [
@@ -640,7 +505,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'contents.json')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'navigation-modules.json')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'routes-info.json')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'static_templates.json')).should.equal(true);
       };
 
@@ -660,8 +524,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
+         less: true,
          localization: ['en-US', 'ru-RU'],
          'default-localization': 'ru-RU',
          modules: [
@@ -704,7 +567,9 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'release',
+         wml: true,
+         minimize: true,
+         deprecatedOwnDependencies: true,
          builderTests: true,
          localization: false,
          'default-localization': false,
@@ -807,12 +672,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'StableES.js',
             'StableTS.js',
             'StableES.es',
-            'StableTS.ts',
-            'contents.js',
-            'contents.json',
-            'navigation-modules.json',
-            'routes-info.json',
-            'static_templates.json'
+            'StableTS.ts'
          ]);
 
          const EsOutputPath = path.join(moduleOutputFolder, 'StableES.js');
@@ -853,8 +713,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
+         typescript: true,
          modules: [
             {
                name: 'Модуль',
@@ -881,26 +740,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       const checkFiles = async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
-            'contents.js',
-            'contents.js.gz',
-            'contents.json',
-            'contents.json.gz',
             'currentLanguages.json',
-            'currentLanguages.json.gz',
             'currentLanguages.json.js',
-            'currentLanguages.json.js.gz',
             'currentLanguages.json.min.js',
-            'currentLanguages.json.min.js.gz',
-            'currentLanguages.min.json',
-            'currentLanguages.min.json.gz',
-            'module-dependencies.json',
-            'module-dependencies.json.gz',
-            'navigation-modules.json',
-            'navigation-modules.json.gz',
-            'routes-info.json',
-            'routes-info.json.gz',
-            'static_templates.json',
-            'static_templates.json.gz'
+            'currentLanguages.min.json'
          ]);
 
          const jsonJsOutputPath = path.join(moduleOutputFolder, 'currentLanguages.json.js');
@@ -927,8 +770,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'release',
-         builderTests: true,
+         minimize: true,
          modules: [
             {
                name: 'WS.Core',
@@ -962,7 +804,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'release',
+         typescript: true,
+         minimize: true,
          builderTests: true,
          modules: [
             {
@@ -984,37 +827,19 @@ describe('gulp/builder/generate-workflow.js', () => {
       const correctOutputContentList = [
          'Modul.es',
          'Modul.js',
-         'Modul.js.gz',
          'Modul.min.js',
-         'Modul.min.js.gz',
          'Modul.modulepack.js',
          '_Cycle_dependence',
          '_es5',
          '_es6',
-         'contents.js',
-         'contents.js.gz',
-         'contents.json',
-         'contents.json.gz',
          'libraryCycle.es',
          'libraryCycle.js',
-         'libraryCycle.js.gz',
          'libraryCycle.min.js',
-         'libraryCycle.min.js.gz',
          'libraryCycle.modulepack.js',
-         'module-dependencies.json',
-         'module-dependencies.json.gz',
-         'navigation-modules.json',
-         'navigation-modules.json.gz',
          'privateDepCycle.es',
          'privateDepCycle.js',
-         'privateDepCycle.js.gz',
          'privateDepCycle.min.js',
-         'privateDepCycle.min.js.gz',
-         'privateDepCycle.modulepack.js',
-         'routes-info.json',
-         'routes-info.json.gz',
-         'static_templates.json',
-         'static_templates.json.gz'
+         'privateDepCycle.modulepack.js'
       ];
 
       /**

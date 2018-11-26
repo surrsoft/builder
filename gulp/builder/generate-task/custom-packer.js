@@ -119,6 +119,11 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
 function generateTaskForCustomPack(taskParameters) {
+   if (!taskParameters.config.customPack) {
+      return function skipCustomPack(done) {
+         done();
+      };
+   }
    const root = taskParameters.config.rawConfig.output,
       depsTree = new DependencyGraph(),
       configs = {
