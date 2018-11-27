@@ -29,7 +29,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             taskParameters.cache.storeVersionedModule(
                file.history[0],
                moduleInfo.name,
-               file.history[file.history.length - 1]
+               transliterate(file.history[file.history.length - 1])
             );
          }
          callback(null, file);
