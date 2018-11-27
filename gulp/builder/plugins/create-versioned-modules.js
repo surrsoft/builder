@@ -58,6 +58,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                contents: Buffer.from(JSON.stringify(versionedModulesPaths, null, 2)),
                moduleInfo
             });
+            logger.info(`BuildModules. Записали мета-файл versioned_modules для модуля "${moduleInfo.name}" по пути ${file.path}`);
             this.push(file);
 
             /**
