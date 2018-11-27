@@ -66,40 +66,40 @@ class BuildConfiguration {
       // generate "contents" for application's work
       this.contents = false;
 
-      // static html pages build based on Vdom/WS4
+      // build static html pages based on Vdom/WS4
       this.htmlWml = false;
 
-      // dynamic templates build to AMD-type javascript code.
+      // build dynamic templates to AMD-type javascript code.
       this.wml = false;
 
-      // static html pages build based on component's Webpage options. Option is deprecated.
+      // build static html pages based on component's Webpage options. Option is deprecated.
       this.deprecatedWebPageTemplates = false;
 
-      // old xml-type dynamic templates build to AMD-type javascript code. Option is deprecated.
+      // build old xml-type dynamic templates to AMD-type javascript code. Option is deprecated.
       this.deprecatedXhtml = true;
 
-      // component's own dependencies packing. Option is deprecated.
+      // pack component's own dependencies. Option is deprecated.
       this.deprecatedOwnDependencies = false;
 
-      // static html entry points packing to static packages.
+      // pack static html entry points to static packages.
       this.deprecatedStaticHtml = false;
 
-      // sources and compiled modules minimize
+      // minify sources and compiled modules
       this.minimize = false;
 
-      // packages generation based on custom developer's configuration
+      // generate packages based on custom developer's configuration
       this.customPack = false;
 
-      // project dependencies tree meta generation
+      // generate project dependencies tree meta
       this.dependenciesGraph = false;
 
-      // source's compression to gzip format
+      // compress sources to gzip format
       this.gzip = false;
 
-      // themed styles compilation
+      // compile themed styles
       this.themes = false;
 
-      // source's copy to output directory
+      // copy sources to output directory
       this.sources = true;
    }
 
