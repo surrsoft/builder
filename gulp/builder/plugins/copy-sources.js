@@ -34,17 +34,9 @@ const extensions = new Set([
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters) {
+module.exports = function declarePlugin() {
    return through.obj(
       function onTransform(file, encoding, callback) {
-         /**
-          * копируем все исходники при наличии соответствующего флага
-          */
-         if (taskParameters.config.sources) {
-            callback(null, file);
-            return;
-         }
-
          /**
           * не копируем мета-файлы билдера.
           */
