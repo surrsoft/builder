@@ -197,6 +197,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   const moduleName = transliterate(moduleInfo.name);
                   const relativePath = path.relative(moduleInfo.output, outputMinJsFile);
                   const componentName = helpers.prettifyPath(path.join(moduleName, relativePath));
+                  if (!taskParameters.versionedModules[moduleName]) {
+                     taskParameters.versionedModules[moduleName] = [];
+                  }
                   if (!taskParameters.versionedModules[moduleName].includes(componentName)) {
                      taskParameters.versionedModules[moduleName].push(componentName);
                   }
