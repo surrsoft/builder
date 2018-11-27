@@ -64,8 +64,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
+         less: true,
          themes: true,
          modules: [
             {
@@ -86,18 +85,12 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
          'ForRenameThemed_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
@@ -119,7 +112,6 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
          'ForRenameThemed_old_online.css',
@@ -127,12 +119,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRename_old.less',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
       (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(false);
@@ -143,18 +130,12 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_new.css',
          'ForRenameThemed_new.less',
          'ForRenameThemed_new_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
 
       await clearWorkspace();
@@ -166,8 +147,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
-         builderTests: true,
+         less: true,
          themes: false,
          modules: [
             {
@@ -188,17 +168,11 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
          'ForRename_old.css',
          'ForRename_old.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
@@ -220,19 +194,13 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
          'ForRename_old.css',
          'ForRename_old.less',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
 
@@ -242,17 +210,11 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForRenameThemed_new.css',
          'ForRenameThemed_new.less',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'MyComponent.js'
       ]);
 
       await clearWorkspace();
@@ -265,7 +227,6 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
          builderTests: true,
          modules: [
             {
@@ -282,13 +243,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
-         'Test.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Test.js'
       ]);
 
       // проверим, что запуск на несуществующем файле вне проекта нормально проходит
@@ -304,14 +259,8 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл Test.js остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Test_new.js',
-         'Test.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Test.js'
       ]);
       (await isSymlink(moduleOutputFolder, 'Test_new.js')).should.equal(true);
 
@@ -321,13 +270,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (Test.js) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
-         'Test_new.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Test_new.js'
       ]);
 
       await clearWorkspace();
@@ -346,7 +289,6 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         mode: 'debug',
          builderTests: true,
          modules: [
             {
@@ -363,13 +305,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
-         'Test.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Test.js'
       ]);
 
       // переименуем файл Test.js в скопированном каталоге
@@ -381,14 +317,8 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что Test_new.js появился в стенде
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'Test_new.js',
-         'Test.js',
-         'contents.js',
-         'contents.json',
-         'navigation-modules.json',
-         'routes-info.json',
-         'static_templates.json'
+         'Test.js'
       ]);
 
       await clearWorkspace();

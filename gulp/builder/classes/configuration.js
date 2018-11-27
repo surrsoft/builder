@@ -30,9 +30,6 @@ class BuildConfiguration {
       // путь до папки с кешем
       this.cachePath = '';
 
-      // release отличается от debug наличием паковки и минизации
-      this.isReleaseMode = false;
-
       // папка с результатами сборки
       this.outputPath = '';
 
@@ -45,51 +42,166 @@ class BuildConfiguration {
       // если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
       this.multiService = false;
 
-      // относительный url текущего сервиса
+      // Current service relative url
       this.urlServicePath = '';
 
-      // относительный url сервиса БЛ
+      // BL service relative url
       this.urlDefaultServicePath = '';
 
-      // относительный url текущего сервиса
+      // compiled content version
       this.version = '';
 
-      // папка, куда сохраняются все логи
+      // logs output directory
       this.logFolder = '';
 
-      // создание gz для сконвертированных ресурсов, по умолчанию true
-      this.gzip = true;
+      // run typescript compilation
+      this.typescript = false;
 
-      // компиляция темизируемых css.
-      this.themes = true;
+      // run less compilation
+      this.less = false;
 
-      // копирование исходников в output
+      // build common meta information for Presentation Service
+      this.presentationServiceMeta = false;
+
+      // generate "contents" for application's work
+      this.contents = false;
+
+      // build static html pages based on Vdom/WS4
+      this.htmlWml = false;
+
+      // build dynamic templates to AMD-type javascript code.
+      this.wml = false;
+
+      // build static html pages based on component's Webpage options. Option is deprecated.
+      this.deprecatedWebPageTemplates = false;
+
+      // build old xml-type dynamic templates to AMD-type javascript code. Option is deprecated.
+      this.deprecatedXhtml = true;
+
+      // pack component's own dependencies. Option is deprecated.
+      this.deprecatedOwnDependencies = false;
+
+      // pack static html entry points to static packages.
+      this.deprecatedStaticHtml = false;
+
+      // minify sources and compiled modules
+      this.minimize = false;
+
+      // generate packages based on custom developer's configuration
+      this.customPack = false;
+
+      // generate project dependencies tree meta
+      this.dependenciesGraph = false;
+
+      // compress sources to gzip format
+      this.gzip = false;
+
+      // compile themed styles
+      this.themes = false;
+
+      // copy sources to output directory
       this.sources = true;
    }
 
    /**
-    * конфигурируем весь набор флагов для плагинов Gulp.
+    * Configuring all common flags for Builder plugins
     */
    configureBuildFlags() {
-      // флаг gzip
+      // typescript flag
+      if (this.rawConfig.hasOwnProperty('typescript') && typeof this.rawConfig.typescript === 'boolean') {
+         this.typescript = this.rawConfig.typescript;
+      }
+
+      // less flag
+      if (this.rawConfig.hasOwnProperty('less') && typeof this.rawConfig.less === 'boolean') {
+         this.less = this.rawConfig.less;
+      }
+
+      // presentationServiceMeta flag
+      if (this.rawConfig.hasOwnProperty('presentationServiceMeta') && typeof this.rawConfig.presentationServiceMeta === 'boolean') {
+         this.presentationServiceMeta = this.rawConfig.presentationServiceMeta;
+      }
+
+      // contents flag
+      if (this.rawConfig.hasOwnProperty('contents') && typeof this.rawConfig.contents === 'boolean') {
+         this.contents = this.rawConfig.contents;
+      }
+
+      // htmlWml flag
+      if (this.rawConfig.hasOwnProperty('htmlWml') && typeof this.rawConfig.htmlWml === 'boolean') {
+         this.htmlWml = this.rawConfig.htmlWml;
+      }
+
+      // wml flag
+      if (this.rawConfig.hasOwnProperty('wml') && typeof this.rawConfig.wml === 'boolean') {
+         this.wml = this.rawConfig.wml;
+      }
+
+      // deprecatedWebPageTemplates flag
+      if (this.rawConfig.hasOwnProperty('deprecatedWebPageTemplates') && typeof this.rawConfig.deprecatedWebPageTemplates === 'boolean') {
+         this.deprecatedWebPageTemplates = this.rawConfig.deprecatedWebPageTemplates;
+      }
+
+      // deprecatedXhtml flag
+      if (this.rawConfig.hasOwnProperty('deprecatedXhtml') && typeof this.rawConfig.deprecatedXhtml === 'boolean') {
+         this.deprecatedXhtml = this.rawConfig.deprecatedXhtml;
+      }
+
+      // deprecatedOwnDependencies flag
+      if (this.rawConfig.hasOwnProperty('deprecatedOwnDependencies') && typeof this.rawConfig.deprecatedOwnDependencies === 'boolean') {
+         this.deprecatedOwnDependencies = this.rawConfig.deprecatedOwnDependencies;
+      }
+
+      // deprecatedStaticHtml
+      if (this.rawConfig.hasOwnProperty('deprecatedStaticHtml') && typeof this.rawConfig.deprecatedStaticHtml === 'boolean') {
+         this.deprecatedStaticHtml = this.rawConfig.deprecatedStaticHtml;
+      }
+
+      // minimize flag
+      if (this.rawConfig.hasOwnProperty('minimize') && typeof this.rawConfig.minimize === 'boolean') {
+         this.minimize = this.rawConfig.minimize;
+      }
+
+      // customPack flag
+      if (this.rawConfig.hasOwnProperty('customPack') && typeof this.rawConfig.customPack === 'boolean') {
+         this.customPack = this.rawConfig.customPack;
+      }
+
+      // dependenciesGraph flag
+      if (this.rawConfig.hasOwnProperty('dependenciesGraph') && typeof this.rawConfig.dependenciesGraph === 'boolean') {
+         this.dependenciesGraph = this.rawConfig.dependenciesGraph;
+      }
+
+      // gzip flag
       if (this.rawConfig.hasOwnProperty('gzip') && typeof this.rawConfig.gzip === 'boolean') {
          this.gzip = this.rawConfig.gzip;
       }
 
-      // алиас на флаг gzip, чтобы не порушить уже существующее поведение со стороны jinnee.
-      if (this.rawConfig.hasOwnProperty('createArchiveVersions') && typeof this.rawConfig.createArchiveVersions === 'boolean') {
-         this.gzip = this.rawConfig.createArchiveVersions;
-      }
-
-      // флаг themes
+      // themes flag
       if (this.rawConfig.hasOwnProperty('themes') && typeof this.rawConfig.themes === 'boolean') {
          this.themes = this.rawConfig.themes;
       }
 
-      // флаг sources
+      // source flag
       if (this.rawConfig.hasOwnProperty('sources') && typeof this.rawConfig.sources === 'boolean') {
          this.sources = this.rawConfig.sources;
       }
+   }
+
+   /**
+    * returns build mode in depend on
+    * given Gulp configuration's flags
+    * @returns {string}
+    */
+   getBuildMode() {
+      const packingEnabled = this.deprecatedOwnDependencies || this.customPack || this.deprecatedStaticHtml;
+
+      // if we are getting packing task as input, minimization should be enabled
+      if (packingEnabled && !this.minimize) {
+         this.minimize = true;
+      }
+
+      return this.minimize || packingEnabled ? 'release' : 'debug';
    }
 
    /**
@@ -118,17 +230,7 @@ class BuildConfiguration {
          throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
       }
 
-      if (!this.rawConfig.hasOwnProperty('mode') && !this.rawConfig.hasOwnProperty('compileEsAndTs')) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр mode`);
-      }
-      let { mode } = this.rawConfig;
-      if (!mode) {
-         mode = 'debug';
-      }
-      if (mode !== 'release' && mode !== 'debug') {
-         throw new Error(`${startErrorMessage} Параметр mode может принимать значения "release" и "debug"`);
-      }
-      this.isReleaseMode = mode === 'release';
+      this.isReleaseMode = this.getBuildMode() === 'release';
 
       if (!this.isReleaseMode) {
          this.outputPath = this.rawConfig.output;
@@ -176,13 +278,18 @@ class BuildConfiguration {
          this.isSourcesOutput = isSourcesOutput;
       }
 
+      this.needTemplates = this.rawConfig.hasOwnProperty('wml') ||
+         this.rawConfig.hasOwnProperty('htmlWml') ||
+         this.rawConfig.hasOwnProperty('deprecatedXhtml');
       const missedNecessaryModules = buildConfigurationChecker.checkForNecessaryModules(this.rawConfig.modules);
 
       /**
        * Если нету общеобязательного набора Интерфейсных модулей, сборку завершаем с ошибкой.
-       * Исключение: тесты билдера.
+       * Исключение:
+       * 1) Тесты билдера.
+       * 2) Работа билдера в случаях, когда не требуется инициализация ядра для воркеров.
        */
-      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests && !this.rawConfig.compileEsAndTs) {
+      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests && this.needTemplates) {
          throw new Error('В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp:' +
          `\n${missedNecessaryModules}` +
          '\nДобавьте их из $(SBISPlatformSDK)/ui-modules');
@@ -192,7 +299,7 @@ class BuildConfiguration {
          const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path, this.outputPath);
          moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath);
 
-         moduleInfo.contents.buildMode = mode;
+         moduleInfo.contents.buildMode = this.getBuildMode();
          if (this.defaultLocalization && this.localizations.length > 0) {
             moduleInfo.contents.defaultLanguage = this.defaultLocalization;
             moduleInfo.contents.availableLanguage = {};
@@ -217,12 +324,6 @@ class BuildConfiguration {
          this.urlDefaultServicePath = this.urlServicePath;
       }
 
-      const needTemplates = this.rawConfig.hasOwnProperty('buildTemplates') ||
-         this.rawConfig.hasOwnProperty('buildStaticTemplates') ||
-         this.rawConfig.hasOwnProperty('mode');
-      if (needTemplates) {
-         this.needTemplates = needTemplates;
-      }
 
       if (this.rawConfig.hasOwnProperty('logs')) {
          this.logFolder = this.rawConfig.logs;
