@@ -41,7 +41,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const versionedModules = [];
             const versionCache = taskParameters.cache.getVersionedModulesCache(moduleInfo.name);
             const prettyCacheModulePath = helpers.prettifyPath(moduleInfo.output);
-            const prettyModulePath = helpers.prettifyPath(moduleInfo.path);
+            const prettyModulePath = helpers.prettifyPath(transliterate(moduleInfo.path));
             Object.keys(versionCache).forEach((currentModule) => {
                versionedModules.push(...versionCache[currentModule]);
             });
