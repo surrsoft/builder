@@ -31,11 +31,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          //  *.worker.js - воркеры
          //  *.routes.js - роутинг. обрабатывается в отдельном плагине
          //  файлы в папках design - файлы для макетирования в genie
+         // jquery также не должен парситься, это модуль с cdn.
          if (
             file.extname !== '.js' ||
             file.path.endsWith('.worker.js') ||
             file.path.endsWith('.test.js') ||
-            file.path.includes('/design/')
+            file.path.includes('/design/') ||
+            file.basename.includes('jquery-min') ||
+            file.basename.includes('jquery-full')
          ) {
             callback(null, file);
             return;
