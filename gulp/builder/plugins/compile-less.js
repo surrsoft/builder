@@ -124,7 +124,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                         moduleInfo.path,
                         sbis3ControlsPath,
                         pathsForImport,
-                        currentLessFile.isLangCss || !isThemedLess ? null : allThemes
+                        currentLessFile.isLangCss || !isThemedLess,
+                        allThemes
                      ],
                      currentLessFile.history[0],
                      moduleInfo
