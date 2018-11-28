@@ -23,7 +23,6 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   helpers = require('../../../lib/helpers'),
    esExt = /\.(es|ts)$/;
 
 const excludeRegexes = [
