@@ -9,7 +9,6 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   helpers = require('../../../lib/helpers'),
    execInPool = require('../../common/exec-in-pool');
 
 const excludeRegexes = [/.*\.min\.css$/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
@@ -92,23 +91,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo,
                   filePath: file.path
                });
-            }
-
-            /**
-             * добавляем информацию о минифицированной версионированнной cssке в
-             * кэш версионирования.
-             */
-            if (file.versioned) {
-               taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
-               const moduleName = transliterate(moduleInfo.name);
-               const relativePath = path.relative(moduleInfo.output, outputMinFile);
-               const componentName = helpers.prettifyPath(path.join(moduleName, relativePath));
-               if (!taskParameters.versionedModules[moduleName]) {
-                  taskParameters.versionedModules[moduleName] = [];
-               }
-               if (!taskParameters.versionedModules[moduleName].includes(componentName)) {
-                  taskParameters.versionedModules[moduleName].push(componentName);
-               }
             }
 
             const newFile = file.clone();
