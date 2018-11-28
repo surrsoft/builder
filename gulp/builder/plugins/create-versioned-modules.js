@@ -42,6 +42,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const versionCache = taskParameters.cache.getVersionedModulesCache(moduleInfo.name);
             const prettyCacheModulePath = helpers.prettifyPath(moduleInfo.output);
             const prettyModulePath = helpers.prettifyPath(transliterate(moduleInfo.path));
+            const currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop();
             Object.keys(versionCache).forEach((currentModule) => {
                versionedModules.push(...versionCache[currentModule]);
             });
@@ -50,7 +51,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   prettyFilePath = helpers.prettifyPath(currentFile),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
                   relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath);
-               return helpers.unixifyPath(path.join(transliterate(moduleInfo.name), relativePath));
+               return helpers.unixifyPath(path.join(currentModuleName, relativePath));
             });
 
             const file = new Vinyl({
@@ -64,7 +65,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * оставляем версионированные модули, могут пригодиться в дальнейшем при паковке
              * @type {string[]}
              */
-            taskParameters.versionedModules[transliterate(moduleInfo.name)] = versionedModulesPaths;
+            taskParameters.versionedModules[currentModuleName] = versionedModulesPaths;
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",
