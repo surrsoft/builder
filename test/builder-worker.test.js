@@ -58,6 +58,7 @@ describe('gulp/common/worker.js', () => {
             modulePath,
             sbis3ControlsPath,
             [workspaceFolder],
+            false,
             themes
          ]);
          resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
@@ -99,6 +100,7 @@ describe('gulp/common/worker.js', () => {
             modulePath,
             sbis3ControlsPath,
             [workspaceFolder],
+            false,
             {
                'online': themes.online
             }
@@ -128,7 +130,7 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         const [, compiledResult] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], themes]);
+         const [, compiledResult] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], false, themes]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
