@@ -480,6 +480,10 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
             }
@@ -531,6 +535,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'SBIS3.CONTROLS',
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
             },
             {
                name: 'Модуль',
