@@ -47,7 +47,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
             const versionedModulesPaths = versionedModules.map((currentFile) => {
                const
-                  prettyFilePath = helpers.prettifyPath(currentFile),
+                  prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
                   relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath);
                return helpers.unixifyPath(path.join(transliterate(moduleInfo.name), relativePath));
