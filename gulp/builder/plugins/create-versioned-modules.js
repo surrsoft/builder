@@ -40,7 +40,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          try {
             const versionedModules = [];
             const versionCache = taskParameters.cache.getVersionedModulesCache(moduleInfo.name);
-            const prettyCacheModulePath = helpers.prettifyPath(moduleInfo.output);
+            const prettyCacheModulePath = helpers.prettifyPath(transliterate(moduleInfo.output));
             const prettyModulePath = helpers.prettifyPath(transliterate(moduleInfo.path));
             const currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop();
             Object.keys(versionCache).forEach((currentModule) => {
@@ -50,8 +50,23 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const
                   prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
-                  relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath);
-               return helpers.unixifyPath(path.join(currentModuleName, relativePath));
+                  relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath),
+                  result = helpers.unixifyPath(path.join(currentModuleName, relativePath));
+
+               /**
+                * На всякий пожарный добавим логов, чтобы иметь представление, что происходит с путями
+                * при сборке проблемных сервисов
+                */
+               if (moduleInfo.name === 'WS.Core') {
+                  logger.info('---------------------------------------------------');
+                  logger.info(`Путь до кэша: ${prettyCacheModulePath}`);
+                  logger.info(`Путь до исходника: ${prettyModulePath}`);
+                  logger.info(`Путь до непосредственного файла: ${prettyFilePath}`);
+                  logger.info(`isSourcePath: ${isSourcePath}`);
+                  logger.info(`Результат разрешения пути: ${relativePath}`);
+                  logger.info('---------------------------------------------------');
+               }
+               return result;
             });
 
             const file = new Vinyl({
