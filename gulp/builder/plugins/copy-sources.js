@@ -9,7 +9,6 @@
 
 const through = require('through2');
 const builderMeta = new Set([
-   'contents.json',
    'module-dependencies.json',
    'navigation-modules.json',
    'routes-info.json',
