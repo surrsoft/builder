@@ -300,15 +300,17 @@ function promisifyLoader(
  * @param {nativePackFiles~callback} done
  */
 async function limitingNativePackFiles(
-   filesToPack,
+   packageConfig,
    root,
    application,
    taskParameters,
    isGulp
 ) {
    const
+      filesToPack = packageConfig.orderQueue,
       availableLanguage = taskParameters.config.localizations,
       defaultLanguage = taskParameters.config.defaultLocalization,
+      currentVersionedModules = taskParameters.versionedModules[packageConfig.moduleName],
       result = {};
 
    if (filesToPack && filesToPack.length) {
@@ -349,8 +351,29 @@ async function limitingNativePackFiles(
                   root,
                   application
                );
-               if (!taskParameters.config.sources && fullPath) {
+               const jsIsPackageOutput = module.fullPath === packageConfig.outputFile;
+
+               /**
+                * Мы не должны удалять модуль, если в него будет записан результат паковки.
+                */
+               if (!taskParameters.config.sources && fullPath && !jsIsPackageOutput) {
                   taskParameters.filesToRemove.push(fullPath);
+
+                  /**
+                   * Из версионирования надо удалить информацию о файлах, которые
+                   * будут удалены при оптимизации дистрибутива.
+                   * @type {Array}
+                   */
+                  const removeFromVersioned = [];
+                  currentVersionedModules.forEach((versionedModule) => {
+                     if (module.fullPath.endsWith(versionedModule)) {
+                        removeFromVersioned.push(versionedModule);
+                     }
+                  });
+                  removeFromVersioned.forEach((moduleToRemove) => {
+                     const moduleIndex = currentVersionedModules.indexOf(moduleToRemove);
+                     currentVersionedModules.splice(moduleIndex, 1);
+                  });
                }
             } catch (error) {
                logger.warning({
