@@ -47,6 +47,10 @@ properties([
                 defaultValue: '',
                 description: '',
                 name: "branch_atf"),
+            string(
+                defaultValue: '',
+                description: '',
+                name: 'branch_themes'),
             choice(
                 choices: "online\npresto\ncarry\ngenie",
                 description: '',
@@ -93,6 +97,11 @@ node ('controls') {
         } else {
             branch_engine = props["engine"]
         }
+        if (params.branch_themes) {
+            branch_themes = params.branch_themes
+        } else {
+            branch_themes = props["themes"]
+        }
         def python_ver = 'python3'
         def server_address=props["SERVER_ADDRESS"]
         def SDK = ""
@@ -111,15 +120,15 @@ node ('controls') {
         } else {
             branch_navigation = props["navigation"]
         }
-		dir(workspace){
-			echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
-			sh "ls | grep -v -E 'controls' | xargs rm -rf"
-			dir("./controls"){
-				sh "rm -rf ${workspace}/controls/tests/int/atf"
-				sh "rm -rf ${workspace}/controls/tests/navigation"
-				sh "rm -rf ${workspace}/controls/sbis3-app-engine"
-			}
-		}
+        dir(workspace){
+            echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
+            sh "ls | grep -v -E 'controls' | xargs rm -rf"
+            dir("./controls"){
+                sh "rm -rf ${workspace}/controls/tests/int/atf"
+                sh "rm -rf ${workspace}/controls/tests/navigation"
+                sh "rm -rf ${workspace}/controls/sbis3-app-engine"
+            }
+        }
 
     try {
 
@@ -129,7 +138,7 @@ node ('controls') {
             unit = true
         }
 
-		dir(workspace) {
+        dir(workspace) {
             checkout([$class: 'GitSCM',
             branches: [[name: env.BRANCH_NAME]],
             doGenerateSubmoduleConfigurations: false,
@@ -203,13 +212,13 @@ node ('controls') {
                             credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
                             url: 'git@git.sbis.ru:sbis/controls.git']]
                     ])
-					dir("./controls"){
-						sh """
-							git clean -fd
-							git checkout ${controls_revision}
-							git pull origin ${controls_revision}
-						"""
-					}
+                    dir("./controls"){
+                        sh """
+                            git clean -fd
+                            git checkout ${controls_revision}
+                            git pull origin ${controls_revision}
+                        """
+                    }
                 }
                 parallel (
                     checkout_atf:{
@@ -281,6 +290,23 @@ node ('controls') {
                             url: 'git@git.sbis.ru:root/sbis3-cdn.git']]
                     ])
                 }
+            },
+            retail_theme: {
+                dir(workspace) {
+                    echo "Выкачиваем themes"
+                    checkout([$class: 'GitSCM',
+                    branches: [[name: branch_themes]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[
+                        $class: 'RelativeTargetDirectory',
+                        relativeTargetDir: "themes"
+                        ]],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                            url: 'git@git.sbis.ru:retail/themes.git']]
+                    ])
+                }
             }
         )
         if ( only_fail ) {
@@ -311,7 +337,7 @@ node ('controls') {
                     ЧислоСлужебныхРабочихПроцессов=0
                     ЧислоДополнительныхПроцессов=0
                     ЧислоПотоковВРабочихПроцессах=10
-					МаксимальныйРазмерВыборкиСписочныхМетодов=0
+                    МаксимальныйРазмерВыборкиСписочныхМетодов=0
 
                     [Presentation Service]
                     WarmUpEnabled=No
@@ -330,7 +356,7 @@ node ('controls') {
                     ПосылатьОтказВОбслуживанииПриОтсутствииРабочихПроцессов=Нет
                     МаксимальноеВремяЗапросаВОчереди=60000
                     ЧислоРабочихПроцессов=4
-					МаксимальныйРазмерВыборкиСписочныхМетодов=0
+                    МаксимальныйРазмерВыборкиСписочныхМетодов=0
                     [Ядро.Права]
                     Проверять=Нет
                     [Ядро.Асинхронные сообщения]
@@ -360,68 +386,68 @@ node ('controls') {
             """
             }
             if ( regr || inte ) {
-				def soft_restart = "True"
-				if ( params.browser_type in ['ie', 'edge'] ){
-					soft_restart = "False"
-				}
-				if ( "${params.theme}" != "online" ) {
-					img_dir = "capture_${params.theme}"
-				} else {
-					img_dir = "capture"
-				}
-				writeFile file: "./controls/tests/int/config.ini", 
-					text:
-						"""# UTF-8
-						[general]
-						browser = ${params.browser_type}
-						SITE = http://${NODE_NAME}:30010
-						SERVER = test-autotest-db1:5434
-						BASE_VERSION = css_${NODE_NAME}${ver}
-						DO_NOT_RESTART = True
-						SOFT_RESTART = ${soft_restart}
-						NO_RESOURCES = True
-						DELAY_RUN_TESTS = 2
-						TAGS_NOT_TO_START = iOSOnly
-						ELEMENT_OUTPUT_LOG = locator
-						WAIT_ELEMENT_LOAD = 20
-						SHOW_CHECK_LOG = True
-						HTTP_PATH = http://${NODE_NAME}:2100/builder_${version}/${BRANCH_NAME}/controls/tests/int/"""
+                def soft_restart = "True"
+                if ( params.browser_type in ['ie', 'edge'] ){
+                    soft_restart = "False"
+                }
+                if ( "${params.theme}" != "online" ) {
+                    img_dir = "capture_${params.theme}"
+                } else {
+                    img_dir = "capture"
+                }
+                writeFile file: "./controls/tests/int/config.ini",
+                    text:
+                        """# UTF-8
+                        [general]
+                        browser = ${params.browser_type}
+                        SITE = http://${NODE_NAME}:30010
+                        SERVER = test-autotest-db1:5434
+                        BASE_VERSION = css_${NODE_NAME}${ver}
+                        DO_NOT_RESTART = True
+                        SOFT_RESTART = ${soft_restart}
+                        NO_RESOURCES = True
+                        DELAY_RUN_TESTS = 2
+                        TAGS_NOT_TO_START = iOSOnly
+                        ELEMENT_OUTPUT_LOG = locator
+                        WAIT_ELEMENT_LOAD = 20
+                        SHOW_CHECK_LOG = True
+                        HTTP_PATH = http://${NODE_NAME}:2100/builder_${version}/${BRANCH_NAME}/controls/tests/int/"""
 
-				writeFile file: "./controls/tests/reg/config.ini",
-					text:
-						"""# UTF-8
-						[general]
-						browser = ${params.browser_type}
-						SITE = http://${NODE_NAME}:30010
-						DO_NOT_RESTART = True
-						SOFT_RESTART = False
-						NO_RESOURCES = True
-						DELAY_RUN_TESTS = 2
-						TAGS_TO_START = ${params.theme}
-						ELEMENT_OUTPUT_LOG = locator
-						WAIT_ELEMENT_LOAD = 20
-						HTTP_PATH = http://${NODE_NAME}:2100/builder_${version}/${BRANCH_NAME}/controls/tests/reg/
-						SERVER = test-autotest-db1:5434
-						BASE_VERSION = css_${NODE_NAME}${ver}
-						#BRANCH=True
-						[regression]
-						IMAGE_DIR = ${img_dir}
-						RUN_REGRESSION=True"""				
+                writeFile file: "./controls/tests/reg/config.ini",
+                    text:
+                        """# UTF-8
+                        [general]
+                        browser = ${params.browser_type}
+                        SITE = http://${NODE_NAME}:30010
+                        DO_NOT_RESTART = True
+                        SOFT_RESTART = False
+                        NO_RESOURCES = True
+                        DELAY_RUN_TESTS = 2
+                        TAGS_TO_START = ${params.theme}
+                        ELEMENT_OUTPUT_LOG = locator
+                        WAIT_ELEMENT_LOAD = 20
+                        HTTP_PATH = http://${NODE_NAME}:2100/builder_${version}/${BRANCH_NAME}/controls/tests/reg/
+                        SERVER = test-autotest-db1:5434
+                        BASE_VERSION = css_${NODE_NAME}${ver}
+                        #BRANCH=True
+                        [regression]
+                        IMAGE_DIR = ${img_dir}
+                        RUN_REGRESSION=True"""
 
-				dir("./controls/tests/int"){
-					sh"""
-						source /home/sbis/venv_for_test/bin/activate
-						${python_ver} start_tests.py --files_to_start smoke_test.py --SERVER_ADDRESS ${server_address} --RESTART_AFTER_BUILD_MODE --BROWSER chrome --FAIL_TEST_REPEAT_TIMES 0
-						deactivate
-					"""
-					junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
-					sh "sudo rm -rf ./test-reports"
-					smoke_result = currentBuild.result == null
-				}
-				if ( only_fail && smoke_result) {
-					step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
-				}
-			}
+                dir("./controls/tests/int"){
+                    sh"""
+                        source /home/sbis/venv_for_test/bin/activate
+                        ${python_ver} start_tests.py --files_to_start smoke_test.py --SERVER_ADDRESS ${server_address} --RESTART_AFTER_BUILD_MODE --BROWSER chrome --FAIL_TEST_REPEAT_TIMES 0
+                        deactivate
+                    """
+                    junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
+                    sh "sudo rm -rf ./test-reports"
+                    smoke_result = currentBuild.result == null
+                }
+                if ( only_fail && smoke_result) {
+                    step([$class: 'CopyArtifact', fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: [$class: 'LastCompletedBuildSelector']])
+                }
+            }
             parallel(
                 unit: {
                     stage ("Unit тесты"){
@@ -433,37 +459,37 @@ node ('controls') {
                         }
                     }
                 },
-				int_test: {
-					stage("Инт.тесты"){
-						if (  inte && smoke_result){
-							echo "Запускаем интеграционные тесты"
-							dir("./controls/tests/int"){
-								sh """
-								source /home/sbis/venv_for_test/bin/activate
-								python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
-								deactivate
-								"""
-							}
+                int_test: {
+                    stage("Инт.тесты"){
+                        if (  inte && smoke_result){
+                            echo "Запускаем интеграционные тесты"
+                            dir("./controls/tests/int"){
+                                sh """
+                                source /home/sbis/venv_for_test/bin/activate
+                                python start_tests.py --RESTART_AFTER_BUILD_MODE ${tests_for_run} ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
+                                deactivate
+                                """
+                            }
 
-						}
-					}
-				},
-				reg_test: {
-					stage("Рег.тесты"){
-						if ( regr && smoke_result){
-							echo "Запускаем тесты верстки"
-							sh "cp -R ./controls/tests/int/atf/ ./controls/tests/reg/atf/"
-							dir("./controls/tests/reg"){
-								sh """
-									source /home/sbis/venv_for_test/bin/activate
-									python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
-									deactivate
-								"""
-							}
+                        }
+                    }
+                },
+                reg_test: {
+                    stage("Рег.тесты"){
+                        if ( regr && smoke_result){
+                            echo "Запускаем тесты верстки"
+                            sh "cp -R ./controls/tests/int/atf/ ./controls/tests/reg/atf/"
+                            dir("./controls/tests/reg"){
+                                sh """
+                                    source /home/sbis/venv_for_test/bin/activate
+                                    python start_tests.py --RESTART_AFTER_BUILD_MODE ${run_test_fail} --SERVER_ADDRESS ${server_address} --STREAMS_NUMBER ${stream_number} --RECURSIVE_SEARCH True
+                                    deactivate
+                                """
+                            }
 
-						}
-					}
-				}
+                        }
+                    }
+                }
             )
         } catch (err) {
             echo "ERROR: ${err}"
@@ -471,41 +497,41 @@ node ('controls') {
             gitlabStatusUpdate()
 
         } finally {
-			sh """
-				sudo chmod -R 0777 ${workspace}
-			"""
-			def exists_dir = fileExists '/home/sbis/Controls'
-			if ( exists_dir ){
-				sh """
-					sudo chmod -R 0777 /home/sbis/Controls
-				"""
-			}
+            sh """
+                sudo chmod -R 0777 ${workspace}
+            """
+            def exists_dir = fileExists '/home/sbis/Controls'
+            if ( exists_dir ){
+                sh """
+                    sudo chmod -R 0777 /home/sbis/Controls
+                """
+            }
             if ( inte || regr ) {
 
-				dir(workspace){
-					sh """
-					7za a log_jinnee -t7z ${workspace}/jinnee/logs
-					"""
-					archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
+                dir(workspace){
+                    sh """
+                    7za a log_jinnee -t7z ${workspace}/jinnee/logs
+                    """
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/log_jinnee.7z', caseSensitive: false
 
-					sh "mkdir logs_ps"
-					if ( exists_dir ){
-						dir('/home/sbis/Controls'){
-							def files_err = findFiles(glob: 'intest*/logs/**/*_errors.log')
+                    sh "mkdir logs_ps"
+                    if ( exists_dir ){
+                        dir('/home/sbis/Controls'){
+                            def files_err = findFiles(glob: 'intest*/logs/**/*_errors.log')
 
-							if ( files_err.length > 0 ){
-								sh "sudo cp -R /home/sbis/Controls/intest/logs/**/*_errors.log ${workspace}/logs_ps/intest_errors.log"
-								sh "sudo cp -R /home/sbis/Controls/intest-ps/logs/**/*_errors.log ${workspace}/logs_ps/intest_ps_errors.log"
-								dir ( workspace ){
-									sh """7za a logs_ps -t7z ${workspace}/logs_ps """
-									archiveArtifacts allowEmptyArchive: true, artifacts: '**/logs_ps.7z', caseSensitive: false
-								}
-							}
-						}
-					}
-					archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
-				}
-				
+                            if ( files_err.length > 0 ){
+                                sh "sudo cp -R /home/sbis/Controls/intest/logs/**/*_errors.log ${workspace}/logs_ps/intest_errors.log"
+                                sh "sudo cp -R /home/sbis/Controls/intest-ps/logs/**/*_errors.log ${workspace}/logs_ps/intest_ps_errors.log"
+                                dir ( workspace ){
+                                    sh """7za a logs_ps -t7z ${workspace}/logs_ps """
+                                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/logs_ps.7z', caseSensitive: false
+                                }
+                            }
+                        }
+                    }
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/result.db', caseSensitive: false
+                }
+
                 junit keepLongStdio: true, testResults: "**/test-reports/*.xml"
 
             }
@@ -515,7 +541,7 @@ node ('controls') {
                 }
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/report.zip', caseSensitive: false
             }
-			if ( unit ){
+            if ( unit ){
                 junit keepLongStdio: true, testResults: "**/builder/*.xml"
             }
         }
