@@ -308,12 +308,11 @@ async function limitingNativePackFiles(
 ) {
    const
       availableLanguage = taskParameters.config.localizations,
-      defaultLanguage = taskParameters.config.defaultLocalization;
+      defaultLanguage = taskParameters.config.defaultLocalization,
+      result = {};
 
    if (filesToPack && filesToPack.length) {
-      const
-         result = [],
-         base = path.join(root, application);
+      const base = path.join(root, application);
 
       await pMap(
          filesToPack,
@@ -337,7 +336,7 @@ async function limitingNativePackFiles(
             }
 
             try {
-               result.push(await promisifyLoader(
+               result[module.fullName] = await promisifyLoader(
                   getLoader(module.plugin),
                   module,
                   base,
@@ -349,7 +348,7 @@ async function limitingNativePackFiles(
                   isGulp,
                   root,
                   application
-               ));
+               );
                if (!taskParameters.config.sources && fullPath) {
                   taskParameters.filesToRemove.push(fullPath);
                }
@@ -365,9 +364,8 @@ async function limitingNativePackFiles(
             concurrency: 10
          }
       );
-      return result;
    }
-   return '';
+   return result;
 }
 
 module.exports = {

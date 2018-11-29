@@ -69,9 +69,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return result;
             });
 
+            if (taskParameters.config.contents) {
+               versionedModulesPaths.push(`${currentModuleName}/contents.json`);
+            }
             const file = new Vinyl({
                path: '.builder/versioned_modules.json',
-               contents: Buffer.from(JSON.stringify(versionedModulesPaths, null, 2)),
+               contents: Buffer.from(JSON.stringify(versionedModulesPaths.sort(), null, 2)),
                moduleInfo
             });
             this.push(file);
