@@ -183,7 +183,8 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
             .pipe(
                gulpIf(
-                  taskParameters.config.dependenciesGraph,
+                  taskParameters.config.dependenciesGraph || taskParameters.config.customPack ||
+                  taskParameters.config.deprecatedStaticHtml,
                   createModuleDependenciesJson(taskParameters, moduleInfo)
                )
             )

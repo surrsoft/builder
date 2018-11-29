@@ -138,12 +138,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                };
             }
 
-            const jsonFile = new Vinyl({
-               path: 'module-dependencies.json',
-               contents: Buffer.from(JSON.stringify(helpers.sortObject(json), null, 2)),
-               moduleInfo
-            });
-            this.push(jsonFile);
+            /**
+             * сохраняем мета-данные по module-dependencies по требованию.
+             */
+            if (taskParameters.config.dependenciesGraph) {
+               const jsonFile = new Vinyl({
+                  path: 'module-dependencies.json',
+                  contents: Buffer.from(JSON.stringify(helpers.sortObject(json), null, 2)),
+                  moduleInfo
+               });
+               this.push(jsonFile);
+            }
 
             taskParameters.cache.storeLocalModuleDependencies(json);
          } catch (error) {
