@@ -57,6 +57,7 @@ module.exports = function declarePlugin() {
           */
          if (file.basename === 'contents.json') {
             callback(null, file);
+            return;
          }
 
          const isMinified = file.basename.endsWith(`.min${file.extname}`);
