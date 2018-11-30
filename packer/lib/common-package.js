@@ -351,7 +351,7 @@ async function limitingNativePackFiles(
                   root,
                   application
                );
-               const jsIsPackageOutput = module.fullPath === packageConfig.outputFile;
+               const jsIsPackageOutput = fullPath === packageConfig.outputFile;
 
                /**
                 * Мы не должны удалять модуль, если в него будет записан результат паковки.
@@ -366,7 +366,7 @@ async function limitingNativePackFiles(
                    */
                   const removeFromVersioned = [];
                   currentVersionedModules.forEach((versionedModule) => {
-                     if (module.fullPath.endsWith(versionedModule)) {
+                     if (fullPath.endsWith(versionedModule)) {
                         removeFromVersioned.push(versionedModule);
                      }
                   });

@@ -52,6 +52,13 @@ module.exports = function declarePlugin() {
             return;
          }
 
+         /**
+          * contents помодульный нужен всегда, копируем его.
+          */
+         if (file.basename === 'contents.json') {
+            callback(null, file);
+         }
+
          const isMinified = file.basename.endsWith(`.min${file.extname}`);
          switch (file.extname) {
             case '.js':
