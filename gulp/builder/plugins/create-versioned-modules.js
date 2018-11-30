@@ -50,28 +50,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const
                   prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
-                  relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath),
-                  result = helpers.unixifyPath(path.join(currentModuleName, relativePath));
+                  relativePath = path.relative(isSourcePath ? prettyModulePath : prettyCacheModulePath, prettyFilePath);
 
-               /**
-                * На всякий пожарный добавим логов, чтобы иметь представление, что происходит с путями
-                * при сборке проблемных сервисов
-                */
-               if (moduleInfo.name === 'WS.Core') {
-                  logger.info('---------------------------------------------------');
-                  logger.info(`Путь до кэша: ${prettyCacheModulePath}`);
-                  logger.info(`Путь до исходника: ${prettyModulePath}`);
-                  logger.info(`Путь до непосредственного файла: ${prettyFilePath}`);
-                  logger.info(`isSourcePath: ${isSourcePath}`);
-                  logger.info(`Результат разрешения пути: ${relativePath}`);
-                  logger.info('---------------------------------------------------');
-               }
-               return result;
+               return helpers.unixifyPath(path.join(currentModuleName, relativePath));
             });
 
+            if (taskParameters.config.contents) {
+               versionedModulesPaths.push(`${currentModuleName}/contents.json`);
+            }
             const file = new Vinyl({
                path: '.builder/versioned_modules.json',
-               contents: Buffer.from(JSON.stringify(versionedModulesPaths, null, 2)),
+               contents: Buffer.from(JSON.stringify(versionedModulesPaths.sort(), null, 2)),
                moduleInfo
             });
             this.push(file);

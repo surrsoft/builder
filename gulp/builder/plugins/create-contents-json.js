@@ -27,7 +27,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          try {
             // подготовим contents.json и contents.js
             if (taskParameters.config.version) {
-               moduleInfo.contents.buildnumber = taskParameters.config.version;
+               moduleInfo.contents.buildnumber = '%{BUILDER_VERSION_STUB}';
             }
 
             const contentsJsFile = new Vinyl({
