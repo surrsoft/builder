@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const loaders = require('./loaders');
 const getMeta = require('./get-dependency-meta');
 const packerDictionary = require('../tasks/lib/pack-dictionary');
+const helpers = require('../../lib/helpers');
 const logger = require('../../lib/logger').logger();
 const pMap = require('p-map');
 const dblSlashes = /\\/g,
@@ -310,7 +311,6 @@ async function limitingNativePackFiles(
       filesToPack = packageConfig.orderQueue,
       availableLanguage = taskParameters.config.localizations,
       defaultLanguage = taskParameters.config.defaultLocalization,
-      currentVersionedModules = taskParameters.versionedModules[packageConfig.moduleName],
       result = {};
 
    if (filesToPack && filesToPack.length) {
@@ -354,26 +354,34 @@ async function limitingNativePackFiles(
                const jsIsPackageOutput = fullPath === packageConfig.outputFile;
 
                /**
-                * Мы не должны удалять модуль, если в него будет записан результат паковки.
+                * 1)Мы не должны удалять модуль, если в него будет записан результат паковки.
+                * 2)Все компоненты должны удаляться только в рамках Интерфейсного модуля, в котором
+                * строится кастомный пакет.
                 */
-               if (!taskParameters.config.sources && fullPath && !jsIsPackageOutput) {
+               if (
+                  fullPath &&
+                  !taskParameters.config.sources &&
+                  !jsIsPackageOutput &&
+                  fullPath.startsWith(packageConfig.moduleOutput)
+               ) {
                   taskParameters.filesToRemove.push(fullPath);
+                  logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
+                  helpers.removeFileFromVersionedMeta(
+                     taskParameters.versionedModules[packageConfig.moduleName],
+                     fullPath
+                  );
 
                   /**
-                   * Из версионирования надо удалить информацию о файлах, которые
-                   * будут удалены при оптимизации дистрибутива.
-                   * @type {Array}
+                   * Если был запакован .min.original.js, тогда можно ещё удалить и
+                   * .min.js, поскольку он нам теперь тоже не нужен.
                    */
-                  const removeFromVersioned = [];
-                  currentVersionedModules.forEach((versionedModule) => {
-                     if (fullPath.endsWith(versionedModule)) {
-                        removeFromVersioned.push(versionedModule);
-                     }
-                  });
-                  removeFromVersioned.forEach((moduleToRemove) => {
-                     const moduleIndex = currentVersionedModules.indexOf(moduleToRemove);
-                     currentVersionedModules.splice(moduleIndex, 1);
-                  });
+                  if (fullPath.endsWith('.original.js')) {
+                     logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
+                     helpers.removeFileFromVersionedMeta(
+                        taskParameters.versionedModules[packageConfig.moduleName],
+                        fullPath.replace(/\.original\.js$/, '.js')
+                     );
+                  }
                }
             } catch (error) {
                logger.warning({
