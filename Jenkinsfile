@@ -1,6 +1,6 @@
 #!groovy
 
-def version = "3.18.700"
+def version = "3.18.710"
 def gitlabStatusUpdate() {
     if ( currentBuild.currentResult == "ABORTED" ) {
         updateGitlabCommitStatus state: 'canceled'
