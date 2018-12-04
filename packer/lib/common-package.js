@@ -376,10 +376,12 @@ async function limitingNativePackFiles(
                    * .min.js, поскольку он нам теперь тоже не нужен.
                    */
                   if (fullPath.endsWith('.original.js')) {
+                     const replacedPath = fullPath.replace(/\.original\.js$/, '.js');
+                     taskParameters.filesToRemove.push(replacedPath);
                      logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
                      helpers.removeFileFromVersionedMeta(
                         taskParameters.versionedModules[packageConfig.moduleName],
-                        fullPath.replace(/\.original\.js$/, '.js')
+                        replacedPath
                      );
                   }
                }
