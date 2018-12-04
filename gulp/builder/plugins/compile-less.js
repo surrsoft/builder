@@ -64,6 +64,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    };
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
+   let applicationRoot = '';
+   if (!taskParameters.config.multiService) {
+      applicationRoot = taskParameters.config.urlServicePath;
+   }
    return through.obj(
 
       /* @this Stream */
@@ -125,7 +129,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                         sbis3ControlsPath,
                         pathsForImport,
                         currentLessFile.isLangCss || !isThemedLess,
-                        allThemes
+                        allThemes,
+                        applicationRoot
                      ],
                      currentLessFile.history[0],
                      moduleInfo
