@@ -65,7 +65,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
    let applicationRoot = '';
-   if (!taskParameters.config.multiService) {
+
+   /**
+    * Даже приложения с одиночным сервисом могут быть помечены как
+    * multi-service. Потому нам надо проверять через наличие
+    * /service/ в названии сервиса, так мы сможем отличить служебный
+    * сервис от названия сервиса, по которому просится статика приложения
+    */
+   if (!taskParameters.config.urlServicePath.includes('/service')) {
       applicationRoot = taskParameters.config.urlServicePath;
    }
    return through.obj(
