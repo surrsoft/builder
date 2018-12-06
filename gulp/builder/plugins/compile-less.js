@@ -67,13 +67,23 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    let applicationRoot = '';
 
    /**
+    * если приложение требует в пути до статики прописать resources, будем
+    * прописывать. В противном случае будем работать с путями в линках прямо от корня.
+    */
+   if (taskParameters.config.resourcesUrl) {
+      applicationRoot = '/resources/';
+   }
+
+   /**
     * Даже приложения с одиночным сервисом могут быть помечены как
     * multi-service. Потому нам надо проверять через наличие
     * /service/ в названии сервиса, так мы сможем отличить служебный
     * сервис от названия сервиса, по которому просится статика приложения
     */
    if (!taskParameters.config.urlServicePath.includes('/service')) {
-      applicationRoot = taskParameters.config.urlServicePath;
+      applicationRoot = helpers.unixifyPath(
+         path.join(taskParameters.config.urlServicePath, applicationRoot)
+      );
    }
    return through.obj(
 
