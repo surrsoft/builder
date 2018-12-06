@@ -52,12 +52,21 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = path.join(modulePath, 'Empty.less');
          const text = (await fs.readFile(filePath)).toString();
-         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+         const lessInfo = {
             filePath,
             text,
-            modulePath,
-            sbis3ControlsPath,
-            [workspaceFolder],
+            modulePath
+         };
+         const gulpModulesInfo = {
+            pathsForImport: [workspaceFolder],
+            gulpModulesPaths: {
+               'SBIS3.CONTROLS': sbis3ControlsPath,
+               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+            }
+         };
+         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+            lessInfo,
+            gulpModulesInfo,
             false,
             themes
          ]);
@@ -94,12 +103,21 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = path.join(modulePath, 'Correct.less');
          const text = (await fs.readFile(filePath)).toString();
-         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+         const lessInfo = {
             filePath,
             text,
-            modulePath,
-            sbis3ControlsPath,
-            [workspaceFolder],
+            modulePath
+         };
+         const gulpModulesInfo = {
+            pathsForImport: [workspaceFolder],
+            gulpModulesPaths: {
+               'SBIS3.CONTROLS': sbis3ControlsPath,
+               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+            }
+         };
+         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+            lessInfo,
+            gulpModulesInfo,
             false,
             {
                'online': themes.online
@@ -130,7 +148,18 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         const [, compiledResult] = await execInPool(pool, 'buildLess', [filePath, text, modulePath, sbis3ControlsPath, [], false, themes]);
+         const lessInfo = {
+            filePath,
+            text,
+            modulePath
+         };
+         const gulpModulesInfo = {
+            pathsForImport: [],
+            gulpModulesPaths: {
+               'SBIS3.CONTROLS': sbis3ControlsPath
+            }
+         };
+         const [, compiledResult] = await execInPool(pool, 'buildLess', [lessInfo, gulpModulesInfo, false, themes]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
          const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));

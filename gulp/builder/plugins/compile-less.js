@@ -35,11 +35,10 @@ function checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyle
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {string} sbis3ControlsPath путь до модуля SBIS3.CONTROLS. нужно для поиска тем
  * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesInfo) {
    const getOutput = function(file, replacingExt) {
       const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
@@ -119,15 +118,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
             async(currentLessFile) => {
                try {
                   const isThemedLess = checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles);
+                  const lessInfo = {
+                     filePath: currentLessFile.history[0],
+                     modulePath: moduleInfo.path,
+                     text: currentLessFile.contents.toString(),
+                     themes: taskParameters.config.themes
+                  };
                   const [error, results] = await execInPool(
                      taskParameters.pool,
                      'buildLess',
                      [
-                        currentLessFile.history[0],
-                        currentLessFile.contents.toString(),
-                        moduleInfo.path,
-                        sbis3ControlsPath,
-                        pathsForImport,
+                        lessInfo,
+                        gulpModulesInfo,
                         currentLessFile.isLangCss || !isThemedLess,
                         allThemes,
                         applicationRoot
