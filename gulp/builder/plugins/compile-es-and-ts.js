@@ -131,6 +131,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+
+            // алиас для совместимости с кэшем шаблонов при паковке библиотек.
+            result.nodeName = result.moduleName;
             taskParameters.cache.storeCompiledES(file.history[0], moduleInfo.name, result);
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
