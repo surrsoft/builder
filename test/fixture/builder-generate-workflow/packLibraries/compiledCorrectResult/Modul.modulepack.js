@@ -13,8 +13,9 @@ define('Modul/Modul', [
 ], function (tslib_1, require, exports) {
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
+        Object.defineProperty(exports, '__sourceName', { value: 'Modul/_es6/Modul2' });
         var Modul_2 = function () {
-        var exports = { libraryMemberName: 'Modul/_es6/Modul2' };
+        var exports = {};
         var result = function (require, exports, tslib_1) {
             'use strict';
             Object.defineProperty(exports, '__esModule', { value: true });
@@ -41,8 +42,9 @@ define('Modul/Modul', [
         }
         return exports;
     }();
+        Object.defineProperty(exports, '__sourceName', { value: 'Modul/_es5/Module' });
         var Module_js_1 = function () {
-        var exports = { libraryMemberName: 'Modul/_es5/Module' };
+        var exports = {};
         var result = function (require, exports, tslib_1, Modul_2) {
             'use strict';
             return {
@@ -61,8 +63,9 @@ define('Modul/Modul', [
         }
         return exports;
     }();
+        Object.defineProperty(exports, '__sourceName', { value: 'Modul/_es6/Modul' });
         var Modul_es_1 = function () {
-        var exports = { libraryMemberName: 'Modul/_es6/Modul' };
+        var exports = {};
         var result = function (require, exports, Module_js_1) {
             'use strict';
             Object.defineProperty(exports, '__esModule', { value: true });
