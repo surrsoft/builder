@@ -46,6 +46,10 @@ properties([
             string(
                 defaultValue: '',
                 description: '',
+                name: 'branch_viewsettings'),
+            string(
+                defaultValue: '',
+                description: '',
                 name: "branch_atf"),
             string(
                 defaultValue: '',
@@ -120,12 +124,19 @@ node ('controls') {
         } else {
             branch_navigation = props["navigation"]
         }
+        def branch_viewsettings
+        if (params.branch_viewsettings) {
+            branch_viewsettings = params.branch_viewsettings
+        } else {
+            branch_viewsettings = props["viewsettings"]
+        }
         dir(workspace){
             echo "УДАЛЯЕМ ВСЕ КРОМЕ ./controls"
             sh "ls | grep -v -E 'controls' | xargs rm -rf"
             dir("./controls"){
                 sh "rm -rf ${workspace}/controls/tests/int/atf"
                 sh "rm -rf ${workspace}/controls/tests/navigation"
+                sh "rm -rf ${workspace}/controls/viewsettings"
                 sh "rm -rf ${workspace}/controls/sbis3-app-engine"
             }
         }
@@ -269,6 +280,23 @@ node ('controls') {
                             userRemoteConfigs: [[
                                 credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
                                 url: 'git@git.sbis.ru:navigation-configuration/navigation.git']]
+                            ])
+                        }
+                    },
+                    checkout_viewsettings: {
+                        echo " Выкачиваем viewsettings"
+                        dir("./controls"){
+                            checkout([$class: 'GitSCM',
+                            branches: [[name: branch_viewsettings]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[
+                                $class: 'RelativeTargetDirectory',
+                                relativeTargetDir: "viewsettings"
+                                ]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[
+                                    credentialsId: 'ae2eb912-9d99-4c34-ace5-e13487a9a20b',
+                                    url: 'git@git.sbis.ru:engine/viewsettings.git']]
                             ])
                         }
                     }
