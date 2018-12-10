@@ -2,6 +2,7 @@
 Builder - утилита для сборки клиентского кода проектов на платформе СБИС3.
 Сборка - процесс преобразования исходного кода в работающее приложение.
 
+
 Пользовательская документация: https://wi.sbis.ru/doc/platform/developmentapl/development-tools/builder/
 
 Техническая документация: https://online.sbis.ru/shared/disk/2f1f267b-f1e0-4955-9a39-fbb9786084b5
