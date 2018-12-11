@@ -71,6 +71,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const
             privatePartsCache = taskParameters.cache.getCompiledEsModuleCache(moduleInfo.name),
             sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
+
+         // кэш шаблонов также необходим, среди них могут быть приватные части библиотеки.
+         const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
+         Object.keys(markupCache).forEach((currentKey) => {
+            privatePartsCache[currentKey] = markupCache[currentKey];
+         });
          await pMap(
             libraries,
             async(library) => {
@@ -117,6 +123,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
                   ));
                }
+               library.library = true;
                this.push(library);
             },
             {

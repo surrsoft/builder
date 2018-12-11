@@ -168,7 +168,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const [error, minified] = await execInPool(taskParameters.pool, 'uglifyJs', [
                   file.path,
                   minText,
-                  false
+                  file.library
                ]);
                if (error) {
                   taskParameters.cache.markFileAsFailed(file.history[0]);
