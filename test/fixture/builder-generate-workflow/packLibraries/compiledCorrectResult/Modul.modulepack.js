@@ -13,6 +13,7 @@ define('Modul/Modul', [
 ], function (tslib_1, require, exports) {
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
+        exports['Modul/_es6/Modul2'] = true;
         var Modul_2 = function () {
         var exports = {};
         var result = function (require, exports, tslib_1) {
@@ -30,13 +31,18 @@ define('Modul/Modul', [
             }
             exports.default = prepareOptions;
         }(require, exports, tslib_1);
-        for (var property in result) {
-            if (result.hasOwnProperty(property)) {
-                exports[property] = result[property];
+        if (result instanceof Function) {
+            return result;
+        } else {
+            for (var property in result) {
+                if (result.hasOwnProperty(property)) {
+                    exports[property] = result[property];
+                }
             }
         }
         return exports;
     }();
+        exports['Modul/_es5/Module'] = true;
         var Module_js_1 = function () {
         var exports = {};
         var result = function (require, exports, tslib_1, Modul_2) {
@@ -46,13 +52,18 @@ define('Modul/Modul', [
                 default: Modul_2
             };
         }(require, exports, tslib_1, Modul_2);
-        for (var property in result) {
-            if (result.hasOwnProperty(property)) {
-                exports[property] = result[property];
+        if (result instanceof Function) {
+            return result;
+        } else {
+            for (var property in result) {
+                if (result.hasOwnProperty(property)) {
+                    exports[property] = result[property];
+                }
             }
         }
         return exports;
     }();
+        exports['Modul/_es6/Modul'] = true;
         var Modul_es_1 = function () {
         var exports = {};
         var result = function (require, exports, Module_js_1) {
@@ -65,9 +76,13 @@ define('Modul/Modul', [
             }
             exports.someTest = someTest;
         }(require, exports, Module_js_1);
-        for (var property in result) {
-            if (result.hasOwnProperty(property)) {
-                exports[property] = result[property];
+        if (result instanceof Function) {
+            return result;
+        } else {
+            for (var property in result) {
+                if (result.hasOwnProperty(property)) {
+                    exports[property] = result[property];
+                }
             }
         }
         return exports;
