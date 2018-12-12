@@ -63,10 +63,11 @@ function generateBuildWorkflowOnChange(processArgv) {
 
 function generateTaskForBuildFile(taskParameters, filePath) {
    let currentModuleInfo;
-   let sbis3ControlsPath = '';
    const pathsForImportSet = new Set();
    let filePathInProject = filePath;
+   const gulpModulesPaths = {};
    for (const moduleInfo of taskParameters.config.modules) {
+      gulpModulesPaths[moduleInfo.name] = moduleInfo.path;
       if (!currentModuleInfo) {
          let relativePath = path.relative(moduleInfo.path, filePath);
 
@@ -84,12 +85,11 @@ function generateTaskForBuildFile(taskParameters, filePath) {
          }
       }
       pathsForImportSet.add(path.dirname(moduleInfo.path));
-      if (path.basename(moduleInfo.path) === 'SBIS3.CONTROLS') {
-         sbis3ControlsPath = moduleInfo.path;
-      }
    }
-
-   const pathsForImport = [...pathsForImportSet];
+   const gulpModulesInfo = {
+      pathsForImport: [...pathsForImportSet],
+      gulpModulesPaths
+   };
    if (!currentModuleInfo) {
       logger.info(`Файл ${filePathInProject} вне проекта`);
       return function buildModule(done) {
@@ -111,7 +111,7 @@ function generateTaskForBuildFile(taskParameters, filePath) {
                }
             })
          )
-         .pipe(compileLess(taskParameters, currentModuleInfo, sbis3ControlsPath, pathsForImport))
+         .pipe(compileLess(taskParameters, currentModuleInfo, gulpModulesInfo))
          .pipe(
             gulpRename((file) => {
                file.dirname = transliterate(file.dirname);

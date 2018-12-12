@@ -68,6 +68,10 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
             }
@@ -650,6 +654,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Router',
                path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
             },
             {
                name: 'WS.Data',

@@ -108,6 +108,9 @@ function initWs() {
          },
          'WS.Data': {
             path: path.join(appRoot, 'WS.Data')
+         },
+         Inferno: {
+            path: path.join(appRoot, 'Inferno')
          }
       }
    };

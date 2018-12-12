@@ -76,7 +76,7 @@ class BuildConfiguration {
       this.deprecatedWebPageTemplates = false;
 
       // build old xml-type dynamic templates to AMD-type javascript code. Option is deprecated.
-      this.deprecatedXhtml = true;
+      this.deprecatedXhtml = false;
 
       // pack component's own dependencies. Option is deprecated.
       this.deprecatedOwnDependencies = false;
@@ -101,6 +101,9 @@ class BuildConfiguration {
 
       // copy sources to output directory
       this.sources = true;
+
+      // paste "resources" prefix to links
+      this.resourcesUrl = true;
    }
 
    /**
@@ -185,6 +188,11 @@ class BuildConfiguration {
       // source flag
       if (this.rawConfig.hasOwnProperty('sources') && typeof this.rawConfig.sources === 'boolean') {
          this.sources = this.rawConfig.sources;
+      }
+
+      // resourcesUrl flag
+      if (this.rawConfig.hasOwnProperty('resourcesUrl') && typeof this.rawConfig.resourcesUrl === 'boolean') {
+         this.resourcesUrl = this.rawConfig.resourcesUrl;
       }
    }
 

@@ -79,17 +79,26 @@ function generateTaskForBuildModules(taskParameters) {
 
 function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-   let sbis3ControlsPath = '';
-   if (modulesMap.has('SBIS3.CONTROLS')) {
-      sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
-   }
    const hasLocalization = taskParameters.config.localizations.length > 0;
 
    const pathsForImportSet = new Set();
    for (const modulePath of modulesMap.values()) {
       pathsForImportSet.add(path.dirname(modulePath));
    }
-   const pathsForImport = [...pathsForImportSet];
+
+   /**
+    * Воркер не может принимать мапы в качестве аргумента для функции,
+    * только объекты.
+    * @type {{}}
+    */
+   const gulpModulesPaths = {};
+   for (const currentModuleName of modulesMap.keys()) {
+      gulpModulesPaths[currentModuleName] = modulesMap.get(currentModuleName);
+   }
+   const gulpModulesInfo = {
+      pathsForImport: [...pathsForImportSet],
+      gulpModulesPaths
+   };
 
    return function buildModule() {
       return (
@@ -116,7 +125,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(
                gulpIf(
                   taskParameters.config.less,
-                  compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport)
+                  compileLess(taskParameters, moduleInfo, gulpModulesInfo)
                )
             )
             .pipe(

@@ -36,6 +36,7 @@ function copyWS() {
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View')),
       new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom')),
       new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router')),
+      new ModuleInfo('Inferno', '', path.join(nodeModulesPath, 'sbis3-ws/Inferno')),
       new ModuleInfo('Controls', '', path.join(nodeModulesPath, 'sbis3-controls/Controls'))
    ];
    const taskParameters = new TaskParameters(config, null);
