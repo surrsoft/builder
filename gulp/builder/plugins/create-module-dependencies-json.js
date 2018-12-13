@@ -84,7 +84,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (ext === '.json') {
                   return prettyPath.replace(ext, `${ext}.min.js`);
                }
-               return prettyPath.replace(ext, `.min${ext}`);
+
+               if (!prettyPath.endsWith(`.min${ext}`)) {
+                  return prettyPath.replace(ext, `.min${ext}`);
+               }
+               return prettyPath;
             };
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
