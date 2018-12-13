@@ -76,6 +76,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
+
+               /**
+                * для json генерируется AMD-обёртка, поэтому путь надо генерировать
+                * соответствующий AMD-модулю
+                 */
+               if (ext === '.json') {
+                  return prettyPath.replace(ext, `${ext}.min.js`);
+               }
                return prettyPath.replace(ext, `.min${ext}`);
             };
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
