@@ -74,16 +74,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    }
 
    /**
-    * Даже приложения с одиночным сервисом могут быть помечены как
-    * multi-service. Потому нам надо проверять через наличие
-    * /service/ в названии сервиса, так мы сможем отличить служебный
-    * сервис от названия сервиса, по которому просится статика приложения
+    * Нам надо проверять через наличие /service/ в названии сервиса, так мы сможем
+    * отличить служебный сервис от названия сервиса, по которому просится статика приложения
     */
    if (!taskParameters.config.urlServicePath.includes('/service')) {
       applicationRoot = helpers.unixifyPath(
          path.join(taskParameters.config.urlServicePath, applicationRoot)
       );
    }
+   const applicationRootParams = {
+      applicationRoot,
+      isMultiService: taskParameters.config.multiService
+   };
    return through.obj(
 
       /* @this Stream */
@@ -149,7 +151,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         gulpModulesInfo,
                         currentLessFile.isLangCss || !isThemedLess,
                         allThemes,
-                        applicationRoot
+                        applicationRootParams
                      ],
                      currentLessFile.history[0],
                      moduleInfo
