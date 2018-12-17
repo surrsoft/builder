@@ -281,7 +281,8 @@ class Cache {
     * @returns {string[]}
     */
    getInputPathsByFolder(modulePath) {
-      return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(modulePath));
+      const prettyModulePath = helpers.prettifyPath(modulePath);
+      return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(prettyModulePath));
    }
 
    /**
