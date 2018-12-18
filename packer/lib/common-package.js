@@ -351,38 +351,45 @@ async function limitingNativePackFiles(
                   root,
                   application
                );
-               const jsIsPackageOutput = fullPath === packageConfig.outputFile;
 
-               /**
-                * 1)Мы не должны удалять модуль, если в него будет записан результат паковки.
-                * 2)Все компоненты должны удаляться только в рамках Интерфейсного модуля, в котором
-                * строится кастомный пакет.
-                */
-               if (
-                  fullPath &&
-                  !taskParameters.config.sources &&
-                  !jsIsPackageOutput &&
-                  fullPath.startsWith(packageConfig.moduleOutput)
-               ) {
-                  taskParameters.filesToRemove.push(fullPath);
-                  logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
-                  helpers.removeFileFromVersionedMeta(
-                     taskParameters.versionedModules[packageConfig.moduleName],
-                     fullPath
-                  );
+               if (fullPath) {
+                  /**
+                   * путь может содержать min.original.js, надо проверять конкретно .min.js
+                   * на совпадение с путём до кастомного пакета
+                   * @type {boolean}
+                   */
+                  const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
 
                   /**
-                   * Если был запакован .min.original.js, тогда можно ещё удалить и
-                   * .min.js, поскольку он нам теперь тоже не нужен.
+                   * 1)Мы не должны удалять модуль, если в него будет записан результат паковки.
+                   * 2)Все компоненты должны удаляться только в рамках Интерфейсного модуля, в котором
+                   * строится кастомный пакет.
                    */
-                  if (fullPath.endsWith('.original.js')) {
-                     const replacedPath = fullPath.replace(/\.original\.js$/, '.js');
-                     taskParameters.filesToRemove.push(replacedPath);
+                  if (
+                     !taskParameters.config.sources &&
+                     !jsIsPackageOutput &&
+                     fullPath.startsWith(packageConfig.moduleOutput)
+                  ) {
+                     taskParameters.filesToRemove.push(fullPath);
                      logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
                      helpers.removeFileFromVersionedMeta(
                         taskParameters.versionedModules[packageConfig.moduleName],
-                        replacedPath
+                        fullPath
                      );
+
+                     /**
+                      * Если был запакован .min.original.js, тогда можно ещё удалить и
+                      * .min.js, поскольку он нам теперь тоже не нужен.
+                      */
+                     if (fullPath.endsWith('.original.js')) {
+                        const replacedPath = fullPath.replace(/\.original\.js$/, '.js');
+                        taskParameters.filesToRemove.push(replacedPath);
+                        logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
+                        helpers.removeFileFromVersionedMeta(
+                           taskParameters.versionedModules[packageConfig.moduleName],
+                           replacedPath
+                        );
+                     }
                   }
                }
             } catch (error) {
