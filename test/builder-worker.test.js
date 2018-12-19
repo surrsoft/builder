@@ -72,7 +72,7 @@ describe('gulp/common/worker.js', () => {
          ]);
          resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.imports.length.should.equal(3);
          resultsBuildLess[0].compiled.text.should.equal('');
       } finally {
          await clearWorkspace();
@@ -125,7 +125,7 @@ describe('gulp/common/worker.js', () => {
          ]);
          resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.imports.length.should.equal(3);
          resultsBuildLess[0].compiled.text.should.equal(
             ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );

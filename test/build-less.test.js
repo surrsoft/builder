@@ -39,7 +39,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal('');
    });
    it('less with defau`lt theme', async() => {
@@ -51,7 +51,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
    it('less from retail', async() => {
@@ -64,7 +64,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
    it('less from retail with presto theme', async() => {
@@ -77,7 +77,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
@@ -89,7 +89,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
 
@@ -210,7 +210,7 @@ describe('build less', () => {
          text
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
@@ -227,9 +227,9 @@ describe('build less', () => {
       };
       const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
 
-      result[0].compiled.imports.length.should.equal(2);
+      result[0].compiled.imports.length.should.equal(3);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
-      result[2].compiled.imports.length.should.equal(2);
+      result[2].compiled.imports.length.should.equal(3);
       result[2].compiled.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
       );
