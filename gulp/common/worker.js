@@ -79,7 +79,8 @@ try {
       runMinifyCss = require('../../lib/run-minify-css'),
       runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
       uglifyJs = require('../../lib/run-uglify-js'),
-      { wrapWorkerFunction } = require('./helpers');
+      { wrapWorkerFunction } = require('./helpers'),
+      { packLibrary } = require('../../lib/pack/library-packer');
 
    let componentsProperties;
 
@@ -192,7 +193,8 @@ try {
       minifyCss: wrapWorkerFunction(runMinifyCss),
       minifyXhtmlAndHtml: wrapWorkerFunction(runMinifyXhtmlAndHtml),
       uglifyJs: wrapWorkerFunction(uglifyJs),
-      collectWords: wrapWorkerFunction(collectWords)
+      collectWords: wrapWorkerFunction(collectWords),
+      packLibrary: wrapWorkerFunction(packLibrary)
    });
 } catch (workerInitError) {
    logger.error({
