@@ -40,9 +40,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
                moduleInfo
             });
+            const
+               currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop(),
+               moduleMeta = JSON.stringify(moduleInfo.contents.modules[currentModuleName]);
 
+            const moduleMetaFile = new Vinyl({
+               path: '.builder/module.js',
+               contents: Buffer.from(`define('${currentModuleName}/.builder/module.js',[],function(){return ${moduleMeta};});`),
+               moduleInfo
+            });
             this.push(contentsJsFile);
             this.push(contentsJsonFile);
+            this.push(moduleMetaFile);
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",
