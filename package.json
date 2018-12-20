@@ -53,6 +53,7 @@
       "tensor-xmldom": "0.2.0-b9",
       "through2": "2.0.3",
       "typescript": "^3.0.3",
+      "saby-typescript": "git+https://github.com:saby/TypeScript.git#rc-3.19.100",
       "uglify-js": "3.3.23",
       "vinyl": "2.2.0",
       "workerpool": "2.3.0"
@@ -72,8 +73,7 @@
       "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-3.19.100",
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-3.19.100",
       "Router": "git+ssh://git@platform-git.sbis.ru:saby/router.git#rc-3.19.100",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.19.100",
-      "saby-typescript": "git+https://github.com:saby/TypeScript.git#rc-3.19.100"
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-3.19.100"
    },
    "engines": {
       "node": ">=8.9.3"
