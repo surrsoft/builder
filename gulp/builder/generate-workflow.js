@@ -63,7 +63,6 @@ function generateWorkflow(processArgv) {
 
       generateTaskForRemoveFiles(taskParameters),
       generateTaskForSaveCache(taskParameters),
-      generateTaskForTerminatePool(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
