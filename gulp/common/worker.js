@@ -7,10 +7,10 @@
 'use strict';
 
 /**
- * Попытаемся получить текущую рабочую директорию Node.js.
- * Если произойдёт ошибка, возьмём в качестве CWD директорию
- * основного процесса Node.js, которую мы получим из окружения
- * пула воркеров
+ * Trying to get worker's working directory.
+ * If occurs an error, we will get working
+ * directory from node.js main process cwd
+ * stashed in workerpool environment
  * @returns {*}
  */
 function checkCWDAvailability() {
@@ -18,8 +18,7 @@ function checkCWDAvailability() {
       const currentDir = process.cwd();
       return currentDir;
    } catch (error) {
-      console.log('cwd потеряна. Скорее всего директория, из которой был запущен воркер, была удалена.' +
-         'В таком случае возьмём cwd основного процесса Node.js');
+      console.log('cwd lost. Probably directory of current node.js process was removed.');
       return false;
    }
 }
@@ -28,7 +27,7 @@ function checkCWDAvailability() {
 Error.stackTraceLimit = 100;
 
 if (!checkCWDAvailability()) {
-   console.log('Меняем cwd воркера на cwd основного процесса Node.js');
+   console.log('Changing worker\'s cwd to node.js main process cwd');
    process.chdir(process.env['main-process-cwd']);
 }
 
@@ -41,7 +40,7 @@ const needInitWs = process.env['init-ws'] === 'true';
 try {
    process.on('unhandledRejection', (reason, p) => {
       console.log(
-         "[00:00:00] [ERROR] Критическая ошибка в работе worker'а. ",
+         "[00:00:00] [ERROR] worker's critical error.",
          'Unhandled Rejection at:\n',
          p,
          '\nreason:\n',
@@ -79,7 +78,8 @@ try {
       runMinifyCss = require('../../lib/run-minify-css'),
       runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
       uglifyJs = require('../../lib/run-uglify-js'),
-      { wrapWorkerFunction } = require('./helpers');
+      { wrapWorkerFunction } = require('./helpers'),
+      { packLibrary } = require('../../lib/pack/library-packer');
 
    let componentsProperties;
 
@@ -192,7 +192,8 @@ try {
       minifyCss: wrapWorkerFunction(runMinifyCss),
       minifyXhtmlAndHtml: wrapWorkerFunction(runMinifyXhtmlAndHtml),
       uglifyJs: wrapWorkerFunction(uglifyJs),
-      collectWords: wrapWorkerFunction(collectWords)
+      collectWords: wrapWorkerFunction(collectWords),
+      packLibrary: wrapWorkerFunction(packLibrary)
    });
 } catch (workerInitError) {
    logger.error({
