@@ -31,7 +31,6 @@ function copyWS() {
    config.modules = [
       new ModuleInfo('ws', '', path.join(nodeModulesPath, 'sbis3-ws/ws')),
       new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data')),
-      new ModuleInfo('Data', '', path.join(nodeModulesPath, 'ws-data/Data')),
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View')),
       new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom')),
       new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router')),
