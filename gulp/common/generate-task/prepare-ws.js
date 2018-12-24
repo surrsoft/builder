@@ -22,7 +22,7 @@ const {
    generateTaskForTerminatePool
 } = require('../helpers');
 
-const wsModulesNames = ['ws', 'WS.Core', 'Core', 'View', 'Vdom', 'Controls', 'Router', 'Inferno', 'WS.Data', 'Data'];
+const wsModulesNames = ['ws', 'WS.Core', 'View', 'Vdom', 'Controls', 'Router', 'Inferno', 'WS.Data', 'Data', 'Types'];
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -48,7 +48,10 @@ function generateTaskForPrepareWS(taskParameters) {
    const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {
 
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1
+      maxWorkers: os.cpus().length - 1 || 1,
+      env: {
+         'main-process-cwd': process.cwd()
+      }
    });
 
    const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false, pool);

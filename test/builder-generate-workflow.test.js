@@ -666,6 +666,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Controls',
                path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
             }
          ]
       };
