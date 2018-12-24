@@ -301,9 +301,8 @@ function onlyForIE10AndAbove(content, modName) {
    if (ifConditionThemes) {
       const indexVar = content.indexOf('var style = document.createElement(');
       return `${ifCondition + content.slice(0, indexVar) + ifConditionThemes + content.slice(indexVar)}}`;
-   } else {
-      return `${ifCondition + content}}`;
    }
+   return `${ifCondition + content}}`;
 }
 
 /**
@@ -342,9 +341,8 @@ head.appendChild(style);\
 function rebaseUrls(root, sourceFile, content, resourceRoot) {
    if (resourceRoot) {
       return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot);
-   } else {
-      return rebaseUrlsToAbsolutePath(root, sourceFile, content);
    }
+   return rebaseUrlsToAbsolutePath(root, sourceFile, content);
 }
 
 

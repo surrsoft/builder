@@ -116,9 +116,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
  */
 async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName) {
    const isOfflineClient = await checkItIsOfflineClient(applicationRoot);
-   const jsForPack = orderQueue.js.filter((node) => {
-      return node.amd;
-   });
+   const jsForPack = orderQueue.js.filter(node => node.amd);
    const cssForPack = orderQueue.css
       .filter(function removeControls(module) {
          // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
