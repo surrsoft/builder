@@ -43,16 +43,7 @@ function getNameModule(pathModule) {
  * @returns {String} - путь до словаря.
  */
 function getPathDict(name, lang, applicationRoot) {
-   let realName = name;
-
-   // Когда ws станет интерфейсным модулем можно удалить.
-   if (realName === 'WS') {
-      realName = 'ws';
-   } else {
-      realName = `${realName}`;
-   }
-
-   return path.normalize(path.join(applicationRoot, realName, 'lang', lang, `${lang}.js`));
+   return path.normalize(path.join(applicationRoot, name, 'lang', lang, `${lang}.js`));
 }
 
 /**
