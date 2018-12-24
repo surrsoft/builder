@@ -8,8 +8,7 @@
       "gulp/",
       "lib/",
       "packer/",
-      "resources/",
-      "Tasks/"
+      "resources/"
    ],
    "scripts": {
       "build": "npm run build:verify && npm run build:only",
