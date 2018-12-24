@@ -11,7 +11,6 @@ const
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
    anyModulePath = path.join(workspaceFolder, 'AnyModule'),
-   sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
    pathsForImport = [workspaceFolder],
    themes = {
       'online': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
@@ -24,17 +23,34 @@ describe('build less', () => {
       await initTest();
    });
 
+   const gulpModulesInfo = {
+      pathsForImport,
+      gulpModulesPaths: {
+         'SBIS3.CONTROLS': path.join(workspaceFolder, 'SBIS3.CONTROLS'),
+         'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+      }
+   };
    it('empty less', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '';
-      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, false, themes);
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal('');
    });
    it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, false, themes);
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
@@ -42,7 +58,12 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, true, {});
+      const lessInfo = {
+         modulePath: retailModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
@@ -50,22 +71,24 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport, true, {});
+      const lessInfo = {
+         modulePath: retailModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
       const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(
+      const lessInfo = {
+         modulePath: path.join(workspaceFolder, 'SBIS3.CONTROLS'),
          filePath,
-         text,
-         sbis3ControlsPath,
-         sbis3ControlsPath,
-         pathsForImport,
-         false,
-         themes
-      );
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
@@ -74,8 +97,13 @@ describe('build less', () => {
    it('less with error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text
+      };
 
-      const results = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, false, themes);
+      const results = await buildLess(lessInfo, gulpModulesInfo, false, themes);
 
       // заменяем слеши, иначе не сравнить на linux и windows одинаково
       const errorMessage = results[0].error.replace(/\\/g, '/');
@@ -90,8 +118,13 @@ describe('build less', () => {
    it('less with error from SBIS3.CONTROLS', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text
+      };
 
-      const results = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, false, themes);
+      const results = await buildLess(lessInfo, gulpModulesInfo, false, themes);
 
       // заменяем слеши, иначе не сравнить на linux и windows одинаково
       const errorMessage = results[0].error.replace(/\\/g, '/');
@@ -106,20 +139,17 @@ describe('build less', () => {
    it('less with internal error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
       const text = '@import "Error";';
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text
+      };
       const lessErrorsByThemes = [];
       Object.keys(themes).forEach((currentTheme) => {
          lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
       });
 
-      const compiledResult = await buildLess(
-         filePath,
-         text,
-         anyModulePath,
-         sbis3ControlsPath,
-         pathsForImport,
-         false,
-         themes
-      );
+      const compiledResult = await buildLess(lessInfo, gulpModulesInfo, false, themes);
 
       // заменяем слеши, иначе не сравнить на linux и windows одинаково
       const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
@@ -136,7 +166,12 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes/presto/_variables.less');
       const text = '';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
+      const lessInfo = {
+         modulePath: retailModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
@@ -144,7 +179,12 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, '_less/themes/presto/normal.less');
       const text = '';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
+      const lessInfo = {
+         modulePath: retailModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
@@ -152,14 +192,24 @@ describe('build less', () => {
       const retailModulePath = path.join(workspaceFolder, 'Retail');
       const filePath = path.join(retailModulePath, 'themes\\presto\\_less\\normal.less');
       const text = '';
-      const result = await buildLess(filePath, text, retailModulePath, sbis3ControlsPath, pathsForImport);
+      const lessInfo = {
+         modulePath: retailModulePath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
    it('less from ws', async() => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, wsPath, sbis3ControlsPath, pathsForImport, false, themes);
+      const lessInfo = {
+         modulePath: wsPath,
+         filePath,
+         text
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
@@ -169,7 +219,13 @@ describe('build less', () => {
    it('less with all theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await buildLess(filePath, text, anyModulePath, sbis3ControlsPath, pathsForImport, false, themes);
+      const lessInfo = {
+         modulePath: anyModulePath,
+         filePath,
+         text,
+         themes: true
+      };
+      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
 
       result[0].compiled.imports.length.should.equal(2);
       result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");

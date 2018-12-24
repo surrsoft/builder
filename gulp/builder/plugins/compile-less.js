@@ -35,11 +35,10 @@ function checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyle
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {string} sbis3ControlsPath путь до модуля SBIS3.CONTROLS. нужно для поиска тем
  * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport) {
+module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesInfo) {
    const getOutput = function(file, replacingExt) {
       const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
@@ -67,14 +66,26 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
    let applicationRoot = '';
 
    /**
-    * Даже приложения с одиночным сервисом могут быть помечены как
-    * multi-service. Потому нам надо проверять через наличие
-    * /service/ в названии сервиса, так мы сможем отличить служебный
-    * сервис от названия сервиса, по которому просится статика приложения
+    * если приложение требует в пути до статики прописать resources, будем
+    * прописывать. В противном случае будем работать с путями в линках прямо от корня.
+    */
+   if (taskParameters.config.resourcesUrl) {
+      applicationRoot = '/resources/';
+   }
+
+   /**
+    * Нам надо проверять через наличие /service/ в названии сервиса, так мы сможем
+    * отличить служебный сервис от названия сервиса, по которому просится статика приложения
     */
    if (!taskParameters.config.urlServicePath.includes('/service')) {
-      applicationRoot = taskParameters.config.urlServicePath;
+      applicationRoot = helpers.unixifyPath(
+         path.join(taskParameters.config.urlServicePath, applicationRoot)
+      );
    }
+   const applicationRootParams = {
+      applicationRoot,
+      isMultiService: taskParameters.config.multiService
+   };
    return through.obj(
 
       /* @this Stream */
@@ -126,18 +137,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
             async(currentLessFile) => {
                try {
                   const isThemedLess = checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles);
+                  const lessInfo = {
+                     filePath: currentLessFile.history[0],
+                     modulePath: moduleInfo.path,
+                     text: currentLessFile.contents.toString(),
+                     themes: taskParameters.config.themes
+                  };
                   const [error, results] = await execInPool(
                      taskParameters.pool,
                      'buildLess',
                      [
-                        currentLessFile.history[0],
-                        currentLessFile.contents.toString(),
-                        moduleInfo.path,
-                        sbis3ControlsPath,
-                        pathsForImport,
+                        lessInfo,
+                        gulpModulesInfo,
                         currentLessFile.isLangCss || !isThemedLess,
                         allThemes,
-                        applicationRoot
+                        applicationRootParams
                      ],
                      currentLessFile.history[0],
                      moduleInfo
@@ -160,11 +174,22 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, sbis3Control
                         if (result.ignoreMessage) {
                            logger.debug(result.ignoreMessage);
                         } else if (result.error) {
-                           logger.error({
+                           /**
+                            * результат с ключём 0 - это всегда less для старой
+                            * схемы темизации. Для всех остальных ключей(1 и т.д.)
+                            * задана новая схема темизации. Для новой схемы темизации
+                            * выдаём warning, для старой темизации железно error.
+                            */
+                           const errorObject = {
                               message: `Ошибка компиляции less: ${result.error}`,
                               filePath: currentLessFile.history[0],
                               moduleInfo
-                           });
+                           };
+                           if (!result.key) {
+                              logger.error(errorObject);
+                           } else {
+                              logger.warning(errorObject);
+                           }
                         } else {
                            const { compiled } = result;
                            const outputPath = getOutput(currentLessFile, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);

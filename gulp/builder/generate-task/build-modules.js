@@ -79,17 +79,26 @@ function generateTaskForBuildModules(taskParameters) {
 
 function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-   let sbis3ControlsPath = '';
-   if (modulesMap.has('SBIS3.CONTROLS')) {
-      sbis3ControlsPath = modulesMap.get('SBIS3.CONTROLS');
-   }
    const hasLocalization = taskParameters.config.localizations.length > 0;
 
    const pathsForImportSet = new Set();
    for (const modulePath of modulesMap.values()) {
       pathsForImportSet.add(path.dirname(modulePath));
    }
-   const pathsForImport = [...pathsForImportSet];
+
+   /**
+    * Воркер не может принимать мапы в качестве аргумента для функции,
+    * только объекты.
+    * @type {{}}
+    */
+   const gulpModulesPaths = {};
+   for (const currentModuleName of modulesMap.keys()) {
+      gulpModulesPaths[currentModuleName] = modulesMap.get(currentModuleName);
+   }
+   const gulpModulesInfo = {
+      pathsForImport: [...pathsForImportSet],
+      gulpModulesPaths
+   };
 
    return function buildModule() {
       return (
@@ -112,19 +121,11 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
 
-            /**
-             * packLibrary зависит от addComponentInfo, поскольку нам
-             * необходимо правильно записать в кэш информацию о зависимостях
-             * запакованной библиотеки, что нужно делать именно после парсинга
-             * оригинальной скомпиленной библиотеки.
-             */
-            .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
-
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
             .pipe(
                gulpIf(
                   taskParameters.config.less,
-                  compileLess(taskParameters, moduleInfo, sbis3ControlsPath, pathsForImport)
+                  compileLess(taskParameters, moduleInfo, gulpModulesInfo)
                )
             )
             .pipe(
@@ -146,6 +147,15 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization || taskParameters.config.wml, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(taskParameters.config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
+
+            /**
+             * packLibrary зависит от addComponentInfo, поскольку нам
+             * необходимо правильно записать в кэш информацию о зависимостях
+             * запакованной библиотеки, что нужно делать именно после парсинга
+             * оригинальной скомпиленной библиотеки.
+             * Также в библиотеках нужен кэш шаблонов, чтобы паковать приватные части шаблонов.
+             */
+            .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
 
             // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
             .pipe(

@@ -12,34 +12,21 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
-   { packCurrentLibrary } = require('../../../lib/pack/library-packer'),
    pMap = require('p-map'),
+   execInPool = require('../../common/exec-in-pool'),
    helpers = require('../../../lib/helpers'),
    esExt = /\.(es|ts)$/;
 
-/**
- * Возвращает путь до исходного ES файла для анализируемой зависимости.
- * @param {string} sourceRoot - корень UI-исходников
- * @param {array<string>} privateModulesCache - кэш из taskParameters.cache для приватных модулей
- * @param {string} moduleName - имя анализируемой зависимости
- * @returns {string}
- */
-function getSourcePathByModuleName(sourceRoot, privateModulesCache, moduleName) {
-   let result = null;
-   Object.keys(privateModulesCache).forEach((cacheName) => {
-      if (privateModulesCache[cacheName].moduleName === moduleName) {
-         result = cacheName;
-      }
-   });
+function getPrivatePartsCache(taskParameters, moduleInfo) {
+   const
+      privatePartsCache = taskParameters.cache.getCompiledEsModuleCache(moduleInfo.name);
 
-   /**
-    * если не нашли исходник для приватной зависимости в esModulesCache,
-    * значит приватная зависимость - это js-модуль в ES5 формате.
-    */
-   if (!result) {
-      result = `${path.join(sourceRoot, moduleName)}.js`;
-   }
-   return result;
+   // кэш шаблонов также необходим, среди них могут быть приватные части библиотеки.
+   const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
+   Object.keys(markupCache).forEach((currentKey) => {
+      privatePartsCache[currentKey] = markupCache[currentKey];
+   });
+   return privatePartsCache;
 }
 
 /**
@@ -68,21 +55,28 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onFlush(callback) {
-         const
-            privatePartsCache = taskParameters.cache.getCompiledEsModuleCache(moduleInfo.name),
-            sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
+         const sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
          await pMap(
             libraries,
             async(library) => {
-               const privatePartsForCache = [];
-               let result;
-               try {
-                  result = await packCurrentLibrary(
+               const [error, result] = await execInPool(
+                  taskParameters.pool,
+                  'packLibrary',
+                  [
                      sourceRoot,
-                     privatePartsForCache,
                      library.contents.toString(),
-                     privatePartsCache
-                  );
+                     getPrivatePartsCache(taskParameters, moduleInfo)
+                  ],
+                  library.history[0],
+                  moduleInfo
+               );
+               if (error) {
+                  logger.error({
+                     message: 'Ошибка при паковке библиотеки',
+                     error,
+                     filePath: library.history[0]
+                  });
+               } else {
                   library.modulepack = result.compiled;
 
                   /**
@@ -97,25 +91,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      prettyCompiledPath = prettyPath.replace(/\.(ts|es)$/, '.js'),
                      currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
 
-                  if (result.newDependencies) {
+                  if (result.newModuleDependencies) {
                      if (currentModuleStore.componentsInfo[prettyPath]) {
-                        currentModuleStore.componentsInfo[prettyPath].componentDep = result.newDependencies;
+                        currentModuleStore.componentsInfo[prettyPath].componentDep = result.newModuleDependencies;
                      }
-                     if (currentModuleStore.componentsInfo[prettyCompiledPath]) {
-                        currentModuleStore.componentsInfo[prettyCompiledPath].componentDep = result.newDependencies;
+                     const compiledComponentsInfo = currentModuleStore.componentsInfo[prettyCompiledPath];
+                     if (compiledComponentsInfo) {
+                        compiledComponentsInfo.componentDep = result.newModuleDependencies;
                      }
                   }
-               } catch (error) {
-                  logger.error({
-                     message: 'Ошибка при паковке библиотеки',
-                     error,
-                     filePath: library.history[0]
-                  });
-               }
-               if (privatePartsForCache.length > 0) {
-                  taskParameters.cache.addDependencies(library.history[0], privatePartsForCache.map(
-                     dependency => getSourcePathByModuleName(sourceRoot, privatePartsCache, dependency)
-                  ));
+                  if (result.fileDependencies && result.fileDependencies.length > 0) {
+                     taskParameters.cache.addDependencies(library.history[0], result.fileDependencies);
+                  }
+                  library.library = true;
                }
                this.push(library);
             },

@@ -91,9 +91,6 @@ function initWs() {
    const loadContents = global.requirejs('Core/load-contents');
    const appContents = {
       modules: {
-         Core: {
-            path: path.join(appRoot, 'Core')
-         },
          View: {
             path: path.join(appRoot, 'View')
          },
@@ -108,6 +105,12 @@ function initWs() {
          },
          'WS.Data': {
             path: path.join(appRoot, 'WS.Data')
+         },
+         Inferno: {
+            path: path.join(appRoot, 'Inferno')
+         },
+         Types: {
+            path: path.join(appRoot, 'Types')
          }
       }
    };
