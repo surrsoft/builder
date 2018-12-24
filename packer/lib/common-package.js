@@ -24,36 +24,6 @@ function getLoader(type) {
 }
 
 /**
- * Правильное копирование файлов
- * @param {String} source - откуда
- * @param {String} target - куда
- * @param {Function} cb - callback
- */
-function copyFile(source, target, cb) {
-   let cbCalled = false;
-
-   const rd = fs.createReadStream(source);
-   rd.on('error', (err) => {
-      done(err);
-   });
-   const wr = fs.createWriteStream(target);
-   wr.on('error', (err) => {
-      done(err);
-   });
-   wr.on('close', () => {
-      done();
-   });
-   rd.pipe(wr);
-
-   function done(err) {
-      if (!cbCalled) {
-         cb(err);
-         cbCalled = true;
-      }
-   }
-}
-
-/**
  * Подготавливает метаданные модулей графа
  * @param {DepGraph} dg
  * @param {Array} orderQueue - развернутый граф
@@ -249,45 +219,6 @@ function prepareResultQueue(orderQueue, applicationRoot, availableLanguage) {
 }
 
 /**
- * Тот же загрузчик модулей, что использует callback,
- * но зато могёт с промисами
- * @param loader
- * @param module
- * @param base
- * @param availableLanguage
- * @param themeName
- * @returns {Promise<any>}
- */
-function promisifyLoader(
-   loader,
-   module,
-   base,
-   themeName,
-   languageConfig,
-   isGulp,
-   root,
-   application
-) {
-   return new Promise((resolve, reject) => {
-      loader(
-         module,
-         base,
-         (err, result) => {
-            if (err) {
-               return reject(err);
-            }
-            return resolve(result);
-         },
-         themeName,
-         languageConfig,
-         isGulp,
-         root,
-         application
-      );
-   });
-}
-
-/**
  * @callback limitingNativePackFiles~callback
  * @param {Error} error
  * @param {String} [result]
@@ -304,8 +235,7 @@ async function limitingNativePackFiles(
    packageConfig,
    root,
    application,
-   taskParameters,
-   isGulp
+   taskParameters
 ) {
    const
       filesToPack = packageConfig.orderQueue,
@@ -338,8 +268,7 @@ async function limitingNativePackFiles(
             }
 
             try {
-               result[module.fullName] = await promisifyLoader(
-                  getLoader(module.plugin),
+               result[module.fullName] = await getLoader(module.plugin)(
                   module,
                   base,
                   null,
@@ -347,7 +276,6 @@ async function limitingNativePackFiles(
                      availableLanguage,
                      defaultLanguage
                   },
-                  isGulp,
                   root,
                   application
                );
@@ -394,7 +322,7 @@ async function limitingNativePackFiles(
                }
             } catch (error) {
                logger.warning({
-                  message: 'Ошибка при чтении файла во время кастомной паковки',
+                  message: `error loading file for plugin ${module.plugin}`,
                   filePath: fullPath,
                   error
                });
@@ -412,7 +340,5 @@ module.exports = {
    prepareOrderQueue,
    prepareResultQueue,
    limitingNativePackFiles,
-   getLoader,
-   promisifyLoader,
-   copyFile
+   getLoader
 };

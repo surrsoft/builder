@@ -61,8 +61,6 @@ describe('custompack', () => {
             root,
             application,
             configsArray[0],
-            true,
-            true,
             customPackParameters
          );
          result = currentResult;
@@ -88,8 +86,6 @@ describe('custompack', () => {
             root,
             application,
             configsArray[0],
-            true,
-            true,
             customPackParameters
          );
          result = currentResult;
@@ -115,8 +111,6 @@ describe('custompack', () => {
             root,
             application,
             configsArray[0],
-            true,
-            true,
             customPackParameters
          );
          result = currentResult;
@@ -144,10 +138,7 @@ describe('custompack', () => {
       const resultCSS = await rebaseCSS(
          testCssPath,
          applicationRoot,
-         urlServicePath,
-
-         // isGulp
-         true
+         urlServicePath
       );
       removeAllNewLines(resultCSS).should.equal(
          '.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}'
@@ -158,10 +149,7 @@ describe('custompack', () => {
       const resultCSS = await rebaseCSS(
          testCssPath,
          applicationRoot,
-         urlServicePath,
-
-         // isGulp
-         true
+         urlServicePath
       );
       removeAllNewLines(resultCSS).should.equal(
          '.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}'
@@ -182,8 +170,6 @@ describe('custompack', () => {
             root,
             application,
             configsArray[0],
-            true,
-            true,
             customPackParameters
          );
          result = currentResult;
