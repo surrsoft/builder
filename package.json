@@ -1,6 +1,6 @@
 {
    "name": "sbis3-builder",
-   "version": "19.100-BUILD",
+   "version": "19.100.0-BUILD",
    "private": true,
    "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
    "files": [
