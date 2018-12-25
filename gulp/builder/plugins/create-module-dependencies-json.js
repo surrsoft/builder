@@ -67,6 +67,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       /* @this Stream */
       function onFlush(callback) {
          try {
+            const { resourcesUrl } = taskParameters.config;
             const json = {
                links: {},
                nodes: {}
@@ -75,7 +76,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const filePathToRelativeInResources = (filePath) => {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const prettyPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
+               const rebasedRelativePath = resourcesUrl ? path.join('resources', relativePath) : relativePath;
+               const prettyPath = helpers.prettifyPath(transliterate(rebasedRelativePath));
 
                /**
                 * для json генерируется AMD-обёртка, поэтому путь надо генерировать

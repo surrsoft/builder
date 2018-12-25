@@ -25,7 +25,8 @@ describe('custompack', () => {
       versionedModules: {},
       config: {
          localizations: [],
-         sources: true
+         sources: true,
+         resourcesUrl: true
       }
    };
    before(async() => {
@@ -259,7 +260,8 @@ describe('custompack-intersects', () => {
             config: {
                defaultLocalization: '',
                localizations: [],
-               sources: true
+               sources: true,
+               resourcesUrl: true
             }
          },
          results = {

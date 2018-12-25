@@ -358,15 +358,16 @@ async function cssLoader(
    base,
    themeName,
    languageConfig,
-   root,
-   urlServicePath
+   rootConfig
 ) {
    const suffix = themeName ? `__${themeName}` : '';
+   const { application } = rootConfig;
+   const resourcesUrl = rootConfig.resourcesUrl ? 'resources/' : '';
    let modulePath = module.fullPath;
    if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
       modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
-   const resourceRoot = `${path.join(urlServicePath, 'resources/')}`;
+   const resourceRoot = `${path.join(application, resourcesUrl)}`;
    let cssContent = await fs.readFile(modulePath, 'utf8');
    cssContent = rebaseUrls(base, modulePath, cssContent, resourceRoot);
    cssContent = styleTagLoader(cssContent);
