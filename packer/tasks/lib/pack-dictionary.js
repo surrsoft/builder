@@ -42,17 +42,8 @@ function getNameModule(pathModule) {
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {String} - путь до словаря.
  */
-function getPathDict(name, lang, applicationRoot, isGulp) {
-   let realName = name;
-
-   // Когда ws станет интерфейсным модулем можно удалить.
-   if (realName === 'WS') {
-      realName = 'ws';
-   } else {
-      realName = isGulp ? `${realName}` : `resources/${realName}`;
-   }
-
-   return path.normalize(path.join(applicationRoot, realName, 'lang', lang, `${lang}.js`));
+function getPathDict(name, lang, applicationRoot) {
+   return path.normalize(path.join(applicationRoot, name, 'lang', lang, `${lang}.js`));
 }
 
 /**
@@ -146,15 +137,14 @@ function deleteOldDepI18n(deps) {
  * @param {Array} availableLanguage - список необходимых языков.
  * @param {String} nameModule - имя интерфейсного модуля.
  * @param {String} applicationRoot - путь до сервиса.
- * @param {Boolean} isGulp.
  * @returns {Object}
  */
-function getAvailableLanguageModule(availableLanguage, nameModule, applicationRoot, isGulp) {
+function getAvailableLanguageModule(availableLanguage, nameModule, applicationRoot) {
    const availableLang = {};
 
    availableLanguage.forEach((lang) => {
       // eslint-disable-next-line no-sync
-      if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot, isGulp))) {
+      if (fs.existsSync(getPathDict(nameModule, lang, applicationRoot))) {
          availableLang[lang] = true;
       }
    });
@@ -168,7 +158,7 @@ function getAvailableLanguageModule(availableLanguage, nameModule, applicationRo
  * @param {String} applicationRoot - путь до сервиса.
  * @returns {Array}
  */
-async function packCustomDict(modules, applicationRoot, depsTree, availableLanguage, isGulp) {
+async function packCustomDict(modules, applicationRoot, depsTree, availableLanguage) {
    let resultPackage = [];
    let modDepend;
    if (depsTree) {
@@ -190,15 +180,10 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
             if (linkModules.hasOwnProperty(module.fullName)) {
                linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
                moduleName = getNameModule(module.fullPath);
-               let langPath;
-               if (isGulp) {
-                  langPath = path.join(applicationRoot, moduleName, 'lang');
-               } else {
-                  langPath = path.join(applicationRoot, 'resources', moduleName, 'lang');
-               }
+               const langPath = path.join(applicationRoot, moduleName, 'lang');
                if (modulesI18n.hasOwnProperty(moduleName)) {
                   linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                  module.addDeps = modulesI18n[moduleName].fullName;
+                  module.defaultLocalization = modulesI18n[moduleName].fullName;
                } else if (await fs.pathExists(langPath)) {
                   /**
                    * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
@@ -212,7 +197,7 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
                    */
                   if (module.fullName.includes('/')) {
                      linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                     module.addDeps = modulesI18n[moduleName].fullName;
+                     module.defaultLocalization = modulesI18n[moduleName].fullName;
                   }
                }
             }
@@ -231,8 +216,7 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
          modulesI18n[name].availableDict = getAvailableLanguageModule(
             availableLanguage,
             name,
-            applicationRoot,
-            isGulp
+            applicationRoot
          );
          resultPackage.push(modulesI18n[name]);
       }

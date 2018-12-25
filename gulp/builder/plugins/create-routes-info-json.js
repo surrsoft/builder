@@ -61,10 +61,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             // нужно преобразовать абсолютные пути в исходниках в относительные пути в стенде
             const routesInfoBySourceFiles = taskParameters.cache.getRoutesInfo(moduleInfo.name);
             const resultRoutesInfo = {};
+            const { resourcesUrl } = taskParameters.config;
             Object.keys(routesInfoBySourceFiles).forEach((filePath) => {
                const routeInfo = routesInfoBySourceFiles[filePath];
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
-               const relativeResultPath = helpers.prettifyPath(path.join('resources', transliterate(relativePath)));
+               const rebasedRelativePath = resourcesUrl ? path.join('resources', relativePath) : relativePath;
+               const relativeResultPath = helpers.prettifyPath(transliterate(rebasedRelativePath));
                resultRoutesInfo[relativeResultPath] = routeInfo;
             });
 
