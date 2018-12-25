@@ -20,22 +20,17 @@ let lockFile;
 function generateTaskForLock(taskParameters) {
    const { cachePath } = taskParameters.config;
    return function lock() {
-      return new Promise(async(resolve, reject) => {
+      return new Promise(async(resolve) => {
          await fs.ensureDir(cachePath);
          lockFile = path.join(cachePath, 'builder.lockfile');
 
          const isFileExist = await fs.pathExists(lockFile);
          if (isFileExist) {
-            const errorMessage =
-               'Похоже, что запущен другой процесс builder в этой же папке, попробуйте перезапустить его позже. ' +
-               `Если вы уверены, что предыдущий запуск завершился, то удалите папку '${cachePath}' и перезапустите процесс.`;
-
-            logger.error(errorMessage);
-            reject(new Error(errorMessage));
-            return;
+            taskParameters.cache.previousRunFailed = true;
+         } else {
+            await fs.ensureFile(lockFile);
+            logger.debug(`Создали файл '${lockFile}'`);
          }
-         await fs.ensureFile(lockFile);
-         logger.debug(`Создали файл '${lockFile}'`);
 
          // задаём в логгере информацию о приложении и ответственном
          logger.setBaseInfo(taskParameters.config.rawConfig.cld_name, taskParameters.config.rawConfig.cld_responsible);

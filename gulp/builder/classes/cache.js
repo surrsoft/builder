@@ -27,6 +27,7 @@ class Cache {
       this.currentStore = new StoreInfo();
       this.dropCacheForMarkup = false;
       this.dropCacheForLess = false;
+      this.previousRunFailed = false;
 
       // js и less файлы инвалидируются с зависимостями
       // less - зависмости через import
@@ -72,6 +73,10 @@ class Cache {
     */
    async cacheHasIncompatibleChanges() {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
+      if (this.previousRunFailed) {
+         logger.info(`В директории кэша с предыдущей сборки остался файл builder.lockfile. ${finishText}`);
+         return true;
+      }
       if (this.lastStore.versionOfBuilder === 'unknown') {
          logger.info(`Не удалось обнаружить валидный кеш от предыдущей сборки. ${finishText}`);
          return true;
