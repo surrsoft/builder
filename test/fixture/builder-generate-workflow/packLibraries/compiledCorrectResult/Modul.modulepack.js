@@ -14,7 +14,7 @@ define('Modul/Modul', [
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
         exports['Modul/_es6/Modul2'] = true;
-        var Modul_2 = function () {
+        var Modul__es6_Modul2 = function () {
         var exports = {};
         var result = function (require, exports, tslib_1) {
             'use strict';
@@ -43,7 +43,7 @@ define('Modul/Modul', [
         return exports;
     }();
         exports['Modul/_es5/Module'] = true;
-        var Module_js_1 = function () {
+        var Modul__es5_Module = function () {
         var exports = {};
         var result = function (require, exports, tslib_1, Modul_2) {
             'use strict';
@@ -51,7 +51,7 @@ define('Modul/Modul', [
                 Modul_1: Modul_2,
                 default: Modul_2
             };
-        }(require, exports, tslib_1, Modul_2);
+        }(require, exports, tslib_1, Modul__es6_Modul2);
         if (result instanceof Function) {
             return result;
         } else {
@@ -64,7 +64,7 @@ define('Modul/Modul', [
         return exports;
     }();
         exports['Modul/_es6/Modul'] = true;
-        var Modul_es_1 = function () {
+        var Modul__es6_Modul = function () {
         var exports = {};
         var result = function (require, exports, Module_js_1) {
             'use strict';
@@ -75,7 +75,7 @@ define('Modul/Modul', [
                 return test1;
             }
             exports.someTest = someTest;
-        }(require, exports, Module_js_1);
+        }(require, exports, Modul__es5_Module);
         if (result instanceof Function) {
             return result;
         } else {
@@ -87,6 +87,7 @@ define('Modul/Modul', [
         }
         return exports;
     }();
+        var Modul_es_1 = Modul__es6_Modul;
     exports.default = Modul_es_1.default;
     
     return exports;
