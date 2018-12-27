@@ -50,7 +50,7 @@ async function nativePackFiles(filesToPack, base, themeName) {
    }
    const results = await pMap(
       filesToPack,
-      module => commonPackage.promisifyLoader(commonPackage.getLoader(module.plugin), module, base, themeName),
+      module => commonPackage.getLoader(module.plugin)(module, base, themeName),
       { concurrency: 10 }
    );
    return results.reduce(function concat(res, modContent) {
@@ -116,23 +116,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
  */
 async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName) {
    const isOfflineClient = await checkItIsOfflineClient(applicationRoot);
-   const jsForPack = orderQueue.js.filter((node) => {
-      /** TODO
-       * выпилить костыль после того, как научимся паковать пакеты для статических пакетов
-       * после кастомной паковки. Модули WS.Data в связи с новой системой паковки в пакеты
-       * не включаем по умолчанию. После доработки статической паковки будем учитывать
-       * модули в бандлах по аналогии с rtpackage
-       */
-      const wsDatareg = /WS\.Data/;
-      if (
-         (node.fullName && node.fullName.match(wsDatareg)) ||
-         (node.moduleYes && node.moduleYes.fullName.match(wsDatareg))
-      ) {
-         return false;
-      }
-
-      return node.amd;
-   });
+   const jsForPack = orderQueue.js.filter(node => node.amd);
    const cssForPack = orderQueue.css
       .filter(function removeControls(module) {
          // TODO: Написать доку по тому как должны выглядеть и распространяться темы оформления. Это трэщ
@@ -251,7 +235,6 @@ function generatePackage(
    siteRoot,
    needReplacePaths,
    resourcesPath,
-   isGulp,
    namePrefix = ''
 ) {
    if (filesToPack) {
@@ -284,7 +267,7 @@ function generatePackage(
          let newName = `/${path.relative(siteRoot, packedFilePath)}`;
          if (!needReplacePaths) {
             newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
-         } else if (isGulp) {
+         } else {
             newName = helpers.prettifyPath(path.join('/', application, newName));
          }
 
@@ -374,8 +357,7 @@ async function packageSingleHtml(
    buildNumber,
    needReplacePaths,
    resourcesPath,
-   availableLanguage,
-   isGulp = true
+   availableLanguage
 ) {
    const newDom = dom,
       divs = newDom.getElementsByTagName('div'),
@@ -402,7 +384,7 @@ async function packageSingleHtml(
       dg,
       startNodes,
       root,
-      isGulp ? root : path.join(root, application),
+      root,
       themeName,
       htmlName,
       availableLanguage
@@ -436,8 +418,7 @@ async function packageSingleHtml(
                      application,
                      root,
                      needReplacePaths,
-                     resourcesPath,
-                     isGulp
+                     resourcesPath
                   )
                );
             });
@@ -457,7 +438,6 @@ async function packageSingleHtml(
                      root,
                      needReplacePaths,
                      resourcesPath,
-                     isGulp,
                      locale
                   )
                );
@@ -474,8 +454,7 @@ async function packageSingleHtml(
             application,
             root,
             needReplacePaths,
-            resourcesPath,
-            isGulp
+            resourcesPath
          );
          packages[key] = packages[key].concat(generatedScript);
       }
@@ -488,57 +467,4 @@ async function packageSingleHtml(
    return newDom;
 }
 
-async function gruntPackHTML(grunt, dg, htmlFileset, packageHome, root, application, availableLanguage) {
-   logger.debug(`Packing dependencies of ${htmlFileset.length} files...`);
-
-   const buildNumber = grunt.option('versionize');
-   const resourcesPath = grunt.option('url-service-path')
-      ? path.join(root, grunt.option('url-service-path'), 'resources')
-      : path.join(root, application, 'resources');
-
-   // Даннный флаг определяет надо вставить в статическую страничку путь до пакета с конструкцией
-   // %{RESOURCE_ROOT} или абсолютный путь.
-   // false - если у нас разделённое ядро и несколько сервисов.
-   // true - если у нас монолитное ядро или один сервис.
-   const needReplacePaths = !(grunt.option('splitted-core') && grunt.option('multi-service'));
-
-   await pMap(
-      htmlFileset,
-      async(filePath) => {
-         try {
-            logger.debug(filePath);
-
-            let dom = domHelpers.domify(await fs.readFile(filePath, 'utf-8'));
-            dom = await packageSingleHtml(
-               filePath,
-               dom,
-               root,
-               packageHome,
-               dg,
-               application,
-               buildNumber,
-               needReplacePaths,
-               resourcesPath,
-               availableLanguage,
-               false
-            );
-            await fs.outputFile(filePath, domHelpers.stringify(dom));
-         } catch (err) {
-            let newError = err;
-            if (typeof newError === 'string') {
-               newError = new Error(newError);
-            }
-            logger.warning({
-               message: 'ERROR! Failed to process HTML',
-               filePath,
-               error: newError
-            });
-         }
-      },
-      {
-         concurrency: 20
-      }
-   );
-}
-
-module.exports = { gruntPackHTML, packageSingleHtml };
+module.exports = { packageSingleHtml };

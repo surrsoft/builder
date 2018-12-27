@@ -2,15 +2,13 @@
    "name": "sbis3-builder",
    "version": "19.100.0-BUILD",
    "private": true,
-   "description": "Grunt-based builder for SBIS3 web projects / Gulp-based builder for SBIS3 web projects",
+   "description": "Gulp-based builder for SBIS3 web projects",
    "files": [
-      "Gruntfile.js",
       "gulpfile.js",
       "gulp/",
       "lib/",
       "packer/",
-      "resources/",
-      "Tasks/"
+      "resources/"
    ],
    "scripts": {
       "build": "npm run build:verify && npm run build:only",
@@ -32,9 +30,6 @@
       "esprima": "4.0.1",
       "estraverse": "4.2.0",
       "fs-extra": "7.0.0",
-      "grunt": "1.0.3",
-      "grunt-cli": "1.2.0",
-      "grunt-text-replace": "0.4.0",
       "gulp": "4.0.0",
       "gulp-chmod": "2.0.0",
       "gulp-if": "2.0.2",
