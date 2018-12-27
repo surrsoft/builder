@@ -46,7 +46,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             const moduleMetaFile = new Vinyl({
                path: '.builder/module.js',
-               contents: Buffer.from(`define('${currentModuleName}/.builder/module.js',[],function(){return ${moduleMeta};});`),
+               contents: Buffer.from(`define('${currentModuleName}/.builder/module',[],function(){return ${moduleMeta};});`),
                moduleInfo
             });
             this.push(contentsJsFile);
