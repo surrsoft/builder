@@ -8,6 +8,7 @@
 'use strict';
 
 const through = require('through2');
+const helpers = require('../../../lib/helpers');
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
@@ -29,6 +30,37 @@ const extensions = new Set([
    '.map'
 ]);
 
+const deprecatedControlsToSave = [
+   'ModalOverlay',
+   'LoadingIndicator',
+   'ProgressBar',
+   'FieldString',
+   'LinkButton',
+   'Button',
+   'FieldAbstract',
+   'ButtonAbstract',
+   'Menu'
+];
+
+/**
+ * Проверяем WS.Deprecated модули, нам необходимо оставить в папке
+ * Controls только неймспейсы deprecatedControlsToSave
+ * @param{String} fullPath - полный путь до копируемого файла
+ * @returns {boolean} true - не удаляем. false - удаляем.
+ */
+function checkPathForDeprecatedToRemove(fullPath) {
+   if (fullPath.includes('WS.Deprecated/Controls')) {
+      let result = false;
+      deprecatedControlsToSave.forEach((currentControl) => {
+         if (fullPath.includes(`WS.Deprecated/Controls/${currentControl}/`)) {
+            result = true;
+         }
+      });
+      return result;
+   }
+   return true;
+}
+
 /**
  * Объявление плагина
  * @returns {stream}
@@ -36,10 +68,21 @@ const extensions = new Set([
 module.exports = function declarePlugin() {
    return through.obj(
       function onTransform(file, encoding, callback) {
+         const prettyPath = helpers.prettifyPath(file.path);
+
          /**
           * не копируем мета-файлы билдера.
+          * Вычищаем ряд WS.Deprecated модулей и тему online по таргетам Чистова.
+          * WS.Core/lib/Ext также не нужен в оффлайне, там лишь jquery.
+          * TODO удалить эту жесть, когда будут завершены работы по задаче
+          * https://online.sbis.ru/doc/c5c78f1d-2c47-49f3-9320-7606a5e75ed6
           */
-         if (builderMeta.has(file.basename)) {
+         if (
+            builderMeta.has(file.basename) ||
+            !checkPathForDeprecatedToRemove(prettyPath) ||
+            prettyPath.includes('SBIS3.CONTROLS/themes/online') ||
+            prettyPath.includes('WS.Core/lib/Ext')
+         ) {
             callback(null);
             return;
          }
