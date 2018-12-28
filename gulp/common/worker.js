@@ -138,7 +138,6 @@ try {
          fullPath,
          relativeFilePath,
          await readComponentsProperties(componentsPropertiesFilePath),
-         true,
          isMultiService,
          servicesPath
       );
