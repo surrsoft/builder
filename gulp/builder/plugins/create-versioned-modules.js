@@ -46,7 +46,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             Object.keys(versionCache).forEach((currentModule) => {
                versionedModules.push(...versionCache[currentModule]);
             });
-            const versionedModulesPaths = versionedModules.map((currentFile) => {
+            let versionedModulesPaths = versionedModules.map((currentFile) => {
                const
                   prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
@@ -58,6 +58,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (taskParameters.config.contents) {
                versionedModulesPaths.push(`${currentModuleName}/contents.json`);
             }
+
+            /**
+             * нужно удалить из versioned_modules таргеты Чистова, чтобы jinnee не пытался
+             * читать файлы, которых не существует
+             */
+            if (!taskParameters.config.sources) {
+               versionedModulesPaths = versionedModulesPaths.filter(prettyPath => !(prettyPath.includes('SBIS3.CONTROLS/themes/online/') ||
+                     prettyPath.includes('WS.Core/lib/Ext/')));
+            }
+
             const file = new Vinyl({
                path: '.builder/versioned_modules.json',
                contents: Buffer.from(JSON.stringify(versionedModulesPaths.sort(), null, 2)),
