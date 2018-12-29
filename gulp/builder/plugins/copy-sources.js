@@ -65,23 +65,32 @@ function checkPathForDeprecatedToRemove(fullPath) {
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin() {
+module.exports = function declarePlugin(taskParameters) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          const prettyPath = helpers.prettifyPath(file.path);
 
          /**
           * не копируем мета-файлы билдера.
+          */
+         if (builderMeta.has(file.basename)) {
+            callback(null);
+            return;
+         }
+
+         /**
           * Вычищаем ряд WS.Deprecated модулей и тему online по таргетам Чистова.
           * WS.Core/lib/Ext также не нужен в оффлайне, там лишь jquery.
           * TODO удалить эту жесть, когда будут завершены работы по задаче
           * https://online.sbis.ru/doc/c5c78f1d-2c47-49f3-9320-7606a5e75ed6
+          * У Genie намного больше сейчас имеется завязок на WS.Deprecated, планируют
+          * избавиться при переходе на VDOM. Для Genie таргеты не используем.
           */
-         if (
-            builderMeta.has(file.basename) ||
-            !checkPathForDeprecatedToRemove(prettyPath) ||
+         const modules = taskParameters.config.modules.map(moduleInfo => moduleInfo.name);
+         if (!modules.includes('Genie') &&
+            (!checkPathForDeprecatedToRemove(prettyPath) ||
             prettyPath.includes('SBIS3.CONTROLS/themes/online') ||
-            prettyPath.includes('WS.Core/lib/Ext')
+            prettyPath.includes('WS.Core/lib/Ext'))
          ) {
             callback(null);
             return;
