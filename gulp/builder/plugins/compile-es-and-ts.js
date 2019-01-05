@@ -36,10 +36,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             /**
              * Если имеется скомпилированный вариант для typescript или ES6 в исходниках, нам необходимо
              * выкинуть его из потока Gulp, чтобы не возникало ситуации, когда в потоке будут
-             * 2 одинаковых модуля и билдер попытается создать 2 симлинка. Актуально только для сборки в
-             * режиме debug
+             * 2 одинаковых модуля и билдер попытается создать 2 симлинка. Актуально также для релизной
+             * сборки, когда скомпилированный для typescript модуль в исходниках может перебить скомпилированный
+             * билдером typescript модуль.
              */
-            if (file.extname === '.js' && !taskParameters.config.isReleaseMode) {
+            if (file.extname === '.js') {
                const
                   esInSource = await fs.pathExists(file.path.replace(jsExt, '.es')),
                   tsInSource = await fs.pathExists(file.path.replace(jsExt, '.ts'));
