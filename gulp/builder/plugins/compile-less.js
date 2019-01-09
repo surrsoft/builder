@@ -136,7 +136,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
             moduleLess,
             async(currentLessFile) => {
                try {
-                  const isThemedLess = checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles);
+                  /**
+                   * Временное решение для анонимных темизированных css в Controls.
+                   * TODO спилить, как будет внедрен новый механизм разделения тем по Интерфейсным модулям.
+                   * @type {boolean}
+                   */
+                  const isThemedLess = moduleInfo.name === 'Controls' ||
+                     checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles);
                   const lessInfo = {
                      filePath: currentLessFile.history[0],
                      modulePath: moduleInfo.path,
