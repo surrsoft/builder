@@ -111,6 +111,12 @@ function initWs() {
          },
          Types: {
             path: path.join(appRoot, 'Types')
+         },
+         Env: {
+            path: path.join(appRoot, 'Env')
+         },
+         Browser: {
+            path: path.join(appRoot, 'Browser')
          }
       }
    };
