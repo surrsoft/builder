@@ -30,37 +30,6 @@ const extensions = new Set([
    '.map'
 ]);
 
-const deprecatedControlsToSave = [
-   'ModalOverlay',
-   'LoadingIndicator',
-   'ProgressBar',
-   'FieldString',
-   'LinkButton',
-   'Button',
-   'FieldAbstract',
-   'ButtonAbstract',
-   'Menu'
-];
-
-/**
- * Проверяем WS.Deprecated модули, нам необходимо оставить в папке
- * Controls только неймспейсы deprecatedControlsToSave
- * @param{String} fullPath - полный путь до копируемого файла
- * @returns {boolean} true - не удаляем. false - удаляем.
- */
-function checkPathForDeprecatedToRemove(fullPath) {
-   if (fullPath.includes('WS.Deprecated/Controls')) {
-      let result = false;
-      deprecatedControlsToSave.forEach((currentControl) => {
-         if (fullPath.includes(`WS.Deprecated/Controls/${currentControl}/`)) {
-            result = true;
-         }
-      });
-      return result;
-   }
-   return true;
-}
-
 /**
  * Объявление плагина
  * @returns {stream}
@@ -88,9 +57,7 @@ module.exports = function declarePlugin(taskParameters) {
           */
          const modules = taskParameters.config.modules.map(moduleInfo => moduleInfo.name);
          if (!modules.includes('Genie') &&
-            (!checkPathForDeprecatedToRemove(prettyPath) ||
-            prettyPath.includes('SBIS3.CONTROLS/themes/online') ||
-            prettyPath.includes('WS.Core/lib/Ext'))
+            helpers.needToRemoveModuleForDesktop(prettyPath)
          ) {
             callback(null);
             return;

@@ -64,8 +64,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * читать файлы, которых не существует
              */
             if (!taskParameters.config.sources) {
-               versionedModulesPaths = versionedModulesPaths.filter(prettyPath => !(prettyPath.includes('SBIS3.CONTROLS/themes/online/') ||
-                     prettyPath.includes('WS.Core/lib/Ext/')));
+               versionedModulesPaths = versionedModulesPaths.filter(
+                  prettyPath => !helpers.needToRemoveModuleForDesktop(prettyPath)
+               );
             }
 
             const file = new Vinyl({
