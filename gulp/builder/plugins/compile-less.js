@@ -84,7 +84,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    }
    const applicationRootParams = {
       applicationRoot,
-      isMultiService: taskParameters.config.multiService
+      isMultiService: taskParameters.config.multiService,
+      resourcesUrl: taskParameters.config.resourcesUrl
    };
    return through.obj(
 
