@@ -204,7 +204,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                            this.push(newFile);
 
                            /**
-                            * пишем в лог дополнительно информацию о получившихся импортах для каждой скомпиленной lessки.
+                            * пишем в лог дополнительно информацию о получившихся импортах
+                            * для каждой скомпиленной lessки.
                             */
                            const newInfoFile = currentLessFile.clone();
                            newInfoFile.contents = Buffer.from(compiled.importedByBuilder.toString());
