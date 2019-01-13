@@ -52,7 +52,7 @@ const isRegularFile = async(folder, filePath) => {
 function linkPlatform(sourceFolder) {
    const nodeModulesPath = path.join(__dirname, '../node_modules');
    return Promise.all([
-      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/ws'), path.join(sourceFolder, 'WS.Core'), 'dir'),
+      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), path.join(sourceFolder, 'WS.Core'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(sourceFolder, 'View'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/Vdom'), path.join(sourceFolder, 'Vdom'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'Router/Router'), path.join(sourceFolder, 'Router'), 'dir'),
