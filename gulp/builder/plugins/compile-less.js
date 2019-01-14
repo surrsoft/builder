@@ -84,7 +84,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    }
    const applicationRootParams = {
       applicationRoot,
-      isMultiService: taskParameters.config.multiService
+      isMultiService: taskParameters.config.multiService,
+      resourcesUrl: taskParameters.config.resourcesUrl
    };
    return through.obj(
 
@@ -202,6 +203,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                            newFile.path = outputPath;
                            newFile.base = moduleInfo.output;
                            this.push(newFile);
+
+                           /**
+                            * пишем в лог дополнительно информацию о получившихся импортах
+                            * для каждой скомпиленной lessки.
+                            */
+                           const newInfoFile = currentLessFile.clone();
+                           newInfoFile.contents = Buffer.from(compiled.importedByBuilder.toString());
+                           newInfoFile.path = outputPath.replace(/\.css$/, '.txt');
+                           newInfoFile.base = moduleInfo.output;
+                           this.push(newInfoFile);
                         }
                      }
                   }
