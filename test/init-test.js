@@ -29,7 +29,7 @@ function copyWS() {
    config.cachePath = fixtureWSPath;
    config.needTemplates = true;
    config.modules = [
-      new ModuleInfo('ws', '', path.join(nodeModulesPath, 'sbis3-ws/ws')),
+      new ModuleInfo('WS.Core', '', path.join(nodeModulesPath, 'sbis3-ws/WS.Core')),
       new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data')),
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View')),
       new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom')),
@@ -60,7 +60,7 @@ async function init() {
    if (!initialized) {
       try {
          await copyWS();
-         process.env['ws-core-path'] = path.join(__dirname, 'fixtureWS/platform/ws');
+         process.env['ws-core-path'] = path.join(__dirname, 'fixtureWS/platform/WS.Core');
          require('../gulp/common/node-ws').init();
          initialized = true;
       } catch (e) {
