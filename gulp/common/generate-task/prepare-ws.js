@@ -63,6 +63,9 @@ function generateTaskForPrepareWS(taskParameters) {
       maxWorkers: os.cpus().length - 1 || 1,
       env: {
          'main-process-cwd': process.cwd()
+      },
+      forkOpts: {
+         execArgv: ['--max-old-space-size=1024']
       }
    });
 
