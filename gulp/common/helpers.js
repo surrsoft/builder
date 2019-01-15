@@ -130,7 +130,8 @@ function generateTaskForInitWorkerPool(taskParameters) {
                   'ws-core-path': wsCorePath,
                   'main-process-cwd': process.cwd(),
                   'init-ws': taskParameters.config.needTemplates || taskParameters.config.builderTests
-               }
+               },
+               execArgv: ['--max-old-space-size=1024']
             }
          })
       );
