@@ -51,7 +51,8 @@ class Cache {
             routesInfo: {},
             markupCache: {},
             esCompileCache: {},
-            versionedModules: {}
+            versionedModules: {},
+            cdnModules: {}
          };
          this.currentStore.inputPaths[moduleInfo.path] = {
             hash: '',
@@ -195,6 +196,9 @@ class Cache {
          }
          if (lastModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
             currentModuleCache.versionedModules[prettyPath] = lastModuleCache.versionedModules[prettyPath];
+         }
+         if (lastModuleCache.cdnModules.hasOwnProperty(prettyPath)) {
+            currentModuleCache.cdnModules[prettyPath] = lastModuleCache.cdnModules[prettyPath];
          }
          if (this.lastStore.dependencies.hasOwnProperty(prettyPath)) {
             this.currentStore.dependencies[prettyPath] = this.lastStore.dependencies[prettyPath];
@@ -454,6 +458,24 @@ class Cache {
    }
 
    /**
+    * Сохранить в кеше модуль, содержащий линки на cdn. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {string} outputName результат работы сборщика для файла
+    * @param {Object}
+    */
+   storeCdnModule(filePath, moduleName, outputName) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      if (!currentModuleCache.cdnModules.hasOwnProperty(prettyPath)) {
+         currentModuleCache.cdnModules[prettyPath] = [];
+      }
+      if (!currentModuleCache.cdnModules[prettyPath].includes(outputName)) {
+         currentModuleCache.cdnModules[prettyPath].push(outputName);
+      }
+   }
+
+   /**
     * Получить всю скомпилированную верстку для конкретного модуля
     * @param {string} moduleName имя модуля
     * @returns {Object} Информация о скомпилированной верстки модуля в виде
@@ -494,6 +516,11 @@ class Cache {
    getVersionedModulesCache(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.versionedModules;
+   }
+
+   getCdnModulesCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.cdnModules;
    }
 
    /**

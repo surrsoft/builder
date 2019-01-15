@@ -67,6 +67,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (file.versioned) {
                   resultBuild.versioned = true;
                }
+               if (file.cdnLinked) {
+                  resultBuild.cdnLinked = true;
+               }
                taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
                newText = resultBuild.text;
 

@@ -22,6 +22,10 @@ body{
    background:transparent url('../../img/browser/tree_icons.gif') no-repeat
 }
 
+.test-cdn{
+   background:transparent url('/cdn/test-cdn-url.png')
+}
+
 .ws-browser-icon.open{
    background-position: 0 0;
 }

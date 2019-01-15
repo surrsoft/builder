@@ -135,6 +135,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
                file.versioned = false;
             }
+            if (file.cdnLinked) {
+               taskParameters.cache.storeCdnModule(file.history[0], moduleInfo.name, outputMinFile);
+               file.cdnLinked = false;
+            }
             this.push(
                new Vinyl({
                   base: moduleInfo.output,
