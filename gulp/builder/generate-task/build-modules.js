@@ -24,6 +24,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    createRoutesInfoJson = require('../plugins/create-routes-info-json'),
    createNavigationModulesJson = require('../plugins/create-navigation-modules-json'),
    createVersionedModules = require('../plugins/create-versioned-modules'),
+   createCdnModules = require('../plugins/create-cdn-modules'),
    indexDictionary = require('../plugins/index-dictionary'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
@@ -157,7 +158,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
              */
             .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
 
-            // packOwnDeps зависит от buildTmpl, buildXhtml и createVersionedModules
+            // packOwnDeps зависит от buildTmpl, buildXhtml
             .pipe(
                gulpIf(
                   taskParameters.config.deprecatedOwnDependencies,
@@ -170,8 +171,9 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(taskParameters.config.minimize, minifyJs(taskParameters, moduleInfo)))
             .pipe(gulpIf(taskParameters.config.minimize, minifyOther(taskParameters, moduleInfo)))
 
-            // createVersionedModules зависит от versionizeToStub
+            // createVersionedModules и createCdnModules зависит от versionizeToStub
             .pipe(gulpIf(!!taskParameters.config.version, createVersionedModules(taskParameters, moduleInfo)))
+            .pipe(gulpIf(!!taskParameters.config.version, createCdnModules(taskParameters, moduleInfo)))
             .pipe(
                gulpRename((file) => {
                   file.dirname = transliterate(file.dirname);

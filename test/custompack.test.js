@@ -23,6 +23,7 @@ describe('custompack', () => {
    let moduleDeps, currentNodes, currentLinks, depsTree;
    const customPackParameters = {
       versionedModules: {},
+      cdnModules: {},
       config: {
          localizations: [],
          sources: true,
@@ -257,6 +258,7 @@ describe('custompack-intersects', () => {
          configs = await fs.readJson(path.join(applicationRoot, 'configs/intersects.package.json')),
          taskParams = {
             versionedModules: {},
+            cdnModules: {},
             config: {
                defaultLocalization: '',
                localizations: [],

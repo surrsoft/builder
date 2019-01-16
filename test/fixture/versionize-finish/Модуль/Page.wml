@@ -1,0 +1,3 @@
+<script key="bundles" type="text/javascript" src="{{wsRoot}}ext/requirejs/bundles.js"></script>
+<script key="require" type="text/javascript" src="/cdn/requirejs/2.3.5-p3/require-min.js"></script>
+<script key="contents" type="text/javascript" src="{{resourceRoot}}contents.js"></script>

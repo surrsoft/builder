@@ -256,7 +256,13 @@ function generatePackage(
          if (!taskParameters.versionedModules[moduleName]) {
             taskParameters.versionedModules[moduleName] = [];
          }
+         if (!taskParameters.cdnModules[moduleName]) {
+            taskParameters.cdnModules[moduleName] = [];
+         }
          taskParameters.versionedModules[moduleName].push(
+            helpers.prettifyPath(packedFileName.replace(ext, extWithoutVersion))
+         );
+         taskParameters.cdnModules[moduleName].push(
             helpers.prettifyPath(packedFileName.replace(ext, extWithoutVersion))
          );
          const packedFilePath = path.normalize(path.join(resourcesPath, packedFileName));

@@ -623,21 +623,32 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       await runWorkflow();
       (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
+      (await isRegularFile(builderMetaOutput, 'cdn_modules.json')).should.equal(true);
       let versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
+      let cdnModules = await fs.readJson(path.join(builderMetaOutput, 'cdn_modules.json'));
       versionedModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
          'Modul/browser.min.css',
          'Modul/demo.html'
+      ]);
+      cdnModules.should.have.members([
+         'Modul/TimeTester.min.tmpl',
+         'Modul/browser.min.css'
       ]);
 
       // прогоним ещё раз, создание мета-файла версионирования должно нормально работать в инкрементальной сборке
       await runWorkflow();
       (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
       versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
+      cdnModules = await fs.readJson(path.join(builderMetaOutput, 'cdn_modules.json'));
       versionedModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
          'Modul/browser.min.css',
          'Modul/demo.html'
+      ]);
+      cdnModules.should.have.members([
+         'Modul/TimeTester.min.tmpl',
+         'Modul/browser.min.css'
       ]);
       await clearWorkspace();
    });

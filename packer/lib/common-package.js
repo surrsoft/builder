@@ -303,8 +303,12 @@ async function limitingNativePackFiles(
                   ) {
                      taskParameters.filesToRemove.push(fullPath);
                      logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
-                     helpers.removeFileFromVersionedMeta(
+                     helpers.removeFileFromBuilderMeta(
                         taskParameters.versionedModules[packageConfig.moduleName],
+                        fullPath
+                     );
+                     helpers.removeFileFromBuilderMeta(
+                        taskParameters.cdnModules[packageConfig.moduleName],
                         fullPath
                      );
 
@@ -316,8 +320,12 @@ async function limitingNativePackFiles(
                         const replacedPath = fullPath.replace(/\.original\.js$/, '.js');
                         taskParameters.filesToRemove.push(replacedPath);
                         logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
-                        helpers.removeFileFromVersionedMeta(
+                        helpers.removeFileFromBuilderMeta(
                            taskParameters.versionedModules[packageConfig.moduleName],
+                           replacedPath
+                        );
+                        helpers.removeFileFromBuilderMeta(
+                           taskParameters.cdnModules[packageConfig.moduleName],
                            replacedPath
                         );
                      }
