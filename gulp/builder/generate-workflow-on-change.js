@@ -21,7 +21,7 @@ const Cache = require('./classes/cache'),
    generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    TaskParameters = require('../common/classes/task-parameters'),
    compileLess = require('./plugins/compile-less'),
-   generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
+   compileEsAndTs = require('./plugins/compile-es-and-ts'),
    logger = require('../../lib/logger').logger(),
    transliterate = require('../../lib/transliterate');
 
@@ -53,7 +53,6 @@ function generateBuildWorkflowOnChange(processArgv) {
    return gulp.series(
       generateTaskForLoadCache(taskParameters),
       generateTaskForCheckVersion(taskParameters),
-      generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForCollectThemes(taskParameters, config),
       generateTaskForBuildFile(taskParameters, filePath),
@@ -111,6 +110,7 @@ function generateTaskForBuildFile(taskParameters, filePath) {
                }
             })
          )
+         .pipe(compileEsAndTs(taskParameters, currentModuleInfo))
          .pipe(compileLess(taskParameters, currentModuleInfo, gulpModulesInfo))
          .pipe(
             gulpRename((file) => {
