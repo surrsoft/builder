@@ -1,7 +1,39 @@
 'use strict';
 
+const path = require('path');
 const initTest = require('./init-test');
 const versionizeContent = require('../lib/versionize-content');
+const fs = require('fs-extra');
+const workspaceFolder = path.join(__dirname, 'workspace');
+const cacheFolder = path.join(workspaceFolder, 'cache');
+const outputFolder = path.join(workspaceFolder, 'output');
+const sourceFolder = path.join(workspaceFolder, 'source');
+const configPath = path.join(workspaceFolder, 'config.json');
+const generateWorkflow = require('../gulp/builder/generate-workflow.js');
+const {
+   isRegularFile, linkPlatform
+} = require('./lib');
+
+const clearWorkspace = function() {
+   return fs.remove(workspaceFolder);
+};
+const prepareTest = async function(fixtureFolder) {
+   await clearWorkspace();
+   await fs.ensureDir(sourceFolder);
+   await fs.copy(fixtureFolder, sourceFolder);
+};
+
+const runWorkflow = function() {
+   return new Promise((resolve, reject) => {
+      generateWorkflow([`--config="${configPath}"`])((error) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve();
+         }
+      });
+   });
+};
 
 describe('versionize-content', () => {
    before(async() => {
@@ -106,5 +138,63 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeTemplates(currentFile);
       result.should.equal(testSpanFromTemplate);
       false.should.equal(!!currentFile.versioned);
+   });
+
+   it('should versionize only compiled and minified files', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/versionize-finish');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         wml: true,
+         minimize: true,
+         version: 'test',
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'WS.Data',
+               path: path.join(sourceFolder, 'WS.Data')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+      (await isRegularFile(outputFolder, 'Modul/Page.wml')).should.equal(true);
+      (await isRegularFile(outputFolder, 'Modul/Page.min.wml')).should.equal(true);
+      const sourceContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.wml'))).toString();
+      const compiledContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.min.wml'))).toString();
+
+      // проверим, что в исходниках ссылки остались прежними, а в скомпилированном появилась версия и суффикс min
+      const sourceNotChanged = sourceContent.includes('contents.js') &&
+         sourceContent.includes('require-min.js') &&
+         sourceContent.includes('bundles.js');
+      sourceNotChanged.should.equal(true);
+      const compiledChanged = compiledContent.includes('contents.min.js?x_version=%{BUILDER_VERSION_STUB}') &&
+         compiledContent.includes('bundles.min.js?x_version=%{BUILDER_VERSION_STUB}') &&
+         compiledContent.includes('require-min.js') &&
+         !compiledContent.includes('require-min.js?x_version=%{BUILDER_VERSION_STUB}');
+      compiledChanged.should.equal(true);
    });
 });
