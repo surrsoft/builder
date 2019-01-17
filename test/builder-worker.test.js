@@ -7,7 +7,8 @@ const chai = require('chai'),
    fs = require('fs-extra'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
-   workerPool = require('workerpool');
+   workerPool = require('workerpool'),
+   { resolveThemeName } = require('../lib/build-less');
 
 const { expect } = chai;
 
@@ -50,13 +51,8 @@ describe('gulp/common/worker.js', () => {
          const [, resultParseRoutes] = await execInPool(pool, 'parseRoutes', ['']);
          Object.keys(resultParseRoutes).length.should.equal(0);
 
-         const filePath = path.join(modulePath, 'Empty.less');
+         const filePath = helpers.prettifyPath(path.join(modulePath, 'Empty.less'));
          const text = (await fs.readFile(filePath)).toString();
-         const lessInfo = {
-            filePath,
-            text,
-            modulePath
-         };
          const gulpModulesInfo = {
             pathsForImport: [workspaceFolder],
             gulpModulesPaths: {
@@ -64,16 +60,21 @@ describe('gulp/common/worker.js', () => {
                'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
             }
          };
-         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
-            lessInfo,
+         const themeName = resolveThemeName(filePath, modulePath);
+         const [, resultsBuildLess] = await execInPool(pool, 'processLessFile', [
+            text,
+            filePath,
+            {
+               name: themeName,
+               path: themes[themeName]
+            },
             gulpModulesInfo,
-            false,
-            themes
+            {}
          ]);
-         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].compiled.imports.length.should.equal(2);
-         resultsBuildLess[0].compiled.text.should.equal('');
+         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess.imports.length.should.equal(2);
+         resultsBuildLess.text.should.equal('');
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -103,11 +104,6 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = path.join(modulePath, 'Correct.less');
          const text = (await fs.readFile(filePath)).toString();
-         const lessInfo = {
-            filePath,
-            text,
-            modulePath
-         };
          const gulpModulesInfo = {
             pathsForImport: [workspaceFolder],
             gulpModulesPaths: {
@@ -115,18 +111,21 @@ describe('gulp/common/worker.js', () => {
                'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
             }
          };
-         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
-            lessInfo,
-            gulpModulesInfo,
-            false,
+         const themeName = resolveThemeName(filePath, modulePath);
+         const [, resultsBuildLess] = await execInPool(pool, 'processLessFile', [
+            text,
+            filePath,
             {
-               'online': themes.online
-            }
+               name: themeName,
+               path: themes[themeName]
+            },
+            gulpModulesInfo,
+            {}
          ]);
-         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess[0].compiled.imports.length.should.equal(2);
-         resultsBuildLess[0].compiled.text.should.equal(
+         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess.imports.length.should.equal(2);
+         resultsBuildLess.text.should.equal(
             ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );
       } finally {
@@ -148,21 +147,26 @@ describe('gulp/common/worker.js', () => {
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();
-         const lessInfo = {
-            filePath,
-            text,
-            modulePath
-         };
          const gulpModulesInfo = {
             pathsForImport: [],
             gulpModulesPaths: {
                'SBIS3.CONTROLS': sbis3ControlsPath
             }
          };
-         const [, compiledResult] = await execInPool(pool, 'buildLess', [lessInfo, gulpModulesInfo, false, themes]);
+         const themeName = resolveThemeName(filePath, modulePath);
+         const [lessError] = await execInPool(pool, 'processLessFile', [
+            text,
+            filePath,
+            {
+               name: themeName,
+               path: themes[themeName]
+            },
+            gulpModulesInfo,
+            {}
+         ]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
+         const errorMessage = lib.trimLessError(lessError.message.replace(/\\/g, '/'));
          const lessErrorsByThemes = [];
          Object.keys(themes).forEach((currentTheme) => {
             lessErrorsByThemes.push(`Ошибка компиляции ${filePath} для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);

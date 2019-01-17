@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use strict';
 
 const initTest = require('./init-test');
@@ -6,7 +7,8 @@ const
    path = require('path'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
-   buildLess = require('../lib/build-less');
+   pMap = require('p-map'),
+   { processLessFile, resolveThemeName, buildLess } = require('../lib/build-less');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
@@ -17,6 +19,12 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
       'presto': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/presto'),
       'carry': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/carry')
    };
+
+const defaultModuleThemeObject = {
+   name: 'online',
+   path: themes.online,
+   isDefault: true
+};
 
 describe('build less', () => {
    before(async() => {
@@ -31,82 +39,71 @@ describe('build less', () => {
       }
    };
    it('empty less', async() => {
-      const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
+      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal('');
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal('');
    });
    it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
    it('less from retail', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'bla/bla/long/path/test.less');
+      const retailModulePath = helpers.prettifyPath(path.join(workspaceFolder, 'Retail'));
+      const filePath = helpers.prettifyPath(path.join(retailModulePath, 'bla/bla/long/path/test.less'));
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
+      const themeName = resolveThemeName(filePath, retailModulePath);
+      const result = await processLessFile(text, filePath, {
+         name: themeName,
+         path: themes[themeName]
+      }, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
    it('less from retail with presto theme', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes/presto/test.less');
+      const retailModulePath = helpers.prettifyPath(path.join(workspaceFolder, 'Retail'));
+      const filePath = helpers.prettifyPath(path.join(retailModulePath, 'themes/presto/test.less'));
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, true, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
+      const themeName = resolveThemeName(filePath, retailModulePath);
+      const result = await processLessFile(text, filePath, {
+         name: 'presto',
+         path: themes[themeName]
+      }, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
    it('Button less from SBIS3.CONTROLS', async() => {
-      const filePath = path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less');
+      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'SBIS3.CONTROLS/Button/Button.less'));
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: path.join(workspaceFolder, 'SBIS3.CONTROLS'),
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
+      const themeName = resolveThemeName(filePath, filePath);
+      const result = await processLessFile(text, filePath, {
+         name: themeName,
+         path: themes[themeName]
+      }, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
 
    // важно отобразить корректно строку в которой ошибка
    it('less with error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text
-      };
+      const themeName = resolveThemeName(filePath, filePath);
+      let errorMessage;
+      try {
+         const result = await processLessFile(text, filePath, {
+            name: themeName,
+            path: themes[themeName]
+         }, gulpModulesInfo, {});
+      } catch (error) {
+         // заменяем слеши, иначе не сравнить на linux и windows одинаково
+         errorMessage = error.message.replace(/\\/g, '/');
+      }
 
-      const results = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-
-      // заменяем слеши, иначе не сравнить на linux и windows одинаково
-      const errorMessage = results[0].error.replace(/\\/g, '/');
       return lib
          .trimLessError(errorMessage)
          .should.equal(
@@ -118,16 +115,18 @@ describe('build less', () => {
    it('less with error from SBIS3.CONTROLS', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text
-      };
+      const themeName = resolveThemeName(filePath, filePath);
+      let errorMessage;
+      try {
+         const result = await processLessFile(text, filePath, {
+            name: themeName,
+            path: themes[themeName]
+         }, gulpModulesInfo, {});
+      } catch (error) {
+         // заменяем слеши, иначе не сравнить на linux и windows одинаково
+         errorMessage = error.message.replace(/\\/g, '/');
+      }
 
-      const results = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-
-      // заменяем слеши, иначе не сравнить на linux и windows одинаково
-      const errorMessage = results[0].error.replace(/\\/g, '/');
       return lib
          .trimLessError(errorMessage)
          .should.equal(
@@ -139,20 +138,30 @@ describe('build less', () => {
    it('less with internal error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
       const text = '@import "Error";';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text
-      };
       const lessErrorsByThemes = [];
-      Object.keys(themes).forEach((currentTheme) => {
-         lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
-      });
-
-      const compiledResult = await buildLess(lessInfo, gulpModulesInfo, false, themes);
+      const lessResults = [];
+      await pMap(
+         Object.keys(themes),
+         async(currentTheme) => {
+            lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
+            try {
+               const themeName = resolveThemeName(filePath, filePath);
+               const result = await processLessFile(text, filePath, {
+                  name: themeName,
+                  path: themes[themeName],
+               }, gulpModulesInfo, {});
+            } catch (error) {
+               // заменяем слеши, иначе не сравнить на linux и windows одинаково
+               lessResults.push(error.message.replace(/\\/g, '/'));
+            }
+         },
+         {
+            concurrency: 3
+         }
+      );
 
       // заменяем слеши, иначе не сравнить на linux и windows одинаково
-      const errorMessage = lib.trimLessError(compiledResult[0].error.replace(/\\/g, '/'));
+      const errorMessage = lib.trimLessError(lessResults[0]);
       let result = false;
       lessErrorsByThemes.forEach((currentMessage) => {
          if (currentMessage === errorMessage) {
@@ -171,7 +180,7 @@ describe('build less', () => {
          filePath,
          text
       };
-      const result = await buildLess(lessInfo, gulpModulesInfo);
+      const result = await buildLess({}, lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
@@ -184,7 +193,7 @@ describe('build less', () => {
          filePath,
          text
       };
-      const result = await buildLess(lessInfo, gulpModulesInfo);
+      const result = await buildLess({}, lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
@@ -197,41 +206,21 @@ describe('build less', () => {
          filePath,
          text
       };
-      const result = await buildLess(lessInfo, gulpModulesInfo);
+      const result = await buildLess({}, lessInfo, gulpModulesInfo);
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
    it('less from ws', async() => {
       const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: wsPath,
-         filePath,
-         text
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(
+      const themeName = resolveThemeName(filePath, filePath);
+      const result = await processLessFile(text, filePath, {
+         name: themeName,
+         path: themes[themeName]
+      }, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
-      );
-   });
-
-   it('less with all theme', async() => {
-      const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
-      const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const lessInfo = {
-         modulePath: anyModulePath,
-         filePath,
-         text,
-         themes: true
-      };
-      const result = await buildLess(lessInfo, gulpModulesInfo, false, themes);
-
-      result[0].compiled.imports.length.should.equal(2);
-      result[0].compiled.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
-      result[2].compiled.imports.length.should.equal(2);
-      result[2].compiled.text.should.equal(
-         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n"
       );
    });
 });

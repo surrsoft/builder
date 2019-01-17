@@ -9,9 +9,9 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   execInPool = require('../../common/exec-in-pool'),
    pMap = require('p-map'),
-   helpers = require('../../../lib/helpers');
+   helpers = require('../../../lib/helpers'),
+   { buildLess } = require('../../../lib/build-less');
 
 /**
  * Проверяем, необходима ли темизация конкретной lessки по
@@ -150,76 +150,50 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      text: currentLessFile.contents.toString(),
                      themes: taskParameters.config.themes
                   };
-                  const [error, results] = await execInPool(
-                     taskParameters.pool,
-                     'buildLess',
-                     [
-                        lessInfo,
-                        gulpModulesInfo,
-                        currentLessFile.isLangCss || !isThemedLess,
-                        allThemes,
-                        applicationRootParams
-                     ],
-                     currentLessFile.history[0],
-                     moduleInfo
+                  const results = await buildLess(
+                     {
+                        pool: taskParameters.pool,
+                        fileSourcePath: currentLessFile.history[0],
+                        moduleInfo
+                     },
+                     lessInfo,
+                     gulpModulesInfo,
+                     currentLessFile.isLangCss || !isThemedLess,
+                     allThemes,
+                     applicationRootParams
                   );
-
-                  /**
-                   * нужно выводить ошибку из пулла, это будет означать неотловленную ошибку,
-                   * и она не будет связана с ошибкой компиляции непосредственно less-файла.
-                   */
-                  if (error) {
-                     taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
-                     logger.error({
-                        message: 'Необработанная ошибка builder\'а при компиляции less',
-                        error,
-                        moduleInfo,
-                        filePath: currentLessFile.history[0]
-                     });
-                  } else {
-                     for (const result of results) {
-                        if (result.ignoreMessage) {
-                           logger.debug(result.ignoreMessage);
-                        } else if (result.error) {
-                           /**
-                            * результат с ключём 0 - это всегда less для старой
-                            * схемы темизации. Для всех остальных ключей(1 и т.д.)
-                            * задана новая схема темизации. Для новой схемы темизации
-                            * выдаём warning, для старой темизации железно error.
-                            */
-                           const errorObject = {
-                              message: `Ошибка компиляции less: ${result.error}`,
-                              filePath: currentLessFile.history[0],
-                              moduleInfo
-                           };
-                           if (!result.key) {
-                              logger.error(errorObject);
-                           } else {
-                              logger.warning(errorObject);
-                           }
+                  for (const result of results) {
+                     if (result.ignoreMessage) {
+                        logger.debug(result.ignoreMessage);
+                     } else if (result.error) {
+                        /**
+                         * результат с ключём 0 - это всегда less для старой
+                         * схемы темизации. Для всех остальных ключей(1 и т.д.)
+                         * задана новая схема темизации. Для новой схемы темизации
+                         * выдаём warning, для старой темизации железно error.
+                         */
+                        const errorObject = {
+                           message: `Ошибка компиляции less: ${result.error}`,
+                           filePath: currentLessFile.history[0],
+                           moduleInfo
+                        };
+                        if (!result.key) {
+                           logger.error(errorObject);
                         } else {
-                           const { compiled } = result;
-                           const outputPath = getOutput(currentLessFile, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
-
-                           taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
-                           taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
-
-                           const newFile = currentLessFile.clone();
-                           newFile.contents = Buffer.from(compiled.text);
-                           newFile.path = outputPath;
-                           newFile.base = moduleInfo.output;
-                           this.push(newFile);
-
-                           /**
-                            * пишем в лог дополнительно информацию о получившихся импортах
-                            * для каждой скомпиленной lessки.
-                            */
-                           const newInfoFile = currentLessFile.clone();
-                           newInfoFile.contents = Buffer.from(compiled.importedByBuilder.toString());
-                           newInfoFile.path = outputPath.replace(/\.css$/, '.txt');
-                           newInfoFile.base = moduleInfo.output;
-                           this.push(newInfoFile);
+                           logger.warning(errorObject);
                         }
+                     } else {
+                        const { compiled } = result;
+                        const outputPath = getOutput(currentLessFile, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
+
+                        taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
+                        taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
+
+                        const newFile = currentLessFile.clone();
+                        newFile.contents = Buffer.from(compiled.text);
+                        newFile.path = outputPath;
+                        newFile.base = moduleInfo.output;
+                        this.push(newFile);
                      }
                   }
                } catch (error) {
