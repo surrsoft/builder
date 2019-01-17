@@ -90,19 +90,14 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
-         'ForChange.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRenameThemed_old_online.css',
-         'ForRenameThemed_old_online.txt',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'Stable.txt'
+         'Stable.less'
       ]);
 
       // изменим "исходники"
@@ -125,20 +120,14 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
-         'ForChange.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
-         'ForRename_old.txt',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRenameThemed_old_online.css',
-         'ForRenameThemed_old_online.txt',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'Stable.txt'
+         'Stable.less'
       ]);
       config.themes = false;
 
@@ -161,17 +150,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
-         'ForChange.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'Stable.txt'
+         'Stable.less'
       ]);
 
       // изменим "исходники"
@@ -193,18 +178,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Error.less',
          'ForChange.css',
          'ForChange.less',
-         'ForChange.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
-         'ForRename_old.txt',
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'MyComponent.js',
          'Stable.css',
-         'Stable.less',
-         'Stable.txt'
+         'Stable.less'
       ]);
 
       await clearWorkspace();

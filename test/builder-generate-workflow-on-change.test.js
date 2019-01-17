@@ -91,12 +91,9 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRenameThemed_old_online.css',
-         'ForRenameThemed_old_online.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'MyComponent.js'
       ]);
 
@@ -121,15 +118,11 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRenameThemed_old_online.css',
-         'ForRenameThemed_old_online.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
          'MyComponent.js'
       ]);
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
@@ -143,15 +136,9 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_new.css',
          'ForRenameThemed_new.less',
-         'ForRenameThemed_new.txt',
          'ForRenameThemed_new_online.css',
-         'ForRenameThemed_new_online.txt',
-         'ForRenameThemed_old_online.txt',
-         'ForRenameThemed_old.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
-         'ForRename_old.txt',
          'MyComponent.js'
       ]);
 
@@ -191,10 +178,8 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'MyComponent.js'
       ]);
 
@@ -219,13 +204,10 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_old.css',
          'ForRenameThemed_old.less',
-         'ForRenameThemed_old.txt',
          'ForRename_old.css',
          'ForRename_old.less',
-         'ForRename_old.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
          'MyComponent.js'
       ]);
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
@@ -238,12 +220,8 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       resultsFiles.should.have.members([
          'ForRenameThemed_new.css',
          'ForRenameThemed_new.less',
-         'ForRenameThemed_new.txt',
-         'ForRenameThemed_old.txt',
          'ForRename_new.css',
          'ForRename_new.less',
-         'ForRename_new.txt',
-         'ForRename_old.txt',
          'MyComponent.js'
       ]);
 

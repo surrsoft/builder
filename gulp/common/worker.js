@@ -72,7 +72,7 @@ try {
    const fs = require('fs-extra'),
       workerPool = require('workerpool'),
       compileEsAndTs = require('../../lib/compile-es-and-ts'),
-      buildLess = require('../../lib/build-less'),
+      { processLessFile } = require('../../lib/build-less'),
       parseJsComponent = require('../../lib/parse-js-component'),
       processingRoutes = require('../../lib/processing-routes'),
       runMinifyCss = require('../../lib/run-minify-css'),
@@ -182,7 +182,7 @@ try {
    workerPool.worker({
       parseJsComponent: wrapWorkerFunction(parseJsComponent),
       parseRoutes: wrapWorkerFunction(processingRoutes.parseRoutes),
-      buildLess: wrapWorkerFunction(buildLess),
+      processLessFile: wrapWorkerFunction(processLessFile),
       compileEsAndTs: wrapWorkerFunction(compileEsAndTs),
       buildTmpl: wrapWorkerFunction(buildTmpl),
       buildHtmlTmpl: wrapWorkerFunction(buildHtmlTmpl),
