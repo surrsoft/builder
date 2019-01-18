@@ -167,9 +167,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         logger.debug(result.ignoreMessage);
                      } else if (result.error) {
                         /**
-                         * результат с ключём 0 - это всегда less для старой
-                         * схемы темизации. Для всех остальных ключей(1 и т.д.)
-                         * задана новая схема темизации. Для новой схемы темизации
+                         * результат с ключём type в значении default - это всегда less для старой
+                         * схемы темизации. В противном случае результатом компиляции является
+                         * lessка по новой схеме темизации. Для новой схемы темизации
                          * выдаём warning, для старой темизации железно error.
                          */
                         const errorObject = {
@@ -177,7 +177,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                            filePath: currentLessFile.history[0],
                            moduleInfo
                         };
-                        if (!result.key) {
+                        if (result.type === 'default') {
                            logger.error(errorObject);
                         } else {
                            logger.warning(errorObject);
