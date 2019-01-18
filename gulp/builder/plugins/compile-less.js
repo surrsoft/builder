@@ -182,6 +182,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         } else {
                            logger.warning(errorObject);
                         }
+                        taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
                      } else {
                         const { compiled } = result;
                         const outputPath = getOutput(currentLessFile, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
