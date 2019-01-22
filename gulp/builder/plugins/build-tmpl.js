@@ -93,9 +93,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * запишем в markupCache информацию о версионировании, поскольку
              * markupCache извлекаем при паковке собственных зависимостей. Так
              * можно легко обьединить, помечать компонент как версионированный или нет.
+             * Аналогичная ситуация и для шаблонов с ссылками на cdn
              */
             if (file.versioned) {
                result.versioned = true;
+            }
+            if (file.cdnLinked) {
+               result.cdnLinked = true;
             }
             taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
             newText = result.text;
@@ -137,7 +141,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
             if (file.cdnLinked) {
                taskParameters.cache.storeCdnModule(file.history[0], moduleInfo.name, outputMinFile);
-               file.cdnLinked = false;
             }
             this.push(
                new Vinyl({

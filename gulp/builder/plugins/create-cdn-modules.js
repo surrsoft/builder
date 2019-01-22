@@ -23,9 +23,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       function onTransform(file, encoding, callback) {
          /**
           * для оставшихся модулей(минифицированные css, статические html) также
-          * не забываем записать в кэш информацию
+          * не забываем записать в кэш информацию. В случае сборки в десктопе в
+          * cdn_modules.json нельзя записывать дебажные шаблоны и css, поскольку они
+          * удаляются в конце работы билдера. В случае сборки онлайн-проекта можно
+          * записывать все файлы.
           */
-         if (file.cdnLinked && (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`))) {
+         let cdnCondition;
+         if (taskParameters.config.sources) {
+            cdnCondition = file.cdnLinked;
+         } else {
+            cdnCondition = file.cdnLinked &&
+               (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`));
+         }
+         if (cdnCondition) {
             taskParameters.cache.storeCdnModule(
                file.history[0],
                moduleInfo.name,
