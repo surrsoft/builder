@@ -90,6 +90,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (ownDeps.length > 0) {
                   const modulepackContent = [];
                   let hasVersionedMarkup = false;
+                  let hasCdnLinkedMarkup = false;
                   for (const dep of ownDeps) {
                      if (nodenameToMarkup.has(dep)) {
                         const markupObj = nodenameToMarkup.get(dep);
@@ -97,6 +98,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                         modulepackContent.push(markupObj.text);
                         if (markupObj.versioned) {
                            hasVersionedMarkup = true;
+                        }
+                        if (markupObj.cdnLinked) {
+                           hasCdnLinkedMarkup = true;
                         }
                      }
                   }
@@ -108,9 +112,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   /**
                    * добавляем в кэш версионирования информацию о компонентах, в которые
                    * были запакованы версионированные шаблоны
+                   * добавляем в кэш cdn ссылок информацию о компонентах, в которые были
+                   * запакованы шаблоны с ссылками на cdn
                    */
                   if (hasVersionedMarkup) {
                      jsFile.versioned = true;
+                  }
+                  if (hasCdnLinkedMarkup) {
+                     jsFile.cdnLinked = true;
                   }
                }
                if (filesDepsForCache.size > 0) {
