@@ -23,7 +23,7 @@ body{
 }
 
 .test-cdn{
-   background:transparent url('/cdn/test-cdn-url.png')
+   background:transparent url('%{CDN_ROOT}/test-cdn-url.png')
 }
 
 .ws-browser-icon.open{

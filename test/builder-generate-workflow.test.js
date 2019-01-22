@@ -609,11 +609,14 @@ describe('gulp/builder/generate-workflow.js', () => {
       versionedModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
          'Modul/browser.min.css',
+         'Modul/browser-with-real-cdn.min.css',
          'Modul/demo.html'
       ]);
       cdnModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
-         'Modul/browser.min.css'
+         'Modul/TimeTester.tmpl',
+         'Modul/browser.min.css',
+         'Modul/browser.css'
       ]);
 
       // прогоним ещё раз, создание мета-файла версионирования должно нормально работать в инкрементальной сборке
@@ -624,11 +627,14 @@ describe('gulp/builder/generate-workflow.js', () => {
       versionedModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
          'Modul/browser.min.css',
+         'Modul/browser-with-real-cdn.min.css',
          'Modul/demo.html'
       ]);
       cdnModules.should.have.members([
          'Modul/TimeTester.min.tmpl',
-         'Modul/browser.min.css'
+         'Modul/TimeTester.tmpl',
+         'Modul/browser.min.css',
+         'Modul/browser.css'
       ]);
       await clearWorkspace();
    });
