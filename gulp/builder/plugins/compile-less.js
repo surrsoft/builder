@@ -166,22 +166,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      if (result.ignoreMessage) {
                         logger.debug(result.ignoreMessage);
                      } else if (result.error) {
-                        /**
-                         * результат с ключём type в значении default - это всегда less для старой
-                         * схемы темизации. В противном случае результатом компиляции является
-                         * lessка по новой схеме темизации. Для новой схемы темизации
-                         * выдаём warning, для старой темизации железно error.
-                         */
                         const errorObject = {
                            message: `Ошибка компиляции less: ${result.error}`,
                            filePath: currentLessFile.history[0],
                            moduleInfo
                         };
-                        if (result.type === 'default') {
-                           logger.error(errorObject);
-                        } else {
-                           logger.warning(errorObject);
-                        }
+                        logger.error(errorObject);
                         taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
                      } else {
                         const { compiled } = result;
