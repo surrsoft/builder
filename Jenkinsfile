@@ -16,6 +16,6 @@ def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
                     url: "${GIT}:sbis-ci/jenkins_pipeline.git"]]
                                     ])
         start = load "./jenkins_pipeline/platforma/branch/JenkinsfileBuilder"
-        start.start(version, BRANCH_NAME, env)
+        start.start(version, workspace)
     }
 }
