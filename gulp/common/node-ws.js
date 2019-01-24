@@ -42,7 +42,7 @@ const wsLogger = {
    }
 };
 
-function initWs() {
+function initWs(requiredModules) {
    // Используем платформу из кода проекта.
    // Это нужно для беспроблемного прохождения тестов WS и Controls, а также сборки онлайна.
    // Часто код WS должен быть одинаковым на стенде и в билдере, иначе стенд разваливается.
@@ -89,6 +89,8 @@ function initWs() {
    });
    global.requirejs = requireJS.config(config);
    const loadContents = global.requirejs('Core/load-contents');
+   const modulesForAppContents = {};
+
    const appContents = {
       modules: {
          View: {
@@ -131,10 +133,10 @@ module.exports = {
    /**
     * Инициализация ядра платформы WS.
     */
-   init() {
+   init(requiredModules) {
       try {
          if (!initialized) {
-            initWs();
+            initWs(requiredModules);
             initialized = true;
          }
       } catch (e) {
