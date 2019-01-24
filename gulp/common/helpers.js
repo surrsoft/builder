@@ -106,13 +106,19 @@ function generateTaskForInitWorkerPool(taskParameters) {
       }
 
       /**
-       * временно уменьшаем число ядер воркеров для Интеграционных тестов
-       * TODO сделать по-нормальному по задаче
-       * https://online.sbis.ru/opendoc.html?guid=ea73c5d3-6ddb-4a67-afeb-bdba733af2a7
+       * если в конфигурацию билдера было передано максимальное число воркеров, принимаем
+       * его в качестве эталона(но не забываем ругаться, если данное число больше чем
+       * максимально возможное число ядер - 1).
        */
       const isIntTest = checkForModuleInProject('Intest', taskParameters);
       let maxWorkers;
-      if (isIntTest) {
+      if (taskParameters.config.maxWorkers) {
+         // eslint-disable-next-line prefer-destructuring
+         maxWorkers = taskParameters.config.maxWorkers;
+         if (maxWorkers > (os.cpus().length - 1)) {
+            throw new Error(`Custom max worker's count must be less than ${os.cpus().length} for current executing machine!`);
+         }
+      } else if (isIntTest) {
          maxWorkers = os.cpus().length - 2;
          if (maxWorkers < 0) {
             maxWorkers = 1;
