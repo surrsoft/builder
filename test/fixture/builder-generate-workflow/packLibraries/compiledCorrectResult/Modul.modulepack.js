@@ -11,10 +11,10 @@ define('Modul/Modul', [
     'require',
     'exports'
 ], function (tslib_1, require, exports) {
-    'use strict';
     Object.defineProperty(exports, '__esModule', { value: true });
         exports['Modul/_es6/Modul2'] = true;
         var Modul__es6_Modul2 = function () {
+        'use strict';
         var exports = {};
         var result = function (require, exports, tslib_1) {
             'use strict';
@@ -44,6 +44,7 @@ define('Modul/Modul', [
     }();
         exports['Modul/_es5/Module'] = true;
         var Modul__es5_Module = function () {
+        'use strict';
         var exports = {};
         var result = function (require, exports, tslib_1, Modul_2) {
             'use strict';
@@ -65,6 +66,7 @@ define('Modul/Modul', [
     }();
         exports['Modul/_es6/Modul'] = true;
         var Modul__es6_Modul = function () {
+        'use strict';
         var exports = {};
         var result = function (require, exports, Module_js_1) {
             'use strict';
