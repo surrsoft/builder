@@ -43,19 +43,22 @@ function readConfigFileSync(configPath) {
    }
 
    let rawConfig = {};
+   const startErrorMessage = `Файл конфигурации ${configPath} не корректен.`;
    try {
       rawConfig = fs.readJSONSync(resolvedConfigPath);
    } catch (e) {
-      e.message = `Файл конфигурации ${configPath} не корректен. Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
+      e.message = `${startErrorMessage} Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
          e.message
       }`;
       throw e;
    }
-   checkModules(rawConfig);
+   const root = path.dirname(configPath);
+   checkModules(rawConfig, root);
+   checkCacheAndLogsPath(rawConfig, root, startErrorMessage);
    return rawConfig;
 }
 
-function checkModules(rawConfig) {
+function checkModules(rawConfig, root) {
    if (!rawConfig.hasOwnProperty('modules')) {
       throw new Error('Не задан обязательный параметр modules');
    }
@@ -69,9 +72,41 @@ function checkModules(rawConfig) {
       if (!module.hasOwnProperty('path') || !module.path) {
          throw new Error('Для модуля не задан обязательный параметр path');
       }
+
+      // если в конфигурации заданы относительные пути, разрешаем их в абсолютные
+      if (module.path.startsWith('./') || module.path.startsWith('../')) {
+         module.path = path.resolve(root, module.path);
+      }
       if (!fs.pathExistsSync(module.path)) {
          throw new Error(`Директория ${module.path} не существует`);
       }
+   }
+}
+
+function checkCacheAndLogsPath(rawConfig, root, startErrorMessage) {
+   if (!rawConfig.cache) {
+      throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
+   }
+
+   if (!rawConfig.output) {
+      throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+   }
+
+   /**
+    * если в конфигурации заданы относительные пути для кэша, логов и конечной директории,
+    * разрешаем их в абсолютные
+    */
+   if (rawConfig.cache.startsWith('./') || rawConfig.cache.startsWith('../')) {
+      rawConfig.cache = path.resolve(root, rawConfig.cache);
+   }
+   if (rawConfig.output.startsWith('./') || rawConfig.output.startsWith('../')) {
+      rawConfig.output = path.resolve(root, rawConfig.output);
+   }
+   if (
+      rawConfig.hasOwnProperty('logs') &&
+      (rawConfig.logs.startsWith('./') || rawConfig.logs.startsWith('../'))
+   ) {
+      rawConfig.logs = path.resolve(root, rawConfig.logs);
    }
 }
 
