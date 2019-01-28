@@ -230,14 +230,6 @@ class BuildConfiguration {
 
       this.configureBuildFlags();
       this.cachePath = this.rawConfig.cache;
-      if (!this.cachePath) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
-      }
-
-      if (!this.rawConfig.output) {
-         throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
-      }
-
       this.isReleaseMode = this.getBuildMode() === 'release';
 
       if (!this.isReleaseMode) {
