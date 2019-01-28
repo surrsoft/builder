@@ -75,7 +75,7 @@ function checkModules(rawConfig, root) {
 
       // если в конфигурации заданы относительные пути, разрешаем их в абсолютные
       if (module.path.startsWith('./') || module.path.startsWith('../')) {
-         module.path = path.resolve(root, module.path);
+         module.path = path.resolve(root, module.path).replace(/\\/g, '/');
       }
       if (!fs.pathExistsSync(module.path)) {
          throw new Error(`Директория ${module.path} не существует`);
@@ -97,16 +97,16 @@ function checkCacheAndLogsPath(rawConfig, root, startErrorMessage) {
     * разрешаем их в абсолютные
     */
    if (rawConfig.cache.startsWith('./') || rawConfig.cache.startsWith('../')) {
-      rawConfig.cache = path.resolve(root, rawConfig.cache);
+      rawConfig.cache = path.resolve(root, rawConfig.cache).replace(/\\/g, '/');
    }
    if (rawConfig.output.startsWith('./') || rawConfig.output.startsWith('../')) {
-      rawConfig.output = path.resolve(root, rawConfig.output);
+      rawConfig.output = path.resolve(root, rawConfig.output).replace(/\\/g, '/');
    }
    if (
       rawConfig.hasOwnProperty('logs') &&
       (rawConfig.logs.startsWith('./') || rawConfig.logs.startsWith('../'))
    ) {
-      rawConfig.logs = path.resolve(root, rawConfig.logs);
+      rawConfig.logs = path.resolve(root, rawConfig.logs).replace(/\\/g, '/');
    }
 }
 
