@@ -60,7 +60,7 @@ function getPlatformModules() {
 }
 
 let initialized = false;
-async function init(requiredModules) {
+async function init() {
    if (!initialized) {
       try {
          const modules = getPlatformModules();
