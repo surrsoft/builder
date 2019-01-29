@@ -56,8 +56,9 @@ module.exports = function declarePlugin(taskParameters) {
           * избавиться при переходе на VDOM. Для Genie таргеты не используем.
           */
          const modules = taskParameters.config.modules.map(moduleInfo => moduleInfo.name);
+         const projectName = taskParameters.config.rawConfig.cld_name;
          if (!modules.includes('Genie') &&
-            helpers.needToRemoveModuleForDesktop(prettyPath)
+            helpers.needToRemoveModuleForDesktop(prettyPath, projectName)
          ) {
             callback(null);
             return;
