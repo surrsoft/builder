@@ -11,7 +11,21 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    pMap = require('p-map'),
    helpers = require('../../../lib/helpers'),
+   Vinyl = require('vinyl'),
    { buildLess } = require('../../../lib/build-less');
+
+/**
+ * Получаем путь до скомпиленного css в конечной директории относительно
+ * корня приложения.
+ * @param {Object} moduleInfo - базовая информация об Интерфейсном модуле
+ * @param {String} prettyFilePath - отформатированный путь до css-файла.
+ * @returns {*}
+ */
+function getRelativeOutput(moduleInfo, prettyFilePath) {
+   const { moduleName, prettyModuleOutput } = moduleInfo;
+   const relativePath = path.relative(prettyModuleOutput, prettyFilePath);
+   return path.join(moduleName, relativePath).replace(/\.css$/, '.min.css');
+}
 
 /**
  * Проверяем, необходима ли темизация конкретной lessки по
@@ -132,7 +146,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
 
       /* @this Stream */
       async function onFlush(callback) {
-         const moduleThemedStyles = getThemedStyles();
+         const
+            moduleThemedStyles = getThemedStyles(),
+            moduleName = path.basename(moduleInfo.output),
+            prettyModuleOutput = helpers.prettifyPath(moduleInfo.output),
+            compiledLess = [];
+
          await pMap(
             moduleLess,
             async(currentLessFile) => {
@@ -177,6 +196,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         const { compiled } = result;
                         const outputPath = getOutput(currentLessFile, compiled.defaultTheme ? '.css' : `_${compiled.nameTheme}.css`);
 
+                        /**
+                         * Мета-данные о скомпилированных less нужны только во время
+                         * выполнения кастомной паковки
+                         */
+                        if (taskParameters.config.customPack) {
+                           const relativeOutput = getRelativeOutput(
+                              { moduleName, prettyModuleOutput },
+                              helpers.prettifyPath(outputPath)
+                           );
+                           compiledLess.push(relativeOutput);
+                        }
                         taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
                         taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
 
@@ -202,7 +232,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                concurrency: 20
             }
          );
-         callback(null);
+         if (taskParameters.config.customPack) {
+            const jsonFile = new Vinyl({
+               path: '.builder/compiled-less.min.json',
+               contents: Buffer.from(JSON.stringify(compiledLess.sort(), null, 2)),
+               moduleInfo
+            });
+            this.push(jsonFile);
+         }
+         callback();
       }
    );
 };
