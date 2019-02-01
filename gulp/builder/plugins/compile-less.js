@@ -203,9 +203,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         if (taskParameters.config.customPack) {
                            const relativeOutput = getRelativeOutput(
                               { moduleName, prettyModuleOutput },
-                              helpers.prettifyPath(outputPath)
+                              helpers.unixifyPath(outputPath)
                            );
-                           compiledLess.push(relativeOutput);
+                           compiledLess.push(helpers.unixifyPath(relativeOutput));
                         }
                         taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
                         taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
