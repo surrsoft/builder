@@ -12,6 +12,7 @@ const through = require('through2'),
    pMap = require('p-map'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
+   modulePathToRequire = require('../../../lib/modulepath-to-require'),
    { buildLess } = require('../../../lib/build-less');
 
 /**
@@ -201,11 +202,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                          * выполнения кастомной паковки
                          */
                         if (taskParameters.config.customPack) {
-                           const relativeOutput = getRelativeOutput(
-                              { moduleName, prettyModuleOutput },
-                              helpers.unixifyPath(outputPath)
+                           const relativeOutput = helpers.unixifyPath(
+                              getRelativeOutput(
+                                 { moduleName, prettyModuleOutput },
+                                 helpers.unixifyPath(outputPath)
+                              )
                            );
-                           compiledLess.push(helpers.unixifyPath(relativeOutput));
+                           compiledLess.push(modulePathToRequire.getPrettyPath(relativeOutput));
                         }
                         taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
                         taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
