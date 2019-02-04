@@ -14,21 +14,16 @@ const through = require('through2'),
    { buildLess } = require('../../../lib/build-less');
 
 /**
- * Проверяем, необходима ли темизация конкретной lessки по
- * её наличию less в наборе темизируемых less, полученных
- * в процессе анализа зависимостей компонентов
- * @param {Vinyl} currentLessFile
- * @param {Object} moduleInfo
- * @param {Array} moduleThemedStyles - набор темизируемых less
- * @returns {boolean}
+ * В случае отсутствия в Интерфейсном модуле конфигурации темизации less
+ * файлов, генерируем базовую конфигурацию:
+ * 1) Генерируем все less-ки Интерфейсного модуля по старой схеме темизации
+ * 2) Не билдим все less-ки Интерфейсного модуля по новой схеме темизации
  */
-function checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles) {
-   const
-      prettyModuleDirectory = helpers.unixifyPath(path.dirname(moduleInfo.path)),
-      prettyLessPath = helpers.unixifyPath(currentLessFile.history[0]),
-      relativeLessPath = prettyLessPath.replace(`${prettyModuleDirectory}/`, '');
-
-   return moduleThemedStyles.includes(transliterate(relativeLessPath));
+function setDefaultLessConfiguration() {
+   return {
+      old: true,
+      multi: false
+   };
 }
 
 /**
@@ -42,24 +37,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    const getOutput = function(file, replacingExt) {
       const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
-   };
-
-   /**
-    * Получаем полный набор темизируемых less в рамках одного Интерфейсного модуля по информации
-    * о явных зависимостях компонента.
-    * @returns {Array}
-    */
-   const getThemedStyles = function() {
-      const
-         componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name),
-         result = [];
-
-      Object.keys(componentsInfo).forEach((module) => {
-         if (componentsInfo[module].hasOwnProperty('themedStyles')) {
-            result.push(...componentsInfo[module].themedStyles);
-         }
-      });
-      return result;
    };
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
@@ -132,23 +109,20 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
 
       /* @this Stream */
       async function onFlush(callback) {
-         const moduleThemedStyles = getThemedStyles();
+         let moduleLessConfig = taskParameters.cache.getModuleLessConfiguration(moduleInfo.name);
+         if (!moduleLessConfig) {
+            moduleLessConfig = setDefaultLessConfiguration();
+         }
          await pMap(
             moduleLess,
             async(currentLessFile) => {
                try {
-                  /**
-                   * Временное решение для анонимных темизированных css в Controls.
-                   * TODO спилить, как будет внедрен новый механизм разделения тем по Интерфейсным модулям.
-                   * @type {boolean}
-                   */
-                  const isThemedLess = moduleInfo.name === 'Controls' ||
-                     checkLessForThemeInCache(currentLessFile, moduleInfo, moduleThemedStyles);
                   const lessInfo = {
                      filePath: currentLessFile.history[0],
                      modulePath: moduleInfo.path,
                      text: currentLessFile.contents.toString(),
-                     themes: taskParameters.config.themes
+                     themes: taskParameters.config.themes,
+                     moduleLessConfig
                   };
                   const results = await buildLess(
                      {
@@ -158,7 +132,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      },
                      lessInfo,
                      gulpModulesInfo,
-                     currentLessFile.isLangCss || !isThemedLess,
+                     currentLessFile.isLangCss,
                      allThemes,
                      applicationRootParams
                   );
