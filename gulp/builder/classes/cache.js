@@ -52,7 +52,8 @@ class Cache {
             markupCache: {},
             esCompileCache: {},
             versionedModules: {},
-            cdnModules: {}
+            cdnModules: {},
+            lessConfig: ''
          };
          this.currentStore.inputPaths[moduleInfo.path] = {
             hash: '',
@@ -196,6 +197,9 @@ class Cache {
          }
          if (lastModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
             currentModuleCache.versionedModules[prettyPath] = lastModuleCache.versionedModules[prettyPath];
+         }
+         if (lastModuleCache.lessConfig) {
+            currentModuleCache.lessConfig = lastModuleCache.lessConfig;
          }
          if (lastModuleCache.cdnModules.hasOwnProperty(prettyPath)) {
             currentModuleCache.cdnModules[prettyPath] = lastModuleCache.cdnModules[prettyPath];
@@ -458,6 +462,30 @@ class Cache {
    }
 
    /**
+    * Сохранить в кэше конфигурацию сборки less для данного Интерфейсного
+    * модуля
+    * @param{String} moduleName - название Интерфейсного модуля
+    * @param config
+    */
+   addModuleLessConfiguration(moduleName, config) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      if (!currentModuleCache.lessConfig) {
+         currentModuleCache.lessConfig = config;
+      }
+   }
+
+   /**
+    * Получить из кэша конфигурацию сборки less для данного Интерфейсного
+    * модуля
+    * @param{String} moduleName - название Интерфейсного модуля
+    * @returns {*}
+    */
+   getModuleLessConfiguration(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.lessConfig;
+   }
+
+   /**
     * Сохранить в кеше модуль, содержащий линки на cdn. Для инкрементальной сборки.
     * @param {string} filePath имя файла
     * @param {string} moduleName имя модуля
@@ -603,8 +631,11 @@ class Cache {
          .filter(filePath => !!filePath);
    }
 
-   addStyleTheme(themeName, filePath) {
-      this.currentStore.styleThemes[themeName] = filePath;
+   addStyleTheme(themeName, filePath, themeConfig) {
+      this.currentStore.styleThemes[themeName] = {
+         path: filePath,
+         config: themeConfig
+      };
    }
 
    checkThemesForUpdate() {

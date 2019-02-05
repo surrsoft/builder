@@ -13,7 +13,9 @@
 const gulp = require('gulp'),
    path = require('path'),
    plumber = require('gulp-plumber'),
-   mapStream = require('map-stream');
+   mapStream = require('map-stream'),
+   fs = require('fs-extra'),
+   configLessChecker = require('../../../lib/config-less-checker');
 
 const logger = require('../../../lib/logger').logger();
 
@@ -25,7 +27,10 @@ const logger = require('../../../lib/logger').logger();
  */
 function generateTaskForCollectThemes(taskParameters, config) {
    const tasks = config.modules.map((moduleInfo) => {
-      const input = path.join(moduleInfo.path, '/themes/*/*.less');
+      const input = [
+         path.join(moduleInfo.path, '/themes/*/*.less'),
+         path.join(moduleInfo.path, '/themes.config.json')
+      ];
       if (!taskParameters.config.less) {
          return function skipCollectStyleThemes(done) {
             done();
@@ -34,7 +39,7 @@ function generateTaskForCollectThemes(taskParameters, config) {
 
       return function collectStyleThemes() {
          return gulp
-            .src(input, { dot: false, nodir: true })
+            .src(input, { dot: false, nodir: true, allowEmpty: true })
             .pipe(
                plumber({
                   errorHandler(err) {
@@ -47,11 +52,43 @@ function generateTaskForCollectThemes(taskParameters, config) {
                   }
                })
             )
-            .pipe(mapStream((file, done) => {
-               const fileName = path.basename(file.path, '.less');
-               const folderName = path.basename(path.dirname(file.path));
-               if (fileName === folderName) {
-                  taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path));
+            .pipe(mapStream(async(file, done) => {
+               if (path.basename(file.path) === 'themes.config.json') {
+                  try {
+                     const parsedLessConfig = JSON.parse(file.contents);
+                     configLessChecker.checkOptions(parsedLessConfig);
+                     taskParameters.cache.addModuleLessConfiguration(moduleInfo.name, parsedLessConfig);
+                  } catch (error) {
+                     logger.error({
+                        message: 'Ошибка обработки файла конфигурации less для Интерфейсного модуля',
+                        error,
+                        filePath: file.path,
+                        moduleInfo
+                     });
+                  }
+               } else {
+                  const fileName = path.basename(file.path, '.less');
+                  const folderName = path.basename(path.dirname(file.path));
+                  if (fileName === folderName) {
+                     const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
+                     let themeConfig;
+                     if (!(await fs.pathExists(themeConfigPath))) {
+                        logger.warning(`Для темы ${file.path} не задан файл конфигурации ${themeConfigPath}` +
+                        ' с набором тегов совместимости. Данная тема билдиться не будет.');
+                     } else {
+                        try {
+                           themeConfig = await fs.readJson(themeConfigPath);
+                        } catch (error) {
+                           logger.error({
+                              message: 'Ошибка чтения конфигурации темы. Проверьте правильность описания файла конфигугации',
+                              error,
+                              filePath: themeConfigPath,
+                              moduleInfo
+                           });
+                        }
+                     }
+                     taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path), themeConfig);
+                  }
                }
                done();
             }));

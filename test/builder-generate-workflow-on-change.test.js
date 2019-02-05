@@ -14,7 +14,9 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    sourceFolder = path.join(workspaceFolder, 'source'),
    configPath = path.join(workspaceFolder, 'config.json'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
-   moduleSourceFolder = path.join(sourceFolder, 'Модуль');
+   moduleSourceFolder = path.join(sourceFolder, 'Модуль'),
+   noThemesModuleOutputFolder = path.join(outputFolder, 'Modul_bez_tem'),
+   noThemesModuleSourceFolder = path.join(sourceFolder, 'Модуль без тем');
 
 const { isSymlink, isRegularFile } = require('./lib');
 
@@ -78,6 +80,10 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
             {
                name: 'Модуль',
                path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'Модуль без тем',
+               path: path.join(sourceFolder, 'Модуль без тем')
             }
          ]
       };
@@ -88,45 +94,56 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
 
       // проверим, что все нужные файлы есть в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
+      let noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRenameThemed_old.css',
-         'ForRenameThemed_old.less',
-         'ForRenameThemed_old_online.css',
+         'ForRename_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
-         'MyComponent.js'
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+      noThemesResultsFiles.should.have.members([
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'themes.config.json',
+         'themes.config.json.js'
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
-      const forRenameThemedNewFilePath = path.join(moduleSourceFolder, 'ForRenameThemed_new.less');
-      const jsComponentPath = path.join(moduleSourceFolder, 'MyComponent.js');
-      const jsComponent = await fs.readFile(jsComponentPath, 'utf8');
+      const noThemesForRenameNewFilePath = path.join(noThemesModuleSourceFolder, 'ForRename_new.less');
       await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), forRenameNewFilePath);
-      await fs.rename(path.join(moduleSourceFolder, 'ForRenameThemed_old.less'), forRenameThemedNewFilePath);
-
-      // поменяем темизируемую зависимость
-      await fs.writeFile(
-         jsComponentPath,
-         jsComponent.replace('ForRenameThemed_old', 'ForRenameThemed_new')
-      );
+      await fs.rename(path.join(noThemesModuleSourceFolder, 'ForRename_old.less'), noThemesForRenameNewFilePath);
 
       await runWorkflowBuildOnChange(forRenameNewFilePath);
+      await runWorkflowBuildOnChange(noThemesForRenameNewFilePath);
 
       // проверим, что все нужные файлы появились в "стенде"
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRenameThemed_old.css',
-         'ForRenameThemed_old.less',
-         'ForRenameThemed_old_online.css',
+         'ForRename_old_online.css',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'ForRename_new.css',
+         'ForRename_new_online.css',
+         'ForRename_new.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
+      noThemesResultsFiles.should.have.members([
          'ForRename_old.css',
          'ForRename_old.less',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js'
+         'themes.config.json',
+         'themes.config.json.js'
       ]);
+
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
-      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(false);
+      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(true);
+      (await isRegularFile(noThemesModuleOutputFolder, 'ForRename_new.css')).should.equal(true);
+      (await isRegularFile(noThemesModuleOutputFolder, 'ForRename_new_online.css')).should.equal(false);
 
       // запустим таску повторно
       await runWorkflowBuild();
@@ -134,95 +151,18 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRenameThemed_new.css',
-         'ForRenameThemed_new.less',
-         'ForRenameThemed_new_online.css',
+         'ForRename_new_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js'
+         'themes.config.json',
+         'themes.config.json.js'
       ]);
-
-      await clearWorkspace();
-   });
-   it('compile less without themes', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/less');
-      await prepareTest(fixtureFolder);
-
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         less: true,
-         themes: false,
-         modules: [
-            {
-               name: 'SBIS3.CONTROLS',
-               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
-            },
-            {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
-            },
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
-
-      // запустим таску
-      await runWorkflowBuild();
-
-      // проверим, что все нужные файлы есть в "стенде"
-      let resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForRenameThemed_old.css',
-         'ForRenameThemed_old.less',
-         'ForRename_old.css',
-         'ForRename_old.less',
-         'MyComponent.js'
-      ]);
-
-      const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
-      const forRenameThemedNewFilePath = path.join(moduleSourceFolder, 'ForRenameThemed_new.less');
-      const jsComponentPath = path.join(moduleSourceFolder, 'MyComponent.js');
-      const jsComponent = await fs.readFile(jsComponentPath, 'utf8');
-      await fs.rename(path.join(moduleSourceFolder, 'ForRename_old.less'), forRenameNewFilePath);
-      await fs.rename(path.join(moduleSourceFolder, 'ForRenameThemed_old.less'), forRenameThemedNewFilePath);
-
-      // поменяем темизируемую зависимость
-      await fs.writeFile(
-         jsComponentPath,
-         jsComponent.replace('ForRenameThemed_old', 'ForRenameThemed_new')
-      );
-
-      await runWorkflowBuildOnChange(forRenameNewFilePath);
-
-      // проверим, что все нужные файлы появились в "стенде"
-      // старый файл ForRename_old остаётся. это нормально
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForRenameThemed_old.css',
-         'ForRenameThemed_old.less',
-         'ForRename_old.css',
-         'ForRename_old.less',
+      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
+      noThemesResultsFiles.should.have.members([
          'ForRename_new.css',
          'ForRename_new.less',
-         'MyComponent.js'
-      ]);
-      (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
-
-      // запустим таску повторно
-      await runWorkflowBuild();
-
-      // проверим, что все лишние файлы (ForRename_old.css) удалились
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'ForRenameThemed_new.css',
-         'ForRenameThemed_new.less',
-         'ForRename_new.css',
-         'ForRename_new.less',
-         'MyComponent.js'
+         'themes.config.json',
+         'themes.config.json.js'
       ]);
 
       await clearWorkspace();
