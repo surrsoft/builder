@@ -130,9 +130,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          path.join(noThemesModuleSourceFolder, 'ForRename_old.less'),
          path.join(noThemesModuleSourceFolder, 'ForRename_new.less')
       );
-      let filePathForChange, data;
-      filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
-      data = await fs.readFile(filePathForChange);
+      const filePathForChange = path.join(moduleSourceFolder, 'ForChange.less');
+      const data = await fs.readFile(filePathForChange);
       await fs.writeFile(filePathForChange, `${data.toString()}\n.test-selector2 {}`);
 
       // запустим повторно таску
