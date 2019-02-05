@@ -15,11 +15,9 @@ require('../lib/logger').setGulpLogger();
 chai.use(chaiAsPromised);
 chai.should();
 
-function copyWS() {
-   const nodeModulesPath = path.normalize(path.join(__dirname, '../node_modules'));
+function copyWS(modules) {
    const fixtureWSPath = path.join(__dirname, 'fixtureWS');
    const prepareWS = require('../gulp/common/generate-task/prepare-ws.js');
-   const ModuleInfo = require('../gulp/common/classes/base-module-info');
    const TaskParameters = require('../gulp/common/classes/task-parameters');
    const Config = require('../gulp/builder/classes/configuration');
 
@@ -28,16 +26,7 @@ function copyWS() {
    const config = new Config();
    config.cachePath = fixtureWSPath;
    config.needTemplates = true;
-   config.modules = [
-      new ModuleInfo('WS.Core', '', path.join(nodeModulesPath, 'sbis3-ws/WS.Core')),
-      new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data')),
-      new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View')),
-      new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom')),
-      new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router')),
-      new ModuleInfo('Inferno', '', path.join(nodeModulesPath, 'sbis3-ws/Inferno')),
-      new ModuleInfo('Controls', '', path.join(nodeModulesPath, 'sbis3-controls/Controls')),
-      new ModuleInfo('Types', '', path.join(nodeModulesPath, 'saby-types/Types'))
-   ];
+   config.modules = modules;
    const taskParameters = new TaskParameters(config, null);
    return new Promise((resolve) => {
       prepareWS(taskParameters)(resolve);
@@ -55,13 +44,30 @@ process.on('unhandledRejection', (reason, p) => {
    );
 });
 
+function getPlatformModules() {
+   const nodeModulesPath = path.normalize(path.join(__dirname, '../node_modules'));
+   const ModuleInfo = require('../gulp/common/classes/base-module-info');
+   return [
+      new ModuleInfo('WS.Core', '', path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), true),
+      new ModuleInfo('WS.Data', '', path.join(nodeModulesPath, 'ws-data/WS.Data'), true),
+      new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View'), true),
+      new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom'), true),
+      new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router'), true),
+      new ModuleInfo('Inferno', '', path.join(nodeModulesPath, 'sbis3-ws/Inferno'), true),
+      new ModuleInfo('Controls', '', path.join(nodeModulesPath, 'sbis3-controls/Controls'), true),
+      new ModuleInfo('Types', '', path.join(nodeModulesPath, 'saby-types/Types'), true)
+   ];
+}
+
 let initialized = false;
 async function init() {
    if (!initialized) {
       try {
-         await copyWS();
+         const modules = getPlatformModules();
+         await copyWS(modules);
+         const requiredModules = modules.map(moduleInfo => moduleInfo.name);
          process.env['ws-core-path'] = path.join(__dirname, 'fixtureWS/platform/WS.Core');
-         require('../gulp/common/node-ws').init();
+         require('../gulp/common/node-ws').init(requiredModules);
          initialized = true;
       } catch (e) {
          // eslint-disable-next-line no-console
