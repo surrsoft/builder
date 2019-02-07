@@ -12,7 +12,7 @@ const gulp = require('gulp'),
    finalizeOptimizeDistrib = require('../plugins/finalize-optimize-distrib'),
    plumber = require('gulp-plumber'),
    {
-      saveCustomPackResults,
+      saveModuleCustomPackResults,
       generateAllCustomPackages,
       collectAllIntersects
    } = require('../../../lib/pack/custom-packer'),
@@ -235,7 +235,7 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
 function generateSaveResultsTask(taskParameters, results, applicationRoot) {
    return function saveCustomPackerResults() {
       results.bundlesJson = results.bundles;
-      return saveCustomPackResults(taskParameters, results, applicationRoot);
+      return saveModuleCustomPackResults(taskParameters, results, applicationRoot);
    };
 }
 
