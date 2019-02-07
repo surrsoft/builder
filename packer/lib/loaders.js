@@ -142,7 +142,7 @@ async function jsonLoader(module) {
  */
 async function textLoader(module) {
    const content = await fs.readFile(module.fullPath, 'utf8');
-   return `define('${module.fullName}',function(){return ${JSON.stringify(content)};});`;
+   return `define('${module.fullName}', [], function(){return ${JSON.stringify(content)};});`;
 }
 
 async function browserLoader(module) {

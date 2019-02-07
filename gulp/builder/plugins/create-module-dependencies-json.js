@@ -53,6 +53,28 @@ const parsePlugins = dep => [
 ];
 
 /**
+ * Получаем набор файлов css и jstpl для последующего
+ * добавления в module-dependencies
+ * @param inputFiles - список всех файлов текущего Интерфейсного модуля
+ * @returns {Array[]}
+ */
+function getCssAndJstplFiles(inputFiles) {
+   const
+      cssFiles = [],
+      jstplFiles = [];
+
+   inputFiles.forEach((filePath) => {
+      if (filePath.endsWith('.less') || filePath.endsWith('.css')) {
+         cssFiles.push(filePath.replace('.less', '.css'));
+      }
+      if (filePath.endsWith('.jstpl')) {
+         jstplFiles.push(filePath);
+      }
+   });
+   return [cssFiles, jstplFiles];
+}
+
+/**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -139,14 +161,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
-            const cssFiles = taskParameters.cache
-               .getInputPathsByFolder(moduleInfo.path)
-               .filter(filePath => filePath.endsWith('.less') || filePath.endsWith('.css'))
-               .map(filePath => filePath.replace('.less', '.css'));
+            const [cssFiles, jstplFiles] = getCssAndJstplFiles(
+               taskParameters.cache.getInputPathsByFolder(moduleInfo.path)
+            );
             for (const filePath of cssFiles) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
+               json.nodes[nodeName] = {
+                  path: filePathToRelativeInResources(filePath)
+               };
+            }
+            for (const filePath of jstplFiles) {
+               const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
+               const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
+               const nodeName = `text!${prettyPath}`;
                json.nodes[nodeName] = {
                   path: filePathToRelativeInResources(filePath)
                };
