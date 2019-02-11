@@ -53,6 +53,13 @@ class GrabberConfiguration {
          throw new Error(`${startErrorMessage} Параметр output должен быть json-файлом.`);
       }
 
+      /**
+       * При работе сбора фраз локализации нам в обязательном порядке надо инициализировать ядро, поскольку
+       * для работы данной таски в обязательном порядке необходим модуль Core/markup/ParserUtilities
+       * @type {boolean}
+       */
+      this.needTemplates = true;
+
       if (this.rawConfig.hasOwnProperty('builderTests')) {
          this.builderTests = this.rawConfig.builderTests;
       }
