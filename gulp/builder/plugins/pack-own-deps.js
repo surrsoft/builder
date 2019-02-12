@@ -24,7 +24,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const jsFiles = [];
    return through.obj(
       function onTransform(file, encoding, callback) {
-         if (file.extname !== '.js') {
+         if (file.extname !== '.js' || file.library) {
             callback(null, file);
          } else {
             jsFiles.push(file);
