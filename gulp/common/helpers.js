@@ -69,17 +69,6 @@ function generateTaskForLoadCache(taskParameters) {
 }
 
 /**
- * Проверяем наличие Интерфейсного модуля в проекте
- * @param moduleName
- * @param taskParameters
- * @returns {boolean}
- */
-function checkForModuleInProject(moduleName, taskParameters) {
-   const modulesList = taskParameters.config.modules.map(module => module.name);
-   return modulesList.includes(moduleName);
-}
-
-/**
  * Генерация задачи инициализации пула воркеров
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
@@ -110,7 +99,6 @@ function generateTaskForInitWorkerPool(taskParameters) {
        * его в качестве эталона(но не забываем ругаться, если данное число больше чем
        * максимально возможное число ядер - 1).
        */
-      const isIntTest = checkForModuleInProject('Intest', taskParameters);
       let maxWorkers;
       if (taskParameters.config.maxWorkers) {
          // eslint-disable-next-line prefer-destructuring
@@ -118,7 +106,7 @@ function generateTaskForInitWorkerPool(taskParameters) {
          if (maxWorkers > (os.cpus().length - 1)) {
             throw new Error(`Custom max worker's count must be less than ${os.cpus().length} for current executing machine!`);
          }
-      } else if (isIntTest) {
+      } else if (taskParameters.config.intests) {
          maxWorkers = os.cpus().length - 2;
          if (maxWorkers < 0) {
             maxWorkers = 1;

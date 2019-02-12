@@ -318,6 +318,17 @@ class BuildConfiguration {
                moduleInfo.contents.availableLanguage[local] = getLanguageByLocale(local);
             }
          }
+
+         /**
+          * для Интеграционных тестов абсолютно не нужен ряд таск, которые
+          * по умолчанию выполняются для проектов с подобной конфигурацией
+          * сборки, при этом занимают довольно долго времени(3 с лишним минуты).
+          * Пока отключим их для тестов на уровне билдера, после научим задавать
+          * подобные параметры через Jinnee.
+          */
+         if (module.name === 'Intest') {
+            this.intests = true;
+         }
          this.modules.push(moduleInfo);
       }
 
