@@ -369,6 +369,7 @@ async function packageSingleHtml(
       divs = newDom.getElementsByTagName('div'),
       jsTarget = newDom.getElementById('ws-include-components'),
       cssTarget = newDom.getElementById('ws-include-css'),
+      excludeLocaleTarget = newDom.getElementById('builder-exclude-locale-packages'),
       htmlPath = filePath.split(path.sep),
       htmlName = htmlPath[htmlPath.length - 1],
       wsConfig = newDom.getElementById('ws-config');
@@ -428,7 +429,7 @@ async function packageSingleHtml(
                   )
                );
             });
-         } else {
+         } else if (!excludeLocaleTarget) {
             // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
             // пакеты для локалей запакуем с data-pack = "skip"
             // чтобы потом на ПП вырезать ненужные из html
