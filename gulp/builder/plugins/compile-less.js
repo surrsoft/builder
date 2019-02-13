@@ -12,6 +12,7 @@ const through = require('through2'),
    pMap = require('p-map'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
+   fs = require('fs-extra'),
    { buildLess } = require('../../../lib/build-less');
 
 /**
@@ -130,7 +131,22 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
          const
             moduleName = path.basename(moduleInfo.output),
             prettyModuleOutput = helpers.prettifyPath(moduleInfo.output),
+            needSaveImportLogs = taskParameters.config.logFolder && moduleLessConfig.importsLogger,
             compiledLess = [];
+
+         /**
+          * Если разработчиком в конфигурации less задан параметр для логгирования импортов для
+          * компилируемого less, создаём json-лог и пишем его в директорию логов с названием соответствующего
+          * Интерфейсного модуля. Если такой лог уже существует, предварительно вычитываем его и меняем набор
+          * импортов изменённых less(для инкрементальной сборки).
+          */
+         let lessImportsLogs = {}, lessImportsLogsPath;
+         if (needSaveImportLogs) {
+            lessImportsLogsPath = path.join(taskParameters.config.logFolder, `less-imports-for-${moduleName}.json`);
+            if (await fs.pathExists(lessImportsLogsPath)) {
+               lessImportsLogs = await fs.readJson(lessImportsLogsPath);
+            }
+         }
 
          await pMap(
             moduleLess,
@@ -191,6 +207,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         newFile.path = outputPath;
                         newFile.base = moduleInfo.output;
                         this.push(newFile);
+
+                        if (needSaveImportLogs) {
+                           lessImportsLogs[outputPath] = {
+                              importedByBuilder: compiled.importedByBuilder,
+                              allImports: compiled.imports
+                           };
+                        }
                      }
                   }
                } catch (error) {
@@ -215,6 +238,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                moduleInfo
             });
             this.push(jsonFile);
+         }
+
+         if (needSaveImportLogs) {
+            await fs.outputJson(lessImportsLogsPath, lessImportsLogs);
          }
          callback();
       }
