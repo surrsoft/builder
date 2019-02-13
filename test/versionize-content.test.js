@@ -66,6 +66,20 @@ describe('versionize-content', () => {
       result.should.equal('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{BUILDER_VERSION_STUB}\')');
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\')'
+      };
+      result = versionizeContent.versionizeStyles(currentFile);
+      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{BUILDER_VERSION_STUB}#iefix\')');
+      currentFile.versioned.should.equal(true);
+
+      currentFile = {
+         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?test123\')'
+      };
+      result = versionizeContent.versionizeStyles(currentFile);
+      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{BUILDER_VERSION_STUB}#test123\')');
+      currentFile.versioned.should.equal(true);
+
       // Проверим, чтобы игнорировался cdn
       const cdnData = 'src: url(\'/cdn/fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\') format(\'embedded-opentype\')';
       currentFile = {
