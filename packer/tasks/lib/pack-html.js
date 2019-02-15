@@ -369,9 +369,9 @@ async function packageSingleHtml(
       divs = newDom.getElementsByTagName('div'),
       jsTarget = newDom.getElementById('ws-include-components'),
       cssTarget = newDom.getElementById('ws-include-css'),
-      excludeLocaleTarget = newDom.getElementById('builder-exclude-locale-packages'),
       htmlPath = filePath.split(path.sep),
       htmlName = htmlPath[htmlPath.length - 1],
+      localeExcludeTargets = [],
       wsConfig = newDom.getElementById('ws-config');
 
    let themeName;
@@ -385,6 +385,12 @@ async function packageSingleHtml(
       return newDom;
    }
 
+   availableLanguage.forEach((locale) => {
+      const localeExcludeTarget = newDom.getElementById(`builder-exclude-locale-${locale}`);
+      if (localeExcludeTarget) {
+         localeExcludeTargets.push(locale);
+      }
+   });
    const startNodes = getStartNodes(divs);
 
    const filesToPack = await packInOrder(
@@ -429,11 +435,17 @@ async function packageSingleHtml(
                   )
                );
             });
-         } else if (!excludeLocaleTarget) {
+         } else {
             // "dict": {"en-US": "", "ru-RU": ""}, "cssForLocale": {"en-US": []} lkz
             // пакеты для локалей запакуем с data-pack = "skip"
             // чтобы потом на ПП вырезать ненужные из html
-            Object.keys(filesToPack[key]).forEach((locale) => {
+            // Если разработчик задал таргеты для исключения пакетов локали из паковки статических html,
+            // указанные таргеты пакетировать не будем.
+            let availableLocalesToPack = Object.keys(filesToPack[key]);
+            if (localeExcludeTargets.length > 0) {
+               availableLocalesToPack = availableLocalesToPack.filter(locale => !localeExcludeTargets.includes(locale));
+            }
+            availableLocalesToPack.forEach((locale) => {
                packages[attr2ext[key]] = packages[attr2ext[key]].concat(
                   generatePackage(
                      taskParameters,
