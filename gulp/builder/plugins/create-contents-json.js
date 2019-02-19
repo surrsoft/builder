@@ -17,6 +17,12 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   if (
+      taskParameters.config.joinedMeta &&
+      !taskParameters.config.commonContents
+   ) {
+      taskParameters.config.commonContents = {};
+   }
    return through.obj(
       function onTransform(file, encoding, callback) {
          callback(null, file);
@@ -28,6 +34,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             // подготовим contents.json и contents.js
             if (taskParameters.config.version) {
                moduleInfo.contents.buildnumber = '%{BUILDER_VERSION_STUB}';
+            }
+
+            // сохраняем модульный contents в общий, если необходимо
+            if (taskParameters.config.joinedMeta) {
+               helpers.joinContents(taskParameters.config.commonContents, moduleInfo.contents);
             }
 
             const contentsJsFile = new Vinyl({

@@ -41,4 +41,58 @@ describe('helpers', () => {
       helpers.prettifyPath('C:\\/dir\\/').should.equal('C:/dir/');
       helpers.prettifyPath('./../Dir').should.equal('../Dir');
    });
+
+   it('joinContents', () => {
+      const firstModuleContents = {
+         availableLanguage: {
+            'en-US': 'English',
+            'ru-RU': 'Русский'
+         },
+         buildMode: 'debug',
+         buildnumber: 'test-1',
+         defaultLanguage: 'ru-RU',
+         htmlNames: {
+            'MyModule/MyController': 'MyTestPage.html'
+         },
+         modules: {
+            'WS.Core': {
+               dict: [
+                  'en-US',
+                  'ru-RU'
+               ]
+            }
+         }
+      };
+      const secondModuleContents = {
+         availableLanguage: {
+            'en-US': 'English',
+            'ru-RU': 'Русский'
+         },
+         buildMode: 'debug',
+         buildnumber: 'test-1',
+         defaultLanguage: 'ru-RU',
+         htmlNames: {},
+         modules: { Controls: {} }
+      };
+      const commonContents = {};
+      helpers.joinContents(commonContents, firstModuleContents);
+      helpers.joinContents(commonContents, secondModuleContents);
+      commonContents.buildnumber.should.equal('test-1');
+      commonContents.buildMode.should.equal('debug');
+      commonContents.defaultLanguage.should.equal('ru-RU');
+      commonContents.htmlNames.hasOwnProperty('MyModule/MyController').should.equal(true);
+      commonContents.htmlNames['MyModule/MyController'].should.equal('MyTestPage.html');
+      commonContents.availableLanguage.hasOwnProperty('en-US').should.equal(true);
+      commonContents.availableLanguage['en-US'].should.equal('English');
+      commonContents.availableLanguage.hasOwnProperty('ru-RU').should.equal(true);
+      commonContents.availableLanguage['ru-RU'].should.equal('Русский');
+      commonContents.modules.hasOwnProperty('Controls').should.equal(true);
+      helpers.isEqualObjectFirstLevel(commonContents.modules.Controls, {}).should.equal(true);
+      commonContents.modules.hasOwnProperty('WS.Core').should.equal(true);
+      commonContents.modules['WS.Core'].hasOwnProperty('dict').should.equal(true);
+      commonContents.modules['WS.Core'].dict.should.include.members([
+         'en-US',
+         'ru-RU'
+      ]);
+   });
 });

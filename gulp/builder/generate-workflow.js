@@ -7,7 +7,8 @@
 
 const fs = require('fs-extra'),
    gulp = require('gulp'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   path = require('path');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
@@ -69,11 +70,53 @@ function generateWorkflow(processArgv) {
       generateTaskForCustomPack(taskParameters),
       generateTaskForTerminatePool(taskParameters),
       generateTaskForGzip(taskParameters),
+      generateTaskForSaveJoinedMeta(taskParameters),
       generateTaskForSaveLoggerReport(taskParameters),
 
       // generateTaskForUnlock после всего
       guardSingleProcess.generateTaskForUnlock()
    );
+}
+
+/**
+ * Сохраняем в корень каталога основные мета-файлы сборщика, используемые в дальнейшем
+ * в онлайн-продуктах:
+ * 1) contents - основная мета-информация, необходимая для настройки require и функционирования
+ * приложения.
+ * 2) module-dependencies - используется плагином SBIS Dependency Tree.
+ * Остальные файлы(bundles.json и bundlesRoute.json) будут сохранены в соответствующей таске по
+ * сохранению результатов кастомной паковки.
+ * @param taskParameters
+ * @returns {Promise<void>}
+ */
+function generateTaskForSaveJoinedMeta(taskParameters) {
+   if (!taskParameters.config.joinedMeta) {
+      return function skipSavejoinedMeta(done) {
+         done();
+      };
+   }
+   return async function savejoinedMeta() {
+      // save joined module-dependencies for non-jinnee application
+      const root = taskParameters.config.rawConfig.output;
+      if (taskParameters.config.dependenciesGraph) {
+         await fs.writeJson(
+            path.join(
+               root,
+               'module-dependencies.json'
+            ),
+            taskParameters.cache.getModuleDependencies()
+         );
+      }
+      if (taskParameters.config.commonContents) {
+         await fs.writeJson(
+            path.join(
+               root,
+               'contents.json'
+            ),
+            taskParameters.config.commonContents
+         );
+      }
+   };
 }
 
 function generateTaskForClearCache(taskParameters) {

@@ -13,6 +13,7 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    {
       saveModuleCustomPackResults,
+      saveRootBundlesMeta,
       generateAllCustomPackages,
       collectAllIntersects
    } = require('../../../lib/pack/custom-packer'),
@@ -233,9 +234,11 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
 }
 
 function generateSaveResultsTask(taskParameters, results, applicationRoot) {
-   return function saveCustomPackerResults() {
-      results.bundlesJson = results.bundles;
-      return saveModuleCustomPackResults(taskParameters, results, applicationRoot);
+   return async function saveCustomPackerResults() {
+      if (taskParameters.config.joinedMeta) {
+         await saveRootBundlesMeta(applicationRoot, results);
+      }
+      await saveModuleCustomPackResults(taskParameters, results, applicationRoot);
    };
 }
 
