@@ -99,6 +99,9 @@ class BuildConfiguration {
       // compile themed styles
       this.themes = false;
 
+      // join module's meta files into common root meta file
+      this.joinedMeta = false;
+
       // copy sources to output directory
       this.sources = true;
 
@@ -188,6 +191,11 @@ class BuildConfiguration {
       // source flag
       if (this.rawConfig.hasOwnProperty('sources') && typeof this.rawConfig.sources === 'boolean') {
          this.sources = this.rawConfig.sources;
+      }
+
+      // joinedMeta flag
+      if (this.rawConfig.hasOwnProperty('joinedMeta') && typeof this.rawConfig.joinedMeta === 'boolean') {
+         this.joinedMeta = this.rawConfig.joinedMeta;
       }
 
       // resourcesUrl flag
