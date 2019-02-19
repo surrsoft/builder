@@ -15,7 +15,8 @@ def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
                     credentialsId: CREDENTIAL_ID_GIT,
                     url: "${GIT}:sbis-ci/jenkins_pipeline.git"]]
                                     ])
+        helper = load "./jenkins_pipeline/platforma/branch/helper"
         start = load "./jenkins_pipeline/platforma/branch/JenkinsfileBuilder"
-        start.start(version, workspace)
+        start.start(version, workspace, helper)
     }
 }
