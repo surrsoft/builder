@@ -120,7 +120,7 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
                root,
                'contents.js'
             ),
-            `contents=${JSON.stringify(taskParameters.config.commonContents)}`
+            `contents=${JSON.stringify(taskParameters.config.commonContents)};`
          );
       }
    };
