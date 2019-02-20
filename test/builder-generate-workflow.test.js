@@ -19,6 +19,7 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    sourceFolder = path.join(workspaceFolder, 'source'),
    configPath = path.join(workspaceFolder, 'config.json'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
+   module2OutputFolder = path.join(outputFolder, 'Modul2'),
    moduleSourceFolder = path.join(sourceFolder, 'Модуль'),
    noThemesModuleOutputFolder = path.join(outputFolder, 'Modul_bez_tem'),
    noThemesModuleSourceFolder = path.join(sourceFolder, 'Модуль без тем'),
@@ -881,6 +882,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Modul',
                path: path.join(sourceFolder, 'Modul')
+            },
+            {
+               name: 'Modul2',
+               path: path.join(sourceFolder, 'Modul2')
             }
          ]
       };
@@ -896,6 +901,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Modul.min.js',
          'Modul.modulepack.js',
          '_Cycle_dependence',
+         '_External_dependence',
          '_es5',
          '_es6',
          'libraryCycle.es',
@@ -905,7 +911,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          'privateDepCycle.es',
          'privateDepCycle.js',
          'privateDepCycle.min.js',
-         'privateDepCycle.modulepack.js'
+         'privateDepCycle.modulepack.js',
+         'privateExternalDep.ts',
+         'privateExternalDep.js',
+         'privateExternalDep.min.js',
+         'privateExternalDep.modulepack.js'
       ];
 
       /**
@@ -922,7 +932,14 @@ describe('gulp/builder/generate-workflow.js', () => {
          const correctModulesPath = path.join(fixtureFolder, 'compiledCorrectResult');
 
          await pMap(
-            ['Modul.js', 'Modul.modulepack.js', 'libraryCycle.js', 'privateDepCycle.js'],
+            [
+               'Modul.js',
+               'Modul2.js',
+               'Modul.modulepack.js',
+               'libraryCycle.js',
+               'privateDepCycle.js',
+               'privateExternalDep.js'
+            ],
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
                correctModulesContent[basename] = readedFile
@@ -978,6 +995,24 @@ describe('gulp/builder/generate-workflow.js', () => {
          compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
       });
+      it('test-external-private-dependency', async() => {
+         let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
+         let packedCompiledEsOutputPath = path.join(module2OutputFolder, 'Modul.modulepack.js');
+
+         let compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         let packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+
+         compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
+         packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.modulepack.js');
+
+         compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
+      });
       it('workflow-rebuilded', async() => {
          await runWorkflow();
       });
@@ -1027,6 +1062,24 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+      });
+      it('test-external-private-dependency', async() => {
+         let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
+         let packedCompiledEsOutputPath = path.join(module2OutputFolder, 'Modul.modulepack.js');
+
+         let compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         let packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+
+         compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
+         packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.modulepack.js');
+
+         compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workspace-cleared', async() => {
          await clearWorkspace();
