@@ -135,6 +135,13 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             );
          }
       }
+      await fs.writeFile(
+         path.join(
+            root,
+            'router.js'
+         ),
+         'define(\'router\', [], function(){ return {}; })'
+      );
    };
 }
 
