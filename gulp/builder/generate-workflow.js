@@ -107,6 +107,9 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             taskParameters.cache.getModuleDependencies()
          );
       }
+      if (!taskParameters.config.customPack) {
+         await fs.writeFile(path.join(root, 'bundles.js'), 'bundles={};');
+      }
       if (taskParameters.config.commonContents) {
          await fs.writeJson(
             path.join(
@@ -132,6 +135,13 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             );
          }
       }
+      await fs.writeFile(
+         path.join(
+            root,
+            'router.js'
+         ),
+         'define(\'router\', [], function(){ return {}; })'
+      );
    };
 }
 
