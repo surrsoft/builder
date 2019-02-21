@@ -115,6 +115,22 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             ),
             taskParameters.config.commonContents
          );
+         await fs.writeFile(
+            path.join(
+               root,
+               'contents.js'
+            ),
+            `contents=${JSON.stringify(taskParameters.config.commonContents)};`
+         );
+         if (taskParameters.config.isReleaseMode) {
+            await fs.writeFile(
+               path.join(
+                  root,
+                  'contents.min.js'
+               ),
+               `contents=${JSON.stringify(taskParameters.config.commonContents)};`
+            );
+         }
       }
    };
 }
