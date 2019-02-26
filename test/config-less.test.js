@@ -4,9 +4,6 @@ const initTest = require('./init-test');
 const configLessChecker = require('../lib/config-less-checker');
 
 describe('less configuration checker', () => {
-   before(async() => {
-      await initTest();
-   });
 
    it('should set false for "multi" option as default', () => {
       const config = {
@@ -15,6 +12,15 @@ describe('less configuration checker', () => {
       configLessChecker.checkOptions(config);
       config.hasOwnProperty('multi').should.equal(true);
       config.multi.should.equal(false);
+   });
+
+   it('should set false for "multi" option if parameter has "false" value', () => {
+      const config = {
+         old: false
+      };
+      configLessChecker.checkOptions(config);
+      config.hasOwnProperty('old').should.equal(true);
+      config.old.should.equal(false);
    });
 
    it('should set true for "old" option as default', () => {
