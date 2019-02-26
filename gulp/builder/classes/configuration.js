@@ -291,9 +291,7 @@ class BuildConfiguration {
          this.isSourcesOutput = isSourcesOutput;
       }
 
-      this.needTemplates = this.rawConfig.hasOwnProperty('wml') ||
-         this.rawConfig.hasOwnProperty('htmlWml') ||
-         this.rawConfig.hasOwnProperty('deprecatedXhtml');
+      this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
       const missedNecessaryModules = buildConfigurationChecker.checkForNecessaryModules(this.rawConfig.modules);
 
       /**
