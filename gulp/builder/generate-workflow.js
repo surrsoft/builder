@@ -107,6 +107,9 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             taskParameters.cache.getModuleDependencies()
          );
       }
+      if (!taskParameters.config.customPack) {
+         await fs.writeFile(path.join(root, 'bundles.js'), 'bundles={};');
+      }
       if (taskParameters.config.commonContents) {
          await fs.writeJson(
             path.join(
@@ -115,7 +118,30 @@ function generateTaskForSaveJoinedMeta(taskParameters) {
             ),
             taskParameters.config.commonContents
          );
+         await fs.writeFile(
+            path.join(
+               root,
+               'contents.js'
+            ),
+            `contents=${JSON.stringify(taskParameters.config.commonContents)};`
+         );
+         if (taskParameters.config.isReleaseMode) {
+            await fs.writeFile(
+               path.join(
+                  root,
+                  'contents.min.js'
+               ),
+               `contents=${JSON.stringify(taskParameters.config.commonContents)};`
+            );
+         }
       }
+      await fs.writeFile(
+         path.join(
+            root,
+            'router.js'
+         ),
+         'define(\'router\', [], function(){ return {}; })'
+      );
    };
 }
 
