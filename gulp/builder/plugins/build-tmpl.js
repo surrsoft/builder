@@ -117,7 +117,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
                `чужого Интерфейсного модуля. Список таких зависимостей: [${externalPrivateDependencies.toString()}]. ` +
                'Используйте соответствующую данному приватному модулю библиотеку';
-            logger.error({
+            logger.warning({
                message,
                moduleInfo,
                filePath: relativeFilePath
