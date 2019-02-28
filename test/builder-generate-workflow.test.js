@@ -912,7 +912,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          'privateDepCycle.min.js',
          'privateExternalDep.ts',
          'privateExternalDep.js',
-         'privateExternalDep.min.js'
+         'privateExternalDep.min.js',
+         'testNativeNamesImports.ts',
+         'testNativeNamesImports.js',
+         'testNativeNamesImports.min.js',
+         'testNativeNamesImports.modulepack.js'
       ];
 
       /**
@@ -935,7 +939,9 @@ describe('gulp/builder/generate-workflow.js', () => {
                'Modul.modulepack.js',
                'libraryCycle.js',
                'privateDepCycle.js',
-               'privateExternalDep.js'
+               'privateExternalDep.js',
+               'testNativeNamesImports.js',
+               'testNativeNamesImports.modulepack.js'
             ],
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
@@ -961,6 +967,16 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-native-variable-names-processing', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
       });
       it('test-recurse-library-dependencies-in-store', async() => {
          const moduleSourcePath = helpers.unixifyPath(path.join(sourceFolder, 'Modul/Модуль.es'));
@@ -1031,6 +1047,16 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-native-variable-names-processing-after-rerun', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
       });
       it('test-cycle-private-dependency-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
