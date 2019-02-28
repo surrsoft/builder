@@ -76,6 +76,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      error,
                      filePath: library.history[0]
                   });
+               } else if (result.error) {
+                  logger.error(result.error);
                } else {
                   library.modulepack = result.compiled;
 
