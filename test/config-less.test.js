@@ -4,6 +4,9 @@ const initTest = require('./init-test');
 const configLessChecker = require('../lib/config-less-checker');
 
 describe('less configuration checker', () => {
+   before(async() => {
+      await initTest();
+   });
 
    it('should set false for "multi" option as default', () => {
       const config = {
