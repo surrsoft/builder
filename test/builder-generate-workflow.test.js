@@ -907,15 +907,12 @@ describe('gulp/builder/generate-workflow.js', () => {
          'libraryCycle.es',
          'libraryCycle.js',
          'libraryCycle.min.js',
-         'libraryCycle.modulepack.js',
          'privateDepCycle.es',
          'privateDepCycle.js',
          'privateDepCycle.min.js',
-         'privateDepCycle.modulepack.js',
          'privateExternalDep.ts',
          'privateExternalDep.js',
          'privateExternalDep.min.js',
-         'privateExternalDep.modulepack.js',
          'testNativeNamesImports.ts',
          'testNativeNamesImports.js',
          'testNativeNamesImports.min.js',
@@ -993,41 +990,33 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('test-cycle-private-dependency', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
-         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.modulepack.js');
 
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
+         (await isRegularFile(moduleOutputFolder, 'privateDepCycle.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
       });
       it('test-cycle-library-dependency', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
-         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.modulepack.js');
 
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
+         (await isRegularFile(moduleOutputFolder, 'libraryCycle.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
       });
       it('test-external-private-dependency', async() => {
          let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
-         let packedCompiledEsOutputPath = path.join(module2OutputFolder, 'Modul.modulepack.js');
 
          let compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         let packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         (await isRegularFile(module2OutputFolder, 'Modul.modulepack.js')).should.equal(false);
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
 
          compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
-         packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.modulepack.js');
 
          compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         (await isRegularFile(module2OutputFolder, 'privateExternalDep.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workflow-rebuilded', async() => {
          await runWorkflow();
@@ -1071,41 +1060,33 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('test-cycle-private-dependency-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
-         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.modulepack.js');
 
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
+         (await isRegularFile(moduleOutputFolder, 'privateDepCycle.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
       });
       it('test-cycle-library-dependency-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
-         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.modulepack.js');
 
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
+         (await isRegularFile(moduleOutputFolder, 'libraryCycle.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
       });
-      it('test-external-private-dependency', async() => {
+      it('test-external-private-dependency-after-rebuild', async() => {
          let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
-         let packedCompiledEsOutputPath = path.join(module2OutputFolder, 'Modul.modulepack.js');
 
          let compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         let packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         (await isRegularFile(module2OutputFolder, 'Modul.modulepack.js')).should.equal(false);
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
 
          compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
-         packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.modulepack.js');
 
          compiledEsContent = await fs.readFile(compiledEsOutputPath);
-         packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+         (await isRegularFile(module2OutputFolder, 'privateExternalDep.modulepack.js')).should.equal(false);
          compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workspace-cleared', async() => {
          await clearWorkspace();
