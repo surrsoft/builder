@@ -112,17 +112,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   filePath: relativeFilePath
                });
             }
-         } else if (externalPrivateDependencies.length > 0) {
-            taskParameters.cache.markFileAsFailed(file.history[0]);
-            const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
-               `чужого Интерфейсного модуля. Список таких зависимостей: [${externalPrivateDependencies.toString()}]. ` +
-               'Используйте соответствующую данному приватному модулю библиотеку';
-            logger.warning({
-               message,
-               moduleInfo,
-               filePath: relativeFilePath
-            });
          } else {
+            if (externalPrivateDependencies.length > 0) {
+               taskParameters.cache.markFileAsFailed(file.history[0]);
+               const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
+                  `чужого Интерфейсного модуля. Список таких зависимостей: [${externalPrivateDependencies.toString()}]. ` +
+                  'Используйте соответствующую данному приватному модулю библиотеку';
+               logger.warning({
+                  message,
+                  moduleInfo,
+                  filePath: relativeFilePath
+               });
+            }
+
             /**
              * запишем в markupCache информацию о версионировании, поскольку
              * markupCache извлекаем при паковке собственных зависимостей. Так
