@@ -17,6 +17,15 @@ describe('less configuration checker', () => {
       config.multi.should.equal(false);
    });
 
+   it('should set false for "multi" option if parameter has "false" value', () => {
+      const config = {
+         old: false
+      };
+      configLessChecker.checkOptions(config);
+      config.hasOwnProperty('old').should.equal(true);
+      config.old.should.equal(false);
+   });
+
    it('should set true for "old" option as default', () => {
       const config = {
          multi: true
