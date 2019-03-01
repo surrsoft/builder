@@ -315,7 +315,7 @@ describe('custompack-intersects', () => {
       await removeResultFiles();
    });
    it('should filter exclude rules for superbundles', () => {
-      const config = {
+      let config = {
          include: [
             'css!MyModule/Namespace/*',
             'MyModule/Namespace2/*'
@@ -331,5 +331,17 @@ describe('custompack-intersects', () => {
          'MyModule/Namespace2',
          'MyModule/Namespace2/SomeNamespace*'
       ]);
+
+      config = {
+         include: [
+            'Module1/Namespace1/*',
+            'Module1/*'
+         ],
+         exclude: [
+            'Module1/Namespace1/*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.length.should.equal(0);
    });
 });
