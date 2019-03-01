@@ -12,7 +12,6 @@ const
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
-   anyModulePath = path.join(workspaceFolder, 'AnyModule'),
    pathsForImport = [workspaceFolder],
    themes = {
       'online': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
