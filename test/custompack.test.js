@@ -314,4 +314,34 @@ describe('custompack-intersects', () => {
       removeAllNewLines(secondModuleIntersects).should.equal(removeAllNewLines(correctSecondModuleIntersects));
       await removeResultFiles();
    });
+   it('should filter exclude rules for superbundles', () => {
+      let config = {
+         include: [
+            'css!MyModule/Namespace/*',
+            'MyModule/Namespace2/*'
+         ],
+         exclude: [
+            'css!MyModule/*',
+            'MyModule/Namespace2',
+            'MyModule/Namespace2/SomeNamespace*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.should.have.members([
+         'MyModule/Namespace2',
+         'MyModule/Namespace2/SomeNamespace*'
+      ]);
+
+      config = {
+         include: [
+            'Module1/Namespace1/*',
+            'Module1/*'
+         ],
+         exclude: [
+            'Module1/Namespace1/*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.length.should.equal(0);
+   });
 });
