@@ -49,6 +49,11 @@ function generateBuildWorkflowOnChange(processArgv) {
 
    const taskParameters = new TaskParameters(config, new Cache(config));
 
+   // skip collectThemes task for non-less files rebuilding
+   if (!filePath.endsWith('.less')) {
+      taskParameters.config.less = false;
+   }
+
    // guardSingleProcess пришлось убрать из-за того что WebStorm может вызвать несколько процессов параллельно
    return gulp.series(
       generateTaskForLoadCache(taskParameters),
