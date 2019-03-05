@@ -52,7 +52,6 @@ const { needSymlink } = require('../../common/helpers');
  * @returns {Undertaker.TaskFunction}
  */
 function generateTaskForBuildModules(taskParameters) {
-   logger.info('Тестируем rcшную ветку, поскольку падает слишком много ошибок не связанных с билдером');
    const tasks = [];
    let countCompletedModules = 0;
 
