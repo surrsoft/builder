@@ -181,6 +181,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                            moduleInfo
                         };
                         logger.error(errorObject);
+                        logger.info(`Информация об Интерфейсных модулей для компилятора less: ${JSON.stringify(gulpModulesInfo)}`);
                         taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
                      } else {
                         const { compiled } = result;
