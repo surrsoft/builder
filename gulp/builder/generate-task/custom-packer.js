@@ -22,6 +22,20 @@ const gulp = require('gulp'),
    fs = require('fs-extra'),
    transliterate = require('../../../lib/transliterate');
 
+const typesLibraries = [
+   'Types/chain',
+   'Types/collection',
+   'Types/di',
+   'Types/display',
+   'Types/entity',
+   'Types/formatter',
+   'Types/function',
+   'Types/object',
+   'Types/shim',
+   'Types/source',
+   'Types/util'
+];
+
 function generateSetSuperBundles(root, configs) {
    return function setSuperBundles() {
       return setSuperBundle(root, configs);
@@ -183,8 +197,17 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
    };
 }
 
+async function saveTypesLibrariesBundlesRoute(applicationRoot) {
+   const bundlesRoute = {};
+   typesLibraries.forEach((currentLibrary) => {
+      bundlesRoute[currentLibrary] = `resources/${currentLibrary}.min.js`;
+   });
+   await fs.outputJson(path.join(applicationRoot, 'Types/bundlesRoute.json'), bundlesRoute);
+}
+
 function generateSaveResultsTask(taskParameters, results, applicationRoot) {
    return async function saveCustomPackerResults() {
+      await saveTypesLibrariesBundlesRoute(applicationRoot);
       if (taskParameters.config.joinedMeta) {
          await saveRootBundlesMeta(applicationRoot, results);
       }
