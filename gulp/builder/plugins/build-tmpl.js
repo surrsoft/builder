@@ -16,31 +16,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
    buildConfigurationChecker = require('../../../lib/check-build-for-main-modules'),
-   libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    templateExtReg = /(\.tmpl|\.wml)$/;
-
-/**
- * Проверяем, является ли зависимость скомпилированного шаблона приватной
- * зависимостью из чужого Интерфейсного модуля
- * @param{String} moduleName - имя текущего Интерфейсного модуля
- * @param{Array} dependencies - набор зависимостей скомпилированного шаблона.
- * @returns {Array}
- */
-function checkForExternalPrivateDeps(moduleName, dependencies) {
-   const result = [];
-   dependencies
-      .filter(dependencyName => libPackHelpers.isPrivate(dependencyName))
-      .forEach((dependencyName) => {
-         const
-            dependencyParts = dependencyName.split('/'),
-            dependencyModule = dependencyParts[0].split(/!|\?/).pop();
-
-         if (dependencyModule !== moduleName) {
-            result.push(dependencyName);
-         }
-      });
-   return result;
-}
 
 /**
  * Объявление плагина
@@ -82,7 +58,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             relativeFilePath,
             moduleInfo
          );
-         const externalPrivateDependencies = checkForExternalPrivateDeps(moduleInfo.name, result.dependencies);
          if (error) {
             const missedTemplateModules = buildConfigurationChecker.getMissedTemplateModules(
                ['View'],
@@ -113,18 +88,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
             }
          } else {
-            if (externalPrivateDependencies.length > 0) {
-               taskParameters.cache.markFileAsFailed(file.history[0]);
-               const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
-                  `чужого Интерфейсного модуля. Список таких зависимостей: [${externalPrivateDependencies.toString()}]. ` +
-                  'Используйте соответствующую данному приватному модулю библиотеку';
-               logger.warning({
-                  message,
-                  moduleInfo,
-                  filePath: relativeFilePath
-               });
-            }
-
             /**
              * запишем в markupCache информацию о версионировании, поскольку
              * markupCache извлекаем при паковке собственных зависимостей. Так
