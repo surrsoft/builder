@@ -315,6 +315,7 @@ describe('custompack-intersects', () => {
       await removeResultFiles();
    });
    it('should filter exclude rules for superbundles', () => {
+      // should remove exclude of css namespace for included nested css namespace
       let config = {
          include: [
             'css!MyModule/Namespace/*',
@@ -332,6 +333,7 @@ describe('custompack-intersects', () => {
          'MyModule/Namespace2/SomeNamespace*'
       ]);
 
+      // should remove bad exclude common namespace
       config = {
          include: [
             'Module1/Namespace1/*',
@@ -343,5 +345,54 @@ describe('custompack-intersects', () => {
       };
       config.exclude = customPacker.filterBadExcludeRules(config);
       config.exclude.length.should.equal(0);
+
+      // should remove bad singleton expressions
+      config = {
+         include: [
+            'MyModule/Namespace2/*',
+            'MyModule/Namespace2',
+         ],
+         exclude: [
+            'MyModule/Namespace2',
+            'MyModule/Namespace2/SomeNamespace*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.should.have.members([
+         'MyModule/Namespace2/SomeNamespace*'
+      ]);
+
+      // should remove common namespace exclude when include option contains nested css namespace
+      config = {
+         include: [
+            'css!MyModule/Namespace2/*',
+            'MyModule/Namespace2',
+         ],
+         exclude: [
+            'MyModule/*',
+            'MyModule/Namespace2/SomeNamespace*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.should.have.members([
+         'MyModule/Namespace2/SomeNamespace*'
+      ]);
+
+      // should save css exclude when include option contains nested common namespace
+      config = {
+         include: [
+            'MyModule/Namespace2/*',
+            'MyModule/Namespace2',
+         ],
+         exclude: [
+            'css!MyModule/*',
+            'MyModule/Namespace2/SomeNamespace*'
+         ]
+      };
+      config.exclude = customPacker.filterBadExcludeRules(config);
+      config.exclude.should.have.members([
+         'css!MyModule/*',
+         'MyModule/Namespace2/SomeNamespace*'
+      ]);
    });
 });
