@@ -29,7 +29,7 @@ async function execInPool(pool, funcName, funcArgs, filePath = '', moduleInfo = 
       }
       const [error, result, messagesForReport] = await pool
          .exec(funcName, [funcArgs, filePath, moduleInfoObj])
-         .timeout(180000);
+         .timeout(300000);
       logger.addMessagesFromWorker(messagesForReport);
       return [error, result];
    } catch (error) {
