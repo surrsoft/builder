@@ -764,7 +764,12 @@ describe('gulp/builder/generate-workflow.js', () => {
             "define('Modul/StableTS', [\n" +
                "    'require',\n" +
                "    'exports',\n" +
-               "    'Modul/Di'\n" +
+               "    'Modul/Di',\n" +
+               "    'browser!/cdn/sound/id3-reader/id3-minimized.js',\n" +
+               "    'is!browser?/cdn/sound/id3-reader/id3-minimized.js',\n" +
+               "    'is!browser?cdn/sound/id3-reader/id3-minimized.js',\n" +
+               "    '/cdn/sound/id3-reader/id3-minimized.js',\n" +
+               "    'cdn/sound/id3-reader/id3-minimized.js'\n" +
                '], function (require, exports, Di_es_1) {\n' +
                "    'use strict';\n" +
                "    Object.defineProperty(exports, '__esModule', { value: true });\n" +
