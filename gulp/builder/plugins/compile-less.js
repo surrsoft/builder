@@ -13,7 +13,8 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
-   { buildLess } = require('../../../lib/build-less');
+   { buildLess } = require('../../../lib/build-less'),
+   cssExt = /\.css$/;
 
 /**
  * Получаем путь до скомпиленного css в конечной директории относительно
@@ -82,7 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    return through.obj(
 
       /* @this Stream */
-      function onTransform(file, encoding, callback) {
+      async function onTransform(file, encoding, callback) {
          try {
             let isLangCss = false;
 
@@ -90,6 +91,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
                isLangCss = avlLang.includes(file.basename.replace('.less', ''));
                file.isLangCss = isLangCss;
+            }
+
+            if (file.extname === '.css' && !taskParameters.config.isReleaseMode) {
+               const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
+               if (lessInSource) {
+                  logger.info(`Compiled style from sources: ${file.path} will be ignored. ` +
+                  'Current style will be compiled from less source analog');
+                  callback(null);
+                  return;
+               }
+               callback(null, file);
+               return;
             }
 
             if (!file.path.endsWith('.less')) {
