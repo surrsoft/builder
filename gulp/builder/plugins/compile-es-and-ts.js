@@ -14,8 +14,6 @@ const through = require('through2'),
    esExt = /\.(es|ts)$/,
    jsExt = /\.js$/;
 
-const typescriptPlatform = new Set(['WS.Core', 'Transport', 'Lib', 'ServiceUpdateNotifier']);
-
 /**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
@@ -83,11 +81,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const jsInSources = file.history[0].replace(esExt, '.js');
 
             /**
-             * будем в любом случае перезатирать файл результатом компиляции(исключения только .ts в модуле
-             * WS.Core), поскольку в противном случае до таски паковки библиотек мы не дойдём в виду отсутствия
-             * скомпилированного модуля в потоке.
+             * будем в любом случае перезатирать файл результатом компиляции, поскольку в противном случае
+             * до таски паковки библиотек мы не дойдём в виду отсутствия скомпилированного модуля в потоке.
              */
-            if (await fs.pathExists(jsInSources) && file.extname === '.ts' && typescriptPlatform.has(moduleInfo.name)) {
+            if (file.extname === '.ts' && await fs.pathExists(jsInSources)) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                const message =
                   `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
