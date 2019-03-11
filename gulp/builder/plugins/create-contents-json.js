@@ -44,12 +44,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const contentsJsFile = new Vinyl({
                path: 'contents.js',
                contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(moduleInfo.contents))}`),
-               moduleInfo
+               moduleInfo,
+               compiled: true
             });
             const contentsJsonFile = new Vinyl({
                path: 'contents.json',
                contents: Buffer.from(JSON.stringify(helpers.sortObject(moduleInfo.contents), null, 2)),
-               moduleInfo
+               moduleInfo,
+               compiled: true
             });
             const
                currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop(),
@@ -59,12 +61,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const moduleMetaFile = new Vinyl({
                path: '.builder/module.js',
                contents: Buffer.from(moduleMetaContent),
-               moduleInfo
+               moduleInfo,
+               compiled: true
             });
             const moduleMetaMinFile = new Vinyl({
                path: '.builder/module.min.js',
                contents: Buffer.from(moduleMetaContent),
-               moduleInfo
+               moduleInfo,
+               compiled: true
             });
             this.push(contentsJsFile);
             this.push(contentsJsonFile);
