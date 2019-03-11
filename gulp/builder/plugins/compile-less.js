@@ -93,6 +93,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                file.isLangCss = isLangCss;
             }
 
+            /**
+             * in debug deploy(sources symlinks to the output instead of copying)
+             * we need to check for duplication of css files with the same output path.
+             * Symlink can be created only once.
+             */
             if (file.extname === '.css' && !taskParameters.config.isReleaseMode) {
                const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
                if (lessInSource) {
