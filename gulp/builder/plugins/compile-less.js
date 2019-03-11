@@ -101,8 +101,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
             if (file.extname === '.css' && !taskParameters.config.isReleaseMode) {
                const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
                if (lessInSource) {
-                  logger.info(`Compiled style from sources: ${file.path} will be ignored. ` +
-                  'Current style will be compiled from less source analog');
+                  const warnMessage = 'Compiled style from sources will be ignored: ' +
+                     'current style will be compiled from less source analog';
+                  logger.warning({
+                     message: warnMessage,
+                     filePath: file.path,
+                     moduleInfo
+                  });
                   callback(null);
                   return;
                }
