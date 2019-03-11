@@ -43,7 +43,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   esInSource = await fs.pathExists(file.path.replace(jsExt, '.es')),
                   tsInSource = await fs.pathExists(file.path.replace(jsExt, '.ts'));
 
-               if (esInSource || (tsInSource && !typescriptPlatform.has(moduleInfo.name))) {
+               if (esInSource || tsInSource) {
                   callback(null);
                } else {
                   callback(null, file);
