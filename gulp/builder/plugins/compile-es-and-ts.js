@@ -78,28 +78,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            const jsInSources = file.history[0].replace(esExt, '.js');
-
-            /**
-             * будем в любом случае перезатирать файл результатом компиляции, поскольку в противном случае
-             * до таски паковки библиотек мы не дойдём в виду отсутствия скомпилированного модуля в потоке.
-             */
-            if (file.extname === '.ts' && await fs.pathExists(jsInSources)) {
-               taskParameters.cache.markFileAsFailed(file.history[0]);
-               const message =
-                  `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
-                  'Необходимо удалить лишний JS-файл';
-
-               // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы пока
-               logger.debug({
-                  message,
-                  filePath: jsInSources,
-                  moduleInfo
-               });
-               callback(null, file);
-               return;
-            }
-
             // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы пока
             logger.debug({
                message: 'Компилируем в ES5',
