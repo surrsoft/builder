@@ -50,6 +50,7 @@ function checkForExternalPrivateDeps(moduleName, dependencies) {
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
+   const moduleName = path.basename(moduleInfo.output);
 
    return through.obj(async function onTransform(file, encoding, callback) {
       try {
@@ -82,7 +83,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             relativeFilePath,
             moduleInfo
          );
-         const externalPrivateDependencies = checkForExternalPrivateDeps(moduleInfo.name, result.dependencies);
+         const externalPrivateDependencies = checkForExternalPrivateDeps(
+            moduleName,
+            result.dependencies
+         );
          if (error) {
             const missedTemplateModules = buildConfigurationChecker.getMissedTemplateModules(
                ['View'],
