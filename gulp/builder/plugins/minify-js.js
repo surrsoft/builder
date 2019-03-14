@@ -73,7 +73,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             let outputFileWoExt;
             const extName = esExt.test(file.history[0]) ? esExt : file.extname;
-            const isLibrary = file.history[0].endsWith('.ts') || file.history[0].endsWith('.es');
 
             /**
              * объединённый словарь локализации пишется сразу же в кэш, поэтому для
@@ -150,7 +149,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
 
                // в случае библиотек в минифицированном виде нам всегда нужна только запакованная
-               if (!isLibrary) {
+               if (!file.library) {
                   this.push(
                      new Vinyl({
                         base: moduleInfo.output,

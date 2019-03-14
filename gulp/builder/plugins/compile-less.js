@@ -13,7 +13,8 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
-   { buildLess } = require('../../../lib/build-less');
+   { buildLess } = require('../../../lib/build-less'),
+   cssExt = /\.css$/;
 
 /**
  * Получаем путь до скомпиленного css в конечной директории относительно
@@ -82,7 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    return through.obj(
 
       /* @this Stream */
-      function onTransform(file, encoding, callback) {
+      async function onTransform(file, encoding, callback) {
          try {
             let isLangCss = false;
 
@@ -90,6 +91,28 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
                isLangCss = avlLang.includes(file.basename.replace('.less', ''));
                file.isLangCss = isLangCss;
+            }
+
+            /**
+             * in debug deploy(sources symlinks to the output instead of copying)
+             * we need to check for duplication of css files with the same output path.
+             * Symlink can be created only once.
+             */
+            if (file.extname === '.css' && !taskParameters.config.isReleaseMode) {
+               const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
+               if (lessInSource) {
+                  const warnMessage = 'Compiled style from sources will be ignored: ' +
+                     'current style will be compiled from less source analog';
+                  logger.warning({
+                     message: warnMessage,
+                     filePath: file.path,
+                     moduleInfo
+                  });
+                  callback(null);
+                  return;
+               }
+               callback(null, file);
+               return;
             }
 
             if (!file.path.endsWith('.less')) {
