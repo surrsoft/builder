@@ -156,14 +156,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
             prettyModuleOutput = helpers.prettifyPath(moduleInfo.output),
             needSaveImportLogs = taskParameters.config.logFolder && moduleLessConfig.importsLogger;
 
-         let compiledLess = [];
+         let compiledLess = new Set();
 
          /**
           * если уже существует мета-файл по результатам предыдущей сборки, необходимо
           * прочитать его и дополнить новыми скомпилированными стилями.
           */
          if (await fs.pathExists(path.join(moduleInfo.output, '.builder/compiled-less.min.json'))) {
-            compiledLess = await fs.readJson(path.join(moduleInfo.output, '.builder/compiled-less.min.json'));
+            compiledLess = new Set(await fs.readJson(path.join(moduleInfo.output, '.builder/compiled-less.min.json')));
          }
 
          /**
@@ -230,7 +230,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                                  helpers.unixifyPath(outputPath)
                               )
                            );
-                           compiledLess.push(relativeOutput);
+                           compiledLess.add(relativeOutput);
                         }
                         taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
                         taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
@@ -267,7 +267,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
          if (taskParameters.config.customPack) {
             const jsonFile = new Vinyl({
                path: '.builder/compiled-less.min.json',
-               contents: Buffer.from(JSON.stringify(compiledLess.sort(), null, 2)),
+               contents: Buffer.from(JSON.stringify([...compiledLess].sort(), null, 2)),
                moduleInfo
             });
             this.push(jsonFile);
