@@ -879,6 +879,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          typescript: true,
          minimize: true,
          builderTests: true,
+         dependenciesGraph: true,
          modules: [
             {
                name: 'WS.Core',
@@ -905,10 +906,16 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Modul.js',
          'Modul.min.js',
          'Modul.modulepack.js',
+         'external_public_deps.ts',
+         'external_public_deps.js',
+         'external_public_deps.min.js',
+         'external_public_deps.modulepack.js',
          '_Cycle_dependence',
          '_External_dependence',
          '_es5',
          '_es6',
+         'public',
+         'module-dependencies.json',
          'libraryCycle.es',
          'libraryCycle.js',
          'libraryCycle.min.js',
@@ -921,7 +928,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          'testNativeNamesImports.ts',
          'testNativeNamesImports.js',
          'testNativeNamesImports.min.js',
-         'testNativeNamesImports.modulepack.js'
+         'testNativeNamesImports.modulepack.js',
+         'publicFunction1.ts',
+         'publicFunction1.js',
+         'publicFunction1.min.js',
+         'publicFunction1.modulepack.js'
       ];
 
       /**
@@ -946,7 +957,9 @@ describe('gulp/builder/generate-workflow.js', () => {
                'privateDepCycle.js',
                'privateExternalDep.js',
                'testNativeNamesImports.js',
-               'testNativeNamesImports.modulepack.js'
+               'testNativeNamesImports.modulepack.js',
+               'external_public_deps.js',
+               'external_public_deps.modulepack.js'
             ],
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
@@ -962,6 +975,25 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('test-packed-library-dependencies-in-meta', async() => {
+         const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
+         const currentLibraryDeps = moduleDeps.links['Modul/external_public_deps'];
+         currentLibraryDeps.should.have.members([
+            'Modul/Modul',
+            'Modul/public/publicFunction2',
+            'Modul/publicFunction1'
+         ]);
+      });
+      it('test-first-level-return-statement-removal', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.modulepack.js']);
       });
       it('test-recurse', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.js');
@@ -1029,6 +1061,25 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content-after-rebuild', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('test-packed-library-dependencies-in-meta-after-rebuild', async() => {
+         const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
+         const currentLibraryDeps = moduleDeps.links['Modul/external_public_deps'];
+         currentLibraryDeps.should.have.members([
+            'Modul/Modul',
+            'Modul/public/publicFunction2',
+            'Modul/publicFunction1'
+         ]);
+      });
+      it('test-first-level-return-statement-removal-after-rebuild', async() => {
+         const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');
+         const packedCompiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.modulepack.js']);
       });
       it('test-recurse-library-dependencies-in-store-after-rebuild', async() => {
          const moduleSourcePath = helpers.unixifyPath(path.join(sourceFolder, 'Modul/Модуль.es'));
