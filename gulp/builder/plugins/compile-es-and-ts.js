@@ -14,8 +14,6 @@ const through = require('through2'),
    esExt = /\.(es|ts)$/,
    jsExt = /\.js$/;
 
-const typescriptPlatform = new Set(['WS.Core', 'Transport', 'Lib', 'ServiceUpdateNotifier']);
-
 /**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
@@ -45,7 +43,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   esInSource = await fs.pathExists(file.path.replace(jsExt, '.es')),
                   tsInSource = await fs.pathExists(file.path.replace(jsExt, '.ts'));
 
-               if (esInSource || (tsInSource && !typescriptPlatform.has(moduleInfo.name))) {
+               if (esInSource || tsInSource) {
                   callback(null);
                } else {
                   callback(null, file);
@@ -76,29 +74,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
-               callback(null, file);
-               return;
-            }
-
-            const jsInSources = file.history[0].replace(esExt, '.js');
-
-            /**
-             * будем в любом случае перезатирать файл результатом компиляции(исключения только .ts в модуле
-             * WS.Core), поскольку в противном случае до таски паковки библиотек мы не дойдём в виду отсутствия
-             * скомпилированного модуля в потоке.
-             */
-            if (await fs.pathExists(jsInSources) && file.extname === '.ts' && typescriptPlatform.has(moduleInfo.name)) {
-               taskParameters.cache.markFileAsFailed(file.history[0]);
-               const message =
-                  `Существующий JS-файл мешает записи результата компиляции '${file.path}'. ` +
-                  'Необходимо удалить лишний JS-файл';
-
-               // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы пока
-               logger.debug({
-                  message,
-                  filePath: jsInSources,
-                  moduleInfo
-               });
                callback(null, file);
                return;
             }
