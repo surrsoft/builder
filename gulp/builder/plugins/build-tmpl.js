@@ -83,10 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             relativeFilePath,
             moduleInfo
          );
-         const externalPrivateDependencies = checkForExternalPrivateDeps(
-            moduleName,
-            result.dependencies
-         );
+
          if (error) {
             const missedTemplateModules = buildConfigurationChecker.getMissedTemplateModules(
                ['View'],
@@ -117,6 +114,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
             }
          } else {
+            const externalPrivateDependencies = checkForExternalPrivateDeps(
+               moduleName,
+               result.dependencies
+            );
             if (externalPrivateDependencies.length > 0) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
