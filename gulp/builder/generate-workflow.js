@@ -7,8 +7,7 @@
 
 const fs = require('fs-extra'),
    gulp = require('gulp'),
-   pMap = require('p-map'),
-   path = require('path');
+   pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
@@ -19,6 +18,8 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
    guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
    generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
+   generateTaskForSaveJoinedMeta = require('../common/generate-task/save-joined-meta'),
+   { checkModuleDependenciesExisting } = require('../../lib/check-module-dependencies'),
    generateTaskForSaveLoggerReport = require('../common/generate-task/save-logger-report'),
    Cache = require('./classes/cache'),
    Configuration = require('./classes/configuration.js'),
@@ -66,6 +67,7 @@ function generateWorkflow(processArgv) {
       generateTaskForSaveCache(taskParameters),
       generateTaskForTerminatePool(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters),
+      generateTaskForCheckModuleDeps(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
       generateTaskForTerminatePool(taskParameters),
@@ -76,73 +78,6 @@ function generateWorkflow(processArgv) {
       // generateTaskForUnlock после всего
       guardSingleProcess.generateTaskForUnlock()
    );
-}
-
-/**
- * Сохраняем в корень каталога основные мета-файлы сборщика, используемые в дальнейшем
- * в онлайн-продуктах:
- * 1) contents - основная мета-информация, необходимая для настройки require и функционирования
- * приложения.
- * 2) module-dependencies - используется плагином SBIS Dependency Tree.
- * Остальные файлы(bundles.json и bundlesRoute.json) будут сохранены в соответствующей таске по
- * сохранению результатов кастомной паковки.
- * @param taskParameters
- * @returns {Promise<void>}
- */
-function generateTaskForSaveJoinedMeta(taskParameters) {
-   if (!taskParameters.config.joinedMeta) {
-      return function skipSavejoinedMeta(done) {
-         done();
-      };
-   }
-   return async function savejoinedMeta() {
-      // save joined module-dependencies for non-jinnee application
-      const root = taskParameters.config.rawConfig.output;
-      if (taskParameters.config.dependenciesGraph) {
-         await fs.writeJson(
-            path.join(
-               root,
-               'module-dependencies.json'
-            ),
-            taskParameters.cache.getModuleDependencies()
-         );
-      }
-      if (!taskParameters.config.customPack) {
-         await fs.writeFile(path.join(root, 'bundles.js'), 'bundles={};');
-      }
-      if (taskParameters.config.commonContents) {
-         await fs.writeJson(
-            path.join(
-               root,
-               'contents.json'
-            ),
-            taskParameters.config.commonContents
-         );
-         await fs.writeFile(
-            path.join(
-               root,
-               'contents.js'
-            ),
-            `contents=${JSON.stringify(taskParameters.config.commonContents)};`
-         );
-         if (taskParameters.config.isReleaseMode) {
-            await fs.writeFile(
-               path.join(
-                  root,
-                  'contents.min.js'
-               ),
-               `contents=${JSON.stringify(taskParameters.config.commonContents)};`
-            );
-         }
-      }
-      await fs.writeFile(
-         path.join(
-            root,
-            'router.js'
-         ),
-         'define(\'router\', [], function(){ return {}; })'
-      );
-   };
 }
 
 function generateTaskForClearCache(taskParameters) {
@@ -163,6 +98,17 @@ function generateTaskForRemoveFiles(taskParameters) {
       return pMap(filesForRemove, filePath => fs.remove(filePath), {
          concurrency: 20
       });
+   };
+}
+
+function generateTaskForCheckModuleDeps(taskParameters) {
+   if (!taskParameters.config.isReleaseMode) {
+      return function skipCheckModuleDepsExisting(done) {
+         done();
+      };
+   }
+   return function checkModuleDepsExisting() {
+      return checkModuleDependenciesExisting(taskParameters);
    };
 }
 
