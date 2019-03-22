@@ -106,8 +106,8 @@ describe('build less', () => {
       return lib
          .trimLessError(errorMessage)
          .should.equal(
-            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
-            "'notExist' wasn't found."
+            `Error compiling less: "${workspaceFolder}/AnyModule/bla/bla/long/path/test.less" for theme online(new theme type):` +
+            "  in line 1: 'notExist' wasn't found."
          );
    });
 
@@ -129,8 +129,8 @@ describe('build less', () => {
       return lib
          .trimLessError(errorMessage)
          .should.equal(
-            `Ошибка компиляции ${workspaceFolder}/AnyModule/bla/bla/long/path/test.less для темы online:  на строке 1: ` +
-            "'notExist' wasn't found."
+            `Error compiling less: "${workspaceFolder}/AnyModule/bla/bla/long/path/test.less" for theme online(new theme type):` +
+            "  in line 1: 'notExist' wasn't found."
          );
    });
 
@@ -142,7 +142,8 @@ describe('build less', () => {
       await pMap(
          Object.keys(themes),
          async(currentTheme) => {
-            lessErrorsByThemes.push(`Ошибка компиляции ${workspaceFolder}/AnyModule/Error.less для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
+            lessErrorsByThemes.push(`Error compiling less: "${workspaceFolder}/AnyModule/Error.less" for theme ${currentTheme}` +
+               "(new theme type):  in line 1: 'notExist' wasn't found.");
             try {
                const themeName = resolveThemeName(filePath, filePath);
                const result = await processLessFile(text, filePath, {

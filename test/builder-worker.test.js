@@ -169,7 +169,7 @@ describe('gulp/common/worker.js', () => {
          const errorMessage = lib.trimLessError(lessError.message.replace(/\\/g, '/'));
          const lessErrorsByThemes = [];
          Object.keys(themes).forEach((currentTheme) => {
-            lessErrorsByThemes.push(`Ошибка компиляции ${filePath} для темы ${currentTheme}:  на строке 1: 'notExist' wasn't found.`);
+            lessErrorsByThemes.push(`Error compiling less: "${filePath}" for theme ${currentTheme}(new theme type):  in line 1: 'notExist' wasn't found.`);
          });
          let result = false;
          lessErrorsByThemes.forEach((currentMessage) => {
