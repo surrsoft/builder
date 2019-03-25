@@ -17,7 +17,7 @@ const config = {
    userParams: true,
    globalParams: false,
    urlServicePath: '/',
-   wsPath: 'ws/'
+   wsPath: 'resources/WS.Core/'
 };
 
 const modules = new Map([
@@ -110,7 +110,7 @@ describe('generate static html for js', () => {
          contents.htmlNames.MyModule.should.equal('testOutFileName.html');
          result.outFileName.should.equal('testOutFileName.html');
          removeRSymbol(result.text).should.equal(
-            'RESOURCE_ROOT:/resources/\nWI.SBIS_ROOT:/ws/\nAPPLICATION_ROOT:/\nSERVICES_PATH:/service/\n'
+            'RESOURCE_ROOT:/resources/\nWI.SBIS_ROOT:/resources/WS.Core/\nAPPLICATION_ROOT:/\nSERVICES_PATH:/service/\n'
          );
       });
       it('title', async() => {

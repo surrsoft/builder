@@ -86,14 +86,6 @@ function generateTaskForInitWorkerPool(taskParameters) {
          }
       }
 
-      // ws - название модуля в node_modules
-      if (!wsCorePath) {
-         const possibleWsCorePath = path.join(taskParameters.config.cachePath, 'platform/ws');
-         if (await fs.pathExists(possibleWsCorePath)) {
-            wsCorePath = possibleWsCorePath;
-         }
-      }
-
       /**
        * если в конфигурацию билдера было передано максимальное число воркеров, принимаем
        * его в качестве эталона(но не забываем ругаться, если данное число больше чем
