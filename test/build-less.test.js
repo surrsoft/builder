@@ -11,7 +11,6 @@ const
    { processLessFile, resolveThemeName, buildLess } = require('../lib/build-less');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
-   wsPath = helpers.prettifyPath(path.join(workspaceFolder, 'ws')),
    pathsForImport = [workspaceFolder],
    themes = {
       'online': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
@@ -210,8 +209,8 @@ describe('build less', () => {
       result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
-   it('less from ws', async() => {
-      const filePath = path.join(wsPath, 'deprecated/Controls/TabControl/TabControl.less');
+   it('less from WS.Deprecated', async() => {
+      const filePath = path.join(workspaceFolder, 'WS.Deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const themeName = resolveThemeName(filePath, filePath);
       const result = await processLessFile(text, filePath, {
