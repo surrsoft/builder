@@ -18,7 +18,7 @@ const logger = require('../../../lib/logger').logger(),
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
 function generateTaskForPackHtml(taskParameters) {
-   if (!taskParameters.config.deprecatedStaticHtml || taskParameters.config.intests) {
+   if (!taskParameters.config.deprecatedStaticHtml) {
       return function skipPackHtml(done) {
          done();
       };
