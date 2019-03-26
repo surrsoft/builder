@@ -18,7 +18,7 @@ const gzipPlugin = require('../plugins/gzip'),
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
 function generateTaskForGzip(taskParameters) {
-   if (!taskParameters.config.gzip || taskParameters.config.intests) {
+   if (!taskParameters.config.gzip) {
       return function skipGzip(done) {
          done();
       };
