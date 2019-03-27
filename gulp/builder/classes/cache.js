@@ -61,12 +61,11 @@ class Cache {
          };
       }
 
-      this.filePath = path.join(this.config.cachePath, 'store.json');
-      return this.lastStore.load(this.filePath);
+      return this.lastStore.load(this.config.cachePath);
    }
 
    save() {
-      return this.currentStore.save(this.filePath);
+      return this.currentStore.save(this.config.cachePath);
    }
 
    /**

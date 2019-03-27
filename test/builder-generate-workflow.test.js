@@ -1022,8 +1022,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль.es')),
             helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль2.es'))
          ];
-         const currentStore = await fs.readJson(path.join(cacheFolder, 'store.json'));
-         currentStore.dependencies[moduleSourcePath].should.have.members(correctStoreDepsForModule);
+         const dependenciesStore = await fs.readJson(path.join(cacheFolder, 'dependencies.json'));
+         dependenciesStore[moduleSourcePath].should.have.members(correctStoreDepsForModule);
       });
       it('test-cycle-private-dependency', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
@@ -1088,8 +1088,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль.es')),
             helpers.unixifyPath(path.join(sourceFolder, 'Modul/_es6/Модуль2.es'))
          ];
-         const currentStore = await fs.readJson(path.join(cacheFolder, 'store.json'));
-         currentStore.dependencies[moduleSourcePath].should.have.members(correctStoreDepsForModule);
+         const dependenciesStore = await fs.readJson(path.join(cacheFolder, 'dependencies.json'));
+         dependenciesStore[moduleSourcePath].should.have.members(correctStoreDepsForModule);
       });
       it('test-recurse-after-rerun-workflow', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);

@@ -45,55 +45,121 @@ class StoreInfo {
       this.styleThemes = {};
    }
 
-   static getLastRunningParametersPath(filePath) {
-      return path.join(path.dirname(filePath), 'last_build_gulp_config.json');
+   static getLastRunningParametersPath(cacheDirectory) {
+      return path.join(cacheDirectory, 'last_build_gulp_config.json');
    }
 
-   async load(filePath) {
-      logger.debug(`Читаем файл кеша ${filePath}`);
+   async load(cacheDirectory) {
+      logger.debug(`Читаем файлы кеша билдера из директории ${cacheDirectory}`);
 
-      try {
-         if (await fs.pathExists(filePath)) {
-            this.runningParameters = await fs.readJSON(StoreInfo.getLastRunningParametersPath(filePath));
+      if (await fs.pathExists(path.join(cacheDirectory, 'builder-info.json'))) {
+         this.runningParameters = await fs.readJSON(StoreInfo.getLastRunningParametersPath(cacheDirectory));
 
-            const obj = await fs.readJSON(filePath);
-            this.versionOfBuilder = obj.versionOfBuilder;
+         try {
+            const builderInfo = await fs.readJson(path.join(cacheDirectory, 'builder-info.json'));
+            this.versionOfBuilder = builderInfo.versionOfBuilder;
             logger.debug(`В кеше versionOfBuilder: ${this.versionOfBuilder}`);
-            this.startBuildTime = obj.startBuildTime;
+            this.startBuildTime = builderInfo.startBuildTime;
             logger.debug(`В кеше startBuildTime: ${this.startBuildTime}`);
-            this.inputPaths = obj.inputPaths;
-            this.dependencies = obj.dependencies;
-            this.modulesCache = obj.modulesCache;
-            this.filesWithErrors = new Set(obj.filesWithErrors);
-            this.styleThemes = obj.styleThemes;
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'builder-info.json')}`,
+               error
+            });
          }
-      } catch (error) {
-         logger.info({
-            message: `Не удалось прочитать файл кеша ${filePath}`,
-            error
-         });
+         try {
+            this.inputPaths = await fs.readJson(path.join(cacheDirectory, 'input-paths.json'));
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'input-paths.json')}`,
+               error
+            });
+         }
+         try {
+            this.dependencies = await fs.readJson(path.join(cacheDirectory, 'dependencies.json'));
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'dependencies.json')}`,
+               error
+            });
+         }
+         try {
+            this.modulesCache = await fs.readJson(path.join(cacheDirectory, 'modules-cache.json'));
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'modules-cache.json')}`,
+               error
+            });
+         }
+         try {
+            const filesWithErrors = await fs.readJson(path.join(cacheDirectory, 'files-with-errors.json'));
+            this.filesWithErrors = new Set(filesWithErrors);
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'files-with-errors.json')}`,
+               error
+            });
+         }
+         try {
+            this.styleThemes = await fs.readJson(path.join(cacheDirectory, 'style-themes.json'));
+         } catch (error) {
+            logger.info({
+               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'style-themes.json')}`,
+               error
+            });
+         }
       }
    }
 
-   async save(filePath) {
+   async save(cacheDirectory) {
       await fs.outputJson(
-         filePath,
+         path.join(cacheDirectory, 'builder-info.json'),
          {
             versionOfBuilder: this.versionOfBuilder,
-            startBuildTime: this.startBuildTime,
-            inputPaths: this.inputPaths,
-            dependencies: this.dependencies,
-            modulesCache: this.modulesCache,
-            filesWithErrors: [...this.filesWithErrors],
-            styleThemes: this.styleThemes
+            startBuildTime: this.startBuildTime
          },
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'input-paths.json'),
+         this.inputPaths,
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'dependencies.json'),
+         this.dependencies,
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'modules-cache.json'),
+         this.modulesCache,
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'files-with-errors.json'),
+         [...this.filesWithErrors],
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'style-themes.json'),
+         this.styleThemes,
          {
             spaces: 1
          }
       );
 
       await fs.outputJson(
-         StoreInfo.getLastRunningParametersPath(filePath),
+         StoreInfo.getLastRunningParametersPath(cacheDirectory),
          this.runningParameters,
          {
             spaces: 1
