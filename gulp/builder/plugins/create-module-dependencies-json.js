@@ -64,7 +64,10 @@ function getCssAndJstplFiles(inputFiles) {
       jstplFiles = [];
 
    inputFiles.forEach((filePath) => {
-      if (filePath.endsWith('.less') || filePath.endsWith('.css')) {
+      const isStyle = filePath.endsWith('.less') || filePath.endsWith('.css');
+
+      // private less(starts with "_") and styles in "design" folder should be excluded
+      if (isStyle && !path.basename(filePath).startsWith('_') && !filePath.includes('/design/')) {
          cssFiles.push(filePath.replace('.less', '.css'));
       }
       if (filePath.endsWith('.jstpl')) {
