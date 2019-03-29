@@ -71,7 +71,7 @@ function getCssAndJstplFiles(inputFiles) {
        * should be excluded from module-dependencies
        */
       if (filePath.endsWith('.less') || filePath.endsWith('.css')) {
-         if (!path.basename(filePath).startsWith('_')) {
+         if (path.basename(filePath).startsWith('_')) {
             return;
          }
 
