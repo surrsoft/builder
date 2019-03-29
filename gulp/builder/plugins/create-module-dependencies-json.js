@@ -38,6 +38,8 @@ const excludeSystemModulesForLinks = new Set(['module', 'require', 'exports']);
 // нужно добавить эти плагины, но сами зависимости добавлять в links не нужно
 const pluginsOnlyDeps = new Set(['cdn', 'preload', 'remote']);
 
+const { stylesToExcludeFromMinify } = require('../../../lib/builder-constants');
+
 const parsePlugins = dep => [
    ...new Set(
       dep
@@ -64,7 +66,20 @@ function getCssAndJstplFiles(inputFiles) {
       jstplFiles = [];
 
    inputFiles.forEach((filePath) => {
+      /**
+       * private less(starts with "_") and styles excluded from minification task
+       * should be excluded from module-dependencies
+       */
       if (filePath.endsWith('.less') || filePath.endsWith('.css')) {
+         if (path.basename(filePath).startsWith('_')) {
+            return;
+         }
+
+         for (const regex of stylesToExcludeFromMinify) {
+            if (regex.test(filePath)) {
+               return;
+            }
+         }
          cssFiles.push(filePath.replace('.less', '.css'));
       }
       if (filePath.endsWith('.jstpl')) {
