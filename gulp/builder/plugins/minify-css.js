@@ -11,7 +11,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool');
 
-const excludeRegexes = [/.*\.min\.css$/, /[/\\]design[/\\].*/, /[/\\]service[/\\].*/];
+const { stylesToExcludeFromMinify } = require('../../../lib/builder-constants');
 
 /**
  * Объявление плагина
@@ -32,7 +32,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            for (const regex of excludeRegexes) {
+            for (const regex of stylesToExcludeFromMinify) {
                if (regex.test(file.path)) {
                   callback(null, file);
                   return;
