@@ -102,7 +102,10 @@ function generateTaskForRemoveFiles(taskParameters) {
 }
 
 function generateTaskForCheckModuleDeps(taskParameters) {
-   if (!taskParameters.config.isReleaseMode) {
+   const isOnlineInside = taskParameters.config.modules.find(
+      moduleInfo => moduleInfo.name === 'OnlineSbisRu'
+   );
+   if (!isOnlineInside) {
       return function skipCheckModuleDepsExisting(done) {
          done();
       };
