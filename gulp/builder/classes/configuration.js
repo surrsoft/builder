@@ -10,7 +10,7 @@ const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    getLanguageByLocale = require('../../../lib/get-language-by-locale'),
-   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules'),
+   { checkForSourcesOutput } = require('../../../lib/helpers'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
@@ -286,25 +286,12 @@ class BuildConfiguration {
          }
       }
 
-      const isSourcesOutput = buildConfigurationChecker.checkForSourcesOutput(this.rawConfig);
+      const isSourcesOutput = checkForSourcesOutput(this.rawConfig);
       if (isSourcesOutput) {
          this.isSourcesOutput = isSourcesOutput;
       }
 
       this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
-      const missedNecessaryModules = buildConfigurationChecker.checkForNecessaryModules(this.rawConfig.modules);
-
-      /**
-       * Если нету общеобязательного набора Интерфейсных модулей, сборку завершаем с ошибкой.
-       * Исключение:
-       * 1) Тесты билдера.
-       * 2) Работа билдера в случаях, когда не требуется инициализация ядра для воркеров.
-       */
-      if (missedNecessaryModules.length > 0 && !this.rawConfig.builderTests && this.needTemplates) {
-         throw new Error('В вашем проекте отсутствуют следующие обязательные Интерфейсные модули для работы Gulp:' +
-         `\n${missedNecessaryModules}` +
-         '\nДобавьте их из $(SBISPlatformSDK)/ui-modules');
-      }
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(

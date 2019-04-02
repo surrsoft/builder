@@ -15,7 +15,6 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   buildConfigurationChecker = require('../../../lib/check-build-for-main-modules'),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    templateExtReg = /(\.tmpl|\.wml)$/;
 
@@ -85,34 +84,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          );
 
          if (error) {
-            const missedTemplateModules = buildConfigurationChecker.getMissedTemplateModules(
-               ['View'],
-               taskParameters.config.modules
-            );
+            taskParameters.cache.markFileAsFailed(file.history[0]);
 
-            /**
-             * при отсутствии ИМ View в структуре проекта обязательно ругаемся ошибкой.
-             * При билде .tmpl данный модуль необходим в обязательном порядке.
-             */
-            if (missedTemplateModules.length > 0) {
-               const moduleNotExistsError = new Error('В вашем проекте отсутствуют обязательные Интерфейсные модули, ' +
-                  `необходимые для компиляции *.tmpl:\n${missedTemplateModules}\n` +
-                  'Добавьте его в проект из $(SBISPlatformSDK)/ui-modules');
-
-               logger.error({
-                  message: 'Ошибка компиляции TMPL',
-                  error: moduleNotExistsError,
-                  filePath: file.history[0],
-                  moduleInfo
-               });
-            } else {
-               logger.error({
-                  message: 'Ошибка компиляции TMPL',
-                  error,
-                  moduleInfo,
-                  filePath: relativeFilePath
-               });
-            }
+            logger.error({
+               message: 'Ошибка компиляции TMPL',
+               error,
+               moduleInfo,
+               filePath: relativeFilePath
+            });
          } else {
             const externalPrivateDependencies = checkForExternalPrivateDeps(
                moduleName,
