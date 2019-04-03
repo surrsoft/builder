@@ -63,6 +63,7 @@ function linkPlatform(sourceFolder) {
       fs.symlink(path.join(nodeModulesPath, 'ws-data/WS.Data'), path.join(sourceFolder, 'WS.Data'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'wasaby-app/src/Application'), path.join(sourceFolder, 'Application'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Env'), path.join(sourceFolder, 'Env'), 'dir'),
+      fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/SbisEnv'), path.join(sourceFolder, 'SbisEnv'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Browser'), path.join(sourceFolder, 'Browser'), 'dir'),
    ]);
 }
