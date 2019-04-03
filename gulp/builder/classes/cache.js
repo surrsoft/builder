@@ -197,7 +197,7 @@ class Cache {
          if (lastModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
             currentModuleCache.versionedModules[prettyPath] = lastModuleCache.versionedModules[prettyPath];
          }
-         if (lastModuleCache.lessConfig) {
+         if (path.basename(prettyPath) === 'themes.config.json' && !currentModuleCache.lessConfig) {
             currentModuleCache.lessConfig = lastModuleCache.lessConfig;
          }
          if (lastModuleCache.cdnModules.hasOwnProperty(prettyPath)) {
@@ -468,9 +468,7 @@ class Cache {
     */
    addModuleLessConfiguration(moduleName, config) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      if (!currentModuleCache.lessConfig) {
-         currentModuleCache.lessConfig = config;
-      }
+      currentModuleCache.lessConfig = config;
    }
 
    /**
