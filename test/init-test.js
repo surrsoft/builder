@@ -49,6 +49,7 @@ function getPlatformModules() {
    const ModuleInfo = require('../gulp/common/classes/base-module-info');
    return [
       new ModuleInfo('WS.Core', '', path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), true),
+      new ModuleInfo('Application', '', path.join(nodeModulesPath, 'wasaby-app/src/Application'), true),
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View'), true),
       new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom'), true),
       new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router'), true),
