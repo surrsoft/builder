@@ -36,15 +36,6 @@
                   'm_visualReady': vars['c.tti.vr'],
                   'm_tti': vars['c.tti']
                });
-
-               require(['WS.Data/Source/Provider/SbisBusinessLogic'], function (Provider) {
-                  new Provider({
-                     endpoint: {
-                        address: '/central-statistics-rum/service/',
-                        contract: 'RUM'
-                     }
-                  }).call('Data', {json: BOOMR.sbisResult});
-               }, function () {});
             });
          }
       </script>

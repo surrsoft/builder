@@ -24,7 +24,7 @@
    },
    "dependencies": {
       "async": "2.6.1",
-      "autoprefixer": "9.0.0",
+      "autoprefixer": "9.5.0",
       "clean-css": "4.1.11",
       "escodegen": "1.11.0",
       "esprima": "4.0.1",
@@ -71,8 +71,7 @@
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-19.400",
       "saby-i18n": "git+https://github.com/saby/i18n.git#rc-19.400",
       "Router": "git+ssh://git@platform-git.sbis.ru:saby/router.git#rc-19.400",
-      "saby-types": "git+https://github.com/saby/Types.git#rc-19.400",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-19.400"
+      "saby-types": "git+https://github.com/saby/Types.git#rc-19.400"
    },
    "engines": {
       "node": ">=8.9.3"
