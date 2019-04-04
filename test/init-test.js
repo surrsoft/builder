@@ -49,6 +49,7 @@ function getPlatformModules() {
    const ModuleInfo = require('../gulp/common/classes/base-module-info');
    return [
       new ModuleInfo('WS.Core', '', path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), true),
+      new ModuleInfo('Application', '', path.join(nodeModulesPath, 'wasaby-app/src/Application'), true),
       new ModuleInfo('View', '', path.join(nodeModulesPath, 'sbis3-ws/View'), true),
       new ModuleInfo('Vdom', '', path.join(nodeModulesPath, 'sbis3-ws/Vdom'), true),
       new ModuleInfo('Router', '', path.join(nodeModulesPath, 'Router/Router'), true),
@@ -57,6 +58,7 @@ function getPlatformModules() {
       new ModuleInfo('Types', '', path.join(nodeModulesPath, 'saby-types/Types'), true),
       new ModuleInfo('I18n', '', path.join(nodeModulesPath, 'saby-i18n/I18n'), true),
       new ModuleInfo('Env', '', path.join(nodeModulesPath, 'rmi/src/client/Env'), true),
+      new ModuleInfo('SbisEnv', '', path.join(nodeModulesPath, 'rmi/src/client/SbisEnv'), true),
       new ModuleInfo('Browser', '', path.join(nodeModulesPath, 'rmi/src/client/Browser'), true)
    ];
 }
