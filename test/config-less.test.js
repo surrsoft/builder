@@ -17,6 +17,34 @@ describe('less configuration checker', () => {
       config.multi.should.equal(false);
    });
 
+   it('should set default variables for "old" option as default', () => {
+      const config = {
+         old: {}
+      };
+      configLessChecker.checkOptions(config);
+      config.old.variables.should.equal('SBIS3.CONTROLS');
+   });
+
+   it('should set Controls-theme variables for "old" option', () => {
+      const config = {
+         old: {
+            variables: 'Controls-theme'
+         }
+      };
+      configLessChecker.checkOptions(config);
+      config.old.variables.should.equal('Controls-theme');
+   });
+
+   it('should set correct default variables value for "old" option if incorrect variables value entered', () => {
+      const config = {
+         old: {
+            variables: 'some incorrect value'
+         }
+      };
+      configLessChecker.checkOptions(config);
+      config.old.variables.should.equal('SBIS3.CONTROLS');
+   });
+
    it('should set false for "multi" option if parameter has "false" value', () => {
       const config = {
          old: false
@@ -57,7 +85,7 @@ describe('less configuration checker', () => {
    });
 
    it('single pattern value: should reject error for bad pattern', () => {
-      const checkConfig = (config) => {
+      const checkConfig = (config, optionName) => {
          let result;
          try {
             configLessChecker.checkOptions(config);
@@ -65,17 +93,17 @@ describe('less configuration checker', () => {
             result = err;
          }
          (result instanceof Error).should.equal(true);
-         result.message.should.equal('паттерн для опции old в конфигурации по темизации задан не по стандартам glob-паттернов.' +
+         result.message.should.equal(`паттерн для опции ${optionName} в конфигурации по темизации задан не по стандартам glob-паттернов.` +
             ' Проверьте правильность описания паттерна: "bad pattern".');
       };
       let config = {
          old: 'bad pattern'
       };
-      checkConfig(config);
+      checkConfig(config, 'old');
       config = {
          multi: 'bad pattern'
       };
-      checkConfig(config);
+      checkConfig(config, 'multi');
    });
 
    it('pattern\'s array value: should reject error for bad pattern in array', () => {
