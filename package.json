@@ -72,7 +72,8 @@
       "saby-i18n": "git+https://github.com/saby/i18n.git#rc-19.300",
       "Router": "git+ssh://git@platform-git.sbis.ru:saby/router.git#rc-19.300",
       "saby-types": "git+https://github.com/saby/Types.git#rc-19.300",
-      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-19.300"
+      "ws-data": "git+ssh://git@git.sbis.ru:ws/data.git#rc-19.300",
+      "wasaby-app": "git+https://github.com/saby/wasaby-app.git#rc-19.300"
    },
    "engines": {
       "node": ">=8.9.3"
