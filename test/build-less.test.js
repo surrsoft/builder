@@ -8,7 +8,12 @@ const
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
    pMap = require('p-map'),
-   { processLessFile, resolveThemeName, buildLess } = require('../lib/build-less');
+   {
+      processLessFile,
+      resolveThemeName,
+      buildLess,
+      getThemeImport
+   } = require('../lib/build-less');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    pathsForImport = [workspaceFolder],
@@ -221,5 +226,37 @@ describe('build less', () => {
       result.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
       );
+   });
+
+   it('get correct variables import', () => {
+      let result = getThemeImport({
+         isDefault: true,
+         name: 'online',
+         path: 'SBIS3.CONTROLS/themes/online/_variables'
+      }, true);
+      result.should.equal('@import \'SBIS3.CONTROLS/themes/online/_variables/_variables\';');
+      result = getThemeImport({
+         isDefault: true,
+         name: 'online',
+         path: 'SBIS3.CONTROLS/themes/online/_variables',
+         variablesFromLessConfig: 'Controls-theme'
+      }, true);
+      result.should.equal('@import \'Controls-theme/themes/default/default\';');
+      result = getThemeImport({
+         isDefault: true,
+         name: 'default',
+         path: 'Controls-theme/themes/default'
+      }, true);
+      result.should.equal('@import \'Controls-theme/themes/default/default\';');
+      result = getThemeImport({
+         isDefault: true,
+         name: 'carry'
+      }, true);
+      result.should.equal('@import \'Controls-theme/themes/default/_variables\';');
+      result = getThemeImport({
+         isDefault: true,
+         name: 'default'
+      }, false);
+      result.should.equal('');
    });
 });
