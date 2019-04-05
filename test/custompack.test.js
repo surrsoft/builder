@@ -30,7 +30,8 @@ describe('custompack', () => {
       config: {
          localizations: [],
          sources: true,
-         resourcesUrl: true
+         resourcesUrl: true,
+         urlServicePath: '/fixture/custompack/'
       }
    };
    before(async() => {
