@@ -56,30 +56,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    };
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
-   let applicationRoot = '';
 
-   /**
-    * если приложение требует в пути до статики прописать resources, будем
-    * прописывать. В противном случае будем работать с путями в линках прямо от корня.
-    */
-   if (taskParameters.config.resourcesUrl) {
-      applicationRoot = '/resources/';
-   }
-
-   /**
-    * Нам надо проверять через наличие /service/ в названии сервиса, так мы сможем
-    * отличить служебный сервис от названия сервиса, по которому просится статика приложения
-    */
-   if (!taskParameters.config.urlServicePath.includes('/service')) {
-      applicationRoot = helpers.unixifyPath(
-         path.join(taskParameters.config.urlServicePath, applicationRoot)
-      );
-   }
-   const applicationRootParams = {
-      applicationRoot,
-      isMultiService: taskParameters.config.multiService,
-      resourcesUrl: taskParameters.config.resourcesUrl
-   };
    return through.obj(
 
       /* @this Stream */
@@ -200,8 +177,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      lessInfo,
                      gulpModulesInfo,
                      currentLessFile.isLangCss,
-                     allThemes,
-                     applicationRootParams
+                     allThemes
                   );
                   for (const result of results) {
                      if (result.ignoreMessage) {

@@ -301,7 +301,7 @@ class BuildConfiguration {
             this.outputPath,
             module.required
          );
-         moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath);
+         moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath, true);
 
          moduleInfo.contents.buildMode = this.getBuildMode();
          if (this.defaultLocalization && this.localizations.length > 0) {
