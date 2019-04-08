@@ -39,8 +39,9 @@ class ModuleInfo {
    }
 
    // если gulp не может обработать корректно путь до модуля, то попробуем сделать симлинк.
-   symlinkInputPathToAvoidProblems(cachePath) {
-      if (isShareOnWindows(this.path) || getIllegalSymbolInPath(this.path)) {
+   symlinkInputPathToAvoidProblems(cachePath, buildTask) {
+      const needSymlink = buildTask || isShareOnWindows(this.path) || getIllegalSymbolInPath(this.path);
+      if (needSymlink) {
          logger.debug(`Необходим симлинк на модуль ${this.path}`);
          const newPath = path.join(cachePath, 'temp-modules', path.basename(this.path));
          if (getIllegalSymbolInPath(newPath)) {
