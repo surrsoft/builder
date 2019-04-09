@@ -14,8 +14,8 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate');
 
 /**
- * Объявление плагина
- * @param {ModuleInfo} moduleInfo информация о модуле
+ * Gulp plugin declaration
+ * @param {ModuleInfo} moduleInfo base module info
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
@@ -72,7 +72,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             taskParameters.librariesMeta[currentModuleName] = librariesMeta;
          } catch (error) {
             logger.error({
-               message: "Ошибка Builder'а",
+               message: 'Builder error for libraries.json generate',
                error,
                moduleInfo
             });
