@@ -10,7 +10,7 @@ const through = require('through2'),
    path = require('path'),
    fs = require('fs-extra'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool');
+   compileEsAndTs = require('../../../lib/compile-es-and-ts');
 
 const esExt = /\.(es|ts)$/;
 
@@ -58,30 +58,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            const [error, result] = await execInPool(
-               taskParameters.pool,
-               'compileEsAndTs',
-               [relativeFilePath, file.contents.toString()],
-               file.history[0],
-               moduleInfo
-            );
-            if (error) {
-               logger.error({
-                  error,
-                  filePath: file.history[0],
-                  moduleInfo
-               });
-               callback(null, file);
-               return;
-            }
-
+            const result = await compileEsAndTs(relativeFilePath, file.contents.toString());
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
             newFile.path = file.path.replace(/\.(es|ts)$/, '.js');
             this.push(newFile);
          } catch (error) {
             logger.error({
-               message: "Ошибка builder'а при компиляции в JS",
+               message: 'Builder error for prepareWS typescript compilation',
                error,
                moduleInfo,
                filePath: file.history[0]
