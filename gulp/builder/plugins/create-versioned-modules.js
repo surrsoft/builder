@@ -46,7 +46,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             Object.keys(versionCache).forEach((currentModule) => {
                versionedModules.push(...versionCache[currentModule]);
             });
-            let versionedModulesPaths = versionedModules.map((currentFile) => {
+            const versionedModulesPaths = versionedModules.map((currentFile) => {
                const
                   prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
@@ -57,17 +57,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             if (taskParameters.config.contents) {
                versionedModulesPaths.push(`${currentModuleName}/contents.json`);
-            }
-
-            /**
-             * нужно удалить из versioned_modules таргеты Чистова, чтобы jinnee не пытался
-             * читать файлы, которых не существует
-             */
-            if (!taskParameters.config.sources) {
-               const projectName = taskParameters.config.rawConfig.cld_name;
-               versionedModulesPaths = versionedModulesPaths.filter(
-                  prettyPath => !helpers.needToRemoveModuleForDesktop(prettyPath, projectName)
-               );
             }
 
             const file = new Vinyl({

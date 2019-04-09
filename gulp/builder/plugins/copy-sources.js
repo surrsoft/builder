@@ -8,7 +8,6 @@
 'use strict';
 
 const through = require('through2');
-const helpers = require('../../../lib/helpers');
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
@@ -34,32 +33,13 @@ const extensions = new Set([
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters) {
+module.exports = function declarePlugin() {
    return through.obj(
       function onTransform(file, encoding, callback) {
-         const prettyPath = helpers.prettifyPath(file.path);
-
          /**
           * не копируем мета-файлы билдера.
           */
          if (builderMeta.has(file.basename)) {
-            callback(null);
-            return;
-         }
-
-         /**
-          * Вычищаем ряд WS.Deprecated модулей и тему online по таргетам Чистова.
-          * WS.Core/lib/Ext также не нужен в оффлайне, там лишь jquery.
-          * TODO удалить эту жесть, когда будут завершены работы по задаче
-          * https://online.sbis.ru/doc/c5c78f1d-2c47-49f3-9320-7606a5e75ed6
-          * У Genie намного больше сейчас имеется завязок на WS.Deprecated, планируют
-          * избавиться при переходе на VDOM. Для Genie таргеты не используем.
-          */
-         const modules = taskParameters.config.modules.map(moduleInfo => moduleInfo.name);
-         const projectName = taskParameters.config.rawConfig.cld_name;
-         if (!modules.includes('Genie') &&
-            helpers.needToRemoveModuleForDesktop(prettyPath, projectName)
-         ) {
             callback(null);
             return;
          }

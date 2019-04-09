@@ -56,7 +56,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             Object.keys(versionCache).forEach((currentModule) => {
                cdnModules.push(...versionCache[currentModule]);
             });
-            let cdnModulesPaths = cdnModules.map((currentFile) => {
+            const cdnModulesPaths = cdnModules.map((currentFile) => {
                const
                   prettyFilePath = transliterate(helpers.prettifyPath(currentFile)),
                   isSourcePath = prettyFilePath.includes(prettyModulePath),
@@ -64,16 +64,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
                return helpers.unixifyPath(path.join(currentModuleName, relativePath));
             });
-
-            /**
-             * нужно удалить из cdn_modules таргеты Чистова, чтобы jinnee не пытался
-             * читать файлы, которых не существует
-             */
-            if (!taskParameters.config.sources) {
-               cdnModulesPaths = cdnModulesPaths.filter(
-                  prettyPath => !helpers.needToRemoveModuleForDesktop(prettyPath)
-               );
-            }
 
             const file = new Vinyl({
                path: '.builder/cdn_modules.json',
