@@ -29,6 +29,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    localizeXhtml = require('../plugins/localize-xhtml'),
    buildTmpl = require('../plugins/build-tmpl'),
    createContentsJson = require('../plugins/create-contents-json'),
+   createLibrariesJson = require('../plugins/create-libraries-json'),
    createStaticTemplatesJson = require('../plugins/create-static-templates-json'),
    createModuleDependenciesJson = require('../plugins/create-module-dependencies-json'),
    copySources = require('../plugins/copy-sources'),
@@ -189,6 +190,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
             .pipe(gulpIf(taskParameters.config.contents, createContentsJson(taskParameters, moduleInfo)))
+            .pipe(gulpIf(taskParameters.config.customPack, createLibrariesJson(taskParameters, moduleInfo)))
 
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
             .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
