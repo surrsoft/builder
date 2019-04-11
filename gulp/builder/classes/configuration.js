@@ -202,11 +202,6 @@ class BuildConfiguration {
       if (this.rawConfig.hasOwnProperty('resourcesUrl') && typeof this.rawConfig.resourcesUrl === 'boolean') {
          this.resourcesUrl = this.rawConfig.resourcesUrl;
       }
-
-      // maxWorkers flag
-      if (this.rawConfig.hasOwnProperty('maxWorkers') && typeof this.rawConfig.maxWorkers === 'number') {
-         this.maxWorkers = this.rawConfig.maxWorkers;
-      }
    }
 
    /**
