@@ -86,24 +86,16 @@ function generateTaskForInitWorkerPool(taskParameters) {
          }
       }
 
+      let maxWorkers = taskParameters.config.rawConfig['max-workers-for-builder'];
+
       /**
-       * если в конфигурацию билдера было передано максимальное число воркеров, принимаем
-       * его в качестве эталона(но не забываем ругаться, если данное число больше чем
-       * максимально возможное число ядер - 1).
+       * throw an error, if custom worker count more than
+       * system max threads - 1 (1 thread for Node.Js main process)
        */
-      let maxWorkers;
-      if (taskParameters.config.maxWorkers) {
-         // eslint-disable-next-line prefer-destructuring
-         maxWorkers = taskParameters.config.maxWorkers;
-         if (maxWorkers > (os.cpus().length - 1)) {
-            throw new Error(`Custom max worker's count must be less than ${os.cpus().length} for current executing machine!`);
-         }
-      } else if (taskParameters.config.intests) {
-         maxWorkers = os.cpus().length - 2;
-         if (maxWorkers < 0) {
-            maxWorkers = 1;
-         }
-      } else {
+      if (maxWorkers && maxWorkers > (os.cpus().length - 1)) {
+         throw new Error(`Custom max worker's count must be less than ${os.cpus().length} for current executing machine!`);
+      }
+      if (!maxWorkers) {
          maxWorkers = os.cpus().length - 1;
       }
       const requiredModules = taskParameters.config.modules
