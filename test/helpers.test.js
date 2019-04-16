@@ -121,7 +121,7 @@ describe('library pack helpers', () => {
       result.should.be.equal(false);
    });
 
-   it('check private module for library in nix', () => {
+   it('check private module for library in windows', () => {
       let dependency = 'Test\\_private\\module';
       let result = libPackHelpers.isPrivate(dependency);
       result.should.be.equal(true);
@@ -130,11 +130,11 @@ describe('library pack helpers', () => {
       result = libPackHelpers.isPrivate(dependency);
       result.should.be.equal(true);
 
-      dependency = 'Test/public/module';
+      dependency = 'Test\\public\\module';
       result = libPackHelpers.isPrivate(dependency);
       result.should.be.equal(false);
 
-      dependency = '_Test/public/module';
+      dependency = '_Test\\public\\module';
       result = libPackHelpers.isPrivate(dependency);
       result.should.be.equal(false);
    });
