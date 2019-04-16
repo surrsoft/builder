@@ -302,7 +302,9 @@ async function limitingNativePackFiles(
                      fullPath.startsWith(packageConfig.moduleOutput)
                   ) {
                      taskParameters.filesToRemove.push(fullPath);
-                     logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
+                     const removeMessage = `Module ${fullPath} was removed in namespace of Interface module ${packageConfig.moduleName}.` +
+                        `Packed into ${packageConfig.output}`;
+                     logger.debug(removeMessage);
                      helpers.removeFileFromBuilderMeta(
                         taskParameters.versionedModules[packageConfig.moduleName],
                         fullPath
@@ -319,7 +321,9 @@ async function limitingNativePackFiles(
                      if (fullPath.endsWith('.original.js')) {
                         const replacedPath = fullPath.replace(/\.original\.js$/, '.js');
                         taskParameters.filesToRemove.push(replacedPath);
-                        logger.debug(`Удалили модуль ${fullPath} в рамках Интерфейсного модуля ${packageConfig.moduleName}`);
+                        const replacedRemoveMessage = `Module ${replacedPath} was removed in namespace of Interface module ${packageConfig.moduleName}.` +
+                           `Packed into ${packageConfig.output}`;
+                        logger.debug(replacedRemoveMessage);
                         helpers.removeFileFromBuilderMeta(
                            taskParameters.versionedModules[packageConfig.moduleName],
                            replacedPath
