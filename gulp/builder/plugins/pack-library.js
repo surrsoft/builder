@@ -41,13 +41,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
-         const prettyRelativeFilePath = helpers.unixifyPath(
-            path.relative(moduleInfo.output, file.path)
-         );
          if (
             file.extname === '.js' &&
             esExt.test(file.history[0]) &&
-            !libPackHelpers.isPrivate(prettyRelativeFilePath)
+            !libPackHelpers.isPrivate(path.relative(moduleInfo.output, file.path))
          ) {
             libraries.push(file);
             callback();
