@@ -1,11 +1,3 @@
-/* eslint-disable */
-
-/**
- * Корректный вариант скомпиленной библиотеки с внутренними рекурсивными
- * приватными зависимостями, которые были в полном составе упакованы в
- * саму библиотеку.
- */
-
 define('Modul/Modul', [
     'tslib',
     'require',
@@ -33,6 +25,8 @@ define('Modul/Modul', [
         }(require, exports, tslib_1);
         if (result instanceof Function) {
             return result;
+        } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
+            return result;
         } else {
             for (var property in result) {
                 if (result.hasOwnProperty(property)) {
@@ -54,6 +48,8 @@ define('Modul/Modul', [
             };
         }(require, exports, tslib_1, Modul__es6_Modul2);
         if (result instanceof Function) {
+            return result;
+        } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
             return result;
         } else {
             for (var property in result) {
@@ -79,6 +75,8 @@ define('Modul/Modul', [
             exports.someTest = someTest;
         }(require, exports, Modul__es5_Module);
         if (result instanceof Function) {
+            return result;
+        } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
             return result;
         } else {
             for (var property in result) {
