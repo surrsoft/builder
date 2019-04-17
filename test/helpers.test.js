@@ -3,6 +3,7 @@
 const initTest = require('./init-test');
 
 const helpers = require('../lib/helpers');
+const libPackHelpers = require('../lib/pack/helpers/librarypack');
 
 describe('helpers', () => {
    before(async() => {
@@ -94,5 +95,47 @@ describe('helpers', () => {
          'en-US',
          'ru-RU'
       ]);
+   });
+});
+
+describe('library pack helpers', () => {
+   before(async() => {
+      await initTest();
+   });
+
+   it('check private module for library in nix', () => {
+      let dependency = 'Test/_private/module';
+      let result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(true);
+
+      dependency = 'Test/private/_module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(true);
+
+      dependency = 'Test/public/module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(false);
+
+      dependency = '_Test/public/module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(false);
+   });
+
+   it('check private module for library in windows', () => {
+      let dependency = 'Test\\_private\\module';
+      let result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(true);
+
+      dependency = 'Test\\private\\_module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(true);
+
+      dependency = 'Test\\public\\module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(false);
+
+      dependency = '_Test\\public\\module';
+      result = libPackHelpers.isPrivate(dependency);
+      result.should.be.equal(false);
    });
 });
