@@ -9,7 +9,6 @@
 'use strict';
 
 const through = require('through2'),
-   path = require('path'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    pMap = require('p-map'),
