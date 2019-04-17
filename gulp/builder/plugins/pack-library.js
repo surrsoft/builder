@@ -9,7 +9,6 @@
 'use strict';
 
 const through = require('through2'),
-   path = require('path'),
    logger = require('../../../lib/logger').logger(),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    pMap = require('p-map'),
@@ -37,6 +36,7 @@ function getPrivatePartsCache(taskParameters, moduleInfo) {
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const libraries = [];
+   const sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
    return through.obj(
 
       /* @this Stream */
@@ -44,7 +44,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          if (
             file.extname === '.js' &&
             esExt.test(file.history[0]) &&
-            !libPackHelpers.isPrivate(path.relative(moduleInfo.output, file.path))
+            !libPackHelpers.isPrivate(
+               helpers.removeLeadingSlash(file.path.replace(sourceRoot, ''))
+            )
          ) {
             libraries.push(file);
             callback();
@@ -55,7 +57,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onFlush(callback) {
-         const sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
          await pMap(
             libraries,
             async(library) => {
