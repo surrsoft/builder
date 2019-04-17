@@ -76,7 +76,7 @@ describe('check-module-dependencies', () => {
       result.should.equal(false);
       currentName = 'MyModule/module1';
       result = checkDependencyForExcludeRules(projectModulesNames, currentName, 'MyModule/module1');
-      result.should.equal(false);
+      result.should.equal(true);
       currentName = '/cdn/MyModule/module1';
       result = checkDependencyForExcludeRules(projectModulesNames, currentName, 'cdn/MyModule/module1');
       result.should.equal(true);
