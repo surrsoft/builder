@@ -18,6 +18,8 @@ define('Modul/testNativeNamesImports', [
         }(require, exports);
         if (result instanceof Function) {
             return result;
+        } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
+            return result;
         } else {
             for (var property in result) {
                 if (result.hasOwnProperty(property)) {
