@@ -42,48 +42,63 @@ describe('versionize-content', () => {
 
    it('versionize style content', () => {
       let result;
+      const base = path.join(__dirname, 'someRoot/MyModule');
+      const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
       let currentFile = {
-         contents: 'background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif)'
+         contents: 'background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif)',
+         base,
+         path: filePath
       };
       result = versionizeContent.versionizeStyles(currentFile);
-      result.should.equal('background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif?x_version=%{BUILDER_VERSION_STUB})');
+      result.should.equal('background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif?x_version=%{MODULE_VERSION_STUB=MyModule})');
 
       // проверим, что информация о версионировании прокидывается в файл
       currentFile.versioned.should.equal(true);
 
       // woff и woff2 должны правильно зарезолвиться
       currentFile = {
-         contents: 'url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff\')'
+         contents: 'url(\'../default-theme/fonts/cbuc-icons/cbuc-icons.woff\')',
+         path: filePath,
+         base
       };
       result = versionizeContent.versionizeStyles(currentFile);
-      result.should.equal('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=%{BUILDER_VERSION_STUB}\')');
+      result.should.equal('url(\'../default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=%{MODULE_VERSION_STUB=MyModule}\')');
+      currentFile.versioned.should.equal(true);
+
+      // woff и woff2 должны правильно зарезолвиться
+      currentFile = {
+         contents: 'url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff\')',
+         path: filePath,
+         base
+      };
+      result = versionizeContent.versionizeStyles(currentFile);
+      result.should.equal('url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=%{MODULE_VERSION_STUB=MyModule2}\')');
       currentFile.versioned.should.equal(true);
 
       currentFile = {
-         contents: 'url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff2\')'
+         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\')',
+         path: filePath,
+         base
       };
       result = versionizeContent.versionizeStyles(currentFile);
-      result.should.equal('url(\'../../default-theme/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{BUILDER_VERSION_STUB}\')');
+      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{MODULE_VERSION_STUB=MyModule}#iefix\')');
       currentFile.versioned.should.equal(true);
 
       currentFile = {
-         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\')'
+         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?test123\')',
+         path: filePath,
+         base
       };
       result = versionizeContent.versionizeStyles(currentFile);
-      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{BUILDER_VERSION_STUB}#iefix\')');
-      currentFile.versioned.should.equal(true);
-
-      currentFile = {
-         contents: 'url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?test123\')'
-      };
-      result = versionizeContent.versionizeStyles(currentFile);
-      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{BUILDER_VERSION_STUB}#test123\')');
+      result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{MODULE_VERSION_STUB=MyModule}#test123\')');
       currentFile.versioned.should.equal(true);
 
       // Проверим, чтобы игнорировался cdn
       const cdnData = 'src: url(\'/cdn/fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?#iefix\') format(\'embedded-opentype\')';
       currentFile = {
-         contents: cdnData
+         contents: cdnData,
+         path: filePath,
+         base
       };
       result = versionizeContent.versionizeStyles(currentFile);
       result.should.equal(cdnData);
@@ -93,12 +108,16 @@ describe('versionize-content', () => {
    });
 
    it('versionize templates content', () => {
+      const base = path.join(__dirname, 'someRoot/MyModule');
+      const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/template.tmpl');
       let result;
 
-      const versionedMinLink = 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js?x_version=%{BUILDER_VERSION_STUB}">';
+      const versionedMinLink = 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js?x_version=%{MODULE_VERSION_STUB=View}">';
       let cdnSource = 'src="/cdn/jquery/3.3.1/jquery-min.js">';
       let currentFile = {
-         contents: cdnSource
+         contents: cdnSource,
+         base,
+         path: filePath
       };
 
       // проверим, чтобы игнорировался cdn для js
@@ -110,7 +129,9 @@ describe('versionize-content', () => {
 
       cdnSource = '<link rel="preload" as="font" href="/cdn/fonts/TensorFont/1.0.3/TensorFontBold/TensorFontBold.woff2" type="font/woff2"/>';
       currentFile = {
-         contents: cdnSource
+         contents: cdnSource,
+         base,
+         path: filePath
       };
 
       // проверим, чтобы игнорировался cdn для шрифтов
@@ -120,7 +141,9 @@ describe('versionize-content', () => {
 
       // проверим, чтобы не добавлялся лишний суффикс min
       currentFile = {
-         contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js">'
+         contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.min.js">',
+         base,
+         path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile);
       result.should.equal(versionedMinLink);
@@ -128,9 +151,20 @@ describe('versionize-content', () => {
       // в данном случае в объекте-файле должна записаться информация о версионировании
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: 'src="/materials/resources/SBIS3.CONTROLS/themes/online/online.css"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile);
+      result.should.equal('src="/materials/resources/SBIS3.CONTROLS/themes/online/online.min.css?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}"');
+      currentFile.versioned.should.equal(true);
+
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
       currentFile = {
-         contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">'
+         contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">',
+         base,
+         path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile);
       result.should.equal(versionedMinLink);
@@ -138,10 +172,12 @@ describe('versionize-content', () => {
 
       // проверим версионирование рядовых шрифтов
       currentFile = {
-         contents: '<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2"/>'
+         contents: '<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2"/>',
+         base,
+         path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile);
-      result.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{BUILDER_VERSION_STUB}"/>');
+      result.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{MODULE_VERSION_STUB=Controls-theme}"/>');
       currentFile.versioned.should.equal(true);
 
       // проверим что под регулярку не попадают свойства обьектов
@@ -201,10 +237,10 @@ describe('versionize-content', () => {
          sourceContent.includes('require-min.js') &&
          sourceContent.includes('bundles.js');
       sourceNotChanged.should.equal(true);
-      const compiledChanged = compiledContent.includes('contents.min.js?x_version=%{BUILDER_VERSION_STUB}') &&
-         compiledContent.includes('bundles.min.js?x_version=%{BUILDER_VERSION_STUB}') &&
+      const compiledChanged = compiledContent.includes('contents.min.js?x_version=%{MODULE_VERSION_STUB=Modul}') &&
+         compiledContent.includes('bundles.min.js?x_version=%{MODULE_VERSION_STUB=WS.Core}') &&
          compiledContent.includes('require-min.js') &&
-         !compiledContent.includes('require-min.js?x_version=%{BUILDER_VERSION_STUB}');
+         !compiledContent.includes('require-min.js?x_version=%{MODULE_VERSION_STUB=Modul}');
       compiledChanged.should.equal(true);
    });
 });
