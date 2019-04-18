@@ -148,6 +148,14 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeTemplates(currentFile);
       result.should.equal(versionedMinLink);
 
+      currentFile = {
+         contents: 'src="{{item.get(image) || resourceRoot + \'SBIS3.CONTROLS/themes/online/img/defaultItem.png\'}}">',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile);
+      result.should.equal('src="{{item.get(image) || resourceRoot + \'SBIS3.CONTROLS/themes/online/img/defaultItem.png?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}\'}}">');
+
       // в данном случае в объекте-файле должна записаться информация о версионировании
       currentFile.versioned.should.equal(true);
 
