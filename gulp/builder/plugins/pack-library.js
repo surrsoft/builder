@@ -57,9 +57,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onFlush(callback) {
+         const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
          await pMap(
             libraries,
             async(library) => {
+               const currentComponentInfo = componentsInfo[helpers.unixifyPath(library.history[0])];
+
+               // ignore ts modules without private dependencies
+               if (!currentComponentInfo.privateDependencies) {
+                  this.push(library);
+                  return;
+               }
                const [error, result] = await execInPool(
                   taskParameters.pool,
                   'packLibrary',
