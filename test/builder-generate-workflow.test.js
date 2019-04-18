@@ -931,8 +931,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'testNativeNamesImports.modulepack.js',
          'publicFunction1.ts',
          'publicFunction1.js',
-         'publicFunction1.min.js',
-         'publicFunction1.modulepack.js'
+         'publicFunction1.min.js'
       ];
 
       /**
