@@ -10,6 +10,7 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
+   path = require('path'),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
    pMap = require('p-map'),
    execInPool = require('../../common/exec-in-pool'),
@@ -36,7 +37,7 @@ function getPrivatePartsCache(taskParameters, moduleInfo) {
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const libraries = [];
-   const sourceRoot = moduleInfo.path.replace(moduleInfo.name, '');
+   const sourceRoot = path.dirname(moduleInfo.path);
    return through.obj(
 
       /* @this Stream */
