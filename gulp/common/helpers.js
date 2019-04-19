@@ -20,7 +20,7 @@ function needSymlink(config, moduleInfo) {
    const hasLocalization = config.localizations.length > 0;
    return (file) => {
       // в релизе нельзя применять симлинки
-      if (config.isReleaseMode) {
+      if (config.isReleaseMode || !config.symlinks) {
          return false;
       }
 

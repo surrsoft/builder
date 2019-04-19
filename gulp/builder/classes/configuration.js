@@ -107,6 +107,9 @@ class BuildConfiguration {
 
       // paste "resources" prefix to links
       this.resourcesUrl = true;
+
+      // make symlinks for source files
+      this.symlinks = true;
    }
 
    /**
@@ -201,6 +204,11 @@ class BuildConfiguration {
       // resourcesUrl flag
       if (this.rawConfig.hasOwnProperty('resourcesUrl') && typeof this.rawConfig.resourcesUrl === 'boolean') {
          this.resourcesUrl = this.rawConfig.resourcesUrl;
+      }
+
+      // resourcesUrl flag
+      if (this.rawConfig.hasOwnProperty('symlinks') && typeof this.rawConfig.symlinks === 'boolean') {
+         this.symlinks = this.rawConfig.symlinks;
       }
    }
 
