@@ -148,7 +148,24 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeTemplates(currentFile);
       result.should.equal(versionedMinLink);
 
+      currentFile = {
+         contents: 'src="{{item.get(image) || resourceRoot + \'SBIS3.CONTROLS/themes/online/img/defaultItem.png\'}}">',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile);
+      result.should.equal('src="{{item.get(image) || resourceRoot + \'SBIS3.CONTROLS/themes/online/img/defaultItem.png?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}\'}}">');
+
       // в данном случае в объекте-файле должна записаться информация о версионировании
+      currentFile.versioned.should.equal(true);
+
+      currentFile = {
+         contents: 'src="/materials/resources/SBIS3.CONTROLS/themes/online/online.css"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile);
+      result.should.equal('src="/materials/resources/SBIS3.CONTROLS/themes/online/online.min.css?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}"');
       currentFile.versioned.should.equal(true);
 
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
