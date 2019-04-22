@@ -6,7 +6,7 @@
 'use strict';
 
 const path = require('path'),
-   requireJS = require('requirejs'),
+   requireJS = require('saby-units/lib/requirejs/r'),
    logger = require('../../lib/logger').logger();
 
 const resourceRoot = '/';
