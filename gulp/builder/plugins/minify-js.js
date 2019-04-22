@@ -184,10 +184,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   new Vinyl({
                      base: moduleInfo.output,
                      path: outputMinJsFile,
-                     contents: Buffer.from(minText),
-                     versioned: file.versioned
+                     contents: Buffer.from(minText)
                   })
                );
+               if (file.versioned) {
+                  taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinJsFile);
+               }
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
 
                /**

@@ -8,6 +8,7 @@
 const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
+   path = require('path'),
    helpers = require('../../../lib/helpers');
 
 /**
@@ -33,7 +34,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          try {
             // подготовим contents.json и contents.js
             if (taskParameters.config.version) {
-               moduleInfo.contents.buildnumber = '%{BUILDER_VERSION_STUB}';
+               moduleInfo.contents.buildnumber = `%{MODULE_VERSION_STUB=${path.basename(moduleInfo.output)}}`;
             }
 
             // сохраняем модульный contents в общий, если необходимо
