@@ -16,11 +16,12 @@ const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
  * Класс с базовой информацией о модуле. Используется как база для сборки статики и для сбора фраз локализации.
  */
 class ModuleInfo {
-   constructor(moduleName, moduleResponsible, modulePath, required) {
+   constructor(moduleName, moduleResponsible, modulePath, required, depends) {
       this.name = moduleName;
       this.responsible = moduleResponsible;
       this.path = modulePath;
       this.required = required;
+      this.depends = depends || [];
    }
 
    get nameWithResponsible() {
