@@ -44,12 +44,12 @@
       "postcss": "7.0.1",
       "postcss-safe-parser": "4.0.1",
       "postcss-url": "7.3.2",
-      "requirejs": "2.3.5",
       "strip-bom": "3.0.0",
       "tensor-xmldom": "0.2.0-b9",
       "through2": "2.0.3",
       "typescript": "^3.0.3",
       "saby-typescript": "git+https://github.com/saby/TypeScript.git#rc-19.310",
+      "saby-units": "git+https://github.com/saby/Units.git#rc-19.310",
       "uglify-js": "3.3.23",
       "vinyl": "2.2.0",
       "workerpool": "2.3.0"
