@@ -81,13 +81,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo
                );
                if (error) {
+                  taskParameters.cache.markFileAsFailed(library.history[0]);
                   logger.error({
                      message: 'Ошибка при паковке библиотеки',
                      error,
                      filePath: library.history[0]
                   });
-               } else if (result.error) {
-                  logger.error(result.error);
                } else {
                   library.modulepack = result.compiled;
 
