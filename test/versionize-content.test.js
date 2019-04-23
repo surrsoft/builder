@@ -9,6 +9,7 @@ const cacheFolder = path.join(workspaceFolder, 'cache');
 const outputFolder = path.join(workspaceFolder, 'output');
 const sourceFolder = path.join(workspaceFolder, 'source');
 const configPath = path.join(workspaceFolder, 'config.json');
+const ModuleInfo = require('../gulp/builder/classes/module-info');
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 const {
    isRegularFile, linkPlatform
@@ -42,6 +43,7 @@ describe('versionize-content', () => {
 
    it('versionize style content', () => {
       let result;
+      const currentModuleInfo = new ModuleInfo('MyModule', 'some responsible', 'someRoot/MyModule', 'someCache/MyModule', false, []);
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
       let currentFile = {
@@ -49,7 +51,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal('background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif?x_version=%{MODULE_VERSION_STUB=MyModule})');
 
       // проверим, что информация о версионировании прокидывается в файл
@@ -61,7 +63,7 @@ describe('versionize-content', () => {
          path: filePath,
          base
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal('url(\'../default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=%{MODULE_VERSION_STUB=MyModule}\')');
       currentFile.versioned.should.equal(true);
 
@@ -71,7 +73,7 @@ describe('versionize-content', () => {
          path: filePath,
          base
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal('url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_version=%{MODULE_VERSION_STUB=MyModule2}\')');
       currentFile.versioned.should.equal(true);
 
@@ -80,7 +82,7 @@ describe('versionize-content', () => {
          path: filePath,
          base
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{MODULE_VERSION_STUB=MyModule}#iefix\')');
       currentFile.versioned.should.equal(true);
 
@@ -89,7 +91,7 @@ describe('versionize-content', () => {
          path: filePath,
          base
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal('url(\'fonts/TensorFont/1.0.3/TensorFont/TensorFont.eot?x_version=%{MODULE_VERSION_STUB=MyModule}#test123\')');
       currentFile.versioned.should.equal(true);
 
@@ -100,7 +102,7 @@ describe('versionize-content', () => {
          path: filePath,
          base
       };
-      result = versionizeContent.versionizeStyles(currentFile);
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.should.equal(cdnData);
 
       // Проверим, чтобы проигнорированный версионированием файл содержал правильную инфу о версии
@@ -108,6 +110,7 @@ describe('versionize-content', () => {
    });
 
    it('versionize templates content', () => {
+      const currentModuleInfo = new ModuleInfo('MyModule', 'some responsible', 'someRoot/MyModule', 'someCache/MyModule', false, []);
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/template.tmpl');
       let result;
@@ -121,7 +124,7 @@ describe('versionize-content', () => {
       };
 
       // проверим, чтобы игнорировался cdn для js
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal(cdnSource);
 
       // проверим, чтобы не было информации о версионировании в объекте-файле
@@ -135,7 +138,7 @@ describe('versionize-content', () => {
       };
 
       // проверим, чтобы игнорировался cdn для шрифтов
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal(cdnSource);
       false.should.equal(!!currentFile.versioned);
 
@@ -145,7 +148,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal(versionedMinLink);
 
       currentFile = {
@@ -153,7 +156,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal('src="{{item.get(image) || resourceRoot + \'SBIS3.CONTROLS/themes/online/img/defaultItem.png?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}\'}}">');
 
       // в данном случае в объекте-файле должна записаться информация о версионировании
@@ -164,7 +167,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal('src="/materials/resources/SBIS3.CONTROLS/themes/online/online.min.css?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}"');
       currentFile.versioned.should.equal(true);
 
@@ -174,7 +177,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal(versionedMinLink);
       currentFile.versioned.should.equal(true);
 
@@ -184,7 +187,7 @@ describe('versionize-content', () => {
          base,
          path: filePath
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{MODULE_VERSION_STUB=Controls-theme}"/>');
       currentFile.versioned.should.equal(true);
 
@@ -193,7 +196,7 @@ describe('versionize-content', () => {
       currentFile = {
          contents: testSpanFromTemplate
       };
-      result = versionizeContent.versionizeTemplates(currentFile);
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.should.equal(testSpanFromTemplate);
       false.should.equal(!!currentFile.versioned);
    });
