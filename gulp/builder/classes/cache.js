@@ -82,6 +82,10 @@ class Cache {
          logger.info(`Не удалось обнаружить валидный кеш от предыдущей сборки. ${finishText}`);
          return true;
       }
+      if (this.lastStore.runningParameters.criticalErrors) {
+         logger.info(`Предыдущий билд завершился с критическими ошибками. ${finishText}`);
+         return true;
+      }
       const lastRunningParameters = { ...this.lastStore.runningParameters };
       const currentRunningParameters = { ...this.currentStore.runningParameters };
 
@@ -305,6 +309,10 @@ class Cache {
    markFileAsFailed(filePath) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.filesWithErrors.add(prettyPath);
+   }
+
+   markCacheAsFailed() {
+      this.currentStore.runningParameters.criticalErrors = true;
    }
 
    /**

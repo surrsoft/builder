@@ -108,6 +108,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(
                plumber({
                   errorHandler(err) {
+                     taskParameters.cache.markCacheAsFailed();
                      logger.error({
                         message: 'Задача buildModule завершилась с ошибкой',
                         error: err,
