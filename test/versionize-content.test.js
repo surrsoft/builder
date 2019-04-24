@@ -171,6 +171,15 @@ describe('versionize-content', () => {
       result.should.equal('src="/materials/resources/SBIS3.CONTROLS/themes/online/online.min.css?x_version=%{MODULE_VERSION_STUB=SBIS3.CONTROLS}"');
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: 'src="/materials/resources/contents.js"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.should.equal('src="/materials/resources/contents.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      currentFile.versioned.should.equal(true);
+
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
       currentFile = {
          contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">',
