@@ -191,6 +191,15 @@ describe('versionize-content', () => {
       result.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{MODULE_VERSION_STUB=Controls-theme}"/>');
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: '<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.css"/>',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.should.equal('<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.min.css?x_version=%{MODULE_VERSION_STUB=WS3Page}"/>');
+      currentFile.versioned.should.equal(true);
+
       // проверим что под регулярку не попадают свойства обьектов
       const testSpanFromTemplate = '<span class="edo-TaskCol-date-number-mark-dot icon-16 icon-{{item[\'colorMarkState\'].icon}}"';
       currentFile = {
