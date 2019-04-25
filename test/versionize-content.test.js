@@ -202,7 +202,8 @@ describe('versionize-content', () => {
          path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
-      result.should.equal('src="../build/pdf.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      result.newText.should.equal('src="../build/pdf.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
