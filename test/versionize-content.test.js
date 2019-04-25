@@ -196,6 +196,16 @@ describe('versionize-content', () => {
       result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: 'src="../build/pdf.min.js"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.newText.should.equal('src="../build/pdf.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      result.errors.should.equal(false);
+      currentFile.versioned.should.equal(true);
+
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
       currentFile = {
          contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">',
