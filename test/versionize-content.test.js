@@ -129,7 +129,7 @@ describe('versionize-content', () => {
          'someRoot/MyModule',
          'someCache/MyModule',
          false,
-         ['View', 'SBIS3.CONTROLS']
+         ['View', 'SBIS3.CONTROLS', 'WS3Page']
       );
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/template.tmpl');
@@ -224,7 +224,8 @@ describe('versionize-content', () => {
          path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
-      result.should.equal('<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.min.css?x_version=%{MODULE_VERSION_STUB=WS3Page}"/>');
+      result.newText.should.equal('<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.min.css?x_version=%{MODULE_VERSION_STUB=WS3Page}"/>');
+      result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
       // проверим что под регулярку не попадают свойства обьектов
