@@ -49,7 +49,8 @@ describe('versionize-content', () => {
          'someRoot/MyModule',
          'someCache/MyModule',
          false,
-         ['SBIS3.CONTROLS']);
+         ['SBIS3.CONTROLS']
+      );
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
       let currentFile = {
