@@ -8,6 +8,7 @@
 'use strict';
 
 const through = require('through2');
+const { checkSourceNecessityByConfig } = require('../../common/helpers');
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
@@ -28,32 +29,6 @@ const extensions = new Set([
    '.ts',
    '.map'
 ]);
-
-/**
- * check source file necessity in output directory by
- * given gulp configuration
- * @param config - current gulp configuration
- * @param file - current file
- * @returns {boolean}
- */
-function checkSourceNecessityByConfig(config, file) {
-   if (!config.typescript && file.extname === '.ts') {
-      return false;
-   }
-
-   if (!config.less && file.extname === '.less') {
-      return false;
-   }
-
-   if (!config.wml && ['.wml', '.tmpl'].includes(file.extname)) {
-      return false;
-   }
-
-   if (!config.deprecatedXhtml && file.extname === '.xhtml') {
-      return false;
-   }
-   return true;
-}
 
 /**
  * Объявление плагина
@@ -87,7 +62,7 @@ module.exports = function declarePlugin(taskParameters) {
             return;
          }
 
-         if (!checkSourceNecessityByConfig(buildConfig, file)) {
+         if (!checkSourceNecessityByConfig(buildConfig, file.extname)) {
             callback(null);
             return;
          }

@@ -11,6 +11,32 @@ const path = require('path'),
    workerPool = require('workerpool');
 
 /**
+ * check source file necessity in output directory by
+ * given gulp configuration
+ * @param config - current gulp configuration
+ * @param file - current file
+ * @returns {boolean}
+ */
+function checkSourceNecessityByConfig(config, extension) {
+   if (!config.typescript && extension === '.ts') {
+      return false;
+   }
+
+   if (!config.less && extension === '.less') {
+      return false;
+   }
+
+   if (!config.wml && ['.wml', '.tmpl'].includes(extension)) {
+      return false;
+   }
+
+   if (!config.deprecatedXhtml && extension === '.xhtml') {
+      return false;
+   }
+   return true;
+}
+
+/**
  * Функция, которая нужна в сборке для выбора между gulp.dest и gulp.symlink
  * @param {BuildConfiguration} config конфигурация сборки
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -40,21 +66,6 @@ function needSymlink(config, moduleInfo) {
       // ошибка в самом gulp.
       return file.history.length === 1;
    };
-}
-
-/**
- * Получать директорию модуля
- * @param {Object[]} modules список модулей из оригиноального конфига
- * @param {string} moduleName имя модуля, для которого получаем директорию
- * @returns {string}
- */
-function getDirnameForModule(modules, moduleName) {
-   for (const module of modules) {
-      if (module.name === moduleName) {
-         return module.path;
-      }
-   }
-   return '';
 }
 
 /**
@@ -160,5 +171,5 @@ module.exports = {
    generateTaskForInitWorkerPool,
    generateTaskForTerminatePool,
    wrapWorkerFunction,
-   getDirnameForModule
+   checkSourceNecessityByConfig
 };
