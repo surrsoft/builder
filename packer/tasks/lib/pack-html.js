@@ -322,7 +322,7 @@ function getStartNodes(divs) {
  * @param key
  */
 function getKey(buildNumber, key) {
-   return buildNumber ? `${key}?x_version=${buildNumber}` : key;
+   return buildNumber ? `${key}?x_module=${buildNumber}` : key;
 }
 
 /**
