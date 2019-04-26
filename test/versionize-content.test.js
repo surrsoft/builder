@@ -129,7 +129,7 @@ describe('versionize-content', () => {
          'someRoot/MyModule',
          'someCache/MyModule',
          false,
-         ['View', 'SBIS3.CONTROLS']
+         ['View', 'SBIS3.CONTROLS', 'WS3Page']
       );
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/template.tmpl');
@@ -197,6 +197,16 @@ describe('versionize-content', () => {
       currentFile.versioned.should.equal(true);
 
       currentFile = {
+         contents: 'src="../build/pdf.min.js"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.newText.should.equal('src="../build/pdf.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      result.errors.should.equal(false);
+      currentFile.versioned.should.equal(true);
+
+      currentFile = {
          contents: 'src="/materials/resources/contents.js"',
          base,
          path: filePath
@@ -226,6 +236,16 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.newText.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_version=%{MODULE_VERSION_STUB=Controls-theme}"/>');
       result.errors.should.equal(true);
+      currentFile.versioned.should.equal(true);
+
+      currentFile = {
+         contents: '<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.css"/>',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.newText.should.equal('<link href="{{=it.resourceRoot}}WS3Page/Templates/css/graytheme.min.css?x_version=%{MODULE_VERSION_STUB=WS3Page}"/>');
+      result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
       // проверим что под регулярку не попадают свойства обьектов
