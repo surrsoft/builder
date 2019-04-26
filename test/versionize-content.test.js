@@ -212,7 +212,7 @@ describe('versionize-content', () => {
          path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
-      result.newText.should.equal('src="/materials/resources/contents.min.js?x_version=%{MODULE_VERSION_STUB=MyModule}"');
+      result.newText.should.equal('src="/materials/resources/contents.min.js?x_module=%{MODULE_VERSION_STUB=MyModule}"');
       result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
