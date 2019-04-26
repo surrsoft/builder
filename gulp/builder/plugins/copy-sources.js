@@ -30,10 +30,37 @@ const extensions = new Set([
 ]);
 
 /**
+ * check source file necessity in output directory by
+ * given gulp configuration
+ * @param config - current gulp configuration
+ * @param file - current file
+ * @returns {boolean}
+ */
+function checkSourceNecessityByConfig(config, file) {
+   if (!config.typescript && file.extname === '.ts') {
+      return false;
+   }
+
+   if (!config.less && file.extname === '.less') {
+      return false;
+   }
+
+   if (!config.wml && ['.wml', '.tmpl'].includes(file.extname)) {
+      return false;
+   }
+
+   if (!config.deprecatedXhtml && file.extname === '.xhtml') {
+      return false;
+   }
+   return true;
+}
+
+/**
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin() {
+module.exports = function declarePlugin(taskParameters) {
+   const buildConfig = taskParameters.config;
    return through.obj(
       function onTransform(file, encoding, callback) {
          /**
@@ -60,6 +87,15 @@ module.exports = function declarePlugin() {
             return;
          }
 
+         if (!checkSourceNecessityByConfig(buildConfig, file)) {
+            callback(null);
+            return;
+         }
+
+         if (!buildConfig.minimize) {
+            callback(null, file);
+            return;
+         }
          const isMinified = file.basename.endsWith(`.min${file.extname}`);
          switch (file.extname) {
             case '.js':
