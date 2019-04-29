@@ -215,6 +215,16 @@ describe('versionize-content', () => {
       result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
+      currentFile = {
+         contents: 'src="/materials/resources/contents.js"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.newText.should.equal('src="/materials/resources/contents.min.js?x_module=%{MODULE_VERSION_STUB=MyModule}"');
+      result.errors.should.equal(false);
+      currentFile.versioned.should.equal(true);
+
       // проверим, чтобы добавлялся суффикс min, если он отсутствует
       currentFile = {
          contents: 'src="{{ _options.resourceRoot }}View/Runner/Vdom/third-party/boomerang-1.568.0.js">',
