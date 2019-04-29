@@ -204,7 +204,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(filterCached())
             .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
-            .pipe(gulpIf(!taskParameters.config.sources, copySources()))
+            .pipe(gulpIf(!taskParameters.config.sources, copySources(taskParameters)))
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(

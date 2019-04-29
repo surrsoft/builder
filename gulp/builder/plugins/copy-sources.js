@@ -8,6 +8,7 @@
 'use strict';
 
 const through = require('through2');
+const { checkSourceNecessityByConfig } = require('../../common/helpers');
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
@@ -33,7 +34,8 @@ const extensions = new Set([
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin() {
+module.exports = function declarePlugin(taskParameters) {
+   const buildConfig = taskParameters.config;
    return through.obj(
       function onTransform(file, encoding, callback) {
          /**
@@ -60,6 +62,15 @@ module.exports = function declarePlugin() {
             return;
          }
 
+         if (!checkSourceNecessityByConfig(buildConfig, file.extname)) {
+            callback(null);
+            return;
+         }
+
+         if (!buildConfig.minimize) {
+            callback(null, file);
+            return;
+         }
          const isMinified = file.basename.endsWith(`.min${file.extname}`);
          switch (file.extname) {
             case '.js':
