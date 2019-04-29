@@ -76,6 +76,15 @@ describe('versionize-content', () => {
       result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
+      // bad relative link should return versioned module, but with error
+      currentFile = {
+         contents: 'url(\'../../../../default-theme/fonts/cbuc-icons/cbuc-icons.woff\')',
+         path: filePath,
+         base
+      };
+      result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
+      result.errors.should.equal(true);
+
       // woff и woff2 должны правильно зарезолвиться
       currentFile = {
          contents: 'url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff\')',
