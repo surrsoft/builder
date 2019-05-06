@@ -111,8 +111,16 @@ describe('check-module-dependencies', () => {
    });
 
    it('check dependencies validity: meta nodes doesn\'t have current dependency, but exists in output', async() => {
-      const nodeName = 'css!MyModule1/testFileSystemCheck';
-      const result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      let nodeName = 'css!MyModule1/testFileSystemCheck';
+      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result.should.equal(true);
+
+      nodeName = 'text!MyModule1/index.html';
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result.should.equal(true);
+
+      nodeName = 'browser!text!MyModule1/index.html';
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
       result.should.equal(true);
    });
 
