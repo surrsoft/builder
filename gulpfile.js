@@ -7,6 +7,8 @@
 
 'use strict';
 
+const getLogsLevel = require('./lib/get-log-level');
+
 try {
    // В самом начале проверим версию node. используем минимум возможностей node.js и ES6
    if (process.versions.node.split('.')[0] < 8) {
@@ -32,7 +34,7 @@ try {
    Error.stackTraceLimit = 100;
 
    // логгер - прежде всего
-   const logger = require('./lib/logger').setGulpLogger();
+   const logger = require('./lib/logger').setGulpLogger(getLogsLevel(process.argv));
 
    // важно вернуть правильный код при выходе. сборка должна падать, если есть ошибки
    process.on('exit', () => {

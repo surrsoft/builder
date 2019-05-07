@@ -8,6 +8,7 @@ const path = require('path'),
    os = require('os'),
    fs = require('fs-extra'),
    logger = require('../../lib/logger').logger(),
+   getLogLevel = require('../../lib/get-log-level'),
    workerPool = require('workerpool');
 
 /**
@@ -119,6 +120,7 @@ function generateTaskForInitWorkerPool(taskParameters) {
             maxWorkers: maxWorkers || 1,
             forkOpts: {
                env: {
+                  logs: getLogLevel(process.argv),
                   'ws-core-path': wsCorePath,
                   'main-process-cwd': process.cwd(),
                   'init-ws': taskParameters.config.needTemplates || taskParameters.config.builderTests,
