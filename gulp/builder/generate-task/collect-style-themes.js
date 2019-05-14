@@ -75,7 +75,6 @@ function generateTaskForCollectThemes(taskParameters, config) {
                   const fileName = path.basename(file.path, '.less');
                   const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
-
                      // for offline plugin build only plugin's themes
                      if (isOfflinePlugin && !desktopPluginThemes.includes(fileName)) {
                         done();
