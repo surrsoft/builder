@@ -32,7 +32,9 @@ module.exports = function generateTaskForSaveLoggerReport(taskParameters) {
                } else {
                   resultMessage += 'successfully!';
                }
-               logger.info(resultMessage);
+
+               // eslint-disable-next-line no-console
+               console.log(resultMessage);
             }
          } catch (error) {
             logger.error({ error });
