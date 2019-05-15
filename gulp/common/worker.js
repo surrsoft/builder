@@ -32,7 +32,7 @@ if (!checkCWDAvailability()) {
 }
 
 // логгер - прежде всего
-require('../../lib/logger').setWorkerLogger();
+require('../../lib/logger').setWorkerLogger(process.env.logs);
 
 const logger = require('../../lib/logger').logger();
 const needInitWs = process.env['init-ws'] === 'true';
