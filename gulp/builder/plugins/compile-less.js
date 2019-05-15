@@ -57,6 +57,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
 
+   // check for offline plugin application
+   const isOfflinePlugin = taskParameters.config.modules.find(currentModule => currentModule.name === 'SBISPlugin') &&
+      !taskParameters.config.sources;
    return through.obj(
 
       /* @this Stream */
@@ -166,7 +169,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      modulePath: moduleInfo.path,
                      text: currentLessFile.contents.toString(),
                      themes: taskParameters.config.themes,
-                     moduleLessConfig
+                     moduleLessConfig,
+                     isOfflinePlugin
                   };
                   const results = await buildLess(
                      {
