@@ -979,6 +979,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Modul/public/publicFunction2',
             'Modul/publicFunction1'
          ]);
+         const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
+         currentLibraryPackedModules.should.have.members(['Modul/_es6/testPublicModule']);
       });
       it('test-first-level-return-statement-removal', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');
@@ -1065,6 +1067,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Modul/public/publicFunction2',
             'Modul/publicFunction1'
          ]);
+         const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
+         currentLibraryPackedModules.should.have.members(['Modul/_es6/testPublicModule']);
       });
       it('test-first-level-return-statement-removal-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');

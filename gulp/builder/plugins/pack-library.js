@@ -112,6 +112,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      }
                   }
                   if (result.fileDependencies && result.fileDependencies.length > 0) {
+                     if (currentModuleStore.componentsInfo[prettyPath]) {
+                        currentModuleStore.componentsInfo[prettyPath].packedModules = result.packedModules;
+                        currentModuleStore.componentsInfo[prettyPath].libraryName = result.name;
+                     }
                      taskParameters.cache.addDependencies(library.history[0], result.fileDependencies);
                   }
                   library.library = true;
