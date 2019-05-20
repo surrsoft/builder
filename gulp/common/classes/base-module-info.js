@@ -7,7 +7,6 @@
 
 const path = require('path'),
    fs = require('fs-extra'),
-   logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
 const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
