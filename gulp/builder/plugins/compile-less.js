@@ -43,6 +43,38 @@ function setDefaultLessConfiguration() {
 }
 
 /**
+ * Gets themes list for multi themes build by
+ * configuration
+ * @param allThemes
+ * @param taskParameters
+ */
+function getNewThemesList(allThemes, taskParameters) {
+   const themesParam = taskParameters.config.themes;
+   let newThemes = {};
+   switch (typeof themesParam) {
+      case 'boolean':
+         if (themesParam) {
+            newThemes = allThemes;
+         }
+         break;
+
+      // selected array of themes
+      case 'object':
+         if (themesParam instanceof Array === true) {
+            Object.keys(allThemes).forEach((currentTheme) => {
+               if (themesParam.includes(currentTheme)) {
+                  newThemes[currentTheme] = allThemes[currentTheme];
+               }
+            });
+         }
+         break;
+      default:
+         break;
+   }
+   return newThemes;
+}
+
+/**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -56,6 +88,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    };
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
+
+   // check for offline plugin application
+   const newThemes = getNewThemesList(allThemes, taskParameters);
 
    return through.obj(
 
@@ -166,7 +201,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      modulePath: moduleInfo.path,
                      text: currentLessFile.contents.toString(),
                      themes: taskParameters.config.themes,
-                     moduleLessConfig
+                     moduleLessConfig,
+                     newThemes
                   };
                   const results = await buildLess(
                      {

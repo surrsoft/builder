@@ -7,7 +7,6 @@
 
 const path = require('path'),
    fs = require('fs-extra'),
-   logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
 const ILLEGAL_SYMBOLS_FOR_PATH = ['[', ']'];
@@ -43,7 +42,6 @@ class ModuleInfo {
    symlinkInputPathToAvoidProblems(cachePath, buildTask) {
       const needSymlink = buildTask || isShareOnWindows(this.path) || getIllegalSymbolInPath(this.path);
       if (needSymlink) {
-         logger.debug(`Необходим симлинк на модуль ${this.path}`);
          const newPath = path.join(cachePath, 'temp-modules', path.basename(this.path));
          if (getIllegalSymbolInPath(newPath)) {
             throw new Error(`Временный пусть до модуля содержит не корректный символ "${getIllegalSymbolInPath(newPath)}"`);
@@ -51,14 +49,8 @@ class ModuleInfo {
          if (isShareOnWindows(cachePath)) {
             throw new Error('На windows путь до кеша не может быть сетевым .');
          }
-         try {
+         if (fs.pathExistsSync(newPath)) {
             fs.unlinkSync(newPath);
-         } catch (e) {
-            logger.debug({
-               message: 'Не смогли удалить старый симлинк или его не было',
-               filePath: newPath,
-               error: e
-            });
          }
          fs.ensureSymlinkSync(this.path, newPath, 'dir');
          this.path = newPath;

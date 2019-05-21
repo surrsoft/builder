@@ -15,7 +15,6 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    mapStream = require('map-stream'),
    fs = require('fs-extra'),
-   { desktopPluginThemes } = require('../../../lib/builder-constants'),
    configLessChecker = require('../../../lib/config-less-checker');
 
 const logger = require('../../../lib/logger').logger();
@@ -32,11 +31,6 @@ function generateTaskForCollectThemes(taskParameters, config) {
          done();
       };
    }
-
-   // check for offline plugin application
-   const isOfflinePlugin = taskParameters.config.modules.find(currentModule => currentModule.name === 'SBISPlugin') &&
-      !taskParameters.config.sources;
-
    const tasks = config.modules.map((moduleInfo) => {
       const input = [
          path.join(moduleInfo.path, '/themes/*/*.less'),
@@ -75,11 +69,6 @@ function generateTaskForCollectThemes(taskParameters, config) {
                   const fileName = path.basename(file.path, '.less');
                   const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
-                     // for offline plugin build only plugin's themes
-                     if (isOfflinePlugin && !desktopPluginThemes.includes(fileName)) {
-                        done();
-                        return;
-                     }
                      const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
                      let themeConfig;
                      if (!(await fs.pathExists(themeConfigPath))) {
