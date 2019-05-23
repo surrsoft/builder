@@ -64,6 +64,7 @@ function linkPlatform(sourceFolder) {
       fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Env'), path.join(sourceFolder, 'Env'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/SbisEnv'), path.join(sourceFolder, 'SbisEnv'), 'dir'),
       fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Browser'), path.join(sourceFolder, 'Browser'), 'dir'),
+      fs.symlink(path.join(nodeModulesPath, 'saby-ui/UI'), path.join(sourceFolder, 'UI'), 'dir'),
    ]);
 }
 
