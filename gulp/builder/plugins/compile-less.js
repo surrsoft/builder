@@ -30,6 +30,21 @@ function getRelativeOutput(moduleInfo, prettyFilePath) {
 }
 
 /**
+ * Get interface module name from failed less path
+ * @param{String} currentLessBase - path to current less interface module
+ * @param{String} failedLessPath - full path to failed less
+ * @returns {*}
+ */
+function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
+   const root = helpers.unixifyPath(path.dirname(currentLessBase));
+   const prettyFailedLessPath = helpers.unixifyPath(failedLessPath);
+   const prettyRelativePath = helpers.removeLeadingSlash(
+      prettyFailedLessPath.replace(root, '')
+   );
+   return prettyRelativePath.split('/').shift();
+}
+
+/**
  * В случае отсутствия в Интерфейсном модуле конфигурации темизации less
  * файлов, генерируем базовую конфигурацию:
  * 1) Генерируем все less-ки Интерфейсного модуля по старой схеме темизации
@@ -191,7 +206,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                lessImportsLogs = await fs.readJson(lessImportsLogsPath);
             }
          }
-
+         let errors = false;
          await pMap(
             moduleLess,
             async(currentLessFile) => {
@@ -219,13 +234,35 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      if (result.ignoreMessage) {
                         logger.debug(result.ignoreMessage);
                      } else if (result.error) {
-                        const errorObject = {
-                           message: `Ошибка компиляции less: ${result.error}`,
-                           filePath: currentLessFile.history[0],
-                           moduleInfo
-                        };
+                        let errorObject;
+                        if (result.failedLess) {
+                           const moduleNameForFail = getModuleNameForFailedImportLess(
+                              currentLessFile.base,
+                              result.failedLess
+                           );
+                           const moduleInfoForFail = taskParameters.config.modules.find(
+                              currentModuleInfo => currentModuleInfo.name === moduleNameForFail
+                           );
+                           const errorLoadAttempts = result.error.slice(result.error.indexOf('Tried -'), result.error.length);
+                           result.error = result.error.replace(errorLoadAttempts, '');
+
+                           const message = `Bad import detected ${result.error}. Check interface module of current import ` +
+                              `for existing in current project. Needed by: ${currentLessFile.history[0]}. ` +
+                              `For theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n${errorLoadAttempts}`;
+                           errorObject = {
+                              message,
+                              filePath: result.failedLess,
+                              moduleInfo: moduleInfoForFail
+                           };
+                        } else {
+                           errorObject = {
+                              message: `Ошибка компиляции less: ${result.error}`,
+                              filePath: currentLessFile.history[0],
+                              moduleInfo
+                           };
+                        }
                         logger.error(errorObject);
-                        logger.info(`Информация об Интерфейсных модулей для компилятора less: ${JSON.stringify(gulpModulesInfo)}`);
+                        errors = true;
                         taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
                      } else {
                         const { compiled } = result;
@@ -276,6 +313,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                concurrency: 20
             }
          );
+         if (errors) {
+            logger.info(`Информация об Интерфейсных модулей для компилятора less: ${JSON.stringify(gulpModulesInfo)}`);
+         }
          if (taskParameters.config.customPack) {
             const jsonFile = new Vinyl({
                path: '.builder/compiled-less.min.json',

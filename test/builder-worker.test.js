@@ -154,7 +154,7 @@ describe('gulp/common/worker.js', () => {
             }
          };
          const themeName = resolveThemeName(filePath, modulePath);
-         const [lessError] = await execInPool(pool, 'processLessFile', [
+         const [, lessResult] = await execInPool(pool, 'processLessFile', [
             text,
             filePath,
             {
@@ -166,18 +166,8 @@ describe('gulp/common/worker.js', () => {
          ]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = lib.trimLessError(lessError.message.replace(/\\/g, '/'));
-         const lessErrorsByThemes = [];
-         Object.keys(themes).forEach((currentTheme) => {
-            lessErrorsByThemes.push(`Error compiling less: "${filePath}" for theme ${currentTheme}(new theme type):  in line 1: 'notExist' wasn't found.`);
-         });
-         let result = false;
-         lessErrorsByThemes.forEach((currentMessage) => {
-            if (currentMessage === errorMessage) {
-               result = true;
-            }
-         });
-         result.should.equal(true);
+         const errorMessage = lib.trimLessError(lessResult.error.replace(/\\/g, '/'));
+         errorMessage.should.equal(" in line 1: 'notExist' wasn't found.");
       } finally {
          await clearWorkspace();
          await pool.terminate();
