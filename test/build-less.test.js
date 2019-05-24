@@ -92,87 +92,18 @@ describe('build less', () => {
    });
 
    // важно отобразить корректно строку в которой ошибка
-   it('less with error', async() => {
+   it('less with import error', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '@import "notExist";';
       const themeName = resolveThemeName(filePath, filePath);
-      let errorMessage;
-      try {
-         const result = await processLessFile(text, filePath, {
-            name: themeName,
-            path: themes[themeName]
-         }, gulpModulesInfo, {});
-      } catch (error) {
-         // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         errorMessage = error.message.replace(/\\/g, '/');
-      }
-
+      const result = await processLessFile(text, filePath, {
+         name: themeName,
+         path: themes[themeName]
+      }, gulpModulesInfo, {});
+      const errorMessage = result.error.replace(/\\/g, '/');
       return lib
          .trimLessError(errorMessage)
-         .should.equal(
-            `Error compiling less: "${workspaceFolder}/AnyModule/bla/bla/long/path/test.less" for theme online(new theme type):` +
-            "  in line 1: 'notExist' wasn't found."
-         );
-   });
-
-   it('less with error from SBIS3.CONTROLS', async() => {
-      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
-      const text = '@import "notExist";';
-      const themeName = resolveThemeName(filePath, filePath);
-      let errorMessage;
-      try {
-         const result = await processLessFile(text, filePath, {
-            name: themeName,
-            path: themes[themeName]
-         }, gulpModulesInfo, {});
-      } catch (error) {
-         // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         errorMessage = error.message.replace(/\\/g, '/');
-      }
-
-      return lib
-         .trimLessError(errorMessage)
-         .should.equal(
-            `Error compiling less: "${workspaceFolder}/AnyModule/bla/bla/long/path/test.less" for theme online(new theme type):` +
-            "  in line 1: 'notExist' wasn't found."
-         );
-   });
-
-   it('less with internal error', async() => {
-      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/test.less'));
-      const text = '@import "Error";';
-      const lessErrorsByThemes = [];
-      const lessResults = [];
-      await pMap(
-         Object.keys(themes),
-         async(currentTheme) => {
-            lessErrorsByThemes.push(`Error compiling less: "${workspaceFolder}/AnyModule/Error.less" for theme ${currentTheme}` +
-               "(new theme type):  in line 1: 'notExist' wasn't found.");
-            try {
-               const themeName = resolveThemeName(filePath, filePath);
-               const result = await processLessFile(text, filePath, {
-                  name: themeName,
-                  path: themes[themeName],
-               }, gulpModulesInfo, {});
-            } catch (error) {
-               // заменяем слеши, иначе не сравнить на linux и windows одинаково
-               lessResults.push(error.message.replace(/\\/g, '/'));
-            }
-         },
-         {
-            concurrency: 3
-         }
-      );
-
-      // заменяем слеши, иначе не сравнить на linux и windows одинаково
-      const errorMessage = lib.trimLessError(lessResults[0]);
-      let result = false;
-      lessErrorsByThemes.forEach((currentMessage) => {
-         if (currentMessage === errorMessage) {
-            result = true;
-         }
-      });
-      return result.should.equals(true);
+         .should.equal(" in line 1: 'notExist' wasn't found.");
    });
 
    it('variables.less from themes', async() => {
