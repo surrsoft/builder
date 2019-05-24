@@ -169,6 +169,73 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('compile only selected less', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: ['default'],
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      let resultsFiles;
+
+      // check for selected themes builded properly
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'Stable.css',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+
+      // изменим "исходники"
+      await timeoutForMacOS();
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      // проверим, что все нужные файлы появились в "стенде", лишние удалились
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'Stable.css',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+      await clearWorkspace();
+   });
+
    it('static html', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/staticHtml');
       await prepareTest(fixtureFolder);
@@ -979,6 +1046,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Modul/public/publicFunction2',
             'Modul/publicFunction1'
          ]);
+         const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
+         currentLibraryPackedModules.should.have.members(['Modul/_es6/testPublicModule']);
       });
       it('test-first-level-return-statement-removal', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');
@@ -1065,6 +1134,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Modul/public/publicFunction2',
             'Modul/publicFunction1'
          ]);
+         const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
+         currentLibraryPackedModules.should.have.members(['Modul/_es6/testPublicModule']);
       });
       it('test-first-level-return-statement-removal-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'external_public_deps.js');

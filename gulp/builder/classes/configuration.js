@@ -187,8 +187,11 @@ class BuildConfiguration {
       }
 
       // themes flag
-      if (this.rawConfig.hasOwnProperty('themes') && typeof this.rawConfig.themes === 'boolean') {
-         this.themes = this.rawConfig.themes;
+      if (this.rawConfig.hasOwnProperty('themes')) {
+         const { themes } = this.rawConfig;
+         if (typeof themes === 'boolean' || themes instanceof Array === true) {
+            this.themes = themes;
+         }
       }
 
       // source flag

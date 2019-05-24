@@ -107,7 +107,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const { resourcesUrl } = taskParameters.config;
             const json = {
                links: {},
-               nodes: {}
+               nodes: {},
+               packedLibraries: {}
             };
 
             const filePathToRelativeInResources = (filePath) => {
@@ -155,6 +156,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      amd: true,
                      path: filePathToRelativeInResources(filePath).replace(/(\.ts|\.es)$/, '.js')
                   };
+               }
+               if (info.hasOwnProperty('libraryName')) {
+                  json.packedLibraries[info.libraryName] = info.packedModules;
                }
             });
 

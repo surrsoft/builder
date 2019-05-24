@@ -37,7 +37,8 @@ class Cache {
       // сохраняем в кеше moduleDependencies для быстрого доступа в паковке, чтобы не читать файлы
       this.moduleDependencies = {
          links: {},
-         nodes: {}
+         nodes: {},
+         packedLibraries: {}
       };
    }
 
@@ -659,12 +660,13 @@ class Cache {
 
    /**
     * Сохраняем moduleDependencies конкретного модуля в общий для проекта moduleDependencies
-    * @param {{links: {}, nodes: {}}} obj Объект moduleDependencies конкретного модуля
+    * @param {{links: {}, nodes: {}, packedLibraries: {}}} obj Объект moduleDependencies конкретного модуля
     */
    storeLocalModuleDependencies(obj) {
       this.moduleDependencies = {
          links: { ...this.moduleDependencies.links, ...obj.links },
-         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes }
+         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes },
+         packedLibraries: { ...this.moduleDependencies.packedLibraries, ...obj.packedLibraries },
       };
    }
 
