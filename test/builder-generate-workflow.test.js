@@ -236,10 +236,10 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // изменим "исходники"
       await timeoutForMacOS();
-
+      const patchOutputFolder = `${outputFolder}-1`;
       config = {
          cache: cacheFolder,
-         output: outputFolder,
+         output: patchOutputFolder,
          less: true,
          themes: true,
          modules: [
@@ -268,7 +268,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await runWorkflow();
 
       // result content for patch should be written only for interface module "Modul"
-      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles = await fs.readdir(path.join(patchOutputFolder, 'Modul'));
       resultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
@@ -280,15 +280,14 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.css',
          'Stable_online.css',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
-      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
-      noThemesResultsFiles.should.have.members([]);
-      const sbis3controlsResultFiles = await fs.readdir(path.join(outputFolder, 'SBIS3.CONTROLS'));
-      sbis3controlsResultFiles.should.have.members([]);
-      const controlsThemeResultFiles = await fs.readdir(path.join(outputFolder, 'Controls-theme'));
-      controlsThemeResultFiles.should.have.members([]);
+      const noThemesDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Modul_bez_tem'));
+      noThemesDirectoryExists.should.equal(false);
+      const sbis3controlsDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'SBIS3.CONTROLS'));
+      sbis3controlsDirectoryExists.should.equal(false);
+      const controlsThemeDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Controls-theme'));
+      controlsThemeDirectoryExists.should.equal(false);
       await clearWorkspace();
    });
 

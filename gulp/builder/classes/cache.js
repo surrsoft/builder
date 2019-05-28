@@ -48,7 +48,6 @@ class Cache {
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
-
          // in patch for module without rebuild configuration copy builder cache as is
          if (patchBuild && !moduleInfo.rebuild) {
             this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
@@ -80,7 +79,6 @@ class Cache {
     * @returns {Promise<boolean>}
     */
    async cacheHasIncompatibleChanges(patchBuild) {
-
       // for patch skip configuration checker
       if (patchBuild) {
          return false;
@@ -143,7 +141,7 @@ class Cache {
    async clearCacheIfNeeded(taskParameters, patchBuild) {
       const removePromises = [];
       if (await this.cacheHasIncompatibleChanges(patchBuild)) {
-        this.lastStore = new StoreInfo();
+         this.lastStore = new StoreInfo();
 
          // из кеша можно удалить всё кроме .lockfile
          if (await fs.pathExists(this.config.cachePath)) {

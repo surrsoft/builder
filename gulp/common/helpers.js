@@ -76,7 +76,7 @@ function needSymlink(config, moduleInfo) {
  */
 function generateTaskForLoadCache(taskParameters, modulesForPatch) {
    return function loadCache() {
-      return taskParameters.cache.load(modulesForPatch.length > 0);
+      return taskParameters.cache.load(modulesForPatch && modulesForPatch.length > 0);
    };
 }
 
