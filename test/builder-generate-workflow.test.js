@@ -203,7 +203,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       await runWorkflow();
 
       let resultsFiles;
-      let noThemesResultsFiles;
 
       // проверим, что все нужные файлы появились в "стенде"
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -221,7 +220,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.json',
          'themes.config.json.js'
       ]);
-      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
+      const noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       noThemesResultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
