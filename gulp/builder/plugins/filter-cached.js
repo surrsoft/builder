@@ -12,10 +12,10 @@ const logger = require('../../../lib/logger').logger(),
  * Объявление плагина
  * @returns {stream}
  */
-module.exports = function declarePlugin() {
+module.exports = function declarePlugin(moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {
-         if (!file.hasOwnProperty('cached') || !file.cached) {
+         if (moduleInfo.rebuild || !file.hasOwnProperty('cached') || !file.cached) {
             callback(null, file);
             return;
          }

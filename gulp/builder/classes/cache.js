@@ -42,27 +42,33 @@ class Cache {
       };
    }
 
-   load() {
+   async load(patchBuild) {
+      await this.lastStore.load(this.config.cachePath);
       this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
-         this.currentStore.modulesCache[moduleInfo.name] = {
-            componentsInfo: {},
-            routesInfo: {},
-            markupCache: {},
-            esCompileCache: {},
-            versionedModules: {},
-            cdnModules: {},
-            lessConfig: ''
-         };
-         this.currentStore.inputPaths[moduleInfo.path] = {
-            hash: '',
-            output: []
-         };
-      }
 
-      return this.lastStore.load(this.config.cachePath);
+         // in patch for module without rebuild configuration copy builder cache as is
+         if (patchBuild && !moduleInfo.rebuild) {
+            this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
+            this.currentStore.inputPaths[moduleInfo.path] = this.lastStore.inputPaths[moduleInfo.path];
+         } else {
+            this.currentStore.modulesCache[moduleInfo.name] = {
+               componentsInfo: {},
+               routesInfo: {},
+               markupCache: {},
+               esCompileCache: {},
+               versionedModules: {},
+               cdnModules: {},
+               lessConfig: ''
+            };
+            this.currentStore.inputPaths[moduleInfo.path] = {
+               hash: '',
+               output: []
+            };
+         }
+      }
    }
 
    save() {
@@ -73,7 +79,12 @@ class Cache {
     * Проверяет есть ли несовместимые изменения в проекте, из-за которых нужно очистить кеш.
     * @returns {Promise<boolean>}
     */
-   async cacheHasIncompatibleChanges() {
+   async cacheHasIncompatibleChanges(patchBuild) {
+
+      // for patch skip configuration checker
+      if (patchBuild) {
+         return false;
+      }
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.previousRunFailed) {
          logger.info(`В директории кэша с предыдущей сборки остался файл builder.lockfile. ${finishText}`);
@@ -129,10 +140,10 @@ class Cache {
    /**
     * Чистит кеш, если инкрементальная сборка невозможна.
     */
-   async clearCacheIfNeeded(taskParameters) {
+   async clearCacheIfNeeded(taskParameters, patchBuild) {
       const removePromises = [];
-      if (await this.cacheHasIncompatibleChanges()) {
-         this.lastStore = new StoreInfo();
+      if (await this.cacheHasIncompatibleChanges(patchBuild)) {
+        this.lastStore = new StoreInfo();
 
          // из кеша можно удалить всё кроме .lockfile
          if (await fs.pathExists(this.config.cachePath)) {

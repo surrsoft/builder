@@ -47,26 +47,28 @@ function generateWorkflow(processArgv) {
       config.localizations.length > 0
    );
 
+   // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
+   const modulesForPatch = taskParameters.config.modules.filter(moduleInfo => moduleInfo.rebuild);
    return gulp.series(
 
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
-      generateTaskForLoadCache(taskParameters),
+      generateTaskForLoadCache(taskParameters, modulesForPatch),
       generateTaskForCollectThemes(taskParameters, config),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      generateTaskForClearCache(taskParameters),
+      generateTaskForClearCache(taskParameters, modulesForPatch),
 
       // подготовка WS для воркера
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
-      generateTaskForBuildModules(taskParameters),
+      generateTaskForBuildModules(taskParameters, modulesForPatch),
 
       generateTaskForRemoveFiles(taskParameters),
       generateTaskForSaveCache(taskParameters),
       generateTaskForTerminatePool(taskParameters),
-      generateTaskForFinalizeDistrib(taskParameters),
+      generateTaskForFinalizeDistrib(taskParameters, modulesForPatch),
       generateTaskForCheckModuleDeps(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
@@ -80,9 +82,9 @@ function generateWorkflow(processArgv) {
    );
 }
 
-function generateTaskForClearCache(taskParameters) {
+function generateTaskForClearCache(taskParameters, modulesForPatch) {
    return function clearCache() {
-      return taskParameters.cache.clearCacheIfNeeded(taskParameters);
+      return taskParameters.cache.clearCacheIfNeeded(taskParameters, modulesForPatch.length > 0);
    };
 }
 

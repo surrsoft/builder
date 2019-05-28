@@ -18,14 +18,14 @@ const logger = require('../../../lib/logger').logger(),
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForFinalizeDistrib(taskParameters) {
+function generateTaskForFinalizeDistrib(taskParameters, modulesForPatch) {
    if (!taskParameters.config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(taskParameters)];
+   const tasks = [generateTaskForCopyResources(taskParameters, modulesForPatch)];
    if (taskParameters.config.localizations.length > 0) {
       tasks.push(generateTaskForNormalizeKey(taskParameters.config));
    }
@@ -33,8 +33,9 @@ function generateTaskForFinalizeDistrib(taskParameters) {
    return gulp.series(tasks);
 }
 
-function generateTaskForCopyResources(taskParameters) {
-   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+function generateTaskForCopyResources(taskParameters, modulesForPatch) {
+   const modulesToCopy = modulesForPatch.length > 0 ? modulesForPatch : taskParameters.config.modules;
+   const tasks = modulesToCopy.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
 
       // необходимо, чтобы мы могли копировать содержимое .builder в output

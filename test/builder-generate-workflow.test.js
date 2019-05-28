@@ -169,6 +169,129 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('compile less with patch', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'Модуль без тем',
+               path: path.join(sourceFolder, 'Модуль без тем')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      let resultsFiles;
+      let noThemesResultsFiles;
+
+      // проверим, что все нужные файлы появились в "стенде"
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange_online.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old_online.css',
+         'ForRename_old.less',
+         'Stable.css',
+         'Stable_online.css',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
+      noThemesResultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old.less',
+         'Stable.css',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+
+      // изменим "исходники"
+      await timeoutForMacOS();
+
+      config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль'),
+               rebuild: true
+            },
+            {
+               name: 'Модуль без тем',
+               path: path.join(sourceFolder, 'Модуль без тем')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      // result content for patch should be written only for interface module "Modul"
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange.css',
+         'ForChange_online.css',
+         'ForChange.less',
+         'ForRename_old.css',
+         'ForRename_old_online.css',
+         'ForRename_old.less',
+         'Stable.css',
+         'Stable_online.css',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+      noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
+      noThemesResultsFiles.should.have.members([]);
+      const sbis3controlsResultFiles = await fs.readdir(path.join(outputFolder, 'SBIS3.CONTROLS'));
+      sbis3controlsResultFiles.should.have.members([]);
+      const controlsThemeResultFiles = await fs.readdir(path.join(outputFolder, 'Controls-theme'));
+      controlsThemeResultFiles.should.have.members([]);
+      await clearWorkspace();
+   });
+
    it('compile only selected less', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);

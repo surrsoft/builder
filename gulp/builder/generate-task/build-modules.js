@@ -52,13 +52,13 @@ const { needSymlink } = require('../../common/helpers');
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForBuildModules(taskParameters) {
+function generateTaskForBuildModules(taskParameters, modulesForPatch) {
    const tasks = [];
    let countCompletedModules = 0;
-
+   const modulesForBuild = modulesForPatch.length > 0 ? modulesForPatch : taskParameters.config.modules;
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
-      logger.progress(100 * countCompletedModules / taskParameters.config.modules.length);
+      logger.progress(100 * countCompletedModules / modulesForBuild.length);
       done();
    };
 
@@ -67,7 +67,7 @@ function generateTaskForBuildModules(taskParameters) {
       modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
    }
 
-   for (const moduleInfo of taskParameters.config.modules) {
+   for (const moduleInfo of modulesForBuild) {
       tasks.push(
          gulp.series(
             generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap),
@@ -159,7 +159,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
              */
             .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
 
-            // packOwnDeps зависит от buildTmpl, buildXhtml
+            // packOwnDeps зависит от buildTmp  l, buildXhtml
             .pipe(
                gulpIf(
                   taskParameters.config.deprecatedOwnDependencies,
@@ -202,7 +202,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
                   createModuleDependenciesJson(taskParameters, moduleInfo)
                )
             )
-            .pipe(filterCached())
+            .pipe(filterCached(moduleInfo))
             .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
             .pipe(gulpIf(!taskParameters.config.sources, copySources(taskParameters)))
             .pipe(gulpChmod({ read: true, write: true }))

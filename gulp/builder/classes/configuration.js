@@ -306,6 +306,7 @@ class BuildConfiguration {
             module.path,
             this.outputPath,
             module.required,
+            module.rebuild,
             module.depends
          );
          moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath, true);
