@@ -138,6 +138,7 @@ describe('versionize-content', () => {
          'someRoot/MyModule',
          'someCache/MyModule',
          false,
+         false,
          ['View', 'SBIS3.CONTROLS', 'WS3Page']
       );
       const base = path.join(__dirname, 'someRoot/MyModule');

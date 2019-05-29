@@ -12,8 +12,8 @@ const transliterate = require('../../../lib/transliterate'),
  * Класс для работы с модулями проекта. Накапливает данные о модулях, которые плохо ложатся на кеш
  */
 class ModuleInfo extends BaseModuleInfo {
-   constructor(moduleName, moduleResponsible, modulePath, commonOutputPath, required, depends) {
-      super(moduleName, moduleResponsible, modulePath, required, depends);
+   constructor(moduleName, moduleResponsible, modulePath, commonOutputPath, required, rebuild, depends) {
+      super(moduleName, moduleResponsible, modulePath, required, rebuild, depends);
       this.output = path.join(commonOutputPath, transliterate(path.basename(modulePath)));
 
       // объект для записи contents.json
