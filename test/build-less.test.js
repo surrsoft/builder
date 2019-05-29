@@ -55,6 +55,26 @@ describe('build less', () => {
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
+   it('less with grids: correctly added prefixes', async() => {
+      const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
+      const text = '.test-prefixes {\n' +
+         '      display: grid;\n' +
+         '      grid-template-columns: 1fr 1fr;\n' +
+         '      grid-template-rows: auto;\n' +
+         '}';
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      result.imports.length.should.equal(2);
+      result.text.should.equal(
+         '.test-prefixes {\n' +
+         '  display: -ms-grid;\n' +
+         '  display: grid;\n' +
+         '  -ms-grid-columns: 1fr 1fr;\n' +
+         '  grid-template-columns: 1fr 1fr;\n' +
+         '  -ms-grid-rows: auto;\n' +
+         '  grid-template-rows: auto;\n' +
+         '}\n'
+      );
+   });
    it('less from retail', async() => {
       const retailModulePath = helpers.prettifyPath(path.join(workspaceFolder, 'Retail'));
       const filePath = helpers.prettifyPath(path.join(retailModulePath, 'bla/bla/long/path/test.less'));
