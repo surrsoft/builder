@@ -10,7 +10,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const VERSION_STUB = /(\.min)?(\.[\w]+?)\?x_module=%{MODULE_VERSION_STUB=.+}/g;
+const VERSION_STUB = /(\.min)?(\.[\w]+?)\?x_module=%{MODULE_VERSION_STUB=.+?}/g;
 
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
