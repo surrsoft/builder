@@ -314,7 +314,8 @@ describe('versionize-content', () => {
       // проверим, что в исходниках ссылки остались прежними, а в скомпилированном появилась версия и суффикс min
       const sourceNotChanged = sourceContent.includes('contents.js') &&
          sourceContent.includes('require-min.js') &&
-         sourceContent.includes('bundles.js');
+         sourceContent.includes('bundles.js') &&
+         sourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
       sourceNotChanged.should.equal(true);
       const compiledChanged = compiledContent.includes('contents.min.js?x_module=%{MODULE_VERSION_STUB=Modul}') &&
          compiledContent.includes('bundles.min.js?x_module=%{MODULE_VERSION_STUB=WS.Core}') &&
