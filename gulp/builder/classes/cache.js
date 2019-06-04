@@ -48,8 +48,8 @@ class Cache {
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
-         // in patch for module without rebuild configuration copy builder cache as is
-         if (patchBuild && !moduleInfo.rebuild) {
+         // in patch for module without rebuild configuration copy builder cache as is if it exists
+         if (patchBuild && !moduleInfo.rebuild && this.lastStore.modulesCache[moduleInfo.name]) {
             this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
             this.currentStore.inputPaths[moduleInfo.path] = this.lastStore.inputPaths[moduleInfo.path];
          } else {
