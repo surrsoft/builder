@@ -36,7 +36,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
             if (file.path.endsWith('.d.ts')) {
-               callback();
+               callback(null, file);
                return;
             }
 
