@@ -67,7 +67,7 @@ module.exports = function declarePlugin(taskParameters) {
             return;
          }
 
-         if (!buildConfig.minimize) {
+         if (!buildConfig.minimize && !['.ts', '.es', '.less'].includes(file.extname)) {
             callback(null, file);
             return;
          }
