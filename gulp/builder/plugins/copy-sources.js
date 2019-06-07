@@ -71,10 +71,7 @@ module.exports = function declarePlugin(taskParameters) {
             return;
          }
 
-         if (!buildConfig.minimize) {
-            callback(null, file);
-            return;
-         }
+         const debugMode = !buildConfig.minimize;
          const isMinified = file.basename.endsWith(`.min${file.extname}`);
          switch (file.extname) {
             case '.js':
@@ -82,30 +79,32 @@ module.exports = function declarePlugin(taskParameters) {
                 * нужно скопировать .min.original модули, чтобы не записать в кастомный
                 * пакет шаблон компонента 2 раза
                 */
-               if (isMinified || file.basename.endsWith('.min.original.js')) {
+               if (debugMode || isMinified || file.basename.endsWith('.min.original.js')) {
                   jsModules.push(file);
                   callback(null, file);
                   return;
                }
                callback(null);
                return;
-            case '.es':
-            case '.ts':
-            case '.less':
             case '.json':
                /**
                 * конфиги для кастомной паковки нужно скопировать, чтобы создались кастомные пакеты
                 */
-               if (isMinified || file.basename.endsWith('.package.json')) {
+               if (debugMode || isMinified || file.basename.endsWith('.package.json')) {
                   callback(null, file);
                   return;
                }
                callback(null);
                return;
+            case '.less':
+            case '.ts':
+            case '.es':
+               callback(null);
+               return;
 
-            // шаблоны, .css, .jstpl
+            // templates, .css, .jstpl, typescript sources, less
             default:
-               if (isMinified) {
+               if (debugMode || isMinified) {
                   callback(null, file);
                   return;
                }
