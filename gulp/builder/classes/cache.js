@@ -138,7 +138,7 @@ class Cache {
    /**
     * Чистит кеш, если инкрементальная сборка невозможна.
     */
-   async clearCacheIfNeeded(taskParameters, patchBuild) {
+   async clearCacheIfNeeded(patchBuild) {
       const removePromises = [];
       if (await this.cacheHasIncompatibleChanges(patchBuild)) {
          this.lastStore = new StoreInfo();
@@ -151,13 +151,17 @@ class Cache {
                }
             }
          }
-         if (await fs.pathExists(this.config.outputPath) && !taskParameters.config.isSourcesOutput) {
+         if (await fs.pathExists(this.config.outputPath) && !this.config.isSourcesOutput && this.config.clearOutput) {
             removePromises.push(fs.remove(this.config.outputPath));
          }
       }
 
       // если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
-      if (this.config.outputPath !== this.config.rawConfig.output && !taskParameters.config.isSourcesOutput) {
+      if (
+         this.config.outputPath !== this.config.rawConfig.output &&
+         !this.config.isSourcesOutput &&
+         this.config.clearOutput
+      ) {
          if (await fs.pathExists(this.config.rawConfig.output)) {
             removePromises.push(fs.remove(this.config.rawConfig.output));
          }
