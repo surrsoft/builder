@@ -654,7 +654,9 @@ class Cache {
    }
 
    checkThemesForUpdate() {
-      if (!helpers.isEqualObjectFirstLevel(this.currentStore.styleThemes, this.lastStore.styleThemes)) {
+      try {
+         assert.deepStrictEqual(this.currentStore.styleThemes, this.lastStore.styleThemes);
+      } catch (error) {
          this.dropCacheForLess = true;
       }
    }
