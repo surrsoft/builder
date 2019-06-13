@@ -15,7 +15,8 @@ const builderMeta = new Set([
    'routes-info.json',
    'static_templates.json'
 ]);
-
+const helpers = require('../../../lib/helpers');
+const path = require('path');
 const extensions = new Set([
    '.js',
    '.tmpl',
@@ -29,6 +30,26 @@ const extensions = new Set([
    '.ts',
    '.map'
 ]);
+const privateModuleExt = /(\.min)?(\.js|\.wml|\.tmpl)/;
+
+function getModuleNameWithPlugin(currentModule) {
+   const prettyFilePath = helpers.unixifyPath(currentModule.path);
+   const prettyRoot = helpers.unixifyPath(path.dirname(currentModule.base));
+   const currentModuleName = helpers.removeLeadingSlash(prettyFilePath
+      .replace(prettyRoot, '')
+      .replace(privateModuleExt, ''));
+   const currentPlugin = currentModule.extname.slice(1, currentModule.extname.length);
+   switch (currentPlugin) {
+      case 'tmpl':
+      case 'wml':
+      case 'css':
+         return `${currentPlugin}!${currentModuleName}`;
+      case 'xhtml':
+         return `html!${currentModuleName}`;
+      default:
+         return currentModuleName;
+   }
+}
 
 /**
  * Объявление плагина
@@ -36,6 +57,8 @@ const extensions = new Set([
  */
 module.exports = function declarePlugin(taskParameters) {
    const buildConfig = taskParameters.config;
+   const modulesToCheck = [];
+
    return through.obj(
       function onTransform(file, encoding, callback) {
          /**
@@ -76,7 +99,8 @@ module.exports = function declarePlugin(taskParameters) {
                 * пакет шаблон компонента 2 раза
                 */
                if (debugMode || isMinified || file.basename.endsWith('.min.original.js')) {
-                  callback(null, file);
+                  modulesToCheck.push(file);
+                  callback(null);
                   return;
                }
                callback(null);
@@ -100,11 +124,31 @@ module.exports = function declarePlugin(taskParameters) {
             // templates, .css, .jstpl, typescript sources, less
             default:
                if (debugMode || isMinified) {
-                  callback(null, file);
-                  return;
+                  modulesToCheck.push(file);
                }
                callback(null);
          }
+      },
+
+      /* @this Stream */
+      function onFlush(callback) {
+         const moduleDeps = taskParameters.cache.getModuleDependencies();
+         const currentModulePrivateLibraries = new Set();
+         Object.keys(moduleDeps.packedLibraries).forEach((currentLibrary) => {
+            moduleDeps.packedLibraries[currentLibrary].forEach(
+               currentModule => currentModulePrivateLibraries.add(currentModule)
+            );
+         });
+         modulesToCheck.forEach((currentModule) => {
+            const normalizedModuleName = getModuleNameWithPlugin(currentModule);
+
+            // remove from gulp stream packed into libraries files
+            if (currentModulePrivateLibraries.has(normalizedModuleName)) {
+               return;
+            }
+            this.push(currentModule);
+         });
+         callback();
       }
    );
 };
