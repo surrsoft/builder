@@ -288,6 +288,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                         newFile.contents = Buffer.from(compiled.text);
                         newFile.path = outputPath;
                         newFile.base = moduleInfo.output;
+                        newFile.lessSource = currentLessFile.contents;
                         this.push(newFile);
 
                         if (needSaveImportLogs) {
