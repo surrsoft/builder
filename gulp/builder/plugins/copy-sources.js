@@ -37,7 +37,6 @@ const extensions = new Set([
  */
 module.exports = function declarePlugin(taskParameters) {
    const buildConfig = taskParameters.config;
-   const moduleDependencies = taskParameters.cache.getModuleDependencies();
    const jsModules = [];
 
    return through.obj(
