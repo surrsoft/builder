@@ -110,6 +110,9 @@ class BuildConfiguration {
 
       // make symlinks for source files
       this.symlinks = true;
+
+      // clear output directory
+      this.clearOutput = true;
    }
 
    /**
@@ -212,6 +215,11 @@ class BuildConfiguration {
       // resourcesUrl flag
       if (this.rawConfig.hasOwnProperty('symlinks') && typeof this.rawConfig.symlinks === 'boolean') {
          this.symlinks = this.rawConfig.symlinks;
+      }
+
+      // clearOutput flag
+      if (this.rawConfig.hasOwnProperty('clearOutput') && typeof this.rawConfig.clearOutput === 'boolean') {
+         this.clearOutput = this.rawConfig.clearOutput;
       }
    }
 
@@ -318,19 +326,6 @@ class BuildConfiguration {
             for (const local of this.localizations) {
                moduleInfo.contents.availableLanguage[local] = getLanguageByLocale(local);
             }
-         }
-
-         /**
-          * для Интеграционных тестов абсолютно не нужен ряд таск, которые
-          * по умолчанию выполняются для проектов с подобной конфигурацией
-          * сборки, при этом занимают довольно долго времени(3 с лишним минуты).
-          * Пока отключим их для тестов на уровне билдера, после научим задавать
-          * подобные параметры через Jinnee.
-          * TODO спилить данный костыль, как только будут завершены работы по задаче
-          * https://online.sbis.ru/doc/1aa20804-2024-4dcc-a383-16097c013510
-          */
-         if (module.name === 'Intest') {
-            this.intests = true;
          }
          this.modules.push(moduleInfo);
       }
