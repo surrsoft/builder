@@ -631,6 +631,50 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('dont clear output if configured', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/symlink');
+      await prepareTest(fixtureFolder);
+
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         builderTests: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      (await fs.pathExists(path.join(outputFolder, 'SBIS3.CONTROLS'))).should.equal(true);
+
+      config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         clearOutput: false,
+         builderTests: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      // check for the first run results saved in the output directory
+      (await fs.pathExists(moduleOutputFolder)).should.equal(true);
+      (await fs.pathExists(path.join(outputFolder, 'SBIS3.CONTROLS'))).should.equal(true);
+      await clearWorkspace();
+   });
+
    // проверим, что js локализации корректно создаются. и что en-US.less попадает в lang/en-US/en-US.css
    it('localization dictionary and style', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/localization');
