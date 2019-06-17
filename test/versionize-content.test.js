@@ -207,6 +207,16 @@ describe('versionize-content', () => {
       currentFile.versioned.should.equal(true);
 
       currentFile = {
+         contents: 'src="/previewer/95/resources/Applications/Card/images/default-image.png"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
+      result.newText.should.equal('src="/previewer/95/resources/Applications/Card/images/default-image.png?x_module=%{MODULE_VERSION_STUB=Applications}"');
+      result.errors.should.equal(true);
+      currentFile.versioned.should.equal(true);
+
+      currentFile = {
          contents: 'src="../build/pdf.min.js"',
          base,
          path: filePath
