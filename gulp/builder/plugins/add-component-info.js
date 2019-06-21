@@ -9,6 +9,7 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
+   { componentCantBeParsed } = require('../../../lib/helpers'),
    execInPool = require('../../common/exec-in-pool');
 
 /**
@@ -25,21 +26,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             return;
          }
 
-         // нас не интересуют:
-         //  не js-файлы
-         //  *.test.js - тесты
-         //  *.worker.js - воркеры
-         //  *.routes.js - роутинг. обрабатывается в отдельном плагине
-         //  файлы в папках design - файлы для макетирования в genie
-         // jquery также не должен парситься, это модуль с cdn.
-         if (
-            file.extname !== '.js' ||
-            file.path.endsWith('.worker.js') ||
-            file.path.endsWith('.test.js') ||
-            file.path.includes('/design/') ||
-            file.basename.includes('jquery-min') ||
-            file.basename.includes('jquery-full')
-         ) {
+         if (componentCantBeParsed(file)) {
             callback(null, file);
             return;
          }
