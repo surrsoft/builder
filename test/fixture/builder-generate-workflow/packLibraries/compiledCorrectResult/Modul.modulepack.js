@@ -1,9 +1,63 @@
 define('Modul/Modul', [
+    'View/Executor/TClosure',
     'tslib',
     'require',
-    'exports'
-], function (tslib_1, require, exports) {
+    'exports',
+    'css!theme?Modul/_es6/test'
+], function (thelpers, tslib_1, require, exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
+        exports['wml!Modul/_es6/test'] = true;
+        var wml_Modul__es6_test = function () {
+        var exports = {};
+        var result = function (thelpers) {
+            function debug() {
+                debugger;
+            }
+            var deps = Array.prototype.slice.call(arguments);
+            var depsLocal = {};
+            var includedTemplates = {};
+            var templateFunction = function Unknown(data, attr, context, isVdom, sets) {
+                var forCounter = 0;
+                var templateCount = 0;
+                var key = attr && attr.key || '_';
+                var defCollection = {
+                    id: [],
+                    def: undefined
+                };
+                var viewController = thelpers.configResolver.calcParent(this, typeof currentPropertyName === 'undefined' ? undefined : currentPropertyName, data);
+                var markupGenerator = thelpers.getMarkupGenerator(isVdom);
+                try {
+                    var out = markupGenerator.joinElements([markupGenerator.createTag('div', {
+                            'attributes': { 'class': 'test' },
+                            'events': typeof window === 'undefined' ? {} : {},
+                            'key': key + '0_'
+                        }, [], attr, defCollection, viewController)], key, defCollection);
+                    if (defCollection && defCollection.def) {
+                        out = markupGenerator.chain(out, defCollection, attr);
+                        defCollection = undefined;
+                    }
+                } catch (e) {
+                    thelpers.templateError('undefined', e, data);
+                }
+                return out || markupGenerator.createText('');
+            };
+            templateFunction.stable = true;
+            templateFunction.reactiveProps = [];
+            return templateFunction;
+        }(thelpers);
+        if (result instanceof Function) {
+            return result;
+        } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
+            return result;
+        } else {
+            for (var property in result) {
+                if (result.hasOwnProperty(property)) {
+                    exports[property] = result[property];
+                }
+            }
+        }
+        return exports;
+    }();
         exports['Modul/_es6/Modul2'] = true;
         var Modul__es6_Modul2 = function () {
         'use strict';
@@ -22,7 +76,7 @@ define('Modul/Modul', [
                 });
             }
             exports.default = prepareOptions;
-        }(require, exports, tslib_1);
+        }(require, exports, tslib_1, typeof css_theme_Modul__es6_test === 'undefined' ? null : css_theme_Modul__es6_test, wml_Modul__es6_test);
         if (result instanceof Function) {
             return result;
         } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {

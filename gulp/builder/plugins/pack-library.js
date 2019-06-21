@@ -43,7 +43,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       /* @this Stream */
       function onTransform(file, encoding, callback) {
          if (
-            file.extname === '.js' &&
+            !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
             !libPackHelpers.isPrivate(
                helpers.removeLeadingSlash(file.path.replace(sourceRoot, ''))
