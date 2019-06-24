@@ -65,15 +65,25 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const buildConfig = taskParameters.config;
    const modulesToCheck = [];
    const currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop();
-   let versionedMetaFile, cdnMetaFile;
+   let versionedMetaFile, cdnMetaFile, moduleDepsMetaFile;
 
    return through.obj(
       function onTransform(file, encoding, callback) {
+         if (file.basename === 'module-dependencies.json') {
+            moduleDepsMetaFile = file;
+            callback(null);
+            return;
+         }
+
          /**
           * не копируем мета-файлы билдера.
           */
          if (builderMeta.has(file.basename)) {
-            callback(null);
+            if (taskParameters.config.builderTests) {
+               callback(null, file);
+            } else {
+               callback(null);
+            }
             return;
          }
 
@@ -153,7 +163,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       function onFlush(callback) {
          const moduleDeps = taskParameters.cache.getModuleDependencies();
          const currentModulePrivateLibraries = new Set();
-         const modulesToRemoveFromMeta = new Set();
+         const modulesToRemoveFromMeta = new Map();
          Object.keys(moduleDeps.packedLibraries).forEach((currentLibrary) => {
             moduleDeps.packedLibraries[currentLibrary].forEach(
                currentModule => currentModulePrivateLibraries.add(currentModule)
@@ -164,14 +174,26 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             // remove from gulp stream packed into libraries files
             if (currentModulePrivateLibraries.has(normalizedModuleName)) {
-               modulesToRemoveFromMeta.add(currentRelativePath);
+               modulesToRemoveFromMeta.set(currentRelativePath, normalizedModuleName);
                return;
             }
             this.push(currentModule);
          });
 
          if (taskParameters.config.version) {
-            // remove private parts of libraries from versioned and cdn meta
+            // remove private parts of libraries from module-dependencies meta
+         modulesToRemoveFromMeta.forEach((moduleName) => {
+            delete moduleDeps.nodes[moduleName];
+         });
+
+         if (moduleDepsMetaFile) {
+            moduleDepsMetaFile.contents = Buffer.from(JSON.stringify(moduleDeps));
+            if (taskParameters.config.builderTests) {
+               this.push(moduleDepsMetaFile);
+            }
+         }
+
+         // remove private parts of libraries from versioned and cdn meta
             taskParameters.versionedModules[currentModuleName] = taskParameters.versionedModules[currentModuleName]
                .filter(
                   currentPath => !modulesToRemoveFromMeta.has(currentPath)
