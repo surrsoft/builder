@@ -134,4 +134,29 @@ describe('copy sources', () => {
       versionedModulesMeta.length.should.equal(0);
       await clearWorkspace();
    });
+
+   it('copy sources without version flag configured should be completed without errors', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/copy-sources/libraries-pack');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         minimize: true,
+         sources: false,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль'),
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // build should be completed without errors
+      await runWorkflow();
+
+      await clearWorkspace();
+   });
 });
