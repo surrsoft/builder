@@ -180,8 +180,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             this.push(currentModule);
          });
 
-         if (taskParameters.config.version) {
-            // remove private parts of libraries from module-dependencies meta
+         // remove private parts of libraries from module-dependencies meta
          modulesToRemoveFromMeta.forEach((moduleName) => {
             delete moduleDeps.nodes[moduleName];
          });
@@ -192,8 +191,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                this.push(moduleDepsMetaFile);
             }
          }
-
-         // remove private parts of libraries from versioned and cdn meta
+         if (taskParameters.config.version) {
+            // remove private parts of libraries from versioned and cdn meta
             taskParameters.versionedModules[currentModuleName] = taskParameters.versionedModules[currentModuleName]
                .filter(
                   currentPath => !modulesToRemoveFromMeta.has(currentPath)
