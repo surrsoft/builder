@@ -165,6 +165,16 @@ class StoreInfo {
             spaces: 1
          }
       );
+
+      await fs.outputJson(
+         path.join(cacheDirectory, 'cache-path.json'),
+         {
+            lastCacheDirectory: cacheDirectory
+         },
+         {
+            spaces: 1
+         }
+      );
    }
 
 
