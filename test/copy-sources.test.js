@@ -58,6 +58,7 @@ describe('copy sources', () => {
          minimize: true,
          dependenciesGraph: true,
          version: 'test',
+         builderTests: true,
          sources: false,
          modules: [
             {
@@ -129,7 +130,10 @@ describe('copy sources', () => {
       // check versioned and cdn meta for removed private parts of library
       const versionedModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/versioned_modules.json'));
       const cdnModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/cdn_modules.json'));
+      const moduleDependencies = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
 
+      moduleDependencies.nodes.hasOwnProperty('Modul/_private/module1').should.equal(false);
+      moduleDependencies.nodes.hasOwnProperty('tmpl!Modul/_private/template1').should.equal(false);
       cdnModulesMeta.length.should.equal(0);
       versionedModulesMeta.length.should.equal(0);
       await clearWorkspace();
