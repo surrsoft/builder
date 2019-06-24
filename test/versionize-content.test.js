@@ -47,12 +47,21 @@ describe('versionize-content', () => {
          'MyModule',
          'some responsible',
          'someRoot/MyModule',
-         'someCache/MyModule',
+         'someCache',
          false,
          ['SBIS3.CONTROLS']
       );
-      const base = path.join(__dirname, 'someRoot/MyModule');
-      const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
+      const moduleInfoWithSpace = new ModuleInfo(
+         'MyModule with space',
+         'some responsible',
+         'someRoot/MyModule with space',
+         'someCache',
+         false,
+         false,
+         ['View', 'SBIS3.CONTROLS', 'WS3Page']
+      );
+      let base = path.join(__dirname, 'someRoot/MyModule');
+      let filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
       let currentFile = {
          contents: 'background-image:url(/resources/SBIS3.CONTROLS/default-theme/img/ajax-loader-16x16-wheel.gif)',
          base,
@@ -129,6 +138,17 @@ describe('versionize-content', () => {
 
       // Проверим, чтобы проигнорированный версионированием файл содержал правильную инфу о версии
       false.should.equal(!!currentFile.versioned);
+
+      base = path.join(__dirname, 'someRoot/MyModule with space');
+      filePath = path.join(__dirname, 'someRoot/MyModule with space/namespace1/style.css');
+      currentFile = {
+         contents: 'background: url(img/Point.png)',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeStyles(currentFile, moduleInfoWithSpace);
+      result.newText.should.equal('background: url(img/Point.png?x_module=%{MODULE_VERSION_STUB=MyModule_with_space})');
+      result.errors.should.equal(false);
    });
 
    it('versionize templates content', () => {
