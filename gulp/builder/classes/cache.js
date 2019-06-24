@@ -483,6 +483,20 @@ class Cache {
    }
 
    /**
+    * Удалить из кэша версионированный модуль. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {string} outputName результат работы сборщика для файла
+    * @param {Object}
+    */
+   removeVersionedModule(filePath, moduleName) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      delete currentModuleCache.versionedModules[prettyPath];
+   }
+
+
+   /**
     * Сохранить в кэше конфигурацию сборки less для данного Интерфейсного
     * модуля
     * @param{String} moduleName - название Интерфейсного модуля
@@ -520,6 +534,19 @@ class Cache {
       if (!currentModuleCache.cdnModules[prettyPath].includes(outputName)) {
          currentModuleCache.cdnModules[prettyPath].push(outputName);
       }
+   }
+
+   /**
+    * Удалить из кэша модуль, содержащий линки на cdn. Для инкрементальной сборки.
+    * @param {string} filePath имя файла
+    * @param {string} moduleName имя модуля
+    * @param {string} outputName результат работы сборщика для файла
+    * @param {Object}
+    */
+   removeCdnModule(filePath, moduleName) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      delete currentModuleCache.cdnModules[prettyPath];
    }
 
    /**

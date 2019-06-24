@@ -119,13 +119,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   minText = minified.code;
                }
-               this.push(
-                  new Vinyl({
-                     base: moduleInfo.output,
-                     path: outputMinJsFile,
-                     contents: Buffer.from(minText)
-                  })
-               );
+               const newFile = file.clone();
+               newFile.contents = Buffer.from(minText);
+               newFile.base = moduleInfo.output;
+               newFile.path = outputMinJsFile;
+               this.push(newFile);
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             } else {
                // минимизируем оригинальный JS
@@ -180,13 +178,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   minText = minified.code;
                }
-               this.push(
-                  new Vinyl({
-                     base: moduleInfo.output,
-                     path: outputMinJsFile,
-                     contents: Buffer.from(minText)
-                  })
-               );
+               const newFile = file.clone();
+               newFile.base = moduleInfo.output;
+               newFile.path = outputMinJsFile;
+               newFile.contents = Buffer.from(minText);
+               this.push(newFile);
                if (file.versioned) {
                   taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinJsFile);
                }

@@ -48,6 +48,28 @@ describe('copy sources', () => {
       await prepareTest(fixtureFolder);
       await linkPlatform(sourceFolder);
 
+      const checkTestResult = async() => {
+         (await isRegularFile(moduleOutputFolder, 'library1.min.js')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'library1.js')).should.equal(false);
+
+         // all packed private parts of library should be remove from the output directory
+         (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.ts')).should.equal(false);
+         (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.js')).should.equal(false);
+         (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.min.js')).should.equal(false);
+         (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'template1.tmpl')).should.equal(false);
+         (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'template1.min.tmpl')).should.equal(false);
+
+         // check versioned and cdn meta for removed private parts of library
+         const versionedModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/versioned_modules.json'));
+         const cdnModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/cdn_modules.json'));
+         const moduleDependencies = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
+
+         moduleDependencies.nodes.hasOwnProperty('Modul/_private/module1').should.equal(false);
+         moduleDependencies.nodes.hasOwnProperty('tmpl!Modul/_private/template1').should.equal(false);
+         cdnModulesMeta.length.should.equal(0);
+         versionedModulesMeta.length.should.equal(0);
+      };
+
       const config = {
          cache: cacheFolder,
          output: outputFolder,
@@ -116,26 +138,11 @@ describe('copy sources', () => {
 
       // запустим таску
       await runWorkflow();
+      await checkTestResult();
 
-      (await isRegularFile(moduleOutputFolder, 'library1.min.js')).should.equal(true);
-      (await isRegularFile(moduleOutputFolder, 'library1.js')).should.equal(false);
-
-      // all packed private parts of library should be remove from the output directory
-      (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.ts')).should.equal(false);
-      (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.js')).should.equal(false);
-      (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'module1.min.js')).should.equal(false);
-      (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'template1.tmpl')).should.equal(false);
-      (await isRegularFile(path.join(moduleOutputFolder, '_private'), 'template1.min.tmpl')).should.equal(false);
-
-      // check versioned and cdn meta for removed private parts of library
-      const versionedModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/versioned_modules.json'));
-      const cdnModulesMeta = await fs.readJson(path.join(moduleOutputFolder, '.builder/cdn_modules.json'));
-      const moduleDependencies = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
-
-      moduleDependencies.nodes.hasOwnProperty('Modul/_private/module1').should.equal(false);
-      moduleDependencies.nodes.hasOwnProperty('tmpl!Modul/_private/template1').should.equal(false);
-      cdnModulesMeta.length.should.equal(0);
-      versionedModulesMeta.length.should.equal(0);
+      // check main meta info and output directory for removed files with cache reuse
+      await runWorkflow();
+      await checkTestResult();
       await clearWorkspace();
    });
 });
