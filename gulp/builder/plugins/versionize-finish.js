@@ -30,7 +30,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
          if (!(file.path.match(/\.min\.[^.\\/]+$/) || file.extname === '.html')) {
             const text = file.contents.toString();
-            file.contents = Buffer.from(text.replace(VERSION_STUB, '$2'));
+            const normalizedAppName = encodeURIComponent(taskParameters.config.rawConfig.cld_name);
+            file.contents = Buffer.from(
+               text
+                  .replace(VERSION_STUB, '$2')
+                  .replace(`bundles.min.js?v=${normalizedAppName}&x_version=${taskParameters.config.version}`, 'bundles.js')
+            );
          }
       } catch (error) {
          logger.error({
