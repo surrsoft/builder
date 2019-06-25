@@ -164,24 +164,29 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const moduleDeps = taskParameters.cache.getModuleDependencies();
          const currentModulePrivateLibraries = new Set();
          const modulesToRemoveFromMeta = new Map();
-         Object.keys(moduleDeps.packedLibraries).forEach((currentLibrary) => {
-            moduleDeps.packedLibraries[currentLibrary].forEach(
-               currentModule => currentModulePrivateLibraries.add(currentModule)
-            );
-         });
+
+         Object.keys(moduleDeps.packedLibraries)
+            .filter(currentLibrary => currentLibrary.startsWith(currentModuleName))
+            .forEach((currentLibrary) => {
+               moduleDeps.packedLibraries[currentLibrary].forEach(
+                  currentModule => currentModulePrivateLibraries.add(currentModule)
+               );
+            });
          modulesToCheck.forEach((currentModule) => {
             const { normalizedModuleName, currentRelativePath } = getModuleNameWithPlugin(currentModule);
 
             // remove from gulp stream packed into libraries files
             if (currentModulePrivateLibraries.has(normalizedModuleName)) {
                modulesToRemoveFromMeta.set(currentRelativePath, normalizedModuleName);
+               taskParameters.cache.removeVersionedModule(currentModule.history[0], moduleInfo.name);
+               taskParameters.cache.removeCdnModule(currentModule.history[0], moduleInfo.name);
                return;
             }
             this.push(currentModule);
          });
 
          // remove private parts of libraries from module-dependencies meta
-         modulesToRemoveFromMeta.forEach((moduleName) => {
+         currentModulePrivateLibraries.forEach((moduleName) => {
             delete moduleDeps.nodes[moduleName];
          });
 
