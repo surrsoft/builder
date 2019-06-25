@@ -333,6 +333,9 @@ describe('versionize-content', () => {
       await prepareTest(fixtureFolder);
       await linkPlatform(sourceFolder);
       const config = {
+
+         // eslint-disable-next-line id-match
+         cld_name: 'builder-tests',
          cache: cacheFolder,
          output: outputFolder,
          wml: true,
@@ -377,7 +380,7 @@ describe('versionize-content', () => {
          sourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
       sourceNotChanged.should.equal(true);
       const compiledChanged = compiledContent.includes('contents.min.js?x_module=%{MODULE_VERSION_STUB=Modul}') &&
-         compiledContent.includes('bundles.min.js?x_module=%{MODULE_VERSION_STUB=WS.Core}') &&
+         compiledContent.includes('bundles.min.js?v=builder-tests&amp;x_version=test') &&
          compiledContent.includes('require-min.js') &&
          !compiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
       compiledChanged.should.equal(true);
