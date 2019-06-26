@@ -169,6 +169,66 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('should recompile properly after source directory renamed without cache reset', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         modules: [
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      // изменим "исходники"
+      await timeoutForMacOS();
+
+      await fs.rename(
+         workspaceFolder,
+         `${workspaceFolder}-1`
+      );
+      const renamedCacheFolder = path.join(`${workspaceFolder}-1`, 'cache');
+      const renamedOutputFolder = path.join(`${workspaceFolder}-1`, 'output');
+      const renamedSourceFolder = path.join(`${workspaceFolder}-1`, 'source');
+      config = {
+         cache: renamedCacheFolder,
+         output: renamedOutputFolder,
+         less: true,
+         themes: true,
+         modules: [
+            {
+               name: 'Controls-theme',
+               path: path.join(renamedSourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(renamedSourceFolder, 'Модуль')
+            }
+         ]
+      };
+
+      await fs.outputJSON(configPath, config);
+
+      // запустим повторно таску
+      await runWorkflow();
+      await fs.remove(`${workspaceFolder}-1`);
+      await clearWorkspace();
+   });
+
    it('compile less with patch', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);

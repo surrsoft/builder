@@ -9,8 +9,7 @@
 const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
-   getLanguageByLocale = require('../../../lib/get-language-by-locale'),
-   { checkForSourcesOutput } = require('../../../lib/helpers'),
+   { getLanguageByLocale, clearSourcesSymlinksIfNeeded, checkForSourcesOutput } = require('../../../lib/config-helpers'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
@@ -306,6 +305,8 @@ class BuildConfiguration {
       }
 
       this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
+
+      clearSourcesSymlinksIfNeeded(this.cachePath);
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
