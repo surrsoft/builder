@@ -19,7 +19,7 @@ const
  * @param {string} root корень развернутого приложения
  * @returns {stream}
  */
-module.exports = function collectPackageJson(applicationRoot, commonBundles, superBundles) {
+module.exports = function collectPackageJson(moduleInfo, applicationRoot, commonBundles, superBundles) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          let currentPackageJson;
@@ -29,7 +29,8 @@ module.exports = function collectPackageJson(applicationRoot, commonBundles, sup
             const configPath = helpers.unixifyPath(file.path).replace(prettyApplicationRoot, '');
             const configsArray = packHelpers.getConfigsFromPackageJson(
                configPath,
-               currentPackageJson
+               currentPackageJson,
+               moduleInfo
             );
             configsArray.forEach((currentConfig) => {
                if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {

@@ -39,6 +39,9 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
    const { commonBundles, superBundles } = configs;
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(root, transliterate(moduleInfo.name));
+
+      // in custom package build interface modules paths are already transliterated
+      moduleInfo.depends = moduleInfo.depends.map(currentDep => transliterate(currentDep));
       const input = path.join(moduleOutput, '/**/*.package.json');
       return function collectPackageJson() {
          return gulp
@@ -55,7 +58,7 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
                   }
                })
             )
-            .pipe(collectCustomPacks(root, commonBundles, superBundles));
+            .pipe(collectCustomPacks(moduleInfo, root, commonBundles, superBundles));
       };
    });
    return gulp.series(

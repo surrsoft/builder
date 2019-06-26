@@ -246,6 +246,7 @@ async function limitingNativePackFiles(
 
    if (filesToPack && filesToPack.length) {
       const base = path.join(root, application);
+      const jsExternalModuleUsageMessages = new Set();
 
       await pMap(
          filesToPack,
@@ -290,6 +291,17 @@ async function limitingNativePackFiles(
                    * @type {boolean}
                    */
                   const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
+                  const relativePath = helpers.removeLeadingSlash(fullPath.replace(root, ''));
+                  const currentFileModuleName = relativePath.split('/').shift();
+                  if (
+                     currentFileModuleName !== packageConfig.moduleName &&
+                     packageConfig.moduleInfo &&
+                     !packageConfig.moduleInfo.depends.includes(currentFileModuleName)
+                  ) {
+                     const message = `External interface module "${currentFileModuleName}" usage in custom package(modules).` +
+                        'Check for it existance in current interface module dependencies';
+                     jsExternalModuleUsageMessages.add(message);
+                  }
 
                   /**
                    * 1)Мы не должны удалять модуль, если в него будет записан результат паковки.
@@ -347,6 +359,11 @@ async function limitingNativePackFiles(
             concurrency: 10
          }
       );
+      jsExternalModuleUsageMessages.forEach(message => logger.warning({
+         message,
+         filePath: packageConfig.path,
+         moduleInfo: packageConfig.moduleInfo
+      }));
    }
    return result;
 }
