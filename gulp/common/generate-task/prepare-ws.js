@@ -9,12 +9,13 @@
 
 const path = require('path'),
    os = require('os'),
-   fs = require('fs-extra'),
    gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    gulpChmod = require('gulp-chmod'),
    workerPool = require('workerpool'),
    pluginCompileEsAndTs = require('../../builder/plugins/compile-es-and-ts-simple'),
+   gulpIf = require('gulp-if'),
+   changedInPlace = require('../../common/plugins/changed-in-place'),
    TaskParameters = require('../../common/classes/task-parameters'),
    logger = require('../../../lib/logger').logger();
 
@@ -55,7 +56,7 @@ function generateTaskForPrepareWS(taskParameters) {
    });
 
    const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false, pool);
-   const seriesTask = [generateTaskForRemoveOldFiles(taskParameters)];
+   const seriesTask = [];
    const requiredModules = taskParameters.config.modules.filter(moduleInfo => moduleInfo.required);
    if (requiredModules.length) {
       seriesTask.push(
@@ -88,15 +89,12 @@ function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
                }
             })
          )
+
+         // builder unit tests dont have cache
+         .pipe(gulpIf(!!localTaskParameters.cache, changedInPlace(localTaskParameters, moduleInfo)))
          .pipe(pluginCompileEsAndTs(localTaskParameters, moduleInfo))
          .pipe(gulpChmod({ read: true, write: true }))
          .pipe(gulp.dest(moduleOutput));
-   };
-}
-
-function generateTaskForRemoveOldFiles(taskParameters) {
-   return function removeOldPlatformFiles() {
-      return fs.remove(path.join(taskParameters.config.cachePath, 'platform'));
    };
 }
 

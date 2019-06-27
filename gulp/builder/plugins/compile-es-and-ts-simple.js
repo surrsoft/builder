@@ -40,6 +40,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
+            if (file.cached) {
+               callback(null, file);
+               return;
+            }
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
