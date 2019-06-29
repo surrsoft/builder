@@ -105,10 +105,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       function onFlush(callback) {
          try {
             const { resourcesUrl } = taskParameters.config;
+            const sourceRoot = helpers.unixifyPath(
+               path.join(taskParameters.config.cachePath, 'temp-modules')
+            );
             const json = {
                links: {},
                nodes: {},
-               packedLibraries: {}
+               packedLibraries: {},
+               lessDependencies: {}
             };
 
             const filePathToRelativeInResources = (filePath) => {
@@ -159,6 +163,26 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
                if (info.hasOwnProperty('libraryName')) {
                   json.packedLibraries[info.libraryName] = info.packedModules;
+               }
+               if (
+                  info.hasOwnProperty('lessDependencies') &&
+                  (taskParameters.config.isCoverageTests || taskParameters.config.builderTests)
+               ) {
+                  const result = new Set();
+                  info.lessDependencies.forEach((currentDependency) => {
+                     const currentLessDependencies = taskParameters.cache.getDependencies(
+                        `${path.join(sourceRoot, currentDependency)}.less`
+                     );
+                     result.add(`css!${currentDependency}`);
+                     currentLessDependencies.forEach((currentLessDep) => {
+                        result.add(`css!${helpers.removeLeadingSlash(
+                           currentLessDep
+                              .replace(sourceRoot, '')
+                              .replace('.less', '')
+                        )}`);
+                     });
+                  });
+                  json.lessDependencies[info.componentName] = Array.from(result);
                }
             });
 

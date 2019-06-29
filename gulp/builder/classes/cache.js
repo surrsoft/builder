@@ -38,7 +38,8 @@ class Cache {
       this.moduleDependencies = {
          links: {},
          nodes: {},
-         packedLibraries: {}
+         packedLibraries: {},
+         lessDependencies: {}
       };
    }
 
@@ -338,6 +339,11 @@ class Cache {
    addDependencies(filePath, imports) {
       const prettyPath = helpers.prettifyPath(filePath);
       this.currentStore.dependencies[prettyPath] = imports.map(helpers.prettifyPath);
+   }
+
+   getDependencies(filePath) {
+      const prettyPath = helpers.prettifyPath(filePath);
+      return this.currentStore.dependencies[prettyPath] || [];
    }
 
    /**

@@ -34,7 +34,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const [error, componentInfo] = await execInPool(
             taskParameters.pool,
             'parseJsComponent',
-            [file.contents.toString()],
+            [
+               file.contents.toString(),
+               taskParameters.config.isCoverageTests || taskParameters.config.builderTests
+            ],
             file.history[0],
             moduleInfo
          );

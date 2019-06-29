@@ -65,6 +65,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          less: true,
          themes: true,
+         typescript: true,
+         dependenciesGraph: true,
+         builderTests: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -81,6 +84,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Модуль без тем',
                path: path.join(sourceFolder, 'Модуль без тем')
+            },
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
             }
          ]
       };
@@ -105,6 +112,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.css',
          'Stable_online.css',
          'Stable.less',
+         'module-dependencies.json',
          'themes.config.json',
          'themes.config.json.js'
       ]);
@@ -117,8 +125,21 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRename_old.less',
          'Stable.css',
          'Stable.less',
+         'module-dependencies.json',
          'themes.config.json',
          'themes.config.json.js'
+      ]);
+
+      const testModuleDepsPath = path.join(outputFolder, 'TestModule/module-dependencies.json');
+      let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+      lessDependenciesForTest['TestModule/stable'].should.have.members([
+         'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-with-import',
+         'css!TestModule/test-style-assign',
+         'css!TestModule/test-style-object',
+         'css!TestModule/test-theme-object',
+         'css!Модуль/Stable'
       ]);
 
       // изменим "исходники"
@@ -150,6 +171,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRename_new.less',
          'Stable.css',
          'Stable_online.css',
+         'module-dependencies.json',
          'Stable.less',
          'themes.config.json',
          'themes.config.json.js'
@@ -161,10 +183,21 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange.less',
          'ForRename_new.css',
          'ForRename_new.less',
+         'module-dependencies.json',
          'Stable.css',
          'Stable.less',
          'themes.config.json',
          'themes.config.json.js'
+      ]);
+      lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+      lessDependenciesForTest['TestModule/stable'].should.have.members([
+         'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-with-import',
+         'css!TestModule/test-style-assign',
+         'css!TestModule/test-style-object',
+         'css!TestModule/test-theme-object',
+         'css!Модуль/Stable'
       ]);
       await clearWorkspace();
    });
