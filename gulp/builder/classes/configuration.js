@@ -306,6 +306,10 @@ class BuildConfiguration {
 
       this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
 
+      // save less dependencies info only for coverage tests
+      this.isCoverageTests = this.rawConfig.cld_name === 'InTest' &&
+         this.cachePath.includes('/coverage');
+
       clearSourcesSymlinksIfNeeded(this.cachePath);
 
       for (const module of this.rawConfig.modules) {
