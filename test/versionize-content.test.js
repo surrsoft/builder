@@ -380,7 +380,7 @@ describe('versionize-content', () => {
          sourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
       sourceNotChanged.should.equal(true);
       const compiledChanged = compiledContent.includes('contents.min.js?x_module=%{MODULE_VERSION_STUB=Modul}') &&
-         compiledContent.includes('bundles.min.js?v=builder-tests&amp;x_version=test') &&
+         compiledContent.includes('bundles.min.js') &&
          compiledContent.includes('require-min.js') &&
          !compiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
       compiledChanged.should.equal(true);
