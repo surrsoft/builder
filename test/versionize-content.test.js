@@ -384,5 +384,6 @@ describe('versionize-content', () => {
          compiledContent.includes('require-min.js') &&
          !compiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
       compiledChanged.should.equal(true);
+      await clearWorkspace();
    });
 });
