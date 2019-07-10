@@ -293,7 +293,15 @@ async function limitingNativePackFiles(
                   const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
                   const relativePath = helpers.removeLeadingSlash(fullPath.replace(root, ''));
                   const currentFileModuleName = relativePath.split('/').shift();
+
+                  /**
+                   * Temporarily ignore external dependencies of Employee custom packages. It has
+                   * many Interface modules dependencies, that not existing in billing project
+                   * TODO delete it after the completion of the projects. For detailed info see
+                   * https://online.sbis.ru/opendoc.html?guid=79bd3d07-fc44-4318-a28d-d39b50483bed
+                   */
                   if (
+                     packageConfig.moduleName !== 'Employee' &&
                      currentFileModuleName !== packageConfig.moduleName &&
                      packageConfig.moduleInfo &&
                      !packageConfig.moduleInfo.depends.includes(currentFileModuleName)
