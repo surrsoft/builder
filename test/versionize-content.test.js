@@ -60,6 +60,16 @@ describe('versionize-content', () => {
          false,
          ['View', 'SBIS3.CONTROLS', 'WS3Page']
       );
+      const wscoreModuleInfo = new ModuleInfo(
+         'WS.Core',
+         'some responsible',
+         'someRoot/WS.Core',
+         'someCache',
+         false,
+         false,
+         []
+      );
+
       let base = path.join(__dirname, 'someRoot/MyModule');
       let filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/style.css');
       let currentFile = {
@@ -103,6 +113,17 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeStyles(currentFile, currentModuleInfo);
       result.newText.should.equal('url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_module=%{MODULE_VERSION_STUB=MyModule2}\')');
       result.errors.should.equal(true);
+      currentFile.versioned.should.equal(true);
+
+      // WS.Core styles should be ignored from dependencies check
+      currentFile = {
+         contents: 'url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff\')',
+         path: filePath,
+         base
+      };
+      result = versionizeContent.versionizeStyles(currentFile, wscoreModuleInfo);
+      result.newText.should.equal('url(\'../../MyModule2/default-theme/fonts/cbuc-icons/cbuc-icons.woff?x_module=%{MODULE_VERSION_STUB=MyModule2}\')');
+      result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
       currentFile = {
@@ -161,6 +182,16 @@ describe('versionize-content', () => {
          false,
          ['View', 'SBIS3.CONTROLS', 'WS3Page']
       );
+      const wscoreModuleInfo = new ModuleInfo(
+         'WS.Core',
+         'some responsible',
+         'someRoot/WS.Core',
+         'someCache',
+         false,
+         false,
+         []
+      );
+
       const base = path.join(__dirname, 'someRoot/MyModule');
       const filePath = path.join(__dirname, 'someRoot/MyModule/namespace1/template.tmpl');
       let result;
@@ -222,6 +253,16 @@ describe('versionize-content', () => {
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
       result.newText.should.equal('href="%{RESOURCE_ROOT}PrestoOrder/resources/font/Presto-icons.min.css?x_module=%{MODULE_VERSION_STUB=PrestoOrder}"');
       result.errors.should.equal(true);
+
+      // WS.Core template should be ignored from dependencies check
+      currentFile = {
+         contents: 'href="%{RESOURCE_ROOT}PrestoOrder/resources/font/Presto-icons.css"',
+         base,
+         path: filePath
+      };
+      result = versionizeContent.versionizeTemplates(currentFile, wscoreModuleInfo);
+      result.newText.should.equal('href="%{RESOURCE_ROOT}PrestoOrder/resources/font/Presto-icons.min.css?x_module=%{MODULE_VERSION_STUB=PrestoOrder}"');
+      result.errors.should.equal(false);
 
       currentFile = {
          contents: '<link rel="stylesheet" href="demo-files/demo.css">',
