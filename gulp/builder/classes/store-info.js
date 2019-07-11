@@ -111,7 +111,7 @@ class StoreInfo {
       }
    }
 
-   async save(cacheDirectory) {
+   async save(cacheDirectory, logFolder) {
       await fs.outputJson(
          path.join(cacheDirectory, 'builder-info.json'),
          {
@@ -169,7 +169,8 @@ class StoreInfo {
       await fs.outputJson(
          path.join(cacheDirectory, 'cache-path.json'),
          {
-            lastCacheDirectory: cacheDirectory
+            lastCacheDirectory: cacheDirectory,
+            lastLogFolder: logFolder
          },
          {
             spaces: 1
