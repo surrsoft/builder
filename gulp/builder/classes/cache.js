@@ -71,7 +71,7 @@ class Cache {
    }
 
    save() {
-      return this.currentStore.save(this.config.cachePath);
+      return this.currentStore.save(this.config.cachePath, this.config.logFolder);
    }
 
    /**
