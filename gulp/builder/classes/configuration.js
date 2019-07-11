@@ -310,7 +310,11 @@ class BuildConfiguration {
       this.isCoverageTests = this.rawConfig.cld_name === 'InTest' &&
          this.cachePath.includes('/coverage');
 
-      clearSourcesSymlinksIfNeeded(this.cachePath);
+      if (this.rawConfig.hasOwnProperty('logs')) {
+         this.logFolder = this.rawConfig.logs;
+      }
+
+      clearSourcesSymlinksIfNeeded(this.cachePath, this.logFolder);
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
@@ -347,11 +351,6 @@ class BuildConfiguration {
          this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
       } else {
          this.urlDefaultServicePath = this.urlServicePath;
-      }
-
-
-      if (this.rawConfig.hasOwnProperty('logs')) {
-         this.logFolder = this.rawConfig.logs;
       }
 
       if (this.rawConfig.hasOwnProperty('builderTests')) {
