@@ -306,7 +306,11 @@ class BuildConfiguration {
 
       this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
 
-      clearSourcesSymlinksIfNeeded(this.cachePath);
+      if (this.rawConfig.hasOwnProperty('logs')) {
+         this.logFolder = this.rawConfig.logs;
+      }
+
+      clearSourcesSymlinksIfNeeded(this.cachePath, this.logFolder);
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
@@ -343,11 +347,6 @@ class BuildConfiguration {
          this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
       } else {
          this.urlDefaultServicePath = this.urlServicePath;
-      }
-
-
-      if (this.rawConfig.hasOwnProperty('logs')) {
-         this.logFolder = this.rawConfig.logs;
       }
 
       if (this.rawConfig.hasOwnProperty('builderTests')) {
