@@ -1,7 +1,7 @@
 import java.time.*
 import java.lang.Math
 
-node ('controls') {
+node ('controls1') {
 def version = "19.500"
 def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws (workspace){
