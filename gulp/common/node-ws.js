@@ -116,7 +116,7 @@ module.exports = {
             initialized = true;
          }
       } catch (e) {
-         e.message = `Ошибка инициализации ядра платформы WS: ${e.message}`;
+         e.message = `Ошибка инициализации ядра платформы WS: ${e.stack || e}`;
          throw e;
       }
    }
