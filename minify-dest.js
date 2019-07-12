@@ -95,7 +95,8 @@ function needRemove(filePath, isDir) {
       }
       for (const ext of extensionsForRemove) {
          if (basename.endsWith(ext)) {
-            return true;
+            // dont remove .d.ts files from typescript libraries. Needed by typescript compiler
+            return !(ext === '.d.ts' && filePath.replace(/\\/g, '/').includes('node_modules/typescript'));
          }
       }
    }
