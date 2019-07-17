@@ -19,7 +19,7 @@ const
  * @param {string} root корень развернутого приложения
  * @returns {stream}
  */
-module.exports = function collectPackageJson(moduleInfo, applicationRoot, commonBundles, superBundles) {
+module.exports = function collectPackageJson(moduleInfo, applicationRoot, commonBundles, superBundles, bundlesList) {
    return through.obj(
       function onTransform(file, encoding, callback) {
          let currentPackageJson;
@@ -33,12 +33,26 @@ module.exports = function collectPackageJson(moduleInfo, applicationRoot, common
                moduleInfo
             );
             configsArray.forEach((currentConfig) => {
-               if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {
-                  superBundles.push(currentConfig);
+               const normalizedConfigOutput = `${currentConfig.output.replace(/\.js$/, '')}.min`;
+               const currentBundlePath = helpers.unixifyPath(path.join(
+                  'resources',
+                  path.dirname(configPath),
+                  normalizedConfigOutput
+               ));
+               if (bundlesList.has(currentBundlePath)) {
+                  if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {
+                     superBundles.push(currentConfig);
+                  } else {
+                     commonBundles[helpers.unixifyPath(
+                        path.join(path.dirname(file.path), currentConfig.output)
+                     )] = currentConfig;
+                  }
                } else {
-                  commonBundles[helpers.unixifyPath(
-                     path.join(path.dirname(file.path), currentConfig.output)
-                  )] = currentConfig;
+                  logger.warning({
+                     message: `Attempt to generate new custom package ${normalizedConfigOutput}. Custom packing is deprecated! Use libraries instead!`,
+                     filePath: file.path,
+                     moduleInfo
+                  });
                }
             });
          } catch (err) {
