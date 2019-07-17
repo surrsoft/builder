@@ -121,11 +121,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
             }
 
             /**
-             * in debug deploy(sources symlinks to the output instead of copying)
-             * we need to check for duplication of css files with the same output path.
-             * Symlink can be created only once.
+             * always ignore css source files if the same .less source files exists
              */
-            if (file.extname === '.css' && !taskParameters.config.isReleaseMode) {
+            if (file.extname === '.css') {
                const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
                if (lessInSource) {
                   const warnMessage = 'Compiled style from sources will be ignored: ' +
