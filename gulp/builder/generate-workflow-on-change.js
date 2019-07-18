@@ -85,7 +85,8 @@ function generateTaskForBuildFile(taskParameters, filePath) {
          } else {
             /**
              * если модуль задан через симлинк, попробуем сопоставить файл и модуль
-             * Также резолвим
+             * Также резолвим реальный путь на случай, если разработчики подрубают к вотчеру
+             * Интерфейсные модули, описанные через симлинки.
              */
             const realModulePath = fs.realpathSync(moduleInfo.path);
             if (fs.existsSync(filePath)) {
