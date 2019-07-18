@@ -88,14 +88,16 @@ function generateTaskForBuildFile(taskParameters, filePath) {
              * Также резолвим
              */
             const realModulePath = fs.realpathSync(moduleInfo.path);
-            const realFilePath = fs.realpathSync(filePath);
-            relativePath = path.relative(
-               helpers.unixifyPath(realModulePath),
-               helpers.unixifyPath(realFilePath)
-            );
-            if (!relativePath.includes('..') && !path.isAbsolute(relativePath)) {
-               currentModuleInfo = moduleInfo;
-               filePathInProject = path.join(moduleInfo.path, relativePath);
+            if (fs.existsSync(filePath)) {
+               const realFilePath = fs.realpathSync(filePath);
+               relativePath = path.relative(
+                  helpers.unixifyPath(realModulePath),
+                  helpers.unixifyPath(realFilePath)
+               );
+               if (!relativePath.includes('..') && !path.isAbsolute(relativePath)) {
+                  currentModuleInfo = moduleInfo;
+                  filePathInProject = path.join(moduleInfo.path, relativePath);
+               }
             }
          }
       }
