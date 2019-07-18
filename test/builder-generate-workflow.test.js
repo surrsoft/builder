@@ -881,6 +881,72 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('custom pack - exclude new unknown for builder packages', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/custompack');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         minimize: true,
+         wml: true,
+         builderTests: true,
+         customPack: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      const controlsOutputFolder = path.join(outputFolder, 'Controls');
+
+      /**
+       * Controls module should have his custom packages because of bundles list in builder contains them.
+       * Custom packages from "Modul" should be ignored from custom packer
+       */
+      (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.js')).should.equal(true);
+      (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.css')).should.equal(true);
+      (await isRegularFile(moduleOutputFolder, 'test.package.min.js')).should.equal(false);
+      (await isRegularFile(moduleOutputFolder, 'test.package.min.css')).should.equal(false);
+
+      await clearWorkspace();
+   });
+
    // проверим, что паковка собственных зависимостей корректно работает при пересборке
    it('packOwnDeps', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packOwnDeps');

@@ -293,7 +293,18 @@ async function limitingNativePackFiles(
                   const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
                   const relativePath = helpers.removeLeadingSlash(fullPath.replace(root, ''));
                   const currentFileModuleName = relativePath.split('/').shift();
+
+                  /**
+                   * Temporarily ignore external dependencies of Employee custom packages. It has
+                   * many Interface modules dependencies, that not existing in billing project
+                   * TODO delete it after the completion of the projects. For detailed info see
+                   * https://online.sbis.ru/opendoc.html?guid=79bd3d07-fc44-4318-a28d-d39b50483bed
+                   * Temporarily ignore external dependencies of CoreUserCalendar custom packages.
+                   * TODO delete after error fix https://online.sbis.ru/doc/bd8e6980-8bcc-4079-b1fd-9c96d7a0dbd3
+                   */
                   if (
+                     packageConfig.moduleName !== 'Employee' &&
+                     packageConfig.moduleName !== 'CoreUserCalendar' &&
                      currentFileModuleName !== packageConfig.moduleName &&
                      packageConfig.moduleInfo &&
                      !packageConfig.moduleInfo.depends.includes(currentFileModuleName)
@@ -359,7 +370,7 @@ async function limitingNativePackFiles(
             concurrency: 10
          }
       );
-      jsExternalModuleUsageMessages.forEach(message => logger.warning({
+      jsExternalModuleUsageMessages.forEach(message => logger.error({
          message,
          filePath: packageConfig.path,
          moduleInfo: packageConfig.moduleInfo

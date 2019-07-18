@@ -35,7 +35,7 @@ function generateSetSuperBundles(root, configs) {
  * @param {String} root корень приложения
  * @returns {Undertaker.TaskFunction}
  */
-function generateCollectPackagesTasks(configs, taskParameters, root) {
+function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList) {
    const { commonBundles, superBundles } = configs;
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(root, transliterate(moduleInfo.name));
@@ -58,7 +58,7 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
                   }
                })
             )
-            .pipe(collectCustomPacks(moduleInfo, root, commonBundles, superBundles));
+            .pipe(collectCustomPacks(moduleInfo, root, commonBundles, superBundles, bundlesList));
       };
    });
    return gulp.series(
@@ -68,17 +68,50 @@ function generateCollectPackagesTasks(configs, taskParameters, root) {
 }
 
 /**
+ * Task for bundles list getter
+ * @param{Set} bundlesList - full list of bundles
+ * @returns {bundlesListGetter}
+ */
+function generateTaskForBundlesListGetter(bundlesList) {
+   return async function bundlesListGetter() {
+      const bundlesDirectory = path.join(process.cwd(), 'resources/bundles');
+      const filesList = await fs.readdir(bundlesDirectory);
+      await pMap(
+         filesList,
+         async(bundleListName) => {
+            const currentPath = path.join(bundlesDirectory, bundleListName);
+            try {
+               const currentBundles = await fs.readJson(currentPath);
+               currentBundles.forEach(currentBundle => bundlesList.add(currentBundle));
+            } catch (error) {
+               logger.error({
+                  message: 'error reading bundles content from builder sources. Check it for syntax errors',
+                  filePath: currentPath,
+                  error
+               });
+            }
+         },
+         {
+            concurrency: 20
+         }
+      );
+   };
+}
+
+/**
  * Генерация задачи кастомной паковки.
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
 function generateTaskForCustomPack(taskParameters) {
-   if (!taskParameters.config.customPack) {
+   if (!taskParameters.config.customPack || !taskParameters.config.isReleaseMode) {
       return function skipCustomPack(done) {
          done();
       };
    }
-   const root = taskParameters.config.rawConfig.output,
+
+   const
+      root = taskParameters.config.rawConfig.output,
       depsTree = new DependencyGraph(),
       configs = {
          commonBundles: {},
@@ -88,17 +121,13 @@ function generateTaskForCustomPack(taskParameters) {
          bundles: {},
          bundlesRoute: {},
          excludedCSS: {}
-      };
-
-   if (!taskParameters.config.isReleaseMode) {
-      return function skipCustomPack(done) {
-         done();
-      };
-   }
+      },
+      bundlesList = new Set();
 
    return gulp.series(
       generateDepsGraphTask(depsTree, taskParameters.cache),
-      generateCollectPackagesTasks(configs, taskParameters, root),
+      generateTaskForBundlesListGetter(bundlesList),
+      generateCollectPackagesTasks(configs, taskParameters, root, bundlesList),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateInterceptCollectorTask(taskParameters, root, results),
       generateSaveResultsTask(taskParameters, results, root),
