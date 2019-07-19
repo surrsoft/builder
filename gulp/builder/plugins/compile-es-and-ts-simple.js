@@ -10,7 +10,7 @@ const through = require('through2'),
    path = require('path'),
    fs = require('fs-extra'),
    logger = require('../../../lib/logger').logger(),
-   compileEsAndTs = require('../../../lib/compile-es-and-ts');
+   { compileEsAndTs } = require('../../../lib/compile-es-and-ts');
 
 const esExt = /\.(es|ts)$/;
 
