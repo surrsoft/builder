@@ -47,7 +47,7 @@ require('../../lib/logger').setWorkerLogger();
 
 const
    workerPool = require('workerpool'),
-   compileEsAndTs = require('../../lib/compile-es-and-ts'),
+   { compileEsAndTs } = require('../../lib/compile-es-and-ts'),
    { wrapWorkerFunction } = require('./helpers');
 
 workerPool.worker({
