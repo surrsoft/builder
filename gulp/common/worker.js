@@ -73,7 +73,7 @@ try {
 
    const fs = require('fs-extra'),
       workerPool = require('workerpool'),
-      compileEsAndTs = require('../../lib/compile-es-and-ts'),
+      { compileEsAndTs } = require('../../lib/compile-es-and-ts'),
       { processLessFile } = require('../../lib/build-less'),
       parseJsComponent = require('../../lib/parse-js-component'),
       processingRoutes = require('../../lib/processing-routes'),
