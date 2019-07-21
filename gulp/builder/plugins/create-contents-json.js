@@ -42,6 +42,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                helpers.joinContents(taskParameters.config.commonContents, moduleInfo.contents);
             }
 
+            const contentsModuleName = Object.keys(moduleInfo.contents.modules)[0];
+            const newThemesModules = taskParameters.cache.getNewThemesModulesCache(moduleInfo.name);
+            if (Object.keys(newThemesModules).length > 0) {
+               moduleInfo.contents.modules[contentsModuleName].newThemes = newThemesModules;
+            }
+
             const contentsJsFile = new Vinyl({
                path: 'contents.js',
                contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(moduleInfo.contents))}`),
