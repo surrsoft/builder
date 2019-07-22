@@ -32,14 +32,17 @@ module.exports = function collectPackageJson(moduleInfo, applicationRoot, common
                currentPackageJson,
                moduleInfo
             );
+
             configsArray.forEach((currentConfig) => {
+               const isPrivatePackage = currentConfig.includeCore && !currentConfig.platformPackage;
                const normalizedConfigOutput = `${currentConfig.output.replace(/\.js$/, '')}.min`;
                const currentBundlePath = helpers.unixifyPath(path.join(
                   'resources',
-                  path.dirname(configPath),
+                  currentConfig.output.search(/\.js$/) !== -1 ? path.dirname(configPath) : '',
                   normalizedConfigOutput
                ));
-               if (bundlesList.has(currentBundlePath)) {
+
+               if (bundlesList.has(currentBundlePath) || isPrivatePackage) {
                   if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {
                      superBundles.push(currentConfig);
                   } else {
