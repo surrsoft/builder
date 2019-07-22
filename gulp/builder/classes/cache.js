@@ -61,6 +61,7 @@ class Cache {
                esCompileCache: {},
                versionedModules: {},
                cdnModules: {},
+               newThemesModules: {},
                lessConfig: ''
             };
             this.currentStore.inputPaths[moduleInfo.path] = {
@@ -489,6 +490,26 @@ class Cache {
    }
 
    /**
+    * Stores themed modules meta into current interface module cache.
+    * Example: for theme Interface module "Controls-showcase-theme",
+    * for themed less component "decorator" would be stored next information:
+    * Controls/decorator: ["showcase"]
+    * @param{String} moduleName - current interface module name
+    * @param{String} lessName - current less file name
+    * @param{String} themeName - current theme name
+    */
+   storeNewThemesModules(moduleName, lessName, themeName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      const currentLessControl = `${moduleName}/${lessName}`;
+      if (!currentModuleCache.newThemesModules.hasOwnProperty(currentLessControl)) {
+         currentModuleCache.newThemesModules[currentLessControl] = [];
+      }
+      if (!currentModuleCache.newThemesModules[currentLessControl].includes(themeName)) {
+         currentModuleCache.newThemesModules[currentLessControl].push(themeName);
+      }
+   }
+
+   /**
     * Удалить из кэша версионированный модуль. Для инкрементальной сборки.
     * @param {string} filePath имя файла
     * @param {string} moduleName имя модуля
@@ -598,6 +619,16 @@ class Cache {
       return currentModuleCache.versionedModules;
    }
 
+   /**
+    * Gets new themes meta info for current Interface module
+    * @param moduleName
+    * @returns {newThemesModules|{}}
+    */
+   getNewThemesModulesCache(moduleName) {
+      const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      return currentModuleCache.newThemesModules;
+   }
+
    getCdnModulesCache(moduleName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       return currentModuleCache.cdnModules;
@@ -681,6 +712,20 @@ class Cache {
             return null;
          })
          .filter(filePath => !!filePath);
+   }
+
+   /**
+    * adds new theme into style themes cache
+    * @param{String} folderName - Interface module name
+    * @param{Object} config - base info about current theme
+    */
+   addNewStyleTheme(folderName, config) {
+      const { moduleName, themeName } = config;
+      this.currentStore.styleThemes[folderName] = {
+         type: 'new',
+         moduleName,
+         themeName
+      };
    }
 
    addStyleTheme(themeName, filePath, themeConfig) {

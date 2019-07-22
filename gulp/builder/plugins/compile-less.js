@@ -58,18 +58,18 @@ function setDefaultLessConfiguration() {
 }
 
 /**
- * Gets themes list for multi themes build by
+ * Gets themes list for multi themes build
  * configuration
  * @param allThemes
  * @param taskParameters
  */
-function getNewThemesList(allThemes, taskParameters) {
+function getMultiThemesList(allThemes, taskParameters) {
    const themesParam = taskParameters.config.themes;
-   let newThemes = {};
+   let multiThemes = {};
    switch (typeof themesParam) {
       case 'boolean':
          if (themesParam) {
-            newThemes = allThemes;
+            multiThemes = allThemes;
          }
          break;
 
@@ -78,7 +78,7 @@ function getNewThemesList(allThemes, taskParameters) {
          if (themesParam instanceof Array === true) {
             Object.keys(allThemes).forEach((currentTheme) => {
                if (themesParam.includes(currentTheme)) {
-                  newThemes[currentTheme] = allThemes[currentTheme];
+                  multiThemes[currentTheme] = allThemes[currentTheme];
                }
             });
          }
@@ -86,6 +86,20 @@ function getNewThemesList(allThemes, taskParameters) {
       default:
          break;
    }
+   return multiThemes;
+}
+
+/**
+ * gets new themes list
+ * @param allThemes
+ */
+function getNewThemesList(allThemes) {
+   const newThemes = {};
+   Object.keys(allThemes).forEach((currentTheme) => {
+      if (allThemes[currentTheme].type === 'new') {
+         newThemes[currentTheme] = allThemes[currentTheme];
+      }
+   });
    return newThemes;
 }
 
@@ -103,9 +117,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    };
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
+   const moduleName = path.basename(moduleInfo.output);
 
    // check for offline plugin application
-   const newThemes = getNewThemesList(allThemes, taskParameters);
+   const multiThemes = getMultiThemesList(allThemes, taskParameters);
+   const newThemes = getNewThemesList(allThemes);
 
    return through.obj(
 
@@ -145,6 +161,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                return;
             }
 
+            /**
+             * store every building less from new theme's interface modules
+             * into builder cache to store theme into "contents" builder meta info
+             */
+            if (newThemes[moduleName] && !path.basename(file.path).startsWith('_')) {
+               const prettyRelativePath = helpers.prettifyPath(path.relative(moduleInfo.path, file.path));
+               const currentLessName = prettyRelativePath.replace('.less', '');
+
+               taskParameters.cache.storeNewThemesModules(
+                  newThemes[moduleName].moduleName,
+                  currentLessName,
+                  newThemes[moduleName].themeName
+               );
+            }
+
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], getOutput(file, '.css'), moduleInfo);
 
@@ -177,7 +208,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
             moduleLessConfig = setDefaultLessConfiguration();
          }
          const
-            moduleName = path.basename(moduleInfo.output),
             prettyModuleOutput = helpers.prettifyPath(moduleInfo.output),
             needSaveImportLogs = taskParameters.config.logFolder && moduleLessConfig.importsLogger;
 
@@ -215,6 +245,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
                      text: currentLessFile.contents.toString(),
                      themes: taskParameters.config.themes,
                      moduleLessConfig,
+                     multiThemes,
                      newThemes
                   };
                   const results = await buildLess(

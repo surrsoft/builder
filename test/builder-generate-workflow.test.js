@@ -202,6 +202,66 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('compile less - should return correct meta in "contents" for new themes', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         typescript: true,
+         dependenciesGraph: true,
+         contents: true,
+         builderTests: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            },
+            {
+               name: 'TestModule-anotherTheme-theme',
+               path: path.join(sourceFolder, 'TestModule-anotherTheme-theme')
+            },
+            {
+               name: 'TestModule-online-theme',
+               path: path.join(sourceFolder, 'TestModule-online-theme')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+
+      let testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
+      let testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
+      testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
+      testModuleNewThemes['TestModule/test-online'].should.have.members([
+         'online', 'anotherTheme'
+      ]);
+
+      // запустим повторно таску
+      await runWorkflow();
+
+      testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
+      testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
+      testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
+      testModuleNewThemes['TestModule/test-online'].should.have.members([
+         'online', 'anotherTheme'
+      ]);
+      await clearWorkspace();
+   });
+
    it('should recompile properly after source directory renamed without cache reset', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);

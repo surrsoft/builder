@@ -2,6 +2,7 @@
 'use strict';
 
 const initTest = require('./init-test');
+const { parseCurrentModuleName } = require('../gulp/builder/generate-task/collect-style-themes');
 
 const
    path = require('path'),
@@ -209,5 +210,15 @@ describe('build less', () => {
          name: 'default'
       }, false);
       result.should.equal('');
+   });
+
+   it("get correct base info for new theme's interface module", () => {
+      const modulesList = new Set(['Controls', 'Controls-myModule']);
+      let result = parseCurrentModuleName(modulesList, ['Controls', 'online']);
+      result.themeName.should.equal('online');
+      result.moduleName.should.equal('Controls');
+      result = parseCurrentModuleName(modulesList, ['Controls', 'myModule', 'online', 'default']);
+      result.themeName.should.equal('online-default');
+      result.moduleName.should.equal('Controls-myModule');
    });
 });

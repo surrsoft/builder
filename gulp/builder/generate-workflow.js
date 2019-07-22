@@ -10,7 +10,7 @@ const fs = require('fs-extra'),
    pMap = require('p-map');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
-   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
+   { generateTaskForCollectThemes } = require('./generate-task/collect-style-themes'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForGzip = require('./generate-task/gzip'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
@@ -55,7 +55,7 @@ function generateWorkflow(processArgv) {
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
       generateTaskForLoadCache(taskParameters, modulesForPatch),
-      generateTaskForCollectThemes(taskParameters, config),
+      generateTaskForCollectThemes(taskParameters),
 
       // в generateTaskForClearCache нужен загруженный кеш
       generateTaskForClearCache(taskParameters, modulesForPatch),

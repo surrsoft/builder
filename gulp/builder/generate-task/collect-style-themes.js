@@ -20,21 +20,54 @@ const gulp = require('gulp'),
 const logger = require('../../../lib/logger').logger();
 
 /**
+ * Parses current interface module name. Checks it for new theme name template:
+ * <first part> - <second part> - theme.
+ * First part - interface module name, that exists in current project
+ * Second part - theme name
+ * Example: for interface module "Controls" with theme name "online" interface module
+ * for this theme would be named to "Controls-online-theme"
+ * Returns base theme info:
+ * 1)moduleName - interface module name for current theme
+ * 2)themeName - current theme name
+ * @param{Set} modulesList - current project list of interface modules
+ * @param{Array} currentModuleParts - parts of current interface module name
+ * @returns {{themeName: string, moduleName: *}}
+ */
+function parseCurrentModuleName(modulesList, currentModuleParts) {
+   const themeNameParts = [];
+   let interfaceModuleParsed = false;
+   while (!interfaceModuleParsed && currentModuleParts.length > 0) {
+      themeNameParts.unshift(currentModuleParts.pop());
+      if (modulesList.has(currentModuleParts.join('-'))) {
+         interfaceModuleParsed = true;
+      }
+   }
+   return {
+      moduleName: currentModuleParts.join('-'),
+      themeName: themeNameParts.join('-')
+   };
+}
+
+/**
  * Генерация задачи поиска тем
  * @param {TaskParameters} taskParameters кеш сборки статики
- * @param {BuildConfiguration} config конфигурация сборки
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForCollectThemes(taskParameters, config) {
+function generateTaskForCollectThemes(taskParameters) {
    if (!taskParameters.config.less) {
       return function skipCollectStyleThemes(done) {
          done();
       };
    }
-   const tasks = config.modules.map((moduleInfo) => {
+   const buildModulesNames = new Set();
+   taskParameters.config.modules.forEach(
+      currentModule => buildModulesNames.add(path.basename(currentModule.output))
+   );
+   const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const input = [
          path.join(moduleInfo.path, '/themes/*/*.less'),
-         path.join(moduleInfo.path, '/themes.config.json')
+         path.join(moduleInfo.path, '/themes.config.json'),
+         path.join(moduleInfo.path, '_theme.less')
       ];
       return function collectStyleThemes() {
          return gulp
@@ -52,7 +85,9 @@ function generateTaskForCollectThemes(taskParameters, config) {
                })
             )
             .pipe(mapStream(async(file, done) => {
-               if (path.basename(file.path) === 'themes.config.json') {
+               const currentFileName = path.basename(file.path);
+               const folderName = path.basename(path.dirname(file.path));
+               if (currentFileName === 'themes.config.json') {
                   try {
                      const parsedLessConfig = JSON.parse(file.contents);
                      configLessChecker.checkOptions(parsedLessConfig);
@@ -65,9 +100,23 @@ function generateTaskForCollectThemes(taskParameters, config) {
                         moduleInfo
                      });
                   }
+               } else if (currentFileName === '_theme.less') {
+                  const currentModuleName = path.basename(moduleInfo.output);
+                  const currentModuleNameParts = currentModuleName.split('-');
+
+                  /**
+                   * Interface module name for new theme should always contains 3 parts:
+                   * 1)Interface module name for current theme
+                   * 2)Current theme name
+                   * 3) "theme" postfix
+                   * Other Interface modules will be ignored from new theme's processing
+                   */
+                  if (currentModuleNameParts.length > 2 && currentModuleNameParts.pop() === 'theme') {
+                     const result = parseCurrentModuleName(buildModulesNames, currentModuleNameParts);
+                     taskParameters.cache.addNewStyleTheme(folderName, result);
+                  }
                } else {
                   const fileName = path.basename(file.path, '.less');
-                  const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
                      const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
                      let themeConfig;
@@ -103,4 +152,7 @@ function generateTaskForCollectThemes(taskParameters, config) {
    );
 }
 
-module.exports = generateTaskForCollectThemes;
+module.exports = {
+   generateTaskForCollectThemes,
+   parseCurrentModuleName
+};
