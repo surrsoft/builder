@@ -91,6 +91,11 @@ function generateTaskForClearCache(taskParameters, modulesForPatch) {
 }
 
 function generateTaskForTypescriptCompile(taskParameters) {
+   if (!taskParameters.config.tsc) {
+      return function skipRunTypescriptCompiler(done) {
+         done();
+      };
+   }
    return function runTypescriptCompiler() {
       return typescriptCompiler(taskParameters);
    };
