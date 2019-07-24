@@ -101,6 +101,9 @@ class BuildConfiguration {
       // join module's meta files into common root meta file
       this.joinedMeta = false;
 
+      // enable tsc compiler with "noEmit" flag(compile without saving - for errors check)
+      this.tsc = false;
+
       // copy sources to output directory
       this.sources = true;
 
@@ -206,6 +209,11 @@ class BuildConfiguration {
          this.joinedMeta = this.rawConfig.joinedMeta;
       }
 
+      // tsc flag
+      if (this.rawConfig.hasOwnProperty('tsc') && typeof this.rawConfig.tsc === 'boolean') {
+         this.tsc = this.rawConfig.tsc;
+      }
+
       // resourcesUrl flag
       if (this.rawConfig.hasOwnProperty('resourcesUrl') && typeof this.rawConfig.resourcesUrl === 'boolean') {
          this.resourcesUrl = this.rawConfig.resourcesUrl;
@@ -264,6 +272,9 @@ class BuildConfiguration {
          // некоторые задачи для сборки дистрибутивак не совместимы с инкрементальной сборкой,
          // потому собираем в папке кеша, а потом копируем в целевую директорию
          this.outputPath = path.join(this.cachePath, 'incremental_build');
+
+         // always enable tsc compiler in release mode
+         this.tsc = true;
       }
 
       // localization может быть списком или false
