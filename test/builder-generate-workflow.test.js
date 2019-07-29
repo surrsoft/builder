@@ -401,7 +401,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          modules: [
             {
                name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
+               path: path.join(sourceFolder, 'Модуль'),
+               depends: ['Тема Скрепка']
             },
             {
                name: 'Тема Скрепка',

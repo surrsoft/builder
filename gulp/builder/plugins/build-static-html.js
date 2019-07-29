@@ -44,7 +44,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
                      const result = await generateStaticHtmlForJs(
                         filePath,
                         componentsInfo[filePath],
-                        moduleInfo.contents,
+                        moduleInfo,
                         configForReplaceInHTML,
                         modulesMap,
                         needReplacePath
