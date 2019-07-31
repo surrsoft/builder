@@ -124,9 +124,7 @@ describe('generate static html for js', () => {
          } catch (error) {
             result = error;
          }
-
-         // temporarily log it as warning to fix all unfixed error without blocking errors
-         (result instanceof Error).should.equal(false);
+         (result instanceof Error).should.equal(true);
       });
       it('paths', async() => {
          const componentInfo = {
