@@ -124,7 +124,7 @@ describe('generate static html for js', () => {
          } catch (error) {
             result = error;
          }
-         (result instanceof Error).should.equal(true);
+         (result instanceof Error).should.equal(false);
       });
       it('paths', async() => {
          const componentInfo = {
