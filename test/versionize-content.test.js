@@ -322,7 +322,7 @@ describe('versionize-content', () => {
          path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo);
-      result.newText.should.equal('src="/materials/resources/contents.min.js?x_module=%{MODULE_VERSION_STUB=MyModule}"');
+      result.newText.should.equal('src="/materials/resources/contents.min.js"');
       result.errors.should.equal(false);
       currentFile.versioned.should.equal(true);
 
@@ -420,7 +420,7 @@ describe('versionize-content', () => {
          sourceContent.includes('bundles.js') &&
          sourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
       sourceNotChanged.should.equal(true);
-      const compiledChanged = compiledContent.includes('contents.min.js?x_module=%{MODULE_VERSION_STUB=Modul}') &&
+      const compiledChanged = compiledContent.includes('contents.min.js') &&
          compiledContent.includes('bundles.min.js') &&
          compiledContent.includes('require-min.js') &&
          !compiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
