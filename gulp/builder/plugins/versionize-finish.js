@@ -12,6 +12,8 @@ const through = require('through2'),
 
 const VERSION_STUB = /(\.min)?(\.[\w]+?)\?x_module=%{MODULE_VERSION_STUB=.+?}/g;
 
+// urls without version. For multi-service applications with the same domain
+const uniqueUrls = /(bundles|contents)\.min\.js/g;
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
@@ -33,7 +35,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             file.contents = Buffer.from(
                text
                   .replace(VERSION_STUB, '$2')
-                  .replace('bundles.min.js', 'bundles.js')
+                  .replace(uniqueUrls, '$1.js')
             );
          }
       } catch (error) {
