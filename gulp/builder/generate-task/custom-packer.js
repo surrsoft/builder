@@ -36,7 +36,6 @@ function generateSetSuperBundles(root, configs) {
  * @returns {Undertaker.TaskFunction}
  */
 function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList) {
-   const { commonBundles, superBundles } = configs;
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(root, transliterate(moduleInfo.name));
 
@@ -58,7 +57,7 @@ function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList
                   }
                })
             )
-            .pipe(collectCustomPacks(moduleInfo, root, commonBundles, superBundles, bundlesList));
+            .pipe(collectCustomPacks(moduleInfo, root, configs, bundlesList));
       };
    });
    return gulp.series(
@@ -115,12 +114,14 @@ function generateTaskForCustomPack(taskParameters) {
       depsTree = new DependencyGraph(),
       configs = {
          commonBundles: {},
-         superBundles: []
+         superBundles: [],
+         extendBundles: taskParameters.config.extendBundles
       },
       results = {
          bundles: {},
          bundlesRoute: {},
-         excludedCSS: {}
+         excludedCSS: {},
+         extendBundles: {}
       },
       bundlesList = new Set();
 

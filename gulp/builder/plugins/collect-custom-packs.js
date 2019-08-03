@@ -19,7 +19,8 @@ const
  * @param {string} root корень развернутого приложения
  * @returns {stream}
  */
-module.exports = function collectPackageJson(moduleInfo, applicationRoot, commonBundles, superBundles, bundlesList) {
+module.exports = function collectPackageJson(moduleInfo, applicationRoot, configs, bundlesList) {
+   const { commonBundles, superBundles } = configs;
    return through.obj(
       function onTransform(file, encoding, callback) {
          let currentPackageJson;
@@ -31,17 +32,42 @@ module.exports = function collectPackageJson(moduleInfo, applicationRoot, common
                configPath,
                currentPackageJson,
                moduleInfo
-            );
+            ).filter(currentConfig => configs.extendBundles || !currentConfig.extendsTo);
 
             configsArray.forEach((currentConfig) => {
                const isPrivatePackage = currentConfig.includeCore && !currentConfig.platformPackage;
-               const normalizedConfigOutput = `${currentConfig.output.replace(/\.js$/, '')}.min`;
-               const currentBundlePath = helpers.unixifyPath(path.join(
-                  'resources',
-                  currentConfig.output.search(/\.js$/) !== -1 ? path.dirname(configPath) : '',
-                  normalizedConfigOutput
-               ));
 
+               /**
+                * custom packages has 2 types of the output path set:
+                * 1)extendsTo - sets the path to save current extendable custom package - join with another packages
+                * with the same output path to get joined superbundle.
+                * 2)output - sets the current interface module output path(relative by current package config path)
+                */
+               const currentConfigOutput = currentConfig.output ? currentConfig.output : currentConfig.extendsTo;
+               const normalizedConfigOutput = `${currentConfigOutput.replace(/\.js$/, '')}.min`;
+               let currentBundlePath;
+
+               /**
+                * for normal bundles bundle path is relative by config path
+                * for extendable bundles path to extends is relative by the
+                * project's root
+                */
+               if (currentConfig.output) {
+                  currentBundlePath = helpers.unixifyPath(path.join(
+                     'resources',
+                     currentConfigOutput.search(/\.js$/) !== -1 ? path.dirname(configPath) : '',
+                     normalizedConfigOutput
+                  ));
+               } else {
+                  currentBundlePath = helpers.unixifyPath(path.join(
+                     'resources',
+                     normalizedConfigOutput
+                  ));
+               }
+
+               if (!currentConfig.output) {
+                  currentConfig.output = currentConfig.extendsTo;
+               }
                if (bundlesList.has(currentBundlePath) || isPrivatePackage) {
                   if (currentConfig.hasOwnProperty('includePackages') && currentConfig.includePackages.length > 0) {
                      superBundles.push(currentConfig);
@@ -61,7 +87,8 @@ module.exports = function collectPackageJson(moduleInfo, applicationRoot, common
          } catch (err) {
             logger.error({
                message: 'Ошибка парсинга конфигурации для кастомного пакета',
-               filePath: file.path
+               filePath: file.path,
+               error: err
             });
          }
          callback();

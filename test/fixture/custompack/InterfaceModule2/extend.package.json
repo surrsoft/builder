@@ -1,0 +1,6 @@
+{
+  "include": [
+    "InterfaceModule2/*"
+  ],
+  "extendsTo": "superbundle-for-builder-tests.package.js"
+}

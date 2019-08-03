@@ -1008,6 +1008,108 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('custom pack - generate extendable bundles', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/custompack');
+
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         minimize: true,
+         wml: true,
+         builderTests: true,
+         dependenciesGraph: true,
+         customPack: true,
+         modules: [
+            {
+               name: 'InterfaceModule1',
+               path: path.join(sourceFolder, 'InterfaceModule1')
+            },
+            {
+               name: 'InterfaceModule2',
+               path: path.join(sourceFolder, 'InterfaceModule2')
+            },
+            {
+               name: 'InterfaceModule3',
+               path: path.join(sourceFolder, 'InterfaceModule3')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      const correctExtendableBundles = await fs.readJson(
+         path.join(
+            sourceFolder,
+            'extendableBundlesResults',
+            'extendableBundles.json'
+         )
+      );
+      const wsCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core', 'bundles.json'));
+
+      // WS.Core bundles meta must containing joined superbundle from extendable parts
+      Object.keys(correctExtendableBundles).forEach((currentKey) => {
+         wsCoreBundles.hasOwnProperty(currentKey).should.equal(true);
+         wsCoreBundles[currentKey].should.have.members(correctExtendableBundles[currentKey]);
+      });
+      const currentCssPackage = await fs.readFile(path.join(
+         outputFolder,
+         'WS.Core',
+         'superbundle-for-builder-tests.package.min.css'
+      ));
+      const sourceCssPackage = await fs.readFile(path.join(
+         sourceFolder,
+         'extendableBundlesResults',
+         'cssPackage.css'
+      ));
+      const currentJsPackage = await fs.readFile(path.join(
+         outputFolder,
+         'WS.Core',
+         'superbundle-for-builder-tests.package.min.js'
+      ));
+      const sourceJsPackage = await fs.readFile(path.join(
+         sourceFolder,
+         'extendableBundlesResults',
+         'jsPackage.js'
+      ));
+
+      currentJsPackage.toString().should.equal(sourceJsPackage.toString());
+      currentCssPackage.toString().should.equal(sourceCssPackage.toString());
+      await clearWorkspace();
+   });
+
    // проверим, что паковка собственных зависимостей корректно работает при пересборке
    it('packOwnDeps', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packOwnDeps');

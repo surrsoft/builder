@@ -1,4 +1,5 @@
 [
+  "resources/vdom-superbundle.package.min",
   "resources/TestPacker/core.package.min",
   "resources/TestPacker/test.package.min",
   "resources/ACSEditor/packages/additionalPlugins.package.min",
