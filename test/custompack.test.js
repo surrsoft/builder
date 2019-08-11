@@ -300,7 +300,8 @@ describe('custompack-intersects', () => {
                defaultLocalization: '',
                localizations: [],
                sources: true,
-               resourcesUrl: true
+               resourcesUrl: true,
+               modules: []
             }
          },
          results = {
