@@ -186,17 +186,17 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
                    * для него в пакете модуль локализации
                    */
                   modulesI18n[moduleName] = createI18nModule(moduleName);
-               }
-               if (linkModules.hasOwnProperty(module.fullName)) {
-                  linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
+                  if (linkModules.hasOwnProperty(module.fullName)) {
+                     linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
 
-                  /**
-                   * В tslib в качестве зависимости указывать локализацию не нужно и приводит
-                   * к цикличной зависимости, поэтому подобные модули локализовать не будем.
-                   */
-                  if (module.fullName.includes('/')) {
-                     linkModules[module.fullName].push(currentLocaleName);
-                     module.defaultLocalization = currentLocaleName;
+                     /**
+                      * В tslib в качестве зависимости указывать локализацию не нужно и приводит
+                      * к цикличной зависимости, поэтому подобные модули локализовать не будем.
+                      */
+                     if (module.fullName.includes('/')) {
+                        linkModules[module.fullName].push(currentLocaleName);
+                        module.defaultLocalization = currentLocaleName;
+                     }
                   }
                }
             }
