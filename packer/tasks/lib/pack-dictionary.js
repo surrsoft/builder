@@ -3,7 +3,8 @@
 const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers');
 const dblSlashes = /\\/g;
 
 /**
@@ -12,27 +13,22 @@ const dblSlashes = /\\/g;
  * @returns {String} - имя интерфейсного модуля.
  */
 
-function getNameModule(pathModule) {
-   const splitPath = pathModule.split('/');
-   let nameModule = '';
+function getNameModule(pathModule, applicationRoot) {
+   const pathWithoutRoot = pathModule.replace(applicationRoot, '');
 
-   splitPath.some((name, index) => {
-      if (name === 'ws') {
-         nameModule = 'WS';
-         return true;
-      }
-      if (name === 'resources') {
-         nameModule = splitPath[index + 1];
-         return true;
-      }
-      if (index === splitPath.length - 1) {
-         [nameModule] = splitPath;
-         return true;
-      }
-      return false;
-   });
+   return helpers.removeLeadingSlash(pathWithoutRoot).split('/').shift();
+}
 
-   return nameModule;
+/**
+ * Gets interface module name by full module path.
+ * @param{String} fullPath - full path for current module
+ * @param{String} applicationRoot - current project root path
+ * @returns {undefined|*}
+ */
+function getInterfaceModuleName(fullPath, applicationRoot) {
+   const relativePath = helpers.removeLeadingSlash(fullPath.replace(applicationRoot, ''));
+
+   return relativePath.split('/').shift();
 }
 
 /**
@@ -113,7 +109,7 @@ function createI18nModule(nameModule) {
       amd: true,
       encode: false,
       fullName: `${nameModule}_localization`,
-      module: `${nameModule}"_localization`,
+      module: `${nameModule}_localization`,
       plugin: 'i18n'
    };
 }
@@ -173,31 +169,34 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
    try {
       const modulesI18n = {},
          linkModules = modDepend.links;
-      let moduleName;
       await pMap(
          modules,
          async(module) => {
-            if (linkModules.hasOwnProperty(module.fullName)) {
-               linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
-               moduleName = getNameModule(module.fullPath);
+            if (module.fullPath) {
+               const moduleName = getInterfaceModuleName(
+                  module.fullPath,
+                  applicationRoot
+               );
+               const currentLocaleName = `${moduleName}_localization`;
                const langPath = path.join(applicationRoot, moduleName, 'lang');
-               if (modulesI18n.hasOwnProperty(moduleName)) {
-                  linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                  module.defaultLocalization = modulesI18n[moduleName].fullName;
-               } else if (await fs.pathExists(langPath)) {
+               const langExists = await fs.pathExists(langPath);
+               if (!modulesI18n.hasOwnProperty(moduleName) && langExists) {
                   /**
                    * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
                    * для него в пакете модуль локализации
                    */
                   modulesI18n[moduleName] = createI18nModule(moduleName);
+               }
+               if (linkModules.hasOwnProperty(module.fullName)) {
+                  linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
 
                   /**
                    * В tslib в качестве зависимости указывать локализацию не нужно и приводит
                    * к цикличной зависимости, поэтому подобные модули локализовать не будем.
                    */
                   if (module.fullName.includes('/')) {
-                     linkModules[module.fullName].push(modulesI18n[moduleName].fullName);
-                     module.defaultLocalization = modulesI18n[moduleName].fullName;
+                     linkModules[module.fullName].push(currentLocaleName);
+                     module.defaultLocalization = currentLocaleName;
                   }
                }
             }
@@ -249,7 +248,7 @@ function packDictClassic(modules, applicationRoot, availableLanguage) {
 
       modules.forEach((module) => {
          if (module.fullPath) {
-            nameModule = getNameModule(module.fullPath);
+            nameModule = getNameModule(module.fullPath, applicationRoot);
             Object.keys(dictPack).forEach((lang) => {
                const fullPath = getPathDict(nameModule, lang, applicationRoot);
 
