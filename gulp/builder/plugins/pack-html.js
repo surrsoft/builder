@@ -47,7 +47,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
             file.contents = Buffer.from(minText);
          } else {
             let dom = domHelpers.domify(minText);
-            const root = path.dirname(taskParameters.config.rawConfig.output),
+
+            // sets application root as builder cache, for proper html packing in patch build
+            const root = taskParameters.config.cachePath ? `${taskParameters.config.cachePath}/incremental_build` : path.dirname(taskParameters.config.rawConfig.output),
                replacePath = !taskParameters.config.multiService;
 
             dom = await packHtml.packageSingleHtml(
