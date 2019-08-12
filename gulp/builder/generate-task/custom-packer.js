@@ -22,9 +22,9 @@ const gulp = require('gulp'),
    fs = require('fs-extra'),
    transliterate = require('../../../lib/transliterate');
 
-function generateSetSuperBundles(root, configs) {
+function generateSetSuperBundles(configs, root, modulesForPatch) {
    return function setSuperBundles() {
-      return setSuperBundle(root, configs);
+      return setSuperBundle(configs, root, modulesForPatch);
    };
 }
 
@@ -35,13 +35,11 @@ function generateSetSuperBundles(root, configs) {
  * @param {String} root корень приложения
  * @returns {Undertaker.TaskFunction}
  */
-function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList) {
+function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList, modulesForPatch) {
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
-      const moduleOutput = path.join(root, transliterate(moduleInfo.name));
-
       // in custom package build interface modules paths are already transliterated
       moduleInfo.depends = moduleInfo.depends.map(currentDep => transliterate(currentDep));
-      const input = path.join(moduleOutput, '/**/*.package.json');
+      const input = path.join(moduleInfo.output, '/**/*.package.json');
       return function collectPackageJson() {
          return gulp
             .src(input, { dot: false, nodir: true })
@@ -62,7 +60,7 @@ function generateCollectPackagesTasks(configs, taskParameters, root, bundlesList
    });
    return gulp.series(
       gulp.parallel(tasks),
-      generateSetSuperBundles(root, configs)
+      generateSetSuperBundles(configs, root, modulesForPatch)
    );
 }
 
@@ -125,10 +123,15 @@ function generateTaskForCustomPack(taskParameters) {
       },
       bundlesList = new Set();
 
+
+   const modulesForPatch = taskParameters.config.modules
+      .filter(moduleInfo => moduleInfo.rebuild)
+      .map(moduleInfo => path.basename(moduleInfo.output));
+
    return gulp.series(
       generateDepsGraphTask(depsTree, taskParameters.cache),
       generateTaskForBundlesListGetter(bundlesList),
-      generateCollectPackagesTasks(configs, taskParameters, root, bundlesList),
+      generateCollectPackagesTasks(configs, taskParameters, root, bundlesList, modulesForPatch),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateInterceptCollectorTask(taskParameters, root, results),
       generateSaveResultsTask(taskParameters, results, root),
@@ -222,6 +225,15 @@ function generateSaveResultsTask(taskParameters, results, applicationRoot) {
          await saveRootBundlesMeta(applicationRoot, results);
       }
       await saveModuleCustomPackResults(taskParameters, results, applicationRoot);
+
+      /**
+       * save "module-dependencies" meta for all project into cache. Will be needed
+       * in patches to get proper list of modules for custom packing.
+       */
+      await fs.outputJson(
+         path.join(taskParameters.config.cachePath, 'module-dependencies.json'),
+         taskParameters.cache.getModuleDependencies()
+      );
    };
 }
 

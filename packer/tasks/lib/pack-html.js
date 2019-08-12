@@ -64,7 +64,7 @@ async function nativePackFiles(filesToPack, base, themeName) {
  * @param {String} root - корень сайта
  */
 async function packCSS(files, root) {
-   const results = [];
+   const filesContent = {};
    await pMap(
       files,
       async(filePath) => {
@@ -72,13 +72,17 @@ async function packCSS(files, root) {
             return;
          }
          const content = await fs.readFile(filePath, 'utf8');
-         results.push(cssHelpers.rebaseUrls(root, filePath, content.toString()));
+         filesContent[filePath] = cssHelpers.rebaseUrls(root, filePath, content.toString());
       },
       { concurrency: 5 }
    );
 
+   const results = [];
+   Object.keys(filesContent).sort().forEach((currentKey) => {
+      results.push(filesContent[currentKey]);
+   });
    const cssPackage = cssHelpers.bumpImportsUp(results.join('\n'));
-   return cssHelpers.splitIntoBatches(4000, cssPackage);
+   return [cssPackage];
 }
 
 /**
@@ -270,11 +274,15 @@ function generatePackage(
          // eslint-disable-next-line no-sync
          fs.outputFileSync(packedFilePath.replace(ext, extWithoutVersion), text);
 
-         let newName = `/${path.relative(siteRoot, packedFilePath)}`;
+         /**
+          * resourcesPath is the same in full build and patch build. Use it
+          * to get proper relative path for current package
+          */
+         let newName = `/${packedFilePath.replace(resourcesPath, '')}`;
          if (!needReplacePaths) {
             newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
          } else {
-            newName = helpers.prettifyPath(path.join('/', application, newName));
+            newName = helpers.prettifyPath(path.join('/', application, `resources/${newName}`));
          }
 
          return {

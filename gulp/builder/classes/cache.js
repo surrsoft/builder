@@ -45,6 +45,15 @@ class Cache {
 
    async load(patchBuild) {
       await this.lastStore.load(this.config.cachePath);
+
+      /**
+       * we need to get cached "module-dependencies" meta to make custom packing
+       * works properly in UI patch build
+       */
+      const cachedModuleDependencies = path.join(this.config.cachePath, 'module-dependencies.json');
+      if (await fs.pathExists(cachedModuleDependencies)) {
+         this.moduleDependencies = await fs.readJson(cachedModuleDependencies);
+      }
       this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
@@ -313,7 +322,11 @@ class Cache {
     * @returns {string[]}
     */
    getInputPathsByFolder(modulePath) {
-      const prettyModulePath = helpers.prettifyPath(modulePath);
+      /**
+       * Current interface module name may be a part of another interface module.
+       * Make sure we get paths only for current interface module.
+       */
+      const prettyModulePath = helpers.prettifyPath(`${modulePath}/`);
       return Object.keys(this.currentStore.inputPaths).filter(filePath => filePath.startsWith(prettyModulePath));
    }
 
@@ -671,9 +684,19 @@ class Cache {
     * Получить список файлов, которые нужно удалить из целевой директории после инкрементальной сборки
     * @returns {Promise<string[]>}
     */
-   async getListForRemoveFromOutputDir() {
+   async getListForRemoveFromOutputDir(cachePath, modulesForPatch) {
       const currentOutputSet = this.currentStore.getOutputFilesSet();
-      const lastOutputSet = this.lastStore.getOutputFilesSet();
+
+      /**
+       * In patch build we must get paths only for modules are
+       * participated in current patch build. Otherwise we can
+       * remove files for non-participating interface modules from
+       * builder cache and get artifacts in next patch builds.
+       * @type {Set<string>}
+       */
+      const lastOutputSet = this.lastStore.getOutputFilesSet(cachePath, modulesForPatch.map(
+         currentModule => path.basename(currentModule.output)
+      ));
       const removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));
 
       const results = await pMap(
