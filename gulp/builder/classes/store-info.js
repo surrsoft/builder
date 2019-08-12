@@ -183,14 +183,25 @@ class StoreInfo {
     * Получить набор выходных файлов. Нужно чтобы получать разницы между сборками и удалять лишнее.
     * @returns {Set<string>}
     */
-   getOutputFilesSet() {
+   getOutputFilesSet(cachePath, modulesForPatch) {
       const resultSet = new Set();
       for (const filePath in this.inputPaths) {
          if (!this.inputPaths.hasOwnProperty(filePath)) {
             continue;
          }
          for (const outputFilePath of this.inputPaths[filePath].output) {
-            resultSet.add(outputFilePath);
+            // for patch build get only paths for patching modules
+            if (modulesForPatch && modulesForPatch.length > 0) {
+               const currentModuleName = outputFilePath
+                  .replace(cachePath, '')
+                  .split('/')
+                  .shift();
+               if (modulesForPatch.includes(currentModuleName)) {
+                  resultSet.add(outputFilePath);
+               }
+            } else {
+               resultSet.add(outputFilePath);
+            }
          }
       }
       return resultSet;

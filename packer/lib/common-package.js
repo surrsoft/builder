@@ -91,16 +91,16 @@ function prepareOrderQueue(dg, orderQueue, applicationRoot) {
          if (module.plugin === 'is') {
             if (module.moduleYes) {
                module.moduleYes.fullPath = path
-                  .join(applicationRoot, module.moduleYes.fullPath)
+                  .join(applicationRoot, module.moduleYes.fullPath.replace(/^resources\//, ''))
                   .replace(dblSlashes, '/');
             }
             if (module.moduleNo) {
-               module.moduleNo.fullPath = path.join(applicationRoot, module.moduleNo.fullPath).replace(dblSlashes, '/');
+               module.moduleNo.fullPath = path.join(applicationRoot, module.moduleNo.fullPath.replace(/^resources\//, '')).replace(dblSlashes, '/');
             }
          } else if ((module.plugin === 'browser' || module.plugin === 'optional') && module.moduleIn) {
-            module.moduleIn.fullPath = path.join(applicationRoot, module.moduleIn.fullPath).replace(dblSlashes, '/');
+            module.moduleIn.fullPath = path.join(applicationRoot, module.moduleIn.fullPath.replace(/^resources\//, '')).replace(dblSlashes, '/');
          } else {
-            module.fullPath = path.join(applicationRoot, module.fullPath).replace(dblSlashes, '/');
+            module.fullPath = path.join(applicationRoot, module.fullPath.replace(/^resources\//, '')).replace(dblSlashes, '/');
          }
          return module;
       })
@@ -245,7 +245,18 @@ async function limitingNativePackFiles(
       result = {};
 
    if (filesToPack && filesToPack.length) {
-      const base = path.join(root, application);
+      /**
+       * All modules are reading from builder cache, so we need to set the
+       * same base root to get proper relative paths in packing styles
+       */
+      let rootCache, base;
+      if (taskParameters.config.cachePath) {
+         rootCache = `${taskParameters.config.cachePath}/incremental_build`;
+         base = `${taskParameters.config.cachePath}/incremental_build`;
+      } else {
+         rootCache = root;
+         base = path.join(root, application);
+      }
       const jsExternalModuleUsageMessages = new Set();
 
       await pMap(
@@ -291,7 +302,7 @@ async function limitingNativePackFiles(
                    * @type {boolean}
                    */
                   const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
-                  const relativePath = helpers.removeLeadingSlash(fullPath.replace(root, ''));
+                  const relativePath = helpers.removeLeadingSlash(fullPath.replace(rootCache, ''));
                   const currentFileModuleName = relativePath.split('/').shift();
                   if (
                      currentFileModuleName !== packageConfig.moduleName &&
