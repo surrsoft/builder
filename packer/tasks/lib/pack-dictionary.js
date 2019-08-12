@@ -179,13 +179,23 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
                );
                const currentLocaleName = `${moduleName}_localization`;
                const langPath = path.join(applicationRoot, moduleName, 'lang');
-               const langExists = await fs.pathExists(langPath);
-               if (!modulesI18n.hasOwnProperty(moduleName) && langExists) {
+
+               // always write dafault localization for each
+               if (await fs.pathExists(langPath)) {
                   /**
-                   * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
-                   * для него в пакете модуль локализации
-                   */
-                  modulesI18n[moduleName] = createI18nModule(moduleName);
+                   * always write current module localization into module as default if localization exists
+                   * Write it only for components(always has '/' in name: module_name/path_to_component)
+                    */
+                  if (module.fullName.includes('/')) {
+                     module.defaultLocalization = currentLocaleName;
+                  }
+                  if (!modulesI18n.hasOwnProperty(moduleName)) {
+                     /**
+                      * проверяем, чтобы существовала локализация для данного неймспейса, иначе нет смысла генерить
+                      * для него в пакете модуль локализации
+                      */
+                     modulesI18n[moduleName] = createI18nModule(moduleName);
+                  }
                   if (linkModules.hasOwnProperty(module.fullName)) {
                      linkModules[module.fullName] = deleteOldDepI18n(linkModules[module.fullName]);
 
@@ -195,7 +205,6 @@ async function packCustomDict(modules, applicationRoot, depsTree, availableLangu
                       */
                      if (module.fullName.includes('/')) {
                         linkModules[module.fullName].push(currentLocaleName);
-                        module.defaultLocalization = currentLocaleName;
                      }
                   }
                }
