@@ -67,7 +67,7 @@ function generateWorkflow(processArgv) {
       generateTaskForTypescriptCompile(taskParameters),
       generateTaskForBuildModules(taskParameters, modulesForPatch),
 
-      generateTaskForRemoveFiles(taskParameters),
+      generateTaskForRemoveFiles(taskParameters, modulesForPatch),
       generateTaskForSaveCache(taskParameters),
       generateTaskForTerminatePool(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters, modulesForPatch),
@@ -107,9 +107,12 @@ function generateTaskForSaveCache(taskParameters) {
    };
 }
 
-function generateTaskForRemoveFiles(taskParameters) {
+function generateTaskForRemoveFiles(taskParameters, modulesForPatch) {
    return async function removeOutdatedFiles() {
-      const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir();
+      const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir(
+         taskParameters.config.cachePath,
+         modulesForPatch
+      );
       return pMap(filesForRemove, filePath => fs.remove(filePath), {
          concurrency: 20
       });

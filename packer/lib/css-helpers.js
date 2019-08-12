@@ -63,66 +63,8 @@ function bumpImportsUp(packedCss) {
    return result;
 }
 
-function splitIntoBatches(numSelectorsPerBatch, content) {
-   const batches = [];
-   let numSelectorsInCurrentBatch = 0;
-
-   function mkBatch() {
-      const batch = postcss.root();
-      batches.push(batch);
-      numSelectorsInCurrentBatch = 0;
-      return batch;
-   }
-
-   function serializeChildren(node) {
-      return node.nodes ? `${node.nodes.reduce(fastSerialize, '{')}}` : '';
-   }
-
-   function fastSerialize(memo, node) {
-      if (node.type === 'decl') {
-         return `${memo + node.prop}:${node.value}${node.important ? '!important' : ''};`;
-      }
-      if (node.type === 'rule') {
-         return memo + node.selector + serializeChildren(node);
-      }
-      if (node.type === 'atrule') {
-         return `${memo}@${node.name} ${node.params}${node.nodes ? serializeChildren(node) : ';'}`;
-      }
-      return memo;
-   }
-
-   function toCSSString(root) {
-      return root.nodes.reduce(fastSerialize, '');
-   }
-
-   // wtf: если не сделать slice, то ровно половина массива пропадёт
-   const nodes = postcss()
-      .process(content, { parser: safe })
-      .root.nodes.slice();
-   let batch = mkBatch();
-   for (const node of nodes) {
-      // Считать селекторы будем только для CSS-правил (AtRules и т.п. - игнорируем)
-      if (node.type === 'rule') {
-         const numSelectorsInThisRule = node.selectors.length;
-
-         // Если в пачке уже что-то есть и текущий селектор в нее не влезает - переносим в другую пачку
-         // но в пустую пачку можно добавить блок, превышающий ограничения
-         if (numSelectorsInCurrentBatch > 0) {
-            if (numSelectorsInCurrentBatch + numSelectorsInThisRule > numSelectorsPerBatch) {
-               batch = mkBatch();
-            }
-         }
-         numSelectorsInCurrentBatch += numSelectorsInThisRule;
-      }
-
-      batch.append(node);
-   }
-
-   return batches.map(toCSSString);
-}
-
+// removed splitIntoBatches function. Its old function for supporting old IE6-8.
 module.exports = {
    rebaseUrls: rebaseUrlsToAbsolutePath,
-   bumpImportsUp,
-   splitIntoBatches
+   bumpImportsUp
 };

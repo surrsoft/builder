@@ -25,7 +25,12 @@ module.exports = function collectPackageJson(moduleInfo, applicationRoot, common
          let currentPackageJson;
          try {
             currentPackageJson = JSON.parse(file.contents);
-            const prettyApplicationRoot = helpers.unixifyPath(applicationRoot);
+
+            /**
+             * set application root as builder cache to get all configs for custom packages.
+             * Needed by superbundles configs, that uses another packages for packing.
+              */
+            const prettyApplicationRoot = helpers.unixifyPath(path.dirname(moduleInfo.output));
             const configPath = helpers.unixifyPath(file.path).replace(prettyApplicationRoot, '');
             const configsArray = packHelpers.getConfigsFromPackageJson(
                configPath,
