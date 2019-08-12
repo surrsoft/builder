@@ -20,7 +20,6 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
    generateTaskForSaveJoinedMeta = require('../common/generate-task/save-joined-meta'),
    { checkModuleDependenciesExisting } = require('../../lib/check-module-dependencies'),
-   { typescriptCompiler } = require('../../lib/typescript-compiler'),
    generateTaskForSaveLoggerReport = require('../common/generate-task/save-logger-report'),
    Cache = require('./classes/cache'),
    Configuration = require('./classes/configuration.js'),
@@ -64,7 +63,6 @@ function generateWorkflow(processArgv) {
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
-      generateTaskForTypescriptCompile(taskParameters),
       generateTaskForBuildModules(taskParameters, modulesForPatch),
 
       generateTaskForRemoveFiles(taskParameters),
@@ -87,12 +85,6 @@ function generateWorkflow(processArgv) {
 function generateTaskForClearCache(taskParameters, modulesForPatch) {
    return function clearCache() {
       return taskParameters.cache.clearCacheIfNeeded(modulesForPatch.length > 0);
-   };
-}
-
-function generateTaskForTypescriptCompile(taskParameters) {
-   return function runTypescriptCompiler() {
-      return typescriptCompiler(taskParameters);
    };
 }
 
