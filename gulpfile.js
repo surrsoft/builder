@@ -37,8 +37,9 @@ try {
    const logger = require('./lib/logger').setGulpLogger(getLogsLevel(process.argv));
 
    // важно вернуть правильный код при выходе. сборка должна падать, если есть ошибки
-   process.on('exit', () => {
-      logger.correctExitCode();
+   process.on('exit', (resultCode) => {
+      logger.info(`Main process was exited with code: ${resultCode}`);
+      logger.correctExitCode(resultCode);
    });
 
    const gulp = require('gulp');
