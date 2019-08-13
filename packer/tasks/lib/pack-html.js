@@ -63,7 +63,7 @@ async function nativePackFiles(filesToPack, base, themeName) {
  * @param {Array.<String>} files - пути до файлов
  * @param {String} root - корень сайта
  */
-async function packCSS(files, root) {
+async function packCSS(files, root, resourceRoot) {
    const filesContent = {};
    await pMap(
       files,
@@ -72,7 +72,7 @@ async function packCSS(files, root) {
             return;
          }
          const content = await fs.readFile(filePath, 'utf8');
-         filesContent[filePath] = cssHelpers.rebaseUrls(root, filePath, content.toString());
+         filesContent[filePath] = cssHelpers.rebaseUrls(root, filePath, content.toString(), resourceRoot);
       },
       { concurrency: 5 }
    );
@@ -118,7 +118,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
  * @param {String} themeName - название темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName) {
+async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName, resourceRoot) {
    const isOfflineClient = await checkItIsOfflineClient(applicationRoot);
    const jsForPack = orderQueue.js.filter(node => node.amd);
    const cssForPack = orderQueue.css
@@ -141,7 +141,7 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
    const dictResult = {}, localeCssResult = {};
    const [jsResult, cssResult] = await Promise.all([
       nativePackFiles(jsForPack, applicationRoot, themeName),
-      packCSS(cssForPack, applicationRoot),
+      packCSS(cssForPack, applicationRoot, resourceRoot),
       Promise.all(
          Object.keys(orderQueue.dict).map(async(locale) => {
             dictResult[locale] = await nativePackFiles(orderQueue.dict[locale], applicationRoot);
@@ -153,7 +153,8 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
                orderQueue.cssForLocale[locale].map(function onlyPath(module) {
                   return module.fullPath;
                }),
-               applicationRoot
+               applicationRoot,
+               resourceRoot
             );
          })
       )
@@ -176,14 +177,14 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
  * @param {String} themeName - имя темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName, availableLanguage) {
+function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName, availableLanguage, resourceRoot) {
    let orderQueue;
 
    orderQueue = dg.getLoadOrder(modArray);
    orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
    orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot, availableLanguage);
 
-   return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName);
+   return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName, resourceRoot);
 }
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
@@ -401,6 +402,19 @@ async function packageSingleHtml(
    });
    const startNodes = getStartNodes(divs);
 
+   let applicationForRebase = '/';
+
+   /**
+    * We need to set application for rebase to get proper urls from site root fol old css packages
+    * for static html pages
+    * Ignore BL services("/service/"). app root can be selected only for project's UI services.
+    */
+   if (
+      taskParameters.config.urlServicePath &&
+      !taskParameters.config.urlServicePath.includes('/service')
+   ) {
+      applicationForRebase = taskParameters.config.urlServicePath;
+   }
    const filesToPack = await packInOrder(
       dg,
       startNodes,
@@ -408,7 +422,8 @@ async function packageSingleHtml(
       root,
       themeName,
       htmlName,
-      availableLanguage
+      availableLanguage,
+      path.join(applicationForRebase, 'resources/')
    );
 
    // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
