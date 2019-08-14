@@ -58,18 +58,35 @@ function setDefaultLessConfiguration() {
 }
 
 /**
+ * Check current theme for new theme type
+ * @param{Object} currentTheme - current theme info
+ * @returns {boolean}
+ */
+function checkForNewThemeType(currentTheme) {
+   /**
+    * new themes can't be imported into any less by builder,
+    * only physically import is allowed for it.
+    */
+   return currentTheme.type === 'new';
+}
+
+/**
  * Gets themes list for multi themes build
  * configuration
  * @param allThemes
  * @param taskParameters
  */
-function getMultiThemesList(allThemes, taskParameters) {
-   const themesParam = taskParameters.config.themes;
-   let multiThemes = {};
+function getMultiThemesList(allThemes, themesParam) {
+   const multiThemes = {};
    switch (typeof themesParam) {
       case 'boolean':
          if (themesParam) {
-            multiThemes = allThemes;
+            Object.keys(allThemes).forEach((currentTheme) => {
+               if (checkForNewThemeType(allThemes[currentTheme])) {
+                  return;
+               }
+               multiThemes[currentTheme] = allThemes[currentTheme];
+            });
          }
          break;
 
@@ -78,6 +95,9 @@ function getMultiThemesList(allThemes, taskParameters) {
          if (themesParam instanceof Array === true) {
             Object.keys(allThemes).forEach((currentTheme) => {
                if (themesParam.includes(currentTheme)) {
+                  if (checkForNewThemeType(allThemes[currentTheme])) {
+                     return;
+                  }
                   multiThemes[currentTheme] = allThemes[currentTheme];
                }
             });
@@ -110,7 +130,7 @@ function getNewThemesList(allThemes) {
  * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesInfo) {
+function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    const getOutput = function(file, replacingExt) {
       const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
@@ -120,7 +140,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
    const moduleName = path.basename(moduleInfo.output);
 
    // check for offline plugin application
-   const multiThemes = getMultiThemesList(allThemes, taskParameters);
+   const multiThemes = getMultiThemesList(allThemes, taskParameters.config.themes);
    const newThemes = getNewThemesList(allThemes);
 
    return through.obj(
@@ -361,4 +381,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gulpModulesI
          callback();
       }
    );
+}
+
+module.exports = {
+   compileLess,
+   getMultiThemesList,
+   checkForNewThemeType
 };
