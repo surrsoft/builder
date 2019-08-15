@@ -3,7 +3,8 @@
 
 const initTest = require('./init-test');
 const { parseCurrentModuleName } = require('../gulp/builder/generate-task/collect-style-themes');
-
+const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
+const assert = require('assert');
 const
    path = require('path'),
    lib = require('./lib'),
@@ -220,5 +221,36 @@ describe('build less', () => {
       result = parseCurrentModuleName(modulesList, ['Controls', 'myModule', 'online', 'default']);
       result.themeName.should.equal('online-default');
       result.moduleName.should.equal('Controls-myModule');
+   });
+   it('get correct list of multi themes', () => {
+      const multiThemes = {
+         myTheme: {
+            path: 'path/to/myTheme'
+         },
+         myAnotherTheme: {
+            path: 'path/to/myAnotherTheme'
+         }
+      };
+      const allThemes = Object.assign({
+         'TestModule-online-theme': {
+            type: 'new',
+            moduleName: 'TestModule',
+            themeName: 'online'
+         }
+      }, multiThemes);
+      const result = getMultiThemesList(allThemes, true);
+      assert.deepStrictEqual(result, multiThemes);
+   });
+   it('check theme for new type', () => {
+      const multiTheme = {
+         path: 'path/to/myTheme'
+      };
+      const newTheme = {
+         type: 'new',
+         moduleName: 'TestModule',
+         themeName: 'online'
+      };
+      checkForNewThemeType(multiTheme).should.equal(false);
+      checkForNewThemeType(newTheme).should.equal(true);
    });
 });
