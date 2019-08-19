@@ -15,7 +15,8 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
-   compileJsonToJs = require('../../../lib/compile-json-to-js');
+   compileJsonToJs = require('../../../lib/compile-json-to-js'),
+   jsonExt = /\.json\.js$/;
 
 /**
  * Объявление плагина
@@ -34,6 +35,24 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
+            /**
+             * Remove AMD-formatted json sources from stream if json source file
+             * exists. It will be compiled into AMD-formatted json file.
+             * Needed to avoid double symlink issue in debug build(double symlinks
+             * throws fatal error).
+             * P.S. can't be catched by tests, file order in gulp stream can be different between 2 builds.
+             * It can throw an error in first build, and build successfully in another
+             */
+            if (file.basename.endsWith('.json.js')) {
+               const jsonInSource = await fs.pathExists(file.path.replace(jsonExt, '.json'));
+
+               if (jsonInSource) {
+                  callback(null);
+               } else {
+                  callback(null, file);
+               }
+               return;
+            }
             if (!['.json'].includes(file.extname) || file.basename.includes('package.json')) {
                callback(null, file);
                return;
@@ -48,18 +67,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinPath, moduleInfo);
                callback(null, file);
                return;
-            }
-
-            const jsInSources = file.history[0].replace(/\.(json)$/, '.json.js');
-            if (await fs.pathExists(jsInSources)) {
-               const message = 'Существует скомпилированный в AMD-формат JSON-файл. Данный файл будет перезаписан!';
-
-               // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
-               logger.warning({
-                  message,
-                  filePath: jsInSources,
-                  moduleInfo
-               });
             }
 
             // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
