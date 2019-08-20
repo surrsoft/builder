@@ -199,6 +199,27 @@ describe('gulp/builder/generate-workflow.js', () => {
          'css!TestModule/test-theme-object',
          'css!Модуль/Stable'
       ]);
+
+      // update themes.config.json for interface module "Модуль". all less must be rebuilded for this new themes config.
+      await fs.outputJson(path.join(sourceFolder, 'Модуль/themes.config.json'), { old: false, multi: true });
+
+      // rebuild static with new theme
+      await runWorkflow();
+
+      // in results of interface module "Модуль" must exist only css with theme postfix(new theme scheme)
+      resultsFiles = await fs.readdir(moduleOutputFolder);
+      resultsFiles.should.have.members([
+         'Error.less',
+         'ForChange_online.css',
+         'ForChange.less',
+         'ForRename_new_online.css',
+         'ForRename_new.less',
+         'Stable_online.css',
+         'module-dependencies.json',
+         'Stable.less',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
       await clearWorkspace();
    });
 
