@@ -523,6 +523,17 @@ class Cache {
     */
    addModuleLessConfiguration(moduleName, config) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
+      const lastModuleCache = this.lastStore.modulesCache[moduleName];
+
+      /**
+       * if themes config was changed since the last build,
+       * rebuild all less in current project to get actual themed css content
+       */
+      try {
+         assert.deepStrictEqual(config, lastModuleCache.lessConfig);
+      } catch (error) {
+         this.dropCacheForLess = true;
+      }
       currentModuleCache.lessConfig = config;
    }
 
