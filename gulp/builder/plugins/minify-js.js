@@ -29,6 +29,7 @@ const excludeRegexes = [
    /.*\.min\.js$/,
    /.*\.routes\.js$/,
    /.*\.test\.js$/,
+   /.*\.dev\.js$/,
 
    // https://online.sbis.ru/opendoc.html?guid=05e7f1be-9fa9-48d4-a0d9-5506ac8d2b12
    /.*\.json\.js$/,

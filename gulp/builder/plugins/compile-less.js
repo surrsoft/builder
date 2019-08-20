@@ -14,6 +14,7 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    { buildLess } = require('../../../lib/build-less'),
+   { defaultAutoprefixerOptions } = require('../../../lib/builder-constants'),
    cssExt = /\.css$/;
 
 /**
@@ -142,6 +143,24 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    // check for offline plugin application
    const multiThemes = getMultiThemesList(allThemes, taskParameters.config.themes);
    const newThemes = getNewThemesList(allThemes);
+   let autoprefixerOptions = false;
+   switch (typeof taskParameters.config.autoprefixer) {
+      case 'boolean':
+         if (taskParameters.config.autoprefixer) {
+            // set default by builder autoprefixer options
+            autoprefixerOptions = defaultAutoprefixerOptions;
+         } else {
+            autoprefixerOptions = false;
+         }
+         break;
+      case 'object':
+         if (!(taskParameters.config.autoprefixer instanceof Array)) {
+            autoprefixerOptions = taskParameters.config.autoprefixer;
+         }
+         break;
+      default:
+         break;
+   }
 
    return through.obj(
 
@@ -266,7 +285,8 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      themes: taskParameters.config.themes,
                      moduleLessConfig,
                      multiThemes,
-                     newThemes
+                     newThemes,
+                     autoprefixerOptions
                   };
                   const results = await buildLess(
                      {

@@ -80,7 +80,10 @@ function generateTaskForBuildModules(taskParameters, modulesForPatch) {
 
 function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
-   const hasLocalization = taskParameters.config.localizations.length > 0;
+   const { config } = taskParameters;
+   const hasLocalization = config.localizations.length > 0;
+   const needModuleDependencies = config.dependenciesGraph || config.customPack ||
+      config.deprecatedStaticHtml || config.minimize;
 
    const pathsForImportSet = new Set();
    for (const modulePath of modulesMap.values()) {
@@ -119,36 +122,21 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
                })
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
-            .pipe(gulpIf(taskParameters.config.typescript, compileEsAndTs(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.typescript, compileEsAndTs(taskParameters, moduleInfo)))
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
-            .pipe(
-               gulpIf(
-                  taskParameters.config.less,
-                  compileLess(taskParameters, moduleInfo, gulpModulesInfo)
-               )
-            )
-            .pipe(
-               gulpIf(
-                  taskParameters.config.htmlWml,
-                  gulpBuildHtmlTmpl(taskParameters, moduleInfo)
-               )
-            )
-            .pipe(
-               gulpIf(
-                  taskParameters.config.deprecatedWebPageTemplates,
-                  buildStaticHtml(taskParameters, moduleInfo, modulesMap)
-               )
-            )
+            .pipe(gulpIf(config.less, compileLess(taskParameters, moduleInfo, gulpModulesInfo)))
+            .pipe(gulpIf(config.htmlWml, gulpBuildHtmlTmpl(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.deprecatedWebPageTemplates, buildStaticHtml(taskParameters, moduleInfo, modulesMap)))
 
             // versionizeToStub зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
-            .pipe(gulpIf(!!taskParameters.config.version, versionizeToStub(taskParameters, moduleInfo)))
+            .pipe(gulpIf(!!config.version, versionizeToStub(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, indexDictionary(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
-            .pipe(gulpIf(hasLocalization || taskParameters.config.wml, buildTmpl(taskParameters, moduleInfo)))
-            .pipe(gulpIf(taskParameters.config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization || config.wml, buildTmpl(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
 
             /**
              * packLibrary зависит от addComponentInfo, поскольку нам
@@ -157,58 +145,42 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
              * оригинальной скомпиленной библиотеки.
              * Также в библиотеках нужен кэш шаблонов, чтобы паковать приватные части шаблонов.
              */
-            .pipe(gulpIf(taskParameters.config.minimize, packLibrary(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize, packLibrary(taskParameters, moduleInfo)))
 
             // packOwnDeps зависит от buildTmp  l, buildXhtml
-            .pipe(
-               gulpIf(
-                  taskParameters.config.deprecatedOwnDependencies,
-                  packOwnDeps(taskParameters, moduleInfo)
-               )
-            )
-            .pipe(gulpIf(taskParameters.config.minimize, minifyCss(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.deprecatedOwnDependencies, packOwnDeps(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize, minifyCss(taskParameters, moduleInfo)))
 
             // minifyJs зависит от packOwnDeps
-            .pipe(gulpIf(taskParameters.config.minimize, minifyJs(taskParameters, moduleInfo)))
-            .pipe(gulpIf(taskParameters.config.minimize, minifyOther(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize, minifyJs(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize, minifyOther(taskParameters, moduleInfo)))
 
             // createVersionedModules и createCdnModules зависит от versionizeToStub
-            .pipe(gulpIf(!!taskParameters.config.version, createVersionedModules(taskParameters, moduleInfo)))
-            .pipe(gulpIf(!!taskParameters.config.version, createCdnModules(taskParameters, moduleInfo)))
+            .pipe(gulpIf(!!config.version, createVersionedModules(taskParameters, moduleInfo)))
+            .pipe(gulpIf(!!config.version, createCdnModules(taskParameters, moduleInfo)))
             .pipe(
                gulpRename((file) => {
                   file.dirname = transliterate(file.dirname);
                   file.basename = transliterate(file.basename);
                })
             )
-            .pipe(
-               gulpIf(
-                  taskParameters.config.presentationServiceMeta,
-                  createRoutesInfoJson(taskParameters, moduleInfo)
-               )
-            )
-            .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createNavigationModulesJson(moduleInfo)))
+            .pipe(gulpIf(config.presentationServiceMeta, createRoutesInfoJson(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.presentationServiceMeta, createNavigationModulesJson(moduleInfo)))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
-            .pipe(gulpIf(taskParameters.config.contents, createContentsJson(taskParameters, moduleInfo)))
-            .pipe(gulpIf(taskParameters.config.customPack, createLibrariesJson(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.contents, createContentsJson(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.customPack, createLibrariesJson(taskParameters, moduleInfo)))
 
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
-            .pipe(gulpIf(taskParameters.config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
-            .pipe(
-               gulpIf(
-                  taskParameters.config.dependenciesGraph || taskParameters.config.customPack ||
-                  taskParameters.config.deprecatedStaticHtml,
-                  createModuleDependenciesJson(taskParameters, moduleInfo)
-               )
-            )
+            .pipe(gulpIf(config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
+            .pipe(gulpIf(needModuleDependencies, createModuleDependenciesJson(taskParameters, moduleInfo)))
             .pipe(filterCached())
-            .pipe(gulpIf(taskParameters.config.isSourcesOutput, filterSources()))
-            .pipe(gulpIf(!taskParameters.config.sources, copySources(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.isSourcesOutput, filterSources()))
+            .pipe(gulpIf(!config.sources, copySources(taskParameters, moduleInfo)))
             .pipe(gulpChmod({ read: true, write: true }))
             .pipe(
                gulpIf(
-                  needSymlink(taskParameters.config, moduleInfo),
+                  needSymlink(config, moduleInfo),
                   gulp.symlink(moduleInfo.output),
                   gulp.dest(moduleInfo.output)
                )

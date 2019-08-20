@@ -68,8 +68,7 @@ describe('gulp/common/worker.js', () => {
                name: themeName,
                path: themes[themeName]
             },
-            gulpModulesInfo,
-            {}
+            gulpModulesInfo
          ]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
@@ -119,8 +118,7 @@ describe('gulp/common/worker.js', () => {
                name: themeName,
                path: themes[themeName]
             },
-            gulpModulesInfo,
-            {}
+            gulpModulesInfo
          ]);
          resultsBuildLess.hasOwnProperty('imports').should.equal(true);
          resultsBuildLess.hasOwnProperty('text').should.equal(true);
