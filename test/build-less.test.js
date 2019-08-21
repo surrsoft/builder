@@ -263,7 +263,7 @@ describe('build less', () => {
       checkForNewThemeType(multiTheme).should.equal(false);
       checkForNewThemeType(newTheme).should.equal(true);
    });
-   it('get correct imports for current less', () => {
+   describe('get correct imports for current less', () => {
       const oldTheme = {
          path: 'path/to/default',
          name: 'default'
@@ -282,45 +282,46 @@ describe('build less', () => {
          moduleName: 'TestModule',
          themeName: 'online'
       };
-
-      // old theme compile case - for theme less building should return empty array
-      let result = getCurrentImports('path/to/default/default.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
-      result.length.should.equal(0);
-
-      // old theme compile case - for theme with path should return correct imports list
-      result = getCurrentImports('path/to/some/less.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
-      result.length.should.equal(3);
-      result.should.have.members([
-         '@import \'path/to/default/default\';',
-         '@import \'Controls-theme/themes/default/helpers/_mixins\';',
-         '@themeName: default;'
-      ]);
-
-      // old theme compile case - for theme without path should return correct imports list without errors
-      result = getCurrentImports('path/to/some/less.less', oldThemeWithoutPath, gulpModulesInfo.gulpModulesPaths);
-      result.length.should.equal(3);
-      result.should.have.members([
-         '@import \'Controls-theme/themes/default/default\';',
-         '@import \'Controls-theme/themes/default/helpers/_mixins\';',
-         '@themeName: default;'
-      ]);
-
-      /**
-       * old theme compile case - for theme with custom variables from 'controls-theme'
-       * should return controls-theme variables in imports instead of variables of current theme.
-       * Actual for old theme compiling in projects, that have 2 default themes - online(old theme in SBIS3.CONTROLS)
-       * and default(multi theme in Controls-theme)
-       */
-      result = getCurrentImports('path/to/some/less.less', oldThemeWithCustomVariables, gulpModulesInfo.gulpModulesPaths);
-      result.length.should.equal(3);
-      result.should.have.members([
-         '@import \'Controls-theme/themes/default/default\';',
-         '@import \'Controls-theme/themes/default/helpers/_mixins\';',
-         '@themeName: online;'
-      ]);
-
-      // new theme compile case - should return empty array
-      result = getCurrentImports('path/to/some/less.less', newTheme, gulpModulesInfo.gulpModulesPaths);
-      result.length.should.equal(0);
+      it('old theme - for theme less building should return empty array', () => {
+         const result = getCurrentImports('path/to/default/default.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(0);
+      });
+      it('old theme - for theme with path should return correct imports list', () => {
+         const result = getCurrentImports('path/to/some/less.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'path/to/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: default;'
+         ]);
+      });
+      it('old theme - for theme without path should return correct imports list without errors', () => {
+         const result = getCurrentImports('path/to/some/less.less', oldThemeWithoutPath, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'Controls-theme/themes/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: default;'
+         ]);
+      });
+      it('old theme - for theme with custom variables', () => {
+         /**
+          * old theme - for theme with custom variables from 'controls-theme'
+          * should return controls-theme variables in imports instead of variables of current theme.
+          * Actual for old theme compiling in projects, that have 2 default themes - online(old theme in SBIS3.CONTROLS)
+          * and default(multi theme in Controls-theme)
+          */
+         const result = getCurrentImports('path/to/some/less.less', oldThemeWithCustomVariables, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'Controls-theme/themes/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: online;'
+         ]);
+      });
+      it('new theme - should return empty array', () => {
+         const result = getCurrentImports('path/to/some/less.less', newTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(0);
+      });
    });
 });
