@@ -1,7 +1,6 @@
 /**
- * Плагин архивации файлов с помощью gzip.
- * Генерирует в поток gzip файлы, но не пропускает через себя все остальные файлы, чтобы не перезаписывать лишинй раз.
- * @author Бегунов Ал. В.
+ * Gulp plugin for files compress to brotli.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';
@@ -42,6 +41,10 @@ module.exports = function declarePlugin(moduleInfo) {
                return;
             }
 
+            if (file.extname === '.gz') {
+               callback(null, file);
+               return;
+            }
             if (!includeExts.includes(file.extname)) {
                callback();
                return;
@@ -54,11 +57,10 @@ module.exports = function declarePlugin(moduleInfo) {
                }
             }
 
-            const gzippedContent = await promiseWithTimeout(helpers.gzip(file.contents), 90000);
-            const newFile = file.clone();
-            newFile.path = `${file.path}.gz`;
-            newFile.contents = Buffer.from(gzippedContent);
-            this.push(newFile);
+            const brotliContent = await promiseWithTimeout(helpers.brotli(file.contents), 90000);
+            file.path = `${file.path}.br`;
+            file.contents = Buffer.from(brotliContent);
+            this.push(file);
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",
@@ -67,7 +69,7 @@ module.exports = function declarePlugin(moduleInfo) {
                filePath: file.path
             });
          }
-         callback(null, file);
+         callback();
       }
    );
 };

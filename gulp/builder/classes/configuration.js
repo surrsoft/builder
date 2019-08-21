@@ -92,8 +92,8 @@ class BuildConfiguration {
       // generate project dependencies tree meta
       this.dependenciesGraph = false;
 
-      // compress sources to gzip format
-      this.gzip = false;
+      // compress sources to gzip and brotli formats
+      this.compress = false;
 
       // compile themed styles
       this.themes = false;
@@ -186,9 +186,9 @@ class BuildConfiguration {
          this.dependenciesGraph = this.rawConfig.dependenciesGraph;
       }
 
-      // gzip flag
-      if (this.rawConfig.hasOwnProperty('gzip') && typeof this.rawConfig.gzip === 'boolean') {
-         this.gzip = this.rawConfig.gzip;
+      // compress flag
+      if (this.rawConfig.hasOwnProperty('compress') && typeof this.rawConfig.compress === 'boolean') {
+         this.compress = this.rawConfig.compress;
       }
 
       // themes flag
