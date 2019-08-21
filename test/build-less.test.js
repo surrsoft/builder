@@ -50,6 +50,15 @@ describe('build less', () => {
       result.imports.length.should.equal(2);
       result.text.should.equal('');
    });
+   it('theme less', async() => {
+      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online/online.less'));
+      const text = '';
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+
+      // compiled theme less must not have any imports
+      result.imports.length.should.equal(0);
+      result.text.should.equal('');
+   });
    it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
