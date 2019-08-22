@@ -15,7 +15,8 @@ const
       processLessFile,
       resolveThemeName,
       buildLess,
-      getThemeImport
+      getThemeImport,
+      getCurrentImports
    } = require('../lib/build-less');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
@@ -49,6 +50,15 @@ describe('build less', () => {
       const text = '';
       const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo);
       result.imports.length.should.equal(2);
+      result.text.should.equal('');
+   });
+   it('theme less', async() => {
+      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online/online.less'));
+      const text = '';
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+
+      // compiled theme less must not have any imports
+      result.imports.length.should.equal(0);
       result.text.should.equal('');
    });
    it('less with defau`lt theme', async() => {
@@ -276,5 +286,66 @@ describe('build less', () => {
       };
       checkForNewThemeType(multiTheme).should.equal(false);
       checkForNewThemeType(newTheme).should.equal(true);
+   });
+   describe('get correct imports for current less', () => {
+      const oldTheme = {
+         path: 'path/to/default',
+         name: 'default'
+      };
+      const oldThemeWithCustomVariables = {
+         path: 'path/to/online',
+         name: 'online',
+         isDefault: true,
+         variablesFromLessConfig: 'Controls-theme'
+      };
+      const oldThemeWithoutPath = {
+         name: 'default'
+      };
+      const newTheme = {
+         type: 'new',
+         moduleName: 'TestModule',
+         themeName: 'online'
+      };
+      it('old theme - for theme less building should return empty array', () => {
+         const result = getCurrentImports('path/to/default/default.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(0);
+      });
+      it('old theme - for theme with path should return correct imports list', () => {
+         const result = getCurrentImports('path/to/some/less.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'path/to/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: default;'
+         ]);
+      });
+      it('old theme - for theme without path should return correct imports list without errors', () => {
+         const result = getCurrentImports('path/to/some/less.less', oldThemeWithoutPath, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'Controls-theme/themes/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: default;'
+         ]);
+      });
+      it('old theme - for theme with custom variables', () => {
+         /**
+          * old theme - for theme with custom variables from 'controls-theme'
+          * should return controls-theme variables in imports instead of variables of current theme.
+          * Actual for old theme compiling in projects, that have 2 default themes - online(old theme in SBIS3.CONTROLS)
+          * and default(multi theme in Controls-theme)
+          */
+         const result = getCurrentImports('path/to/some/less.less', oldThemeWithCustomVariables, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'Controls-theme/themes/default/default\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: online;'
+         ]);
+      });
+      it('new theme - should return empty array', () => {
+         const result = getCurrentImports('path/to/some/less.less', newTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(0);
+      });
    });
 });
