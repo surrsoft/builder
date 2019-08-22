@@ -1,14 +1,14 @@
 /**
- * Gulp plugin for files compress to brotli.
- * @author Kolbeshin F.A.
+ * Плагин архивации файлов с помощью gzip.
+ * Генерирует в поток gzip файлы, но не пропускает через себя все остальные файлы, чтобы не перезаписывать лишинй раз.
+ * @author Бегунов Ал. В.
  */
 
 'use strict';
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
-   { promiseWithTimeout } = require('../../../lib/promise-with-timeout');
+   execInPool = require('../../common/exec-in-pool');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
@@ -30,7 +30,7 @@ const excludeRegexes = [
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -41,10 +41,6 @@ module.exports = function declarePlugin(moduleInfo) {
                return;
             }
 
-            if (file.extname === '.gz') {
-               callback(null, file);
-               return;
-            }
             if (!includeExts.includes(file.extname)) {
                callback();
                return;
@@ -57,10 +53,29 @@ module.exports = function declarePlugin(moduleInfo) {
                }
             }
 
-            const brotliContent = await promiseWithTimeout(helpers.brotli(file.contents), 90000);
-            file.path = `${file.path}.br`;
-            file.contents = Buffer.from(brotliContent);
-            this.push(file);
+            const [error, result] = await execInPool(
+               taskParameters.pool,
+               'compress',
+               [file.contents.toString()],
+               file.path,
+               moduleInfo
+            );
+            if (error) {
+               logger.error({
+                  message: 'Ошибка при архивации',
+                  error,
+                  moduleInfo,
+                  filePath: file.path
+               });
+            } else {
+               const newFile = file.clone();
+               newFile.path = `${file.path}.gz`;
+               newFile.contents = Buffer.from(result.gzip);
+               this.push(newFile);
+               file.path = `${file.path}.br`;
+               file.contents = Buffer.from(result.brotli);
+               this.push(file);
+            }
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",
@@ -69,7 +84,7 @@ module.exports = function declarePlugin(moduleInfo) {
                filePath: file.path
             });
          }
-         callback();
+         callback(null, file);
       }
    );
 };

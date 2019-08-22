@@ -9,8 +9,7 @@ const gulp = require('gulp'),
    path = require('path'),
    plumber = require('gulp-plumber');
 
-const gzipPlugin = require('../plugins/gzip'),
-   brotliPlugin = require('../plugins/brotli'),
+const compressPlugin = require('../plugins/compress'),
    logger = require('../../../lib/logger').logger();
 
 /**
@@ -46,8 +45,7 @@ function generateTaskForCompress(taskParameters) {
                   }
                })
             )
-            .pipe(gzipPlugin(moduleInfo))
-            .pipe(brotliPlugin(moduleInfo))
+            .pipe(compressPlugin(taskParameters, moduleInfo))
             .pipe(gulp.dest(moduleOutput));
       };
    });
