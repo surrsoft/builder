@@ -115,83 +115,23 @@ class BuildConfiguration {
 
       // clear output directory
       this.clearOutput = true;
+
+      // enable autoprefixer postprocessor in less compiler
+      this.autoprefixer = true;
    }
 
    /**
     * Configuring all common flags for Builder plugins
     */
    configureBuildFlags() {
-      // typescript flag
-      if (this.rawConfig.hasOwnProperty('typescript') && typeof this.rawConfig.typescript === 'boolean') {
-         this.typescript = this.rawConfig.typescript;
-      }
+      // write all bool parameters of readed config. Builder will use only known flags.
+      Object.keys(this.rawConfig).forEach((currentOption) => {
+         if (this.rawConfig.hasOwnProperty(currentOption) && typeof this.rawConfig[currentOption] === 'boolean') {
+            this[currentOption] = this.rawConfig[currentOption];
+         }
+      });
 
-      // less flag
-      if (this.rawConfig.hasOwnProperty('less') && typeof this.rawConfig.less === 'boolean') {
-         this.less = this.rawConfig.less;
-      }
-
-      // presentationServiceMeta flag
-      if (this.rawConfig.hasOwnProperty('presentationServiceMeta') && typeof this.rawConfig.presentationServiceMeta === 'boolean') {
-         this.presentationServiceMeta = this.rawConfig.presentationServiceMeta;
-      }
-
-      // contents flag
-      if (this.rawConfig.hasOwnProperty('contents') && typeof this.rawConfig.contents === 'boolean') {
-         this.contents = this.rawConfig.contents;
-      }
-
-      // htmlWml flag
-      if (this.rawConfig.hasOwnProperty('htmlWml') && typeof this.rawConfig.htmlWml === 'boolean') {
-         this.htmlWml = this.rawConfig.htmlWml;
-      }
-
-      // wml flag
-      if (this.rawConfig.hasOwnProperty('wml') && typeof this.rawConfig.wml === 'boolean') {
-         this.wml = this.rawConfig.wml;
-      }
-
-      // deprecatedWebPageTemplates flag
-      if (this.rawConfig.hasOwnProperty('deprecatedWebPageTemplates') && typeof this.rawConfig.deprecatedWebPageTemplates === 'boolean') {
-         this.deprecatedWebPageTemplates = this.rawConfig.deprecatedWebPageTemplates;
-      }
-
-      // deprecatedXhtml flag
-      if (this.rawConfig.hasOwnProperty('deprecatedXhtml') && typeof this.rawConfig.deprecatedXhtml === 'boolean') {
-         this.deprecatedXhtml = this.rawConfig.deprecatedXhtml;
-      }
-
-      // deprecatedOwnDependencies flag
-      if (this.rawConfig.hasOwnProperty('deprecatedOwnDependencies') && typeof this.rawConfig.deprecatedOwnDependencies === 'boolean') {
-         this.deprecatedOwnDependencies = this.rawConfig.deprecatedOwnDependencies;
-      }
-
-      // deprecatedStaticHtml
-      if (this.rawConfig.hasOwnProperty('deprecatedStaticHtml') && typeof this.rawConfig.deprecatedStaticHtml === 'boolean') {
-         this.deprecatedStaticHtml = this.rawConfig.deprecatedStaticHtml;
-      }
-
-      // minimize flag
-      if (this.rawConfig.hasOwnProperty('minimize') && typeof this.rawConfig.minimize === 'boolean') {
-         this.minimize = this.rawConfig.minimize;
-      }
-
-      // customPack flag
-      if (this.rawConfig.hasOwnProperty('customPack') && typeof this.rawConfig.customPack === 'boolean') {
-         this.customPack = this.rawConfig.customPack;
-      }
-
-      // dependenciesGraph flag
-      if (this.rawConfig.hasOwnProperty('dependenciesGraph') && typeof this.rawConfig.dependenciesGraph === 'boolean') {
-         this.dependenciesGraph = this.rawConfig.dependenciesGraph;
-      }
-
-      // gzip flag
-      if (this.rawConfig.hasOwnProperty('gzip') && typeof this.rawConfig.gzip === 'boolean') {
-         this.gzip = this.rawConfig.gzip;
-      }
-
-      // themes flag
+      // themes flag - input value can be boolean or array
       if (this.rawConfig.hasOwnProperty('themes')) {
          const { themes } = this.rawConfig;
          if (typeof themes === 'boolean' || themes instanceof Array === true) {
@@ -199,34 +139,21 @@ class BuildConfiguration {
          }
       }
 
-      // source flag
-      if (this.rawConfig.hasOwnProperty('sources') && typeof this.rawConfig.sources === 'boolean') {
-         this.sources = this.rawConfig.sources;
-      }
-
-      // joinedMeta flag
-      if (this.rawConfig.hasOwnProperty('joinedMeta') && typeof this.rawConfig.joinedMeta === 'boolean') {
-         this.joinedMeta = this.rawConfig.joinedMeta;
-      }
-
-      // tsc flag
-      if (this.rawConfig.hasOwnProperty('tsc') && typeof this.rawConfig.tsc === 'boolean') {
-         this.tsc = this.rawConfig.tsc;
-      }
-
-      // resourcesUrl flag
-      if (this.rawConfig.hasOwnProperty('resourcesUrl') && typeof this.rawConfig.resourcesUrl === 'boolean') {
-         this.resourcesUrl = this.rawConfig.resourcesUrl;
-      }
-
-      // resourcesUrl flag
-      if (this.rawConfig.hasOwnProperty('symlinks') && typeof this.rawConfig.symlinks === 'boolean') {
-         this.symlinks = this.rawConfig.symlinks;
-      }
-
-      // clearOutput flag
-      if (this.rawConfig.hasOwnProperty('clearOutput') && typeof this.rawConfig.clearOutput === 'boolean') {
-         this.clearOutput = this.rawConfig.clearOutput;
+      // autoprefixer option - input value can be bollean or object
+      if (this.rawConfig.hasOwnProperty('autoprefixer')) {
+         const { autoprefixer } = this.rawConfig;
+         switch (typeof autoprefixer) {
+            case 'boolean':
+               this.autoprefixer = autoprefixer;
+               break;
+            case 'object':
+               if (!(autoprefixer instanceof Array)) {
+                  this.autoprefixer = autoprefixer;
+               }
+               break;
+            default:
+               break;
+         }
       }
    }
 

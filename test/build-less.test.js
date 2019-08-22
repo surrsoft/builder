@@ -4,6 +4,7 @@
 const initTest = require('./init-test');
 const { parseCurrentModuleName } = require('../gulp/builder/generate-task/collect-style-themes');
 const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
+const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
 const assert = require('assert');
 const
    path = require('path'),
@@ -47,7 +48,7 @@ describe('build less', () => {
    it('empty less', async() => {
       const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
       const text = '';
-      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal('');
    });
@@ -63,7 +64,7 @@ describe('build less', () => {
    it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
-      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
@@ -74,7 +75,13 @@ describe('build less', () => {
          '      grid-template-columns: 1fr 1fr;\n' +
          '      grid-template-rows: auto;\n' +
          '}';
-      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo, {});
+      const result = await processLessFile(
+         text,
+         filePath,
+         defaultModuleThemeObject,
+         gulpModulesInfo,
+         defaultAutoprefixerOptions
+      );
       result.imports.length.should.equal(2);
       result.text.should.equal(
          '.test-prefixes {\n' +
@@ -87,6 +94,23 @@ describe('build less', () => {
          '}\n'
       );
    });
+   it('less with grids: without prefixes if autoprefixer disabled', async() => {
+      const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
+      const text = '.test-prefixes {\n' +
+         '      display: grid;\n' +
+         '      grid-template-columns: 1fr 1fr;\n' +
+         '      grid-template-rows: auto;\n' +
+         '}';
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo);
+      result.imports.length.should.equal(2);
+      result.text.should.equal(
+         '.test-prefixes {\n' +
+         '  display: grid;\n' +
+         '  grid-template-columns: 1fr 1fr;\n' +
+         '  grid-template-rows: auto;\n' +
+         '}\n'
+      );
+   });
    it('less from retail', async() => {
       const retailModulePath = helpers.prettifyPath(path.join(workspaceFolder, 'Retail'));
       const filePath = helpers.prettifyPath(path.join(retailModulePath, 'bla/bla/long/path/test.less'));
@@ -95,7 +119,7 @@ describe('build less', () => {
       const result = await processLessFile(text, filePath, {
          name: themeName,
          path: themes[themeName]
-      }, gulpModulesInfo, {});
+      }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
    });
@@ -107,7 +131,7 @@ describe('build less', () => {
       const result = await processLessFile(text, filePath, {
          name: 'presto',
          path: themes[themeName]
-      }, gulpModulesInfo, {});
+      }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
    });
@@ -118,7 +142,7 @@ describe('build less', () => {
       const result = await processLessFile(text, filePath, {
          name: themeName,
          path: themes[themeName]
-      }, gulpModulesInfo, {});
+      }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
    });
@@ -131,7 +155,7 @@ describe('build less', () => {
       const result = await processLessFile(text, filePath, {
          name: themeName,
          path: themes[themeName]
-      }, gulpModulesInfo, {});
+      }, gulpModulesInfo);
       const errorMessage = result.error.replace(/\\/g, '/');
       return lib
          .trimLessError(errorMessage)
@@ -184,7 +208,7 @@ describe('build less', () => {
       const result = await processLessFile(text, filePath, {
          name: themeName,
          path: themes[themeName]
-      }, gulpModulesInfo, {});
+      }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
