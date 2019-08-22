@@ -142,6 +142,20 @@ describe('gulp/builder/generate-workflow.js', () => {
          'css!Модуль/Stable'
       ]);
 
+      const stableCss = await fs.readFile(path.join(moduleOutputFolder, 'Stable.css'), 'utf8');
+
+      // autoprefixer enabled by default, so css result must have all needed prefixes
+      stableCss.replace(/\n$/, '').should.equal('.test-selector {\n' +
+         '  test-mixin: \'mixin there\';\n' +
+         '  test-var: \'it is online\';\n' +
+         '  display: -ms-grid;\n' +
+         '  display: grid;\n' +
+         '  -ms-grid-columns: 1fr 1fr;\n' +
+         '  grid-template-columns: 1fr 1fr;\n' +
+         '  -ms-grid-rows: auto;\n' +
+         '  grid-template-rows: auto;\n' +
+         '}');
+
       // изменим "исходники"
       await timeoutForMacOS();
       await fs.rename(
