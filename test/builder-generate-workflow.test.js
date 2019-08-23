@@ -526,7 +526,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForChange.js',
          'ForChange_old.html',
          'ForRename_old.js',
