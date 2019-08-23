@@ -182,7 +182,13 @@ try {
       return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
    }
 
+   /**
+    * Get compressed in gzip and brotli data for current text
+    * @param{String} data - source text
+    * @returns {Promise<{brotli: *, gzip: *}>}
+    */
    async function compress(data) {
+      // convert string to buffer. Brotli library can take only buffer as input.
       const dataBuffer = Buffer.from(data);
       const gzippedContent = await gzip(dataBuffer);
       const brotliContent = await brotli(dataBuffer);
