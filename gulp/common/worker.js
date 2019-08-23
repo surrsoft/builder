@@ -182,6 +182,11 @@ try {
       return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
    }
 
+   /**
+    * Get compressed in gzip and brotli for current data.
+    * @param{String} data current text
+    * @returns {Promise<{brotli: (any|*), gzip: any}>}
+    */
    async function compress(data) {
       const dataBuffer = Buffer.from(data);
       const gzippedContent = await gzip(dataBuffer);
