@@ -48,7 +48,7 @@ const runWorkflow = function() {
    });
 };
 
-const brotliDecompress = (data) => {
+const brotliDecompress = function(data) {
    return new Promise((resolve, reject) => {
       decompress(data, (err, decompressed) => {
          if (err) {
@@ -1203,6 +1203,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultFiles.should.have.members([
          '.builder',
          'Page.min.wml',
+         'Page.min.wml.br',
+         'Page.min.wml.gz',
          'Page.wml',
          'Stable.css',
          'Stable.less',

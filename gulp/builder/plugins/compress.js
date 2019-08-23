@@ -10,7 +10,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../common/exec-in-pool');
 
-const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
+const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf', '.eot'];
 
 const excludeRegexes = [
    /.*\.routes\.js$/,
