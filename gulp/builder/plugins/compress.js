@@ -84,7 +84,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.path
             });
          }
-         callback(null, file);
+         callback();
       }
    );
 };
