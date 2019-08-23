@@ -9,7 +9,7 @@ const gulp = require('gulp'),
    path = require('path'),
    plumber = require('gulp-plumber');
 
-const gzipPlugin = require('../plugins/gzip'),
+const compressPlugin = require('../plugins/compress'),
    logger = require('../../../lib/logger').logger();
 
 /**
@@ -17,9 +17,9 @@ const gzipPlugin = require('../plugins/gzip'),
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForGzip(taskParameters) {
-   if (!taskParameters.config.gzip) {
-      return function skipGzip(done) {
+function generateTaskForCompress(taskParameters) {
+   if (!taskParameters.config.compress) {
+      return function skipCompress(done) {
          done();
       };
    }
@@ -27,17 +27,17 @@ function generateTaskForGzip(taskParameters) {
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
 
-      // интересны именно файлы на первом уровне вложенности в модулях
-      const input = path.join(moduleOutput, '/**/*.*');
+      // generate compressed resources only for minified content and fonts.
+      const input = path.join(moduleOutput, '/**/*.+(min.*|woff2|woff|eot)');
 
-      return function gzip() {
+      return function compress() {
          return gulp
             .src(input, { dot: false, nodir: true })
             .pipe(
                plumber({
                   errorHandler(err) {
                      logger.error({
-                        message: 'Задача gzip завершилась с ошибкой',
+                        message: 'Задача compress завершилась с ошибкой',
                         error: err,
                         moduleInfo
                      });
@@ -45,7 +45,7 @@ function generateTaskForGzip(taskParameters) {
                   }
                })
             )
-            .pipe(gzipPlugin(moduleInfo))
+            .pipe(compressPlugin(taskParameters, moduleInfo))
             .pipe(gulp.dest(moduleOutput));
       };
    });
@@ -53,4 +53,4 @@ function generateTaskForGzip(taskParameters) {
    return gulp.parallel(tasks);
 }
 
-module.exports = generateTaskForGzip;
+module.exports = generateTaskForCompress;

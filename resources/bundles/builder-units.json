@@ -1,4 +1,5 @@
 [
   "resources/superbundle-for-builder-tests.package.min",
+  "resources/Modul/test-brotli.package.min",
   "resources/InterfaceModule1/interfacemodule1.package.min"
 ]

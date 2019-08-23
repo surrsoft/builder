@@ -52,7 +52,8 @@
       "saby-units": "git+https://github.com/saby/Units.git#rc-19.610",
       "uglify-js": "3.3.23",
       "vinyl": "2.2.0",
-      "workerpool": "2.3.0"
+      "workerpool": "2.3.0",
+      "iltorb": "2.4.3"
    },
    "devDependencies": {
       "@tensor-corp/eslint-config": "2.0.3",
