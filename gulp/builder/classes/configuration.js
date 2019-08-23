@@ -92,8 +92,8 @@ class BuildConfiguration {
       // generate project dependencies tree meta
       this.dependenciesGraph = false;
 
-      // compress sources to gzip format
-      this.gzip = false;
+      // compress sources to gzip and brotli formats
+      this.compress = false;
 
       // compile themed styles
       this.themes = false;

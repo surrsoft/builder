@@ -1,6 +1,11 @@
-{
+[{
   "include": [
     "Modul/*"
   ],
   "output": "test.package.js"
-}
+}, {
+  "include": [
+    "Modul/*"
+  ],
+  "output": "test-brotli.package.js"
+}]
