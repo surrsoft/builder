@@ -5,7 +5,8 @@ const initTest = require('./init-test');
 const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
-   helpers = require('../lib/helpers');
+   helpers = require('../lib/helpers'),
+   { decompress } = require('iltorb');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
@@ -42,6 +43,18 @@ const runWorkflow = function() {
             reject(error);
          } else {
             resolve();
+         }
+      });
+   });
+};
+
+const brotliDecompress = (data) => {
+   return new Promise((resolve, reject) => {
+      decompress(data, (err, decompressed) => {
+         if (err) {
+            reject(err);
+         } else {
+            resolve(decompressed);
          }
       });
    });
@@ -1107,6 +1120,100 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       currentJsPackage.toString().should.equal(sourceJsPackage.toString());
       currentCssPackage.toString().should.equal(sourceCssPackage.toString());
+      await clearWorkspace();
+   });
+
+   it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/custompack');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         less: true,
+         themes: true,
+         minimize: true,
+         wml: true,
+         builderTests: true,
+         customPack: true,
+         compress: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflow();
+
+      const resultFiles = await fs.readdir(moduleOutputFolder);
+
+      // output directory must have brotli and gzip files, only for minified files and packages.
+      resultFiles.should.have.members([
+         '.builder',
+         'Page.min.wml',
+         'Page.wml',
+         'Stable.css',
+         'Stable.less',
+         'Stable.min.css',
+         'Stable.min.css.br',
+         'Stable.min.css.gz',
+         'bundles.json',
+         'bundlesRoute.json',
+         'pack.package.json',
+         'test-brotli.package.min.css',
+         'test-brotli.package.min.css.br',
+         'test-brotli.package.min.css.gz',
+         'test-brotli.package.min.js',
+         'test-brotli.package.min.js.br',
+         'test-brotli.package.min.js.gz',
+         'themes.config.json',
+         'themes.config.json.js',
+         'themes.config.json.min.js',
+         'themes.config.json.min.js.br',
+         'themes.config.json.min.js.gz',
+         'themes.config.min.json',
+         'themes.config.min.json.br',
+         'themes.config.min.json.gz'
+      ]);
+
+      const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
+      const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
+      const cssDecompressed = await brotliDecompress(cssBrotliContent);
+
+      // decompressed brotli must be equal source css content
+      cssDecompressed.toString().should.equal(cssContent.toString());
+
       await clearWorkspace();
    });
 
