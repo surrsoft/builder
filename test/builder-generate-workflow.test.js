@@ -48,7 +48,7 @@ const runWorkflow = function() {
    });
 };
 
-const brotliDecompress = (data) => {
+const brotliDecompress = function(data) {
    return new Promise((resolve, reject) => {
       decompress(data, (err, decompressed) => {
          if (err) {
