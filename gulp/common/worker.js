@@ -81,7 +81,8 @@ try {
       runMinifyXhtmlAndHtml = require('../../lib/run-minify-xhtml-and-html'),
       uglifyJs = require('../../lib/run-uglify-js'),
       { wrapWorkerFunction } = require('./helpers'),
-      { packLibrary } = require('../../lib/pack/library-packer');
+      { packLibrary } = require('../../lib/pack/library-packer'),
+      { brotli, gzip } = require('../../lib/helpers');
 
    let componentsProperties;
 
@@ -181,6 +182,16 @@ try {
       return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);
    }
 
+   async function compress(data) {
+      const dataBuffer = Buffer.from(data);
+      const gzippedContent = await gzip(dataBuffer);
+      const brotliContent = await brotli(dataBuffer);
+      return {
+         gzip: gzippedContent,
+         brotli: brotliContent
+      };
+   }
+
    workerPool.worker({
       parseJsComponent: wrapWorkerFunction(parseJsComponent),
       parseRoutes: wrapWorkerFunction(processingRoutes.parseRoutes),
@@ -193,6 +204,7 @@ try {
       minifyCss: wrapWorkerFunction(runMinifyCss),
       minifyXhtmlAndHtml: wrapWorkerFunction(runMinifyXhtmlAndHtml),
       uglifyJs: wrapWorkerFunction(uglifyJs),
+      compress: wrapWorkerFunction(compress),
       collectWords: wrapWorkerFunction(collectWords),
       packLibrary: wrapWorkerFunction(packLibrary)
    });

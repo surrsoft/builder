@@ -8,8 +8,7 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   helpers = require('../../../lib/helpers'),
-   { promiseWithTimeout } = require('../../../lib/promise-with-timeout');
+   execInPool = require('../../common/exec-in-pool');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.woff', '.ttf', '.eot'];
 
@@ -31,7 +30,7 @@ const excludeRegexes = [
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
 
       /* @this Stream */
@@ -54,10 +53,29 @@ module.exports = function declarePlugin(moduleInfo) {
                }
             }
 
-            file.path = `${file.path}.gz`;
-            const gzippedContent = await promiseWithTimeout(helpers.gzip(file.contents), 90000);
-            file.contents = Buffer.from(gzippedContent);
-            this.push(file);
+            const [error, result] = await execInPool(
+               taskParameters.pool,
+               'compress',
+               [file.contents.toString()],
+               file.path,
+               moduleInfo
+            );
+            if (error) {
+               logger.error({
+                  message: 'Ошибка при архивации',
+                  error,
+                  moduleInfo,
+                  filePath: file.path
+               });
+            } else {
+               const newFile = file.clone();
+               newFile.path = `${file.path}.gz`;
+               newFile.contents = Buffer.from(result.gzip);
+               this.push(newFile);
+               file.path = `${file.path}.br`;
+               file.contents = Buffer.from(result.brotli);
+               this.push(file);
+            }
          } catch (error) {
             logger.error({
                message: "Ошибка builder'а при архивации",
