@@ -7,15 +7,16 @@
 
 'use strict';
 
+const NODE_VERSION = '10.14.2';
 const getLogsLevel = require('./lib/get-log-level');
 const semver = require('semver');
 
 try {
    // В самом начале проверим версию node. используем минимум возможностей node.js и ES6
-   if (!semver.satisfies(process.versions.node, '>=10.14.2')) {
+   if (!semver.satisfies(process.versions.node, `>=${NODE_VERSION}`)) {
       // не рискуем выводить через logger
       // eslint-disable-next-line no-console
-      console.log('[00:00:00] [ERROR] Для запуска требуется Node.js v10.14.2 или выше');
+      console.log(`[00:00:00] [ERROR] Для запуска требуется Node.js v${NODE_VERSION} или выше`);
       process.exit(1);
    }
 
