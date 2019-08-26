@@ -8,7 +8,8 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool'),
+   { isWindows } = require('../../../lib/builder-constants');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf', '.eot'];
 
@@ -56,7 +57,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
-               [file.contents.toString()],
+               [file.contents.toString(), isWindows],
                file.path,
                moduleInfo
             );
@@ -72,9 +73,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                newFile.path = `${file.path}.gz`;
                newFile.contents = Buffer.from(result.gzip);
                this.push(newFile);
-               file.path = `${file.path}.br`;
-               file.contents = Buffer.from(result.brotli);
-               this.push(file);
+
+               /**
+                * in windows OS at the current moment brotli is not supported by
+                * native libraries. iltorb requires in windows third-party dev-tools
+                * for properly work. Support for windows will be added later with native
+                * Node.Js brotli compiler - was added in Node.Js 11.7+, LTS-version will be
+                * released in 22 october 2019.
+                * TODO add windows support with native node.js brotli compiler as soon as LTS-version
+                * of Node.js 12 will be released https://nodejs.org/en/about/releases/
+                */
+               if (!isWindows) {
+                  file.path = `${file.path}.br`;
+                  file.contents = Buffer.from(result.brotli);
+                  this.push(file);
+               }
             }
          } catch (error) {
             logger.error({
