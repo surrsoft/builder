@@ -1198,44 +1198,53 @@ describe('gulp/builder/generate-workflow.js', () => {
       await runWorkflow();
 
       const resultFiles = await fs.readdir(moduleOutputFolder);
-
-      // output directory must have brotli and gzip files, only for minified files and packages.
-      resultFiles.should.have.members([
+      let correctMembers = [
          '.builder',
          'Page.min.wml',
-         'Page.min.wml.br',
          'Page.min.wml.gz',
          'Page.wml',
          'Stable.css',
          'Stable.less',
          'Stable.min.css',
-         'Stable.min.css.br',
          'Stable.min.css.gz',
          'bundles.json',
          'bundlesRoute.json',
          'pack.package.json',
          'test-brotli.package.min.css',
-         'test-brotli.package.min.css.br',
          'test-brotli.package.min.css.gz',
          'test-brotli.package.min.js',
-         'test-brotli.package.min.js.br',
          'test-brotli.package.min.js.gz',
          'themes.config.json',
          'themes.config.json.js',
          'themes.config.json.min.js',
-         'themes.config.json.min.js.br',
          'themes.config.json.min.js.gz',
          'themes.config.min.json',
-         'themes.config.min.json.br',
          'themes.config.min.json.gz'
-      ]);
+      ];
 
-      const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
-      const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
-      const cssDecompressed = await brotliDecompress(cssBrotliContent);
+      const isWindows = process.platform === 'win32';
+      if (!isWindows) {
+         correctMembers = correctMembers.concat([
+            'Page.min.wml.br',
+            'Stable.min.css.br',
+            'test-brotli.package.min.css.br',
+            'test-brotli.package.min.js.br',
+            'themes.config.json.min.js.br',
+            'themes.config.min.json.br'
+         ]);
+      }
 
-      // decompressed brotli must be equal source css content
-      cssDecompressed.toString().should.equal(cssContent.toString());
+      // output directory must have brotli(except windows os) and gzip files, only for minified files and packages.
+      resultFiles.should.have.members(correctMembers);
+
+      if (!isWindows) {
+         const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
+         const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
+         const cssDecompressed = await brotliDecompress(cssBrotliContent);
+
+         // decompressed brotli must be equal source css content
+         cssDecompressed.toString().should.equal(cssContent.toString());
+      }
 
       await clearWorkspace();
    });
