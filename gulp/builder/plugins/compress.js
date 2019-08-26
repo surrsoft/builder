@@ -8,7 +8,8 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool');
+   execInPool = require('../../common/exec-in-pool'),
+   { isWindows } = require('../../../lib/builder-constants');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf', '.eot'];
 
@@ -31,7 +32,6 @@ const excludeRegexes = [
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
-   const isWin = process.platform === 'win32';
    return through.obj(
 
       /* @this Stream */
@@ -57,7 +57,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
-               [file.contents.toString(), isWin],
+               [file.contents.toString(), isWindows],
                file.path,
                moduleInfo
             );
@@ -83,7 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                 * TODO add windows support with native node.js brotli compiler as soon as LTS-version
                 * of Node.js 12 will be released https://nodejs.org/en/about/releases/
                 */
-               if (!isWin) {
+               if (!isWindows) {
                   file.path = `${file.path}.br`;
                   file.contents = Buffer.from(result.brotli);
                   this.push(file);

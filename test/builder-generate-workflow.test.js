@@ -6,7 +6,8 @@ const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
    helpers = require('../lib/helpers'),
-   { decompress } = require('iltorb');
+   { decompress } = require('iltorb'),
+   { isWindows } = require('../lib/builder-constants');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
@@ -1234,7 +1235,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.min.json.gz'
       ];
 
-      const isWindows = process.platform === 'win32';
       if (!isWindows) {
          correctMembers = correctMembers.concat([
             'Page.min.wml.br',
