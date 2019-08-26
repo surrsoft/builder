@@ -9,7 +9,8 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    logger = require('../../../lib/logger').logger(),
    path = require('path'),
-   helpers = require('../../../lib/helpers');
+   helpers = require('../../../lib/helpers'),
+   assert = require('assert');
 
 /**
  * Объявление плагина
@@ -60,27 +61,38 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                moduleInfo,
                compiled: true
             });
-            const
-               currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop(),
-               moduleMeta = JSON.stringify(moduleInfo.contents.modules[currentModuleName]),
-               moduleMetaContent = `define('${currentModuleName}/.builder/module',[],function(){return ${moduleMeta};});`;
-
-            const moduleMetaFile = new Vinyl({
-               path: '.builder/module.js',
-               contents: Buffer.from(moduleMetaContent),
-               moduleInfo,
-               compiled: true
-            });
-            const moduleMetaMinFile = new Vinyl({
-               path: '.builder/module.min.js',
-               contents: Buffer.from(moduleMetaContent),
-               moduleInfo,
-               compiled: true
-            });
             this.push(contentsJsFile);
             this.push(contentsJsonFile);
-            this.push(moduleMetaFile);
-            this.push(moduleMetaMinFile);
+            const
+               currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop(),
+               moduleMeta = JSON.stringify(moduleInfo.contents.modules[currentModuleName]);
+
+            /**
+             * meta for module must contain dictionary list for current Interface module. Otherwise there
+             * is no reason to save AMD-formatted meta for this interface module. I18n module must return
+             * default meta in this case
+             */
+            try {
+               assert.strictEqual({}, moduleMeta);
+               const moduleMetaContent = `define('${currentModuleName}/.builder/module',[],function(){return ${moduleMeta};});`;
+               const moduleMetaFile = new Vinyl({
+                  path: '.builder/module.js',
+                  contents: Buffer.from(moduleMetaContent),
+                  moduleInfo,
+                  compiled: true
+               });
+               const moduleMetaMinFile = new Vinyl({
+                  path: '.builder/module.min.js',
+                  contents: Buffer.from(moduleMetaContent),
+                  moduleInfo,
+                  compiled: true
+               });
+               this.push(moduleMetaFile);
+               this.push(moduleMetaMinFile);
+            } catch (err) {
+               callback(null);
+               return;
+            }
          } catch (error) {
             logger.error({
                message: "Ошибка Builder'а",
