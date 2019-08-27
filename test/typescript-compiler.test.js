@@ -13,7 +13,7 @@ describe('typescript compiler', () => {
    it('should return errors list', async() => {
       const result = await runCompilerAndCheckForErrors(workspaceFolder);
       result.should.have.members([
-         'public/publicInterface.ts(7,30): error TS1005: \'{\' expected.',
+         'public/publicInterface.ts(15,30): error TS1005: \'{\' expected.',
          'public/publicInterface.ts(8,33): error TS1005: \')\' expected.'
       ]);
    });
