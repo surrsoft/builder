@@ -1490,7 +1490,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const currentLibraryDeps = moduleDeps.links['Modul/external_public_deps'];
          currentLibraryDeps.should.have.members([
             'Modul/Modul',
-            'Modul/public/publicFunction2',
+            'Modul/public/publicInterface',
             'Modul/publicFunction1'
          ]);
          const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
@@ -1579,7 +1579,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const currentLibraryDeps = moduleDeps.links['Modul/external_public_deps'];
          currentLibraryDeps.should.have.members([
             'Modul/Modul',
-            'Modul/public/publicFunction2',
+            'Modul/public/publicInterface',
             'Modul/publicFunction1'
          ]);
          const currentLibraryPackedModules = moduleDeps.packedLibraries['Modul/external_public_deps'];
