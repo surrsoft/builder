@@ -241,6 +241,31 @@ describe('custompack', () => {
 
       await fs.remove(resultToRead);
    });
+
+   it('bundlesRoute for current package must have style even if it was excluded in another package', async() => {
+      let result;
+      try {
+         const config = await fs.readJson(path.join(applicationRoot, 'configs/exclude-module.package.json'));
+         const configsArray = packHelpers.getConfigsFromPackageJson(
+            path.normalize('configs/exclude-module.package.json'),
+            config
+         );
+         const currentResult = await customPacker.generateCustomPackage(
+            depsTree,
+            root,
+            application,
+            configsArray[0],
+            customPackParameters
+         );
+         result = currentResult;
+      } catch (err) {
+         result = err;
+      }
+
+      (result instanceof Error).should.equal(false);
+      result.excludedCSS.hasOwnProperty('css!InterfaceModule3/amdModule').should.equal(false);
+      await fs.remove(path.join(applicationRoot, 'configs/exclude-module.package.min.js'));
+   });
 });
 
 async function removeResultFiles() {
