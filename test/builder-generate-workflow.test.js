@@ -1220,6 +1220,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.less',
          'Stable.min.css',
          'Stable.min.css.gz',
+         'cbuc-icons.eot',
+         'cbuc-icons.eot.gz',
          'bundles.json',
          'bundlesRoute.json',
          'pack.package.json',
