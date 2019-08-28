@@ -977,7 +977,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
-   describe('custom pack', async() => {
+   describe('custom pack', () => {
       before(async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/custompack');
          await prepareTest(fixtureFolder);
@@ -1107,8 +1107,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Stable.min.css',
             'Stable.min.css.gz',
             'cbuc-icons.eot',
-         'cbuc-icons.eot.gz',
-         'bundles.json',
+            'cbuc-icons.eot.gz',
+            'bundles.json',
             'bundlesRoute.json',
             'pack.package.json',
             'test-brotli.package.min.css',
