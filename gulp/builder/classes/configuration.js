@@ -291,17 +291,8 @@ class BuildConfiguration {
          this.urlDefaultServicePath = this.urlServicePath;
       }
 
-      /**
-       * Temporarily enable extendable bundles only for sbis plugin to avoid
-       * conflicts with existing online superbundles.
-       * @type {*|boolean}
-       */
-      this.extendBundles = this.rawConfig.cld_name && this.rawConfig.cld_name.startsWith('SbisPlugin');
       if (this.rawConfig.hasOwnProperty('builderTests')) {
          this.builderTests = this.rawConfig.builderTests;
-
-         // enable extendable in builder unit tests
-         this.extendBundles = this.rawConfig.builderTests;
       }
    }
 }
