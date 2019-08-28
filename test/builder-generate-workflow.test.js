@@ -977,276 +977,183 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
-   it('custom pack - exclude new unknown for builder packages', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/custompack');
-      await prepareTest(fixtureFolder);
-      await linkPlatform(sourceFolder);
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         less: true,
-         themes: true,
-         minimize: true,
-         wml: true,
-         builderTests: true,
-         customPack: true,
-         modules: [
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            },
-            {
-               name: 'WS.Core',
-               path: path.join(sourceFolder, 'WS.Core')
-            },
-            {
-               name: 'View',
-               path: path.join(sourceFolder, 'View')
-            },
-            {
-               name: 'Vdom',
-               path: path.join(sourceFolder, 'Vdom')
-            },
-            {
-               name: 'Router',
-               path: path.join(sourceFolder, 'Router')
-            },
-            {
-               name: 'Inferno',
-               path: path.join(sourceFolder, 'Inferno')
-            },
-            {
-               name: 'Controls',
-               path: path.join(sourceFolder, 'Controls')
-            },
-            {
-               name: 'Types',
-               path: path.join(sourceFolder, 'Types')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
+   describe('custom pack', async() => {
+      before(async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/custompack');
+         await prepareTest(fixtureFolder);
+         await linkPlatform(sourceFolder);
+         const config = {
+            cache: cacheFolder,
+            output: outputFolder,
+            less: true,
+            themes: true,
+            minimize: true,
+            wml: true,
+            builderTests: true,
+            customPack: true,
+            compress: true,
+            modules: [
+               {
+                  name: 'InterfaceModule1',
+                  path: path.join(sourceFolder, 'InterfaceModule1')
+               },
+               {
+                  name: 'InterfaceModule2',
+                  path: path.join(sourceFolder, 'InterfaceModule2')
+               },
+               {
+                  name: 'InterfaceModule3',
+                  path: path.join(sourceFolder, 'InterfaceModule3')
+               },
+               {
+                  name: 'Модуль',
+                  path: path.join(sourceFolder, 'Модуль')
+               },
+               {
+                  name: 'WS.Core',
+                  path: path.join(sourceFolder, 'WS.Core')
+               },
+               {
+                  name: 'View',
+                  path: path.join(sourceFolder, 'View')
+               },
+               {
+                  name: 'Vdom',
+                  path: path.join(sourceFolder, 'Vdom')
+               },
+               {
+                  name: 'Router',
+                  path: path.join(sourceFolder, 'Router')
+               },
+               {
+                  name: 'Inferno',
+                  path: path.join(sourceFolder, 'Inferno')
+               },
+               {
+                  name: 'Controls',
+                  path: path.join(sourceFolder, 'Controls')
+               },
+               {
+                  name: 'Types',
+                  path: path.join(sourceFolder, 'Types')
+               }
+            ]
+         };
+         await fs.writeJSON(configPath, config);
 
-      await runWorkflow();
+         await runWorkflow();
+      });
 
-      const controlsOutputFolder = path.join(outputFolder, 'Controls');
+      it('exclude new unknown for builder packages', async() => {
+         const controlsOutputFolder = path.join(outputFolder, 'Controls');
 
-      /**
-       * Controls module should have his custom packages because of bundles list in builder contains them.
-       * Custom packages from "Modul" should be ignored from custom packer
-       */
-      (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.js')).should.equal(true);
-      (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.css')).should.equal(true);
-      (await isRegularFile(moduleOutputFolder, 'test.package.min.js')).should.equal(false);
-      (await isRegularFile(moduleOutputFolder, 'test.package.min.css')).should.equal(false);
+         /**
+          * Controls module should have his custom packages because of bundles list in builder contains them.
+          * Custom packages from "Modul" should be ignored from custom packer
+          */
+         (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.js')).should.equal(true);
+         (await isRegularFile(controlsOutputFolder, 'controls-application.package.min.css')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'test.package.min.js')).should.equal(false);
+         (await isRegularFile(moduleOutputFolder, 'test.package.min.css')).should.equal(false);
+      });
+      it('generate extendable bundles', async() => {
+         const correctExtendableBundles = await fs.readJson(
+            path.join(
+               sourceFolder,
+               'extendableBundlesResults',
+               'extendableBundles.json'
+            )
+         );
+         const wsCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core', 'bundles.json'));
 
-      await clearWorkspace();
-   });
-
-   it('custom pack - generate extendable bundles', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/custompack');
-
-      await prepareTest(fixtureFolder);
-      await linkPlatform(sourceFolder);
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         less: true,
-         themes: true,
-         minimize: true,
-         wml: true,
-         builderTests: true,
-         dependenciesGraph: true,
-         customPack: true,
-         modules: [
-            {
-               name: 'InterfaceModule1',
-               path: path.join(sourceFolder, 'InterfaceModule1')
-            },
-            {
-               name: 'InterfaceModule2',
-               path: path.join(sourceFolder, 'InterfaceModule2')
-            },
-            {
-               name: 'InterfaceModule3',
-               path: path.join(sourceFolder, 'InterfaceModule3')
-            },
-            {
-               name: 'WS.Core',
-               path: path.join(sourceFolder, 'WS.Core')
-            },
-            {
-               name: 'View',
-               path: path.join(sourceFolder, 'View')
-            },
-            {
-               name: 'Vdom',
-               path: path.join(sourceFolder, 'Vdom')
-            },
-            {
-               name: 'Router',
-               path: path.join(sourceFolder, 'Router')
-            },
-            {
-               name: 'Inferno',
-               path: path.join(sourceFolder, 'Inferno')
-            },
-            {
-               name: 'Controls',
-               path: path.join(sourceFolder, 'Controls')
-            },
-            {
-               name: 'Types',
-               path: path.join(sourceFolder, 'Types')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
-
-      await runWorkflow();
-
-      const correctExtendableBundles = await fs.readJson(
-         path.join(
+         // WS.Core bundles meta must containing joined superbundle from extendable parts
+         Object.keys(correctExtendableBundles).forEach((currentKey) => {
+            wsCoreBundles.hasOwnProperty(currentKey).should.equal(true);
+            wsCoreBundles[currentKey].should.have.members(correctExtendableBundles[currentKey]);
+         });
+         const currentCssPackage = await fs.readFile(path.join(
+            outputFolder,
+            'WS.Core',
+            'superbundle-for-builder-tests.package.min.css'
+         ));
+         const sourceCssPackage = await fs.readFile(path.join(
             sourceFolder,
             'extendableBundlesResults',
-            'extendableBundles.json'
-         )
-      );
-      const wsCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core', 'bundles.json'));
+            'cssPackage.css'
+         ));
+         const currentJsPackage = await fs.readFile(path.join(
+            outputFolder,
+            'WS.Core',
+            'superbundle-for-builder-tests.package.min.js'
+         ));
+         const sourceJsPackage = await fs.readFile(path.join(
+            sourceFolder,
+            'extendableBundlesResults',
+            'jsPackage.js'
+         ));
 
-      // WS.Core bundles meta must containing joined superbundle from extendable parts
-      Object.keys(correctExtendableBundles).forEach((currentKey) => {
-         wsCoreBundles.hasOwnProperty(currentKey).should.equal(true);
-         wsCoreBundles[currentKey].should.have.members(correctExtendableBundles[currentKey]);
+         currentJsPackage.toString().should.equal(sourceJsPackage.toString());
+         currentCssPackage.toString().should.equal(sourceCssPackage.toString());
       });
-      const currentCssPackage = await fs.readFile(path.join(
-         outputFolder,
-         'WS.Core',
-         'superbundle-for-builder-tests.package.min.css'
-      ));
-      const sourceCssPackage = await fs.readFile(path.join(
-         sourceFolder,
-         'extendableBundlesResults',
-         'cssPackage.css'
-      ));
-      const currentJsPackage = await fs.readFile(path.join(
-         outputFolder,
-         'WS.Core',
-         'superbundle-for-builder-tests.package.min.js'
-      ));
-      const sourceJsPackage = await fs.readFile(path.join(
-         sourceFolder,
-         'extendableBundlesResults',
-         'jsPackage.js'
-      ));
+      it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
+         const resultFiles = await fs.readdir(moduleOutputFolder);
+         let correctMembers = [
+            '.builder',
+            'Page.min.wml',
+            'Page.min.wml.gz',
+            'Page.wml',
+            'Stable.css',
+            'Stable.less',
+            'Stable.min.css',
+            'Stable.min.css.gz',
+            'bundles.json',
+            'bundlesRoute.json',
+            'pack.package.json',
+            'test-brotli.package.min.css',
+            'test-brotli.package.min.css.gz',
+            'test-brotli.package.min.js',
+            'test-brotli.package.min.js.gz',
+            'themes.config.json',
+            'themes.config.json.js',
+            'themes.config.json.min.js',
+            'themes.config.json.min.js.gz',
+            'themes.config.min.json',
+            'themes.config.min.json.gz'
+         ];
 
-      currentJsPackage.toString().should.equal(sourceJsPackage.toString());
-      currentCssPackage.toString().should.equal(sourceCssPackage.toString());
-      await clearWorkspace();
-   });
+         if (!isWindows) {
+            correctMembers = correctMembers.concat([
+               'Page.min.wml.br',
+               'Stable.min.css.br',
+               'test-brotli.package.min.css.br',
+               'test-brotli.package.min.js.br',
+               'themes.config.json.min.js.br',
+               'themes.config.min.json.br'
+            ]);
+         }
 
-   it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/custompack');
-      await prepareTest(fixtureFolder);
-      await linkPlatform(sourceFolder);
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         less: true,
-         themes: true,
-         minimize: true,
-         wml: true,
-         builderTests: true,
-         customPack: true,
-         compress: true,
-         modules: [
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            },
-            {
-               name: 'WS.Core',
-               path: path.join(sourceFolder, 'WS.Core')
-            },
-            {
-               name: 'View',
-               path: path.join(sourceFolder, 'View')
-            },
-            {
-               name: 'Vdom',
-               path: path.join(sourceFolder, 'Vdom')
-            },
-            {
-               name: 'Router',
-               path: path.join(sourceFolder, 'Router')
-            },
-            {
-               name: 'Inferno',
-               path: path.join(sourceFolder, 'Inferno')
-            },
-            {
-               name: 'Controls',
-               path: path.join(sourceFolder, 'Controls')
-            },
-            {
-               name: 'Types',
-               path: path.join(sourceFolder, 'Types')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
+         // output directory must have brotli(except windows os) and gzip files, only for minified files and packages.
+         resultFiles.should.have.members(correctMembers);
 
-      await runWorkflow();
+         if (!isWindows) {
+            const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
+            const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
+            const cssDecompressed = await brotliDecompress(cssBrotliContent);
 
-      const resultFiles = await fs.readdir(moduleOutputFolder);
-      let correctMembers = [
-         '.builder',
-         'Page.min.wml',
-         'Page.min.wml.gz',
-         'Page.wml',
-         'Stable.css',
-         'Stable.less',
-         'Stable.min.css',
-         'Stable.min.css.gz',
-         'bundles.json',
-         'bundlesRoute.json',
-         'pack.package.json',
-         'test-brotli.package.min.css',
-         'test-brotli.package.min.css.gz',
-         'test-brotli.package.min.js',
-         'test-brotli.package.min.js.gz',
-         'themes.config.json',
-         'themes.config.json.js',
-         'themes.config.json.min.js',
-         'themes.config.json.min.js.gz',
-         'themes.config.min.json',
-         'themes.config.min.json.gz'
-      ];
+            // decompressed brotli must be equal source css content
+            cssDecompressed.toString().should.equal(cssContent.toString());
+         }
+      });
+      it('module-dependencies must have actual info after source component remove', async() => {
+         await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
+         await runWorkflow();
+         const { nodes } = await fs.readJson(path.join(cacheFolder, 'module-dependencies.json'));
 
-      if (!isWindows) {
-         correctMembers = correctMembers.concat([
-            'Page.min.wml.br',
-            'Stable.min.css.br',
-            'test-brotli.package.min.css.br',
-            'test-brotli.package.min.js.br',
-            'themes.config.json.min.js.br',
-            'themes.config.min.json.br'
-         ]);
-      }
+         // after source remove and project rebuild module-dependencies must not have node for current source file
+         nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
 
-      // output directory must have brotli(except windows os) and gzip files, only for minified files and packages.
-      resultFiles.should.have.members(correctMembers);
-
-      if (!isWindows) {
-         const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
-         const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
-         const cssDecompressed = await brotliDecompress(cssBrotliContent);
-
-         // decompressed brotli must be equal source css content
-         cssDecompressed.toString().should.equal(cssContent.toString());
-      }
-
-      await clearWorkspace();
+         await clearWorkspace();
+      });
    });
 
    // проверим, что паковка собственных зависимостей корректно работает при пересборке
