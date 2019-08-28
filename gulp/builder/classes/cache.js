@@ -47,11 +47,11 @@ class Cache {
       await this.lastStore.load(this.config.cachePath);
 
       /**
-       * we need to get cached "module-dependencies" meta to make custom packing
-       * works properly in UI patch build
+       * in UI patch build we need to get cached "module-dependencies" meta to make custom packing
+       * works properly
        */
       const cachedModuleDependencies = path.join(this.config.cachePath, 'module-dependencies.json');
-      if (await fs.pathExists(cachedModuleDependencies)) {
+      if (patchBuild && await fs.pathExists(cachedModuleDependencies)) {
          this.moduleDependencies = await fs.readJson(cachedModuleDependencies);
       }
       this.currentStore.runningParameters = this.config.rawConfig;
