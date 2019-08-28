@@ -9,7 +9,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../common/exec-in-pool'),
-   { isWindows } = require('../../../lib/builder-constants');
+   { brotliCompatible } = require('../../../lib/builder-constants');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf', '.eot'];
 
@@ -63,8 +63,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * TODO add windows support with native node.js brotli compiler as soon as LTS-version
              * of Node.js 12 will be released https://nodejs.org/en/about/releases/
              * Dont build eot font in brotli - IE doesn't support brotli.
+             * Build brotli only with compatible version of Node.Js 10.14.2+.
              */
-            const buildBrotli = !isWindows && file.extname !== '.eot';
+            const buildBrotli = brotliCompatible && file.extname !== '.eot';
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
