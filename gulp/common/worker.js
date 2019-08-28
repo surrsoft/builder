@@ -187,12 +187,12 @@ try {
     * @param{String} data - source text
     * @returns {Promise<{brotli: *, gzip: *}>}
     */
-   async function compress(data, isWindows) {
+   async function compress(data, buildBrotli) {
       // convert string to buffer. Brotli library can take only buffer as input.
       const dataBuffer = Buffer.from(data);
       const gzippedContent = await gzip(dataBuffer);
       let brotliContent;
-      if (!isWindows) {
+      if (buildBrotli) {
          brotliContent = await brotli(dataBuffer);
       }
       return {
