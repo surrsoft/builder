@@ -54,10 +54,21 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             }
 
+            /**
+             * in windows OS at the current moment brotli is not supported by
+             * native libraries. iltorb requires in windows third-party dev-tools
+             * for properly work. Support for windows will be added later with native
+             * Node.Js brotli compiler - was added in Node.Js 11.7+, LTS-version will be
+             * released in 22 october 2019.
+             * TODO add windows support with native node.js brotli compiler as soon as LTS-version
+             * of Node.js 12 will be released https://nodejs.org/en/about/releases/
+             * Dont build eot font in brotli - IE doesn't support brotli.
+             */
+            const buildBrotli = !isWindows && file.extname !== '.eot';
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
-               [file.contents.toString(), isWindows],
+               [file.contents.toString(), buildBrotli],
                file.path,
                moduleInfo
             );
@@ -73,17 +84,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                newFile.path = `${file.path}.gz`;
                newFile.contents = Buffer.from(result.gzip);
                this.push(newFile);
-
-               /**
-                * in windows OS at the current moment brotli is not supported by
-                * native libraries. iltorb requires in windows third-party dev-tools
-                * for properly work. Support for windows will be added later with native
-                * Node.Js brotli compiler - was added in Node.Js 11.7+, LTS-version will be
-                * released in 22 october 2019.
-                * TODO add windows support with native node.js brotli compiler as soon as LTS-version
-                * of Node.js 12 will be released https://nodejs.org/en/about/releases/
-                */
-               if (!isWindows) {
+               if (buildBrotli) {
                   file.path = `${file.path}.br`;
                   file.contents = Buffer.from(result.brotli);
                   this.push(file);
