@@ -1116,7 +1116,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          });
          await clearWorkspace();
       });
-      });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
          let correctMembers = [
