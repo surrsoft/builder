@@ -1154,11 +1154,13 @@ describe('gulp/builder/generate-workflow.js', () => {
       ];
 
       const resultWSCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core/bundles.json'));
-      const resultSuperBundleMeta = resultWSCoreBundles['resources/WS.Core/superbundle-for-builder-tests.package.min'];
+      const currentBundle = 'resources/WS.Core/superbundle-for-builder-tests.package.min';
+      const resultSuperBundleMeta = resultWSCoreBundles[currentBundle];
       const resultWSCoreBundlesRoute = await fs.readJson(path.join(outputFolder, 'WS.Core/bundlesRoute.json'));
       testSuperBundleModules.forEach((currentModule) => {
          resultSuperBundleMeta.includes(currentModule).should.equal(true);
          resultWSCoreBundlesRoute.hasOwnProperty(currentModule).should.equal(true);
+         resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
       });
       await clearWorkspace();
    });
