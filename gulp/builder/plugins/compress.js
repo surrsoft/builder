@@ -9,7 +9,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../common/exec-in-pool'),
-   { isWindows } = require('../../../lib/builder-constants');
+   { brotliCompatible } = require('../../../lib/builder-constants');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf'];
 
@@ -62,8 +62,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * released in 22 october 2019.
              * TODO add windows support with native node.js brotli compiler as soon as LTS-version
              * of Node.js 12 will be released https://nodejs.org/en/about/releases/
+             * Build brotli only with compatible version of Node.Js 10.14.2+.
              */
-            const buildBrotli = !isWindows;
+            const buildBrotli = brotliCompatible;
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
