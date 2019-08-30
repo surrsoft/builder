@@ -7,7 +7,7 @@ const path = require('path'),
    pMap = require('p-map'),
    helpers = require('../lib/helpers'),
    { decompress } = require('iltorb'),
-   { isWindows } = require('../lib/builder-constants');
+   { brotliCompatible } = require('../lib/builder-constants');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
@@ -1106,6 +1106,25 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          currentJsPackage.toString().should.equal(sourceJsPackage.toString());
          currentCssPackage.toString().should.equal(sourceCssPackage.toString());
+         const testSuperBundleModules = [
+            'InterfaceModule3/amdAnotherModule',
+            'InterfaceModule3/amdModule',
+            'css!InterfaceModule3/amdModule',
+            'InterfaceModule2/amdModule',
+            'css!InterfaceModule2/moduleStyle',
+            'InterfaceModule1/amdModule',
+            'css!InterfaceModule1/moduleStyle'
+         ];
+
+         const resultWSCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core/bundles.json'));
+         const currentBundle = 'resources/WS.Core/superbundle-for-builder-tests.package.min';
+         const resultSuperBundleMeta = resultWSCoreBundles[currentBundle];
+         const resultWSCoreBundlesRoute = await fs.readJson(path.join(outputFolder, 'WS.Core/bundlesRoute.json'));
+         testSuperBundleModules.forEach((currentModule) => {
+            resultSuperBundleMeta.includes(currentModule).should.equal(true);
+            resultWSCoreBundlesRoute.hasOwnProperty(currentModule).should.equal(true);
+            resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
+         });
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
@@ -1119,7 +1138,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Stable.min.css',
             'Stable.min.css.gz',
             'cbuc-icons.eot',
-            'cbuc-icons.eot.gz',
             'bundles.json',
             'bundlesRoute.json',
             'pack.package.json',
@@ -1135,7 +1153,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'themes.config.min.json.gz'
          ];
 
-         if (!isWindows) {
+         if (brotliCompatible) {
             correctMembers = correctMembers.concat([
                'Page.min.wml.br',
                'Stable.min.css.br',
@@ -1149,7 +1167,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          // output directory must have brotli(except windows os) and gzip files, only for minified files and packages.
          resultFiles.should.have.members(correctMembers);
 
-         if (!isWindows) {
+         if (brotliCompatible) {
             const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
             const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
             const cssDecompressed = await brotliDecompress(cssBrotliContent);
