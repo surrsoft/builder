@@ -1114,7 +1114,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             resultWSCoreBundlesRoute.hasOwnProperty(currentModule).should.equal(true);
             resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
          });
-         await clearWorkspace();
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
@@ -1128,7 +1127,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Stable.min.css',
             'Stable.min.css.gz',
             'cbuc-icons.eot',
-            'cbuc-icons.eot.gz',
             'bundles.json',
             'bundlesRoute.json',
             'pack.package.json',
