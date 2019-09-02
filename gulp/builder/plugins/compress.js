@@ -11,7 +11,7 @@ const through = require('through2'),
    execInPool = require('../../common/exec-in-pool'),
    { brotliCompatible } = require('../../../lib/builder-constants');
 
-const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.woff', '.ttf'];
+const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.ttf'];
 
 const excludeRegexes = [
    /.*\.routes\.js$/,
