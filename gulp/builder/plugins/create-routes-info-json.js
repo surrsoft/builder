@@ -67,7 +67,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const rebasedRelativePath = resourcesUrl ? path.join('resources', relativePath) : relativePath;
                const relativeResultPath = helpers.prettifyPath(transliterate(rebasedRelativePath));
-               resultRoutesInfo[relativeResultPath] = routeInfo;
+               resultRoutesInfo[relativeResultPath.replace(/\.ts$/, '.js')] = routeInfo;
             });
 
             // подготовим routes-info.json
