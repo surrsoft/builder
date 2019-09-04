@@ -26,7 +26,7 @@ module.exports = function declarePlugin(moduleInfo) {
          try {
             const prettyStaticTemplates = {};
             for (const url of Object.keys(moduleInfo.staticTemplates)) {
-               const prettyUrl = `/${helpers.removeLeadingSlash(helpers.prettifyPath(url))}`;
+               const prettyUrl = `/${helpers.removeLeadingSlashes(helpers.prettifyPath(url))}`;
                prettyStaticTemplates[prettyUrl] = helpers.prettifyPath(moduleInfo.staticTemplates[url]);
             }
 

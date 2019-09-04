@@ -279,9 +279,9 @@ function generatePackage(
           * resourcesPath is the same in full build and patch build. Use it
           * to get proper relative path for current package
           */
-         let newName = `/${packedFilePath.replace(resourcesPath, '')}`;
+         let newName = `${packedFilePath.replace(resourcesPath, '')}`;
          if (!needReplacePaths) {
-            newName = `%{RESOURCE_ROOT}${newName.replace(/resources(?:\/|\\)/, '')}`;
+            newName = `%{RESOURCE_ROOT}${helpers.removeLeadingSlashes(newName.replace(/resources(?:\/|\\)/, ''))}`;
          } else {
             newName = helpers.prettifyPath(path.join('/', application, `resources/${newName}`));
          }
