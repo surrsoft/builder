@@ -262,11 +262,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.json.js'
       ]);
 
+      // disable old themes for current project.
       config.oldThemes = false;
       await fs.writeJSON(configPath, config);
 
-      // запустим таску
       await runWorkflow();
+
+      // in results of module TestModule must not exists styles for old themes
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
       resultsFiles.should.have.members([
          'Stable-with-import.less',
