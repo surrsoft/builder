@@ -39,7 +39,7 @@ function getRelativeOutput(moduleInfo, prettyFilePath) {
 function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
    const root = helpers.unixifyPath(path.dirname(currentLessBase));
    const prettyFailedLessPath = helpers.unixifyPath(failedLessPath);
-   const prettyRelativePath = helpers.removeLeadingSlash(
+   const prettyRelativePath = helpers.removeLeadingSlashes(
       prettyFailedLessPath.replace(root, '')
    );
    return prettyRelativePath.split('/').shift();

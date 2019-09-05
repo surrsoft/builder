@@ -46,7 +46,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
             !libPackHelpers.isPrivate(
-               helpers.removeLeadingSlash(file.path.replace(sourceRoot, ''))
+               helpers.removeLeadingSlashes(file.path.replace(sourceRoot, ''))
             )
          ) {
             libraries.push(file);

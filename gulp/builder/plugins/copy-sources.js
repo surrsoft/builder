@@ -35,7 +35,7 @@ const privateModuleExt = /(\.min)?(\.js|\.wml|\.tmpl)/;
 function getModuleNameWithPlugin(currentModule) {
    const prettyFilePath = helpers.unixifyPath(currentModule.path);
    const prettyRoot = helpers.unixifyPath(path.dirname(currentModule.base));
-   const prettyRelativePath = helpers.removeLeadingSlash(prettyFilePath.replace(prettyRoot, ''));
+   const prettyRelativePath = helpers.removeLeadingSlashes(prettyFilePath.replace(prettyRoot, ''));
    const currentModuleName = prettyRelativePath.replace(privateModuleExt, '');
    const currentPlugin = currentModule.extname.slice(1, currentModule.extname.length);
    const result = {
