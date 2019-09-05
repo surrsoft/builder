@@ -249,6 +249,35 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.json',
          'themes.config.json.js'
       ]);
+
+      resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
+      resultsFiles.should.have.members([
+         'Stable-with-import.css',
+         'Stable-with-import.less',
+         'Stable-with-import_online.css',
+         'module-dependencies.json',
+         'stable.js',
+         'stable.ts',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+
+      config.oldThemes = false;
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflow();
+      resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
+      resultsFiles.should.have.members([
+         'Stable-with-import.less',
+         'Stable-with-import_online.css',
+         'module-dependencies.json',
+         'stable.js',
+         'stable.ts',
+         'themes.config.json',
+         'themes.config.json.js'
+      ]);
+
       await clearWorkspace();
    });
 

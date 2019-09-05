@@ -98,6 +98,9 @@ class BuildConfiguration {
       // compile themed styles
       this.themes = false;
 
+      // enable old themes in less compile
+      this.oldThemes = true;
+
       // join module's meta files into common root meta file
       this.joinedMeta = false;
 
