@@ -267,7 +267,15 @@ class Cache {
       }
 
       if (this.lastStore.inputPaths[prettyPath].hash !== hash) {
-         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es') || prettyPath.endsWith('.ts')) {
+         /**
+          * if View/Builder components was changed, we need to rebuild all templates in project
+          * with current templates processor changes
+          */
+         if (prettyPath.includes('/View/Builder/')) {
+            logger.info(`View/Builder components was changed. All templates for current project will be rebuilded. Changed component: ${prettyPath}`);
+            this.dropCacheForMarkup = true;
+         }
+         if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es') || prettyPath.endsWith('.ts') || prettyPath.endsWith('.ts')) {
             this.cacheChanges[prettyPath] = true;
          }
          return true;

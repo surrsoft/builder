@@ -273,7 +273,7 @@ describe('build less', () => {
          }
       }, multiThemes);
       const result = getMultiThemesList(allThemes, true);
-      assert.deepStrictEqual(result, multiThemes);
+      result.should.deep.equal(multiThemes);
    });
    it('check theme for new type', () => {
       const multiTheme = {
