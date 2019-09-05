@@ -302,7 +302,7 @@ async function limitingNativePackFiles(
                    * @type {boolean}
                    */
                   const jsIsPackageOutput = fullPath.replace(/\.original\.js$/, '.js') === packageConfig.outputFile;
-                  const relativePath = helpers.removeLeadingSlash(fullPath.replace(rootCache, ''));
+                  const relativePath = helpers.removeLeadingSlashes(fullPath.replace(rootCache, ''));
                   const currentFileModuleName = relativePath.split('/').shift();
                   if (
                      currentFileModuleName !== packageConfig.moduleName &&

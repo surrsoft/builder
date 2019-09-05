@@ -96,6 +96,16 @@ describe('helpers', () => {
          'ru-RU'
       ]);
    });
+   it('remove leading slashes', () => {
+      let path = '\\\\path\\to\\module';
+      helpers.removeLeadingSlashes(path).should.equal('path\\to\\module');
+      path = '//path/to/module';
+      helpers.removeLeadingSlashes(path).should.equal('path/to/module');
+      path = '/path/to/module';
+      helpers.removeLeadingSlashes(path).should.equal('path/to/module');
+      path = '/path/to/module/';
+      helpers.removeLeadingSlashes(path).should.equal('path/to/module/');
+   });
 });
 
 describe('library pack helpers', () => {
