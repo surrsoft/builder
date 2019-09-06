@@ -50,6 +50,7 @@ function generateWorkflow(processArgv) {
 
    // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
    const modulesForPatch = taskParameters.config.modules.filter(moduleInfo => moduleInfo.rebuild);
+   const skipDeepConfigCheck = modulesForPatch.length > 0 || taskParameters.config.branchTests;
    return gulp.series(
 
       // generateTaskForLock прежде всего
@@ -58,7 +59,7 @@ function generateWorkflow(processArgv) {
       generateTaskForCollectThemes(taskParameters),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      generateTaskForClearCache(taskParameters, modulesForPatch),
+      generateTaskForClearCache(taskParameters, skipDeepConfigCheck),
 
       // подготовка WS для воркера
       generateTaskForPrepareWS(taskParameters),
@@ -83,9 +84,9 @@ function generateWorkflow(processArgv) {
    );
 }
 
-function generateTaskForClearCache(taskParameters, modulesForPatch) {
+function generateTaskForClearCache(taskParameters, skipDeepConfigCheck) {
    return function clearCache() {
-      return taskParameters.cache.clearCacheIfNeeded(modulesForPatch.length > 0);
+      return taskParameters.cache.clearCacheIfNeeded(skipDeepConfigCheck);
    };
 }
 
