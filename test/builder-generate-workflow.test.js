@@ -5,7 +5,6 @@ const initTest = require('./init-test');
 const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
-   assert = require('assert'),
    helpers = require('../lib/helpers'),
    { decompress } = require('iltorb'),
    { isWindows } = require('../lib/builder-constants');
@@ -537,15 +536,12 @@ describe('gulp/builder/generate-workflow.js', () => {
       // запустим таску
       await runWorkflow();
       await testResults();
-      assert.deepStrictEqual(
-         routesInfoResult['resources/Modul/tsRouting.routes.js'],
-         {
-            '/ForChange_old.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
+      routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
+         '/ForChange_old.html': {
+            controller: 'Modul/Test1',
+            isMasterPage: false
          }
-      );
+      });
 
       await fs.writeFile(
          path.join(sourceFolder, 'Модуль/tsRouting.routes.ts'),
@@ -561,15 +557,12 @@ describe('gulp/builder/generate-workflow.js', () => {
       // запустим повторно таску
       await runWorkflow();
       await testResults();
-      assert.deepStrictEqual(
-         routesInfoResult['resources/Modul/tsRouting.routes.js'],
-         {
-            '/ForChange_new.html': {
-               controller: 'Modul/Test1',
-               isMasterPage: false
-            }
+      routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
+         '/ForChange_new.html': {
+            controller: 'Modul/Test1',
+            isMasterPage: false
          }
-      );
+      });
       await clearWorkspace();
    });
 
