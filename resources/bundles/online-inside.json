@@ -463,6 +463,7 @@
   "resources/ParametersWebAPI/config-loader.package.min",
   "resources/ParametersWebAPI/config-scope.package.min",
   "resources/Person/Info/PersonInfo.package.min",
+  "resources/Person/Info/PersonInfoPhoto.package.min",
   "resources/Person/MiniCard/MiniCard.package.min",
   "resources/Person/deprecated/PersonInfoTemplateHelper.package.min",
   "resources/Person/deprecated/deprecated-person-photo.package.min",
