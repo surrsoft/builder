@@ -19,7 +19,7 @@ define('Modul/Modul', [
             var templateFunction = function Unknown(data, attr, context, isVdom, sets) {
                 var forCounter = 0;
                 var templateCount = 0;
-                var key = attr && attr.key || '_';
+                var key = thelpers.validateNodeKey(attr && attr.key);
                 var defCollection = {
                     id: [],
                     def: undefined

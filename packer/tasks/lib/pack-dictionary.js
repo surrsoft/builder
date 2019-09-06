@@ -16,7 +16,7 @@ const dblSlashes = /\\/g;
 function getNameModule(pathModule, applicationRoot) {
    const pathWithoutRoot = pathModule.replace(applicationRoot, '');
 
-   return helpers.removeLeadingSlash(pathWithoutRoot).split('/').shift();
+   return helpers.removeLeadingSlashes(pathWithoutRoot).split('/').shift();
 }
 
 /**
@@ -26,7 +26,7 @@ function getNameModule(pathModule, applicationRoot) {
  * @returns {undefined|*}
  */
 function getInterfaceModuleName(fullPath, applicationRoot) {
-   const relativePath = helpers.removeLeadingSlash(fullPath.replace(applicationRoot, ''));
+   const relativePath = helpers.removeLeadingSlashes(fullPath.replace(applicationRoot, ''));
 
    return relativePath.split('/').shift();
 }

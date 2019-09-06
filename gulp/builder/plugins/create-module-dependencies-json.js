@@ -175,7 +175,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      );
                      result.add(`css!${currentDependency}`);
                      currentLessDependencies.forEach((currentLessDep) => {
-                        result.add(`css!${helpers.removeLeadingSlash(
+                        result.add(`css!${helpers.removeLeadingSlashes(
                            currentLessDep
                               .replace(sourceRoot, '')
                               .replace('.less', '')
