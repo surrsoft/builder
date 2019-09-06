@@ -91,6 +91,11 @@ function generateTaskForCollectThemes(taskParameters) {
                   try {
                      const parsedLessConfig = JSON.parse(file.contents);
                      configLessChecker.checkOptions(parsedLessConfig);
+
+                     // disable old less in less config if disabled for all project
+                     if (!taskParameters.config.oldThemes) {
+                        parsedLessConfig.old = false;
+                     }
                      taskParameters.cache.addModuleLessConfiguration(moduleInfo.name, parsedLessConfig);
                   } catch (error) {
                      logger.error({
