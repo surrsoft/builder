@@ -1224,7 +1224,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          testSuperBundleModules.forEach((currentModule) => {
             resultSuperBundleMeta.includes(currentModule).should.equal(true);
             resultWSCoreBundlesRoute.hasOwnProperty(currentModule).should.equal(true);
-            resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
+            if (currentModule.startsWith('css!')) {
+               resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.css`);
+            } else {
+               resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
+            }
          });
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
