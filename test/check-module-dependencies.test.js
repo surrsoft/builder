@@ -24,7 +24,13 @@ describe('check-module-dependencies', () => {
          },
          'MyModule1/module1': {
             path: 'path/to/MyModule/module1'
-         }
+         },
+         'css!Lib/Control': {
+            path: 'path/to/css/lib/Control'
+         },
+         'Lib/Control': {
+            path: 'path/to/lib/Control'
+         },
       }
    };
    const modules = [
@@ -37,6 +43,11 @@ describe('check-module-dependencies', () => {
          name: 'MyModule2',
          path: 'path/to/MyModule2',
          responsible: 'some responsible 2'
+      },
+      {
+         name: 'WS.Core',
+         path: 'path/to/WS.Core',
+         responsible: 'some responsible of WS.Core'
       }
    ];
    const projectModulesNames = modules.map(
@@ -98,6 +109,12 @@ describe('check-module-dependencies', () => {
       let nodeName = 'optional!MyModule1/module1';
       let result = getModuleInfoForCurrentNode(nodeName, modules);
       (!!result).should.equal(true);
+      nodeName = 'Lib/myModule1';
+      result = getModuleInfoForCurrentNode(nodeName, modules);
+      (!!result).should.equal(true);
+      nodeName = 'css!Lib/myModule1';
+      result = getModuleInfoForCurrentNode(nodeName, modules);
+      (!!result).should.equal(true);
       Object.keys(result).should.have.members(['name', 'path', 'responsible']);
       nodeName = 'thirdParty/myModule1';
       result = getModuleInfoForCurrentNode(nodeName, modules);
@@ -105,14 +122,22 @@ describe('check-module-dependencies', () => {
    });
 
    it('check dependencies validity: meta nodes has current dependency', async() => {
-      const nodeName = 'css!MyModule1/module1';
-      const result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      let nodeName = 'css!MyModule1/module1';
+      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result.should.equal(true);
+
+      nodeName = 'css!Lib/Control';
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
       result.should.equal(true);
    });
 
    it('check dependencies validity: meta nodes doesn\'t have current dependency, but exists in output', async() => {
       let nodeName = 'css!MyModule1/testFileSystemCheck';
       let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result.should.equal(true);
+
+      nodeName = 'css!Lib/styleInFileSystem';
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
       result.should.equal(true);
 
       nodeName = 'text!MyModule1/index.html';
