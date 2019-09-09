@@ -50,9 +50,8 @@ class StoreInfo {
    }
 
    async load(cacheDirectory) {
-      logger.debug(`Читаем файлы кеша билдера из директории ${cacheDirectory}`);
-
       if (await fs.pathExists(path.join(cacheDirectory, 'builder-info.json'))) {
+         logger.debug(`Читаем файлы кеша билдера из директории ${cacheDirectory}`);
          this.runningParameters = await fs.readJSON(StoreInfo.getLastRunningParametersPath(cacheDirectory));
 
          try {

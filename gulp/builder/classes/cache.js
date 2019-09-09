@@ -89,11 +89,7 @@ class Cache {
     * Проверяет есть ли несовместимые изменения в проекте, из-за которых нужно очистить кеш.
     * @returns {Promise<boolean>}
     */
-   async cacheHasIncompatibleChanges(patchBuild) {
-      // for patch skip configuration checker
-      if (patchBuild) {
-         return false;
-      }
+   async cacheHasIncompatibleChanges(skipDeepConfigCheck) {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.previousRunFailed) {
          logger.info(`В директории кэша с предыдущей сборки остался файл builder.lockfile. ${finishText}`);
@@ -109,6 +105,24 @@ class Cache {
       }
       const lastRunningParameters = { ...this.lastStore.runningParameters };
       const currentRunningParameters = { ...this.currentStore.runningParameters };
+      const lastModulesList = lastRunningParameters.modules.map(currentModule => currentModule.name);
+      const currentModulesList = currentRunningParameters.modules.map(currentModule => currentModule.name);
+      try {
+         assert.deepStrictEqual(lastModulesList, currentModulesList);
+      } catch (error) {
+         logger.info(`Параметры запуска builder'а поменялись. Изменился список модулей на сборку ${finishText}`);
+         return true;
+      }
+
+      /**
+       * for patch and branch tests skip deep checker.
+       * In patch build some modules have extra flags for rebuild
+       * In branch tests build some modules have another paths(specified to branch name)
+       *
+        */
+      if (skipDeepConfigCheck) {
+         return false;
+      }
 
       // поле version всегда разное
       if (lastRunningParameters.version !== '' || currentRunningParameters.version !== '') {
@@ -149,9 +163,9 @@ class Cache {
    /**
     * Чистит кеш, если инкрементальная сборка невозможна.
     */
-   async clearCacheIfNeeded(patchBuild) {
+   async clearCacheIfNeeded(skipDeepConfigCheck) {
       const removePromises = [];
-      if (await this.cacheHasIncompatibleChanges(patchBuild)) {
+      if (await this.cacheHasIncompatibleChanges(skipDeepConfigCheck)) {
          this.lastStore = new StoreInfo();
 
          // из кеша можно удалить всё кроме .lockfile
