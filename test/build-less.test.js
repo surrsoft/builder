@@ -2,7 +2,7 @@
 'use strict';
 
 const initTest = require('./init-test');
-const { parseCurrentModuleName } = require('../gulp/builder/generate-task/collect-style-themes');
+const { parseCurrentModuleName, getThemeModifier } = require('../gulp/builder/generate-task/collect-style-themes');
 const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
 const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
 const assert = require('assert');
@@ -255,6 +255,18 @@ describe('build less', () => {
       result = parseCurrentModuleName(modulesList, ['Controls', 'myModule', 'online', 'default']);
       result.themeName.should.equal('online-default');
       result.moduleName.should.equal('Controls-myModule');
+   });
+   it('get correct theme modifier for current path', () => {
+      const root = 'path/to/root/';
+      const rootThemePath = 'path/to/root/_theme.less';
+      const darkMThemePath = 'path/to/root/dark/medium/_theme.less';
+      const darkLThemePath = 'path/to/root/dark-large/_theme.less';
+      let result = getThemeModifier(root, rootThemePath);
+      result.should.equal('');
+      result = getThemeModifier(root, darkMThemePath);
+      result.should.equal('dark/medium');
+      result = getThemeModifier(root, darkLThemePath);
+      result.should.equal('dark-large');
    });
    it('get correct list of multi themes', () => {
       const multiThemes = {
