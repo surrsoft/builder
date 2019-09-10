@@ -124,6 +124,21 @@ function getNewThemesList(allThemes) {
    return newThemes;
 }
 
+/**
+ * Gets proper theme modificator for current building less. If modifier doesnt exists in theme
+ * modifiers list, empty string will be returned.
+ * Example:
+ * Module has 2 themes:
+ * 1)online - TestModule-online-theme/_theme.less
+ * 2)online:dark-large - TestModule-online-theme/dark-large/_theme.less
+ * For less TestModule-online-theme/dark-large/someDirectory/test.less
+ * correct modifier must be "dark-large".
+ * For less TestModule-online-theme/someDirectory/test.less
+ * correct modifier must be "".
+ * @param{String} themeModifier - resolved modifier for less
+ * @param{String} moduleModifiers - current theme modifiers list
+ * @returns {string}
+ */
 function getThemeModificatorForLess(themeModifier, moduleModifiers) {
    // themeModifier will be empty for root themed less
    if (!themeModifier) {
