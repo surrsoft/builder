@@ -256,7 +256,7 @@ class BuildConfiguration {
          this.logFolder = this.rawConfig.logs;
       }
 
-      clearSourcesSymlinksIfNeeded(this.cachePath, this.logFolder);
+      clearSourcesSymlinksIfNeeded(this.cachePath, this.logFolder, this.branchTests);
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
