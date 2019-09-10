@@ -283,7 +283,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       let testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
       testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
       testModuleNewThemes['TestModule/test-online'].should.have.members([
-         'online', 'anotherTheme'
+         'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
+      ]);
+      testModuleNewThemes.hasOwnProperty('TestModule/dark/subDirectoryForOnline/test-online').should.equal(true);
+      testModuleNewThemes['TestModule/dark/subDirectoryForOnline/test-online'].should.have.members([
+         'online'
+      ]);
+      testModuleNewThemes.hasOwnProperty('TestModule/subDirectoryForDarkMedium/test-online').should.equal(true);
+      testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
+         'online:dark:medium'
       ]);
 
       // запустим повторно таску
@@ -293,7 +301,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
       testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
       testModuleNewThemes['TestModule/test-online'].should.have.members([
-         'online', 'anotherTheme'
+         'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
       ]);
       await clearWorkspace();
    });

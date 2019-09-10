@@ -14,6 +14,7 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
    { buildLess } = require('../../../lib/build-less'),
+   { getThemeModifier } = require('../generate-task/collect-style-themes'),
    cssExt = /\.css$/;
 
 /**
@@ -123,6 +124,22 @@ function getNewThemesList(allThemes) {
    return newThemes;
 }
 
+function getThemeModificatorForLess(themeModifier, moduleModifiers) {
+   // themeModifier will be empty for root themed less
+   if (!themeModifier) {
+      return '';
+   }
+   let result = '';
+   let currentThemeModifier = themeModifier;
+   while (currentThemeModifier !== '.' && !result) {
+      if (moduleModifiers.includes(currentThemeModifier)) {
+         result = currentThemeModifier;
+      }
+      currentThemeModifier = path.dirname(currentThemeModifier);
+   }
+   return result;
+}
+
 /**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
@@ -142,6 +159,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    // check for offline plugin application
    const multiThemes = getMultiThemesList(allThemes, taskParameters.config.themes);
    const newThemes = getNewThemesList(allThemes);
+   const currentModuleNewTheme = taskParameters.cache.getNewStyleTheme(moduleInfo.name);
 
    return through.obj(
 
@@ -186,12 +204,19 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
              * into builder cache to store theme into "contents" builder meta info
              */
             if (newThemes[moduleName] && !path.basename(file.path).startsWith('_')) {
-               const prettyRelativePath = helpers.prettifyPath(path.relative(moduleInfo.path, file.path));
-               const currentLessName = prettyRelativePath.replace('.less', '');
-
+               const themeModifier = getThemeModificatorForLess(
+                  getThemeModifier(moduleInfo.path, file.path),
+                  currentModuleNewTheme.modifiers
+               );
+               const relativePathByModifier = path.relative(
+                  path.join(moduleInfo.path, themeModifier),
+                  file.path
+               );
+               const currentLessName = relativePathByModifier.replace('.less', '');
                taskParameters.cache.storeNewThemesModules(
                   newThemes[moduleName].moduleName,
                   currentLessName,
+                  themeModifier,
                   newThemes[moduleName].themeName
                );
             }
