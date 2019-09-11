@@ -535,7 +535,7 @@ class Cache {
     */
    storeNewThemesModules(moduleName, lessName, themeModifier, themeName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      const currentLessControl = `${moduleName}/${lessName}`;
+      const currentLessControl = helpers.unixifyPath(`${moduleName}/${lessName}`);
       if (!currentModuleCache.newThemesModules.hasOwnProperty(currentLessControl)) {
          currentModuleCache.newThemesModules[currentLessControl] = [];
       }
