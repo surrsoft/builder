@@ -1105,6 +1105,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const config = {
             cache: cacheFolder,
             output: outputFolder,
+            typescript: true,
             less: true,
             themes: true,
             minimize: true,
@@ -1238,6 +1239,17 @@ describe('gulp/builder/generate-workflow.js', () => {
                resultWSCoreBundlesRoute[currentModule].should.equal(`${currentBundle}.js`);
             }
          });
+
+         /**
+          * In InterfaceModule1 we have packed into moduled superbundle library "library". bundlesRoute meta must
+          * not have information about this library. "libraries" meta must have it.
+          */
+         const resultModuleLibraries = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/.builder/libraries.json'));
+         const resultModuleBundlesRoute = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/bundlesRoute.json'));
+         resultModuleLibraries.should.have.members([
+            'InterfaceModule1/library'
+         ]);
+         resultModuleBundlesRoute.should.deep.equal({});
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
