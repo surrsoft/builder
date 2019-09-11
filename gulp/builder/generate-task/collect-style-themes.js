@@ -15,6 +15,7 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    mapStream = require('map-stream'),
    fs = require('fs-extra'),
+   helpers = require('../../../lib/helpers'),
    configLessChecker = require('../../../lib/config-less-checker');
 
 const logger = require('../../../lib/logger').logger();
@@ -49,6 +50,24 @@ function parseCurrentModuleName(modulesList, currentModuleParts) {
 }
 
 /**
+ * Gets new themes modifier by current theme module name and theme
+ * definition less.
+ * @param{String} modulePath - path to new theme interface module
+ * @param{String} filePath - path to theme definition less
+ * @returns {string}
+ */
+function getThemeModifier(modulePath, filePath) {
+   const relativePath = path.relative(modulePath, filePath);
+   const modifier = helpers.unixifyPath(path.dirname(relativePath));
+
+   /**
+    * for root theme relative path will be resolved as '.'
+    * Set modifier as empty string in this case
+    */
+   return modifier === '.' ? '' : modifier;
+}
+
+/**
  * Генерация задачи поиска тем
  * @param {TaskParameters} taskParameters кеш сборки статики
  * @returns {Undertaker.TaskFunction}
@@ -67,7 +86,7 @@ function generateTaskForCollectThemes(taskParameters) {
       const input = [
          path.join(moduleInfo.path, '/themes/*/*.less'),
          path.join(moduleInfo.path, '/themes.config.json'),
-         path.join(moduleInfo.path, '_theme.less')
+         path.join(moduleInfo.path, '/**/_theme.less')
       ];
       return function collectStyleThemes() {
          return gulp
@@ -86,7 +105,6 @@ function generateTaskForCollectThemes(taskParameters) {
             )
             .pipe(mapStream(async(file, done) => {
                const currentFileName = path.basename(file.path);
-               const folderName = path.basename(path.dirname(file.path));
                if (currentFileName === 'themes.config.json') {
                   try {
                      const parsedLessConfig = JSON.parse(file.contents);
@@ -117,11 +135,17 @@ function generateTaskForCollectThemes(taskParameters) {
                    * Other Interface modules will be ignored from new theme's processing
                    */
                   if (currentModuleNameParts.length > 2 && currentModuleNameParts.pop() === 'theme') {
+                     const themeModule = path.basename(moduleInfo.output);
                      const result = parseCurrentModuleName(buildModulesNames, currentModuleNameParts);
-                     taskParameters.cache.addNewStyleTheme(folderName, result);
+                     const modifier = getThemeModifier(
+                        helpers.unixifyPath(moduleInfo.path),
+                        helpers.unixifyPath(file.path),
+                     );
+                     taskParameters.cache.addNewStyleTheme(themeModule, modifier, result);
                   }
                } else {
                   const fileName = path.basename(file.path, '.less');
+                  const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
                      const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
                      let themeConfig;
@@ -159,5 +183,6 @@ function generateTaskForCollectThemes(taskParameters) {
 
 module.exports = {
    generateTaskForCollectThemes,
-   parseCurrentModuleName
+   parseCurrentModuleName,
+   getThemeModifier
 };

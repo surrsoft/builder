@@ -533,14 +533,15 @@ class Cache {
     * @param{String} lessName - current less file name
     * @param{String} themeName - current theme name
     */
-   storeNewThemesModules(moduleName, lessName, themeName) {
+   storeNewThemesModules(moduleName, lessName, themeModifier, themeName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       const currentLessControl = `${moduleName}/${lessName}`;
       if (!currentModuleCache.newThemesModules.hasOwnProperty(currentLessControl)) {
          currentModuleCache.newThemesModules[currentLessControl] = [];
       }
-      if (!currentModuleCache.newThemesModules[currentLessControl].includes(themeName)) {
-         currentModuleCache.newThemesModules[currentLessControl].push(themeName);
+      const themeNameWithModifier = themeModifier ? `${themeName}:${themeModifier.replace(/\//g, ':')}` : themeName;
+      if (!currentModuleCache.newThemesModules[currentLessControl].includes(themeNameWithModifier)) {
+         currentModuleCache.newThemesModules[currentLessControl].push(themeNameWithModifier);
       }
    }
 
@@ -775,13 +776,24 @@ class Cache {
     * @param{String} folderName - Interface module name
     * @param{Object} config - base info about current theme
     */
-   addNewStyleTheme(folderName, config) {
+   addNewStyleTheme(themeModule, modifier, config) {
       const { moduleName, themeName } = config;
-      this.currentStore.styleThemes[folderName] = {
-         type: 'new',
-         moduleName,
-         themeName
-      };
+      const { styleThemes } = this.currentStore;
+      if (!styleThemes.hasOwnProperty(themeModule)) {
+         styleThemes[themeModule] = {
+            type: 'new',
+            moduleName,
+            themeName,
+            modifiers: [modifier]
+         };
+      } else {
+         styleThemes[themeModule].modifiers.push(modifier);
+      }
+   }
+
+   getNewStyleTheme(themeModule) {
+      const { styleThemes } = this.currentStore;
+      return styleThemes[themeModule];
    }
 
    addStyleTheme(themeName, filePath, themeConfig) {
