@@ -51,7 +51,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
 
             librariesPaths.forEach((libraryPath) => {
-               const normalizedPath = libraryPath.replace(/\.js$/, '');
+               const normalizedPath = libraryPath.replace(/(\.min)?\.js$/, '');
                if (!librariesMeta.includes(normalizedPath)) {
                   librariesMeta.push(normalizedPath);
                }
