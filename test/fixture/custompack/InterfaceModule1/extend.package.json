@@ -2,6 +2,9 @@
   "include": [
     "InterfaceModule1/*"
   ],
+  "exclude": [
+    "InterfaceModule1/_private/*"
+  ],
   "output": "interfacemodule1.package.js"
 }, {
   "includePackages": [
