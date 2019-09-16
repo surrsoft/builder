@@ -6,6 +6,7 @@ const path = require('path'),
    fs = require('fs-extra');
 
 const generateWorkflow = require('../gulp/grabber/generate-workflow.js');
+const { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
@@ -48,6 +49,23 @@ const runWorkflow = function() {
    });
 };
 
+/**
+ * properly finish test in builder main workflow was freezed by unexpected
+ * critical errors from gulp plugins
+ * @returns {Promise<void>}
+ */
+const runWorkflowWithTimeout = async function() {
+   let result;
+   try {
+      result = await promiseWithTimeout(runWorkflow(), 60000);
+   } catch (err) {
+      result = err;
+   }
+   if (result instanceof TimeoutError) {
+      true.should.equal(false);
+   }
+};
+
 const timeout = function(ms) {
    return new Promise(resolve => setTimeout(resolve, ms));
 };
@@ -82,10 +100,10 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext');
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext');
 
          await clearWorkspace();
@@ -96,7 +114,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext');
 
          await timeoutForMacOS();
@@ -104,7 +122,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext123');
 
          await clearWorkspace();
@@ -116,7 +134,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext');
 
          await timeoutForMacOS();
@@ -124,7 +142,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('js', 'AnyContext123');
 
          await clearWorkspace();
@@ -137,10 +155,10 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
          await clearWorkspace();
@@ -151,7 +169,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
          await timeoutForMacOS();
@@ -159,7 +177,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext123');
 
          await clearWorkspace();
@@ -171,7 +189,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
          await timeoutForMacOS();
@@ -179,7 +197,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext123');
 
          await clearWorkspace();
@@ -191,7 +209,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
          await timeoutForMacOS();
@@ -199,14 +217,14 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          const resultObj = await fs.readJSON(outputJson);
          resultObj.length.should.equals(0);
 
          await timeoutForMacOS();
          await fs.writeFile(testFilePath, testFileText);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('xhtml', 'AnyContext');
 
          await clearWorkspace();
@@ -219,10 +237,10 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
          await clearWorkspace();
@@ -233,7 +251,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
          await timeoutForMacOS();
@@ -241,7 +259,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext123');
 
          await clearWorkspace();
@@ -253,7 +271,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
          await timeoutForMacOS();
@@ -261,7 +279,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
          await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext123');
 
          await clearWorkspace();
@@ -273,7 +291,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
          await timeoutForMacOS();
@@ -281,14 +299,14 @@ describe('gulp/grabber/generate-workflow.js', () => {
          const testFileText = (await fs.readFile(testFilePath)).toString();
          await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          const resultObj = await fs.readJSON(outputJson);
          resultObj.length.should.equals(0);
 
          await timeoutForMacOS();
          await fs.writeFile(testFilePath, testFileText);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
 
          await clearWorkspace();

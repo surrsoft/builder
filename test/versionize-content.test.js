@@ -14,7 +14,7 @@ const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 const {
    isRegularFile, linkPlatform
 } = require('./lib');
-
+const { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 const clearWorkspace = function() {
    return fs.remove(workspaceFolder);
 };
@@ -34,6 +34,23 @@ const runWorkflow = function() {
          }
       });
    });
+};
+
+/**
+ * properly finish test in builder main workflow was freezed by unexpected
+ * critical errors from gulp plugins
+ * @returns {Promise<void>}
+ */
+const runWorkflowWithTimeout = async function() {
+   let result;
+   try {
+      result = await promiseWithTimeout(runWorkflow(), 60000);
+   } catch (err) {
+      result = err;
+   }
+   if (result instanceof TimeoutError) {
+      true.should.equal(false);
+   }
 };
 
 describe('versionize-content', () => {
@@ -408,7 +425,7 @@ describe('versionize-content', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       (await isRegularFile(outputFolder, 'Modul/Page.wml')).should.equal(true);
       (await isRegularFile(outputFolder, 'Modul/Page.min.wml')).should.equal(true);
       const sourceContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.wml'))).toString();
