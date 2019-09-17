@@ -1,5 +1,7 @@
 'use strict';
 
+import "css!TestModule/Stable-for-import";
+import "css!theme?TestModule/Stable-for-theme-import";
 export default class Test {
     private variables: [];
     private _theme: [string];
