@@ -258,6 +258,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                moduleInfo,
                filePath: file.history[0]
             });
+            callback(null, file);
          }
       },
 
