@@ -166,7 +166,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
       lessDependenciesForTest['TestModule/stable'].should.have.members([
          'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-for-import',
+         'css!TestModule/Stable-for-theme-import',
          'css!TestModule/Stable-with-import',
          'css!TestModule/test-style-assign',
          'css!TestModule/test-style-object',
@@ -238,7 +242,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
       lessDependenciesForTest['TestModule/stable'].should.have.members([
          'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-for-import',
+         'css!TestModule/Stable-for-theme-import',
          'css!TestModule/Stable-with-import',
          'css!TestModule/test-style-assign',
          'css!TestModule/test-style-object',
@@ -269,6 +277,12 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
       resultsFiles.should.have.members([
+         'Stable-for-import.css',
+         'Stable-for-import.less',
+         'Stable-for-import_online.css',
+         'Stable-for-theme-import.css',
+         'Stable-for-theme-import.less',
+         'Stable-for-theme-import_online.css',
          'Stable-with-import.css',
          'Stable-with-import.less',
          'Stable-with-import_online.css',
@@ -288,6 +302,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       // in results of module TestModule must not exists styles for old themes
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
       resultsFiles.should.have.members([
+         'Stable-for-import.less',
+         'Stable-for-import_online.css',
+         'Stable-for-theme-import.less',
+         'Stable-for-theme-import_online.css',
          'Stable-with-import.less',
          'Stable-with-import_online.css',
          'module-dependencies.json',
