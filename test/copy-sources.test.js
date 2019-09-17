@@ -6,6 +6,7 @@ const path = require('path'),
    fs = require('fs-extra');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
+const { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
 const { isRegularFile, linkPlatform } = require('./lib');
 
@@ -36,6 +37,23 @@ const runWorkflow = function() {
          }
       });
    });
+};
+
+/**
+ * properly finish test in builder main workflow was freezed by unexpected
+ * critical errors from gulp plugins
+ * @returns {Promise<void>}
+ */
+const runWorkflowWithTimeout = async function() {
+   let result;
+   try {
+      result = await promiseWithTimeout(runWorkflow(), 60000);
+   } catch (err) {
+      result = err;
+   }
+   if (result instanceof TimeoutError) {
+      true.should.equal(false);
+   }
 };
 
 describe('copy sources', () => {
@@ -137,11 +155,11 @@ describe('copy sources', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       await checkTestResult();
 
       // check main meta info and output directory for removed files with cache reuse
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       await checkTestResult();
       await clearWorkspace();
    });
@@ -166,7 +184,7 @@ describe('copy sources', () => {
       await fs.writeJSON(configPath, config);
 
       // build should be completed without errors
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       await clearWorkspace();
    });

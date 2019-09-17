@@ -7,7 +7,8 @@ const path = require('path'),
    pMap = require('p-map'),
    helpers = require('../lib/helpers'),
    { decompress } = require('iltorb'),
-   { isWindows } = require('../lib/builder-constants');
+   { isWindows } = require('../lib/builder-constants'),
+   { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
@@ -61,6 +62,23 @@ const brotliDecompress = function(data) {
    });
 };
 
+/**
+ * properly finish test in builder main workflow was freezed by unexpected
+ * critical errors from gulp plugins
+ * @returns {Promise<void>}
+ */
+const runWorkflowWithTimeout = async function(timeout) {
+   let result;
+   try {
+      result = await promiseWithTimeout(runWorkflow(), timeout || 600000);
+   } catch (err) {
+      result = err;
+   }
+   if (result instanceof TimeoutError) {
+      true.should.equal(false);
+   }
+};
+
 // нужно проверить что происходит:
 // 1. при переименовывании файла == добавление/удаление файла
 // 2. при изменении файла
@@ -108,7 +126,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       let resultsFiles;
       let noThemesResultsFiles;
@@ -185,7 +203,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeFile(filePathForChange, `${data.toString()}\n.test-selector2 {}`);
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -232,7 +250,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.outputJson(path.join(sourceFolder, 'Модуль/themes.config.json'), { old: false, multi: true });
 
       // rebuild static with new theme
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // in results of interface module "Модуль" must exist only css with theme postfix(new theme scheme)
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -315,13 +333,16 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'TestModule-online-theme',
                path: path.join(sourceFolder, 'TestModule-online-theme')
+            },
+            {
+               name: 'NotExisting-online-theme',
+               path: path.join(sourceFolder, 'NotExisting-online-theme')
             }
          ]
       };
       await fs.writeJSON(configPath, config);
 
-      // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout(30000);
 
       let testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
       let testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
@@ -338,8 +359,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'online:dark:medium'
       ]);
 
-      // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout(30000);
 
       testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
       testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
@@ -373,7 +393,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // изменим "исходники"
       await timeoutForMacOS();
@@ -405,7 +425,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.outputJSON(configPath, config);
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       await fs.remove(`${workspaceFolder}-1`);
       await clearWorkspace();
    });
@@ -442,7 +462,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // result content for patch should be written only for interface module "Modul"
       const resultsFiles = await fs.readdir(path.join(patchOutputFolder, 'Modul'));
@@ -496,7 +516,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       let resultsFiles;
 
@@ -518,7 +538,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await timeoutForMacOS();
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -573,7 +593,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       await testResults();
       routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
          '/ForChange_old.html': {
@@ -594,7 +614,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await timeoutForMacOS();
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       await testResults();
       routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
          '/ForChange_new.html': {
@@ -630,7 +650,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -762,7 +782,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeFile(filePathForChangeHtml, dataHtml.toString().replace(/FOR_CHANGE_OLD/g, 'FOR_CHANGE_NEW'));
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -913,7 +933,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       const check = async() => {
          // запустим таску
-         await runWorkflow();
+         await runWorkflowWithTimeout();
 
          // файлы из исходников
          (await isSymlink(moduleOutputFolder, 'template.html')).should.equal(true);
@@ -958,7 +978,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       (await fs.pathExists(path.join(outputFolder, 'SBIS3.CONTROLS'))).should.equal(true);
 
@@ -976,7 +996,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // check for the first run results saved in the output directory
       (await fs.pathExists(moduleOutputFolder)).should.equal(true);
@@ -1014,7 +1034,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       const check = async() => {
          // запустим таску
-         await runWorkflow();
+         await runWorkflowWithTimeout();
 
          (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.css')).should.equal(true);
          (await isRegularFile(moduleOutputFolder, 'lang/en-US/en-US.js')).should.equal(true);
@@ -1059,7 +1079,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
       (await isRegularFile(builderMetaOutput, 'cdn_modules.json')).should.equal(true);
       let versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
@@ -1078,7 +1098,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       ]);
 
       // прогоним ещё раз, создание мета-файла версионирования должно нормально работать в инкрементальной сборке
-      await runWorkflow();
+      await runWorkflowWithTimeout();
       (await isRegularFile(builderMetaOutput, 'versioned_modules.json')).should.equal(true);
       versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
       cdnModules = await fs.readJson(path.join(builderMetaOutput, 'cdn_modules.json'));
@@ -1162,7 +1182,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          };
          await fs.writeJSON(configPath, config);
 
-         await runWorkflow();
+         await runWorkflowWithTimeout();
       });
 
       it('exclude new unknown for builder packages', async() => {
@@ -1321,7 +1341,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('module-dependencies must have actual info after source component remove', async() => {
          await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          const { nodes } = await fs.readJson(path.join(cacheFolder, 'module-dependencies.json'));
 
          // after source remove and project rebuild module-dependencies must not have node for current source file
@@ -1382,7 +1402,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       const testJsOutputPath = path.join(moduleOutputFolder, 'Test.min.js');
       let testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
@@ -1401,7 +1421,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          .replace(/testFunctionWmlOld/g, 'testFunctionWmlNew');
       await fs.writeFile(testJsInputPath, newTestJsInputContent);
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что js файл содержит актуальные данные из js, tmpl и wml
       testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
@@ -1415,7 +1435,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const testTmplInputContent = await fs.readFile(testTmplInputPath);
       await fs.writeFile(testTmplInputPath, testTmplInputContent.toString().replace(/TestClassTmplOld/g, 'TestClassTmplNew'));
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что js файл содержит актуальные данные из js, tmpl и wml
       testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
@@ -1429,7 +1449,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const testWmlInputContent = await fs.readFile(testWmlInputPath);
       await fs.writeFile(testWmlInputPath, testWmlInputContent.toString().replace(/TestClassWmlOld/g, 'TestClassWmlNew'));
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       // проверим, что js файл содержит актуальные данные из js, tmpl и wml
       testJsOutputContent = (await fs.readFile(testJsOutputPath)).toString();
@@ -1505,12 +1525,12 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       await checkFiles();
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       await checkFiles();
 
@@ -1568,12 +1588,12 @@ describe('gulp/builder/generate-workflow.js', () => {
       await linkPlatform(sourceFolder);
 
       // запустим таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       await checkFiles();
 
       // запустим повторно таску
-      await runWorkflow();
+      await runWorkflowWithTimeout();
 
       await checkFiles();
 
@@ -1654,7 +1674,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          await prepareTest(fixtureFolder);
          await linkPlatform(sourceFolder);
          await fs.writeJSON(configPath, config);
-         await runWorkflow();
+         await runWorkflowWithTimeout();
          const correctModulesPath = path.join(fixtureFolder, 'compiledCorrectResult');
 
          await pMap(
@@ -1768,7 +1788,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workflow-rebuilded', async() => {
-         await runWorkflow();
+         await runWorkflowWithTimeout();
       });
       it('test-output-file-content-after-rebuild', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
