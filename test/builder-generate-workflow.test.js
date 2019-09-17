@@ -1250,6 +1250,24 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/library'
          ]);
          resultModuleBundlesRoute.should.deep.equal({});
+
+         // build result must have correct meta about extendable bundles
+         const resultExtendBundlesMeta = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/extend-bundles.json'));
+         resultExtendBundlesMeta.should.deep.equal({
+            'InterfaceModule1/superbundle-for-builder-tests.package.min.css': {
+               extendsTo: 'superbundle-for-builder-tests.package.min.css',
+               config: '/InterfaceModule1/extend.package.json:superbundle-for-builder-tests.package.js'
+            },
+            'InterfaceModule1/superbundle-for-builder-tests.package.min.js': {
+               extendsTo: 'superbundle-for-builder-tests.package.min.js',
+               modules: [
+                  'InterfaceModule1/amdModule',
+                  'InterfaceModule1/library',
+                  'css!InterfaceModule1/moduleStyle'
+               ],
+               config: '/InterfaceModule1/extend.package.json:superbundle-for-builder-tests.package.js'
+            }
+         });
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
