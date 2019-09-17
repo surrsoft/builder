@@ -345,6 +345,7 @@
   "resources/MainUserCalendar/CoreUserCalendar/CalendarEvents.package.min",
   "resources/MainUserCalendar/CoreUserCalendar/CalendarUsers.package.min",
   "resources/MainUserCalendar/MainUserCalendar/CalendarCommon.package.min",
+  "resources/MainUserCalendar/MainUserCalendar/CalendarContent.package.min",
   "resources/MainUserCalendar/MainUserCalendar/CalendarDays.package.min",
   "resources/MediaNotifications/packages/MediaNotificationsHelpers.package.min",
   "resources/Meetings/Events/EventsWidget/EventsWidget.package.min",
