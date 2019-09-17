@@ -7,7 +7,8 @@ def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     ws (workspace){
         deleteDir()
         checkout([$class: 'GitSCM',
-            branches: [[name: "rc-${version}"]],
+            // branches: [[name: "rc-${engine_version}"]],
+            branches: [[name: "19.610/feature/move-engine2cli"]],
             doGenerateSubmoduleConfigurations: false,
             extensions: [[
                 $class: 'RelativeTargetDirectory',
