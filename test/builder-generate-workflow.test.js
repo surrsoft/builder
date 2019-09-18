@@ -574,6 +574,79 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('actual builder cache', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         builderTests: true,
+         wml: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core'),
+               required: true
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // make test folders in platform modules cache to check it was removed after rebuild with new config.
+      await fs.ensureDir(path.join(cacheFolder, 'platform/PlatformModule1'));
+      await fs.ensureDir(path.join(cacheFolder, 'platform/PlatformModule2'));
+
+      // запустим таску
+      await runWorkflowWithTimeout();
+
+      config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+
+      // gulp_config was changed, so we need to ensure cache platform folder for old build was removed
+      (await fs.pathExists(path.join(cacheFolder, 'platform'))).should.equal(false);
+
+      // source symlinks must have new actual list of source modules
+      const sourceSymlinksDirectoryList = await fs.readdir(path.join(cacheFolder, 'temp-modules'));
+      sourceSymlinksDirectoryList.should.have.members([
+         'SBIS3.CONTROLS',
+         'Controls-theme',
+         'Модуль'
+      ]);
+      await clearWorkspace();
+   });
+
    it('routes-info', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
       await prepareTest(fixtureFolder);

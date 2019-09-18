@@ -168,11 +168,15 @@ class Cache {
       if (await this.cacheHasIncompatibleChanges(skipDeepConfigCheck)) {
          this.lastStore = new StoreInfo();
 
-         // из кеша можно удалить всё кроме .lockfile
+         /**
+          * we can remove all cache content, except meta created before cache checking:
+          * 1)builder.lockfile - protection file for single build of current project.
+          * 2)temp-modules - directory of all sources modules symlinks of current project
+          */
          if (await fs.pathExists(this.config.cachePath)) {
-            for (const fullPath of await fs.readdir(this.config.cachePath)) {
-               if (!fullPath.endsWith('.lockfile')) {
-                  removePromises.push(fs.remove(fullPath));
+            for (const fileName of await fs.readdir(this.config.cachePath)) {
+               if (!(fileName.endsWith('.lockfile') || fileName === 'temp-modules')) {
+                  removePromises.push(fs.remove(path.join(this.config.cachePath, fileName)));
                }
             }
          }
