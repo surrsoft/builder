@@ -21,25 +21,21 @@ const path = require('path');
  */
 module.exports = function generateTaskForSaveJoinedMeta(taskParameters) {
    if (!taskParameters.config.joinedMeta) {
-      return function skipSavejoinedMeta(done) {
+      return function skipSaveJoinedMeta(done) {
          done();
       };
    }
-   return async function savejoinedMeta() {
+   return async function saveJoinedMeta() {
       // save joined module-dependencies for non-jinnee application
       const root = taskParameters.config.rawConfig.output;
       if (taskParameters.config.dependenciesGraph) {
-         await fs.writeJson(
-            path.join(
-               root,
-               'module-dependencies.json'
-            ),
-            taskParameters.cache.getModuleDependencies()
-         );
+         const moduleDeps = taskParameters.cache.getModuleDependencies();
+         await fs.writeJson(path.join(root, 'module-dependencies.json'), moduleDeps);
+         if (taskParameters.config.isReleaseMode) {
+            await fs.writeJson(path.join(root, 'module-dependencies.min.json'), moduleDeps);
+         }
       }
-      if (!taskParameters.config.customPack) {
-         await fs.writeFile(path.join(root, 'bundles.js'), 'bundles={};');
-      }
+      await fs.writeFile(path.join(root, 'bundles.js'), 'bundles={};');
       if (taskParameters.config.commonContents) {
          await fs.writeJson(
             path.join(
@@ -65,12 +61,11 @@ module.exports = function generateTaskForSaveJoinedMeta(taskParameters) {
             );
          }
       }
-      await fs.writeFile(
-         path.join(
-            root,
-            'router.js'
-         ),
-         'define(\'router\', [], function(){ return {}; })'
-      );
+
+      const routerContent = 'define(\'router\', [], function(){ return {}; })';
+      await fs.writeFile(path.join(root, 'router.js'), routerContent);
+      if (taskParameters.config.isReleaseMode) {
+         await fs.writeFile(path.join(root, 'router.min.js'), routerContent);
+      }
    };
 };

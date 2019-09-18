@@ -1151,6 +1151,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             builderTests: true,
             customPack: true,
             compress: true,
+            joinedMeta: true,
+            dependenciesGraph: true,
             modules: [
                {
                   name: 'InterfaceModule1',
@@ -1203,6 +1205,17 @@ describe('gulp/builder/generate-workflow.js', () => {
          await runWorkflowWithTimeout();
       });
 
+      it('joined meta must have all common builder meta files', async() => {
+         (await isRegularFile(outputFolder, 'module-dependencies.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'module-dependencies.min.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'bundles.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'bundles.min.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'router.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'router.min.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.min.js')).should.equal(true);
+      });
       it('exclude new unknown for builder packages', async() => {
          const controlsOutputFolder = path.join(outputFolder, 'Controls');
 
@@ -1321,6 +1334,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'cbuc-icons.eot',
             'bundles.json',
             'bundlesRoute.json',
+            'module-dependencies.json',
             'pack.package.json',
             'test-brotli.package.min.css',
             'test-brotli.package.min.css.gz',
@@ -1360,7 +1374,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('module-dependencies must have actual info after source component remove', async() => {
          await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
          await runWorkflowWithTimeout();
-         const { nodes } = await fs.readJson(path.join(cacheFolder, 'module-dependencies.json'));
+         const { nodes } = await fs.readJson(path.join(outputFolder, 'module-dependencies.json'));
 
          // after source remove and project rebuild module-dependencies must not have node for current source file
          nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
