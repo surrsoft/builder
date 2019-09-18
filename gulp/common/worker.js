@@ -35,7 +35,13 @@ if (!checkCWDAvailability()) {
 require('../../lib/logger').setWorkerLogger(process.env.logs);
 
 const logger = require('../../lib/logger').logger();
-const needInitWs = process.env['init-ws'] === 'true';
+function initializeWSForWorker() {
+   const requiredModules = JSON.parse(process.env['required-modules']);
+
+   // ws должен быть вызван раньше чем первый global.requirejs
+   const nodeWS = require('./node-ws');
+   nodeWS.init(requiredModules);
+}
 
 try {
    process.on('unhandledRejection', (reason, p) => {
@@ -49,14 +55,6 @@ try {
       process.exit(1);
    });
 
-   if (needInitWs) {
-      const requiredModules = JSON.parse(process.env['required-modules']);
-
-      // ws должен быть вызван раньше чем первый global.requirejs
-      const nodeWS = require('./node-ws');
-      nodeWS.init(requiredModules);
-   }
-
    /**
     * require данного набора функционала требует инициализации ядра
     * для работы. Поэтому обьявление данных функций выполняем только
@@ -64,12 +62,6 @@ try {
     */
    let processingTmpl, prepareXHTMLPrimitive,
       buildXhtmlPrimitive, collectWordsPrimitive;
-   if (needInitWs) {
-      processingTmpl = require('../../lib/processing-tmpl');
-      prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
-      buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml;
-      collectWordsPrimitive = require('../../lib/i18n/collect-words');
-   }
 
    const fs = require('fs-extra'),
       workerPool = require('workerpool'),
@@ -110,6 +102,10 @@ try {
     * @returns {Promise<{text, nodeName, dependencies}>}
     */
    async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath, templateExt) {
+      if (!processingTmpl) {
+         initializeWSForWorker();
+         processingTmpl = require('../../lib/processing-tmpl');
+      }
       return processingTmpl.buildTmpl(
          processingTmpl.minifyTmpl(text),
          relativeFilePath,
@@ -136,6 +132,10 @@ try {
       isMultiService,
       servicesPath
    ) {
+      if (!processingTmpl) {
+         initializeWSForWorker();
+         processingTmpl = require('../../lib/processing-tmpl');
+      }
       return processingTmpl.buildHtmlTmpl(
          text,
          fullPath,
@@ -154,6 +154,10 @@ try {
     * @returns {Promise<String>}
     */
    async function prepareXHTML(text, componentsPropertiesFilePath) {
+      if (!prepareXHTMLPrimitive) {
+         initializeWSForWorker();
+         prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
+      }
       return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
    }
 
@@ -164,6 +168,10 @@ try {
     * @returns {Promise<{nodeName, text}>}
     */
    async function buildXhtml(text, relativeFilePath) {
+      if (!buildXhtmlPrimitive) {
+         initializeWSForWorker();
+         buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml;
+      }
       return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
    }
 
@@ -177,6 +185,10 @@ try {
    async function collectWords(modulePath, filePath, componentsPropertiesFilePath) {
       if (!componentsProperties) {
          componentsProperties = await fs.readJSON(componentsPropertiesFilePath);
+      }
+      if (!collectWordsPrimitive) {
+         initializeWSForWorker();
+         collectWordsPrimitive = require('../../lib/i18n/collect-words');
       }
       const text = await fs.readFile(filePath);
       return collectWordsPrimitive(modulePath, filePath, text.toString(), componentsProperties);

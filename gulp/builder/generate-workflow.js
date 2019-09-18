@@ -48,29 +48,26 @@ function generateWorkflow(processArgv) {
       config.localizations.length > 0
    );
 
-   // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
-   const modulesForPatch = taskParameters.config.modules.filter(moduleInfo => moduleInfo.rebuild);
-   const skipDeepConfigCheck = modulesForPatch.length > 0 || taskParameters.config.branchTests;
    return gulp.series(
 
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
-      generateTaskForLoadCache(taskParameters, modulesForPatch),
+      generateTaskForLoadCache(taskParameters),
       generateTaskForCollectThemes(taskParameters),
 
       // в generateTaskForClearCache нужен загруженный кеш
-      generateTaskForClearCache(taskParameters, skipDeepConfigCheck),
+      generateTaskForClearCache(taskParameters),
 
       // подготовка WS для воркера
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
       generateTaskForTypescriptCompile(taskParameters),
-      generateTaskForBuildModules(taskParameters, modulesForPatch),
+      generateTaskForBuildModules(taskParameters),
 
-      generateTaskForRemoveFiles(taskParameters, modulesForPatch),
+      generateTaskForRemoveFiles(taskParameters),
       generateTaskForSaveCache(taskParameters),
-      generateTaskForFinalizeDistrib(taskParameters, modulesForPatch),
+      generateTaskForFinalizeDistrib(taskParameters.config),
       generateTaskForCheckModuleDeps(taskParameters),
       generateTaskForPackHtml(taskParameters),
       generateTaskForCustomPack(taskParameters),
@@ -84,9 +81,9 @@ function generateWorkflow(processArgv) {
    );
 }
 
-function generateTaskForClearCache(taskParameters, skipDeepConfigCheck) {
+function generateTaskForClearCache(taskParameters) {
    return function clearCache() {
-      return taskParameters.cache.clearCacheIfNeeded(skipDeepConfigCheck);
+      return taskParameters.cache.clearCacheIfNeeded();
    };
 }
 
@@ -107,11 +104,11 @@ function generateTaskForSaveCache(taskParameters) {
    };
 }
 
-function generateTaskForRemoveFiles(taskParameters, modulesForPatch) {
+function generateTaskForRemoveFiles(taskParameters) {
    return async function removeOutdatedFiles() {
       const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir(
          taskParameters.config.cachePath,
-         modulesForPatch
+         taskParameters.config.modulesForPatch
       );
       return pMap(filesForRemove, filePath => fs.remove(filePath), {
          concurrency: 20

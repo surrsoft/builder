@@ -74,8 +74,9 @@ function needSymlink(config, moduleInfo) {
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
  */
-function generateTaskForLoadCache(taskParameters, modulesForPatch) {
+function generateTaskForLoadCache(taskParameters) {
    return function loadCache() {
+      const { modulesForPatch } = taskParameters.config;
       return taskParameters.cache.load(modulesForPatch && modulesForPatch.length > 0);
    };
 }
