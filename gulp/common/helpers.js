@@ -124,7 +124,6 @@ function generateTaskForInitWorkerPool(taskParameters) {
                   logs: getLogLevel(process.argv),
                   'ws-core-path': wsCorePath,
                   'main-process-cwd': process.cwd(),
-                  'init-ws': taskParameters.config.needTemplates || taskParameters.config.builderTests,
                   'required-modules': JSON.stringify(requiredModules)
                },
                execArgv: ['--max-old-space-size=1024']
