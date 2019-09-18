@@ -9,7 +9,7 @@
 const path = require('path');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
-   { getLanguageByLocale, clearSourcesSymlinksIfNeeded, checkForSourcesOutput } = require('../../../lib/config-helpers'),
+   { getLanguageByLocale, clearSourcesSymlinks, checkForSourcesOutput } = require('../../../lib/config-helpers'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
@@ -256,7 +256,7 @@ class BuildConfiguration {
          this.logFolder = this.rawConfig.logs;
       }
 
-      clearSourcesSymlinksIfNeeded(this.cachePath, this.logFolder, this.branchTests);
+      clearSourcesSymlinks(this.cachePath);
 
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
