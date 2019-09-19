@@ -1082,68 +1082,68 @@ describe('gulp/builder/generate-workflow.js', () => {
    });
 
    describe('custom pack', () => {
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         typescript: true,
+         less: true,
+         themes: true,
+         minimize: true,
+         wml: true,
+         builderTests: true,
+         customPack: true,
+         compress: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'InterfaceModule1',
+               path: path.join(sourceFolder, 'InterfaceModule1')
+            },
+            {
+               name: 'InterfaceModule2',
+               path: path.join(sourceFolder, 'InterfaceModule2')
+            },
+            {
+               name: 'InterfaceModule3',
+               path: path.join(sourceFolder, 'InterfaceModule3')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
+            }
+         ]
+      };
       before(async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/custompack');
          await prepareTest(fixtureFolder);
          await linkPlatform(sourceFolder);
-         const config = {
-            cache: cacheFolder,
-            output: outputFolder,
-            typescript: true,
-            less: true,
-            themes: true,
-            minimize: true,
-            wml: true,
-            builderTests: true,
-            customPack: true,
-            compress: true,
-            modules: [
-               {
-                  name: 'InterfaceModule1',
-                  path: path.join(sourceFolder, 'InterfaceModule1')
-               },
-               {
-                  name: 'InterfaceModule2',
-                  path: path.join(sourceFolder, 'InterfaceModule2')
-               },
-               {
-                  name: 'InterfaceModule3',
-                  path: path.join(sourceFolder, 'InterfaceModule3')
-               },
-               {
-                  name: 'Модуль',
-                  path: path.join(sourceFolder, 'Модуль')
-               },
-               {
-                  name: 'WS.Core',
-                  path: path.join(sourceFolder, 'WS.Core')
-               },
-               {
-                  name: 'View',
-                  path: path.join(sourceFolder, 'View')
-               },
-               {
-                  name: 'Vdom',
-                  path: path.join(sourceFolder, 'Vdom')
-               },
-               {
-                  name: 'Router',
-                  path: path.join(sourceFolder, 'Router')
-               },
-               {
-                  name: 'Inferno',
-                  path: path.join(sourceFolder, 'Inferno')
-               },
-               {
-                  name: 'Controls',
-                  path: path.join(sourceFolder, 'Controls')
-               },
-               {
-                  name: 'Types',
-                  path: path.join(sourceFolder, 'Types')
-               }
-            ]
-         };
          await fs.writeJSON(configPath, config);
 
          await runWorkflowWithTimeout();
@@ -1310,7 +1310,15 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          // after source remove and project rebuild module-dependencies must not have node for current source file
          nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
+      });
+      it('patch-module without extendable-bundles: after rebuild must not be saved extendBundles meta into WS.Core and root', async() => {
+         config.modules[0].rebuild = true;
+         await fs.writeJSON(configPath, config);
+         await runWorkflowWithTimeout();
 
+         (await isRegularFile(outputFolder, 'common-extend-bundles.json')).should.equal(false);
+         (await isRegularFile(outputFolder, 'WS.Core/bundles.json')).should.equal(false);
+         (await isRegularFile(outputFolder, 'WS.Core/bundlesRoute.json')).should.equal(false);
          await clearWorkspace();
       });
    });
