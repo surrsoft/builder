@@ -371,7 +371,8 @@ class BuildConfiguration {
        * https://online.sbis.ru/opendoc.html?guid=7e4b2c14-4779-471a-935f-2fd12990d814
        * @type {*|boolean}
        */
-      this.extendBundles = this.rawConfig.cld_name && this.rawConfig.cld_name.startsWith('SbisPlugin');
+      this.isSbisPlugin = this.rawConfig.cld_name && this.rawConfig.cld_name.startsWith('SbisPlugin');
+      this.extendBundles = this.isSbisPlugin;
       if (this.rawConfig.hasOwnProperty('builderTests')) {
          this.builderTests = this.rawConfig.builderTests;
          this.extendBundles = true;
