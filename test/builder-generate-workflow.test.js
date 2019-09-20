@@ -574,6 +574,79 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('actual builder cache', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         builderTests: true,
+         wml: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core'),
+               required: true
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // make test folders in platform modules cache to check it was removed after rebuild with new config.
+      await fs.ensureDir(path.join(cacheFolder, 'platform/PlatformModule1'));
+      await fs.ensureDir(path.join(cacheFolder, 'platform/PlatformModule2'));
+
+      // запустим таску
+      await runWorkflowWithTimeout();
+
+      config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+
+      // gulp_config was changed, so we need to ensure cache platform folder for old build was removed
+      (await fs.pathExists(path.join(cacheFolder, 'platform'))).should.equal(false);
+
+      // source symlinks must have new actual list of source modules
+      const sourceSymlinksDirectoryList = await fs.readdir(path.join(cacheFolder, 'temp-modules'));
+      sourceSymlinksDirectoryList.should.have.members([
+         'SBIS3.CONTROLS',
+         'Controls-theme',
+         'Модуль'
+      ]);
+      await clearWorkspace();
+   });
+
    it('routes-info', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/routes');
       await prepareTest(fixtureFolder);
@@ -1179,73 +1252,86 @@ describe('gulp/builder/generate-workflow.js', () => {
    });
 
    describe('custom pack', () => {
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         typescript: true,
+         less: true,
+         themes: true,
+         minimize: true,
+         wml: true,
+         builderTests: true,
+         customPack: true,
+         compress: true,
+         joinedMeta: true,
+         dependenciesGraph: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'InterfaceModule1',
+               path: path.join(sourceFolder, 'InterfaceModule1')
+            },
+            {
+               name: 'InterfaceModule2',
+               path: path.join(sourceFolder, 'InterfaceModule2')
+            },
+            {
+               name: 'InterfaceModule3',
+               path: path.join(sourceFolder, 'InterfaceModule3')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'Vdom',
+               path: path.join(sourceFolder, 'Vdom')
+            },
+            {
+               name: 'Router',
+               path: path.join(sourceFolder, 'Router')
+            },
+            {
+               name: 'Inferno',
+               path: path.join(sourceFolder, 'Inferno')
+            },
+            {
+               name: 'Controls',
+               path: path.join(sourceFolder, 'Controls')
+            },
+            {
+               name: 'Types',
+               path: path.join(sourceFolder, 'Types')
+            }
+         ]
+      };
       before(async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/custompack');
          await prepareTest(fixtureFolder);
          await linkPlatform(sourceFolder);
-         const config = {
-            cache: cacheFolder,
-            output: outputFolder,
-            typescript: true,
-            less: true,
-            themes: true,
-            minimize: true,
-            wml: true,
-            builderTests: true,
-            customPack: true,
-            compress: true,
-            modules: [
-               {
-                  name: 'InterfaceModule1',
-                  path: path.join(sourceFolder, 'InterfaceModule1')
-               },
-               {
-                  name: 'InterfaceModule2',
-                  path: path.join(sourceFolder, 'InterfaceModule2')
-               },
-               {
-                  name: 'InterfaceModule3',
-                  path: path.join(sourceFolder, 'InterfaceModule3')
-               },
-               {
-                  name: 'Модуль',
-                  path: path.join(sourceFolder, 'Модуль')
-               },
-               {
-                  name: 'WS.Core',
-                  path: path.join(sourceFolder, 'WS.Core')
-               },
-               {
-                  name: 'View',
-                  path: path.join(sourceFolder, 'View')
-               },
-               {
-                  name: 'Vdom',
-                  path: path.join(sourceFolder, 'Vdom')
-               },
-               {
-                  name: 'Router',
-                  path: path.join(sourceFolder, 'Router')
-               },
-               {
-                  name: 'Inferno',
-                  path: path.join(sourceFolder, 'Inferno')
-               },
-               {
-                  name: 'Controls',
-                  path: path.join(sourceFolder, 'Controls')
-               },
-               {
-                  name: 'Types',
-                  path: path.join(sourceFolder, 'Types')
-               }
-            ]
-         };
          await fs.writeJSON(configPath, config);
 
          await runWorkflowWithTimeout();
       });
 
+      it('joined meta must have all common builder meta files', async() => {
+         (await isRegularFile(outputFolder, 'module-dependencies.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'module-dependencies.min.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'bundles.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'bundles.min.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'router.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'router.min.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.json')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.js')).should.equal(true);
+         (await isRegularFile(outputFolder, 'contents.min.js')).should.equal(true);
+      });
       it('exclude new unknown for builder packages', async() => {
          const controlsOutputFolder = path.join(outputFolder, 'Controls');
 
@@ -1364,6 +1450,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'cbuc-icons.eot',
             'bundles.json',
             'bundlesRoute.json',
+            'module-dependencies.json',
             'pack.package.json',
             'test-brotli.package.min.css',
             'test-brotli.package.min.css.gz',
@@ -1403,11 +1490,19 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('module-dependencies must have actual info after source component remove', async() => {
          await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
          await runWorkflowWithTimeout();
-         const { nodes } = await fs.readJson(path.join(cacheFolder, 'module-dependencies.json'));
+         const { nodes } = await fs.readJson(path.join(outputFolder, 'module-dependencies.json'));
 
          // after source remove and project rebuild module-dependencies must not have node for current source file
          nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
+      });
+      it('patch-module without extendable-bundles: after rebuild must not be saved extendBundles meta into WS.Core and root', async() => {
+         config.modules[0].rebuild = true;
+         await fs.writeJSON(configPath, config);
+         await runWorkflowWithTimeout();
 
+         (await isRegularFile(outputFolder, 'common-extend-bundles.json')).should.equal(false);
+         (await isRegularFile(outputFolder, 'WS.Core/bundles.json')).should.equal(false);
+         (await isRegularFile(outputFolder, 'WS.Core/bundlesRoute.json')).should.equal(false);
          await clearWorkspace();
       });
    });
