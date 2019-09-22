@@ -29,6 +29,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                callback(null, file);
                return;
             }
+            if (!taskParameters.config.templateBuilder) {
+               logger.warning({
+                  message: 'View module doesn\'t exists in current project. WS.Core "*.xhtml" templates will be ignored',
+                  moduleInfo,
+                  filePath: file.path
+               });
+               callback(null, file);
+               return;
+            }
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.xhtml/, '.min.xhtml');
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 

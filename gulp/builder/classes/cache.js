@@ -89,7 +89,7 @@ class Cache {
     * Проверяет есть ли несовместимые изменения в проекте, из-за которых нужно очистить кеш.
     * @returns {Promise<boolean>}
     */
-   async cacheHasIncompatibleChanges(skipDeepConfigCheck) {
+   async cacheHasIncompatibleChanges() {
       const finishText = 'Кеш и результат предыдущей сборки будут удалены, если существуют.';
       if (this.previousRunFailed) {
          logger.info(`В директории кэша с предыдущей сборки остался файл builder.lockfile. ${finishText}`);
@@ -120,6 +120,7 @@ class Cache {
        * In branch tests build some modules have another paths(specified to branch name)
        *
         */
+      const skipDeepConfigCheck = this.config.modulesForPatch.length > 0 || this.config.branchTests;
       if (skipDeepConfigCheck) {
          return false;
       }
@@ -163,9 +164,9 @@ class Cache {
    /**
     * Чистит кеш, если инкрементальная сборка невозможна.
     */
-   async clearCacheIfNeeded(skipDeepConfigCheck) {
+   async clearCacheIfNeeded() {
       const removePromises = [];
-      if (await this.cacheHasIncompatibleChanges(skipDeepConfigCheck)) {
+      if (await this.cacheHasIncompatibleChanges()) {
          this.lastStore = new StoreInfo();
 
          /**

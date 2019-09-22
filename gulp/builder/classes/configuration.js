@@ -258,6 +258,8 @@ class BuildConfiguration {
 
       clearSourcesSymlinks(this.cachePath);
 
+      // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
+      this.modulesForPatch = [];
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
             module.name,
@@ -268,6 +270,17 @@ class BuildConfiguration {
             module.rebuild,
             module.depends
          );
+
+         if (moduleInfo.rebuild) {
+            this.modulesForPatch.push(moduleInfo);
+         }
+
+         /**
+          * "View" module needed for template's build.
+          */
+         if (moduleInfo.name === 'View') {
+            this.templateBuilder = true;
+         }
          moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath, true);
 
          moduleInfo.contents.buildMode = this.getBuildMode();

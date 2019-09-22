@@ -74,8 +74,9 @@ function needSymlink(config, moduleInfo) {
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {function(): *}
  */
-function generateTaskForLoadCache(taskParameters, modulesForPatch) {
+function generateTaskForLoadCache(taskParameters) {
    return function loadCache() {
+      const { modulesForPatch } = taskParameters.config;
       return taskParameters.cache.load(modulesForPatch && modulesForPatch.length > 0);
    };
 }
@@ -123,7 +124,6 @@ function generateTaskForInitWorkerPool(taskParameters) {
                   logs: getLogLevel(process.argv),
                   'ws-core-path': wsCorePath,
                   'main-process-cwd': process.cwd(),
-                  'init-ws': taskParameters.config.needTemplates || taskParameters.config.builderTests,
                   'required-modules': JSON.stringify(requiredModules)
                },
                execArgv: ['--max-old-space-size=1024']

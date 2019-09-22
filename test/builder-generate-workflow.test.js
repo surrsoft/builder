@@ -994,8 +994,63 @@ describe('gulp/builder/generate-workflow.js', () => {
    it('create symlink or copy', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/symlink');
       await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
 
-      const config = {
+      let config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         presentationServiceMeta: true,
+         deprecatedWebPageTemplates: true,
+         htmlWml: true,
+         contents: true,
+         less: true,
+         themes: true,
+         builderTests: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      const check = async() => {
+         // запустим таску
+         await runWorkflowWithTimeout();
+
+         // файлы из исходников
+         (await isSymlink(moduleOutputFolder, 'template.html')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'TestHtmlTmpl.html.tmpl')).should.equal(true);
+         (await isSymlink(moduleOutputFolder, 'TestStaticHtml.js')).should.equal(true);
+
+         // генерируемые файлы из исходников
+         (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
+
+         // генерируемые файлы на модуль
+         (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'contents.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'navigation-modules.json')).should.equal(true);
+         (await isRegularFile(moduleOutputFolder, 'static_templates.json')).should.equal(true);
+      };
+
+      await check();
+      (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
+
+      config = {
          cache: cacheFolder,
          output: outputFolder,
          presentationServiceMeta: true,
@@ -1022,31 +1077,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      const check = async() => {
-         // запустим таску
-         await runWorkflowWithTimeout();
-
-         // файлы из исходников
-         (await isSymlink(moduleOutputFolder, 'template.html')).should.equal(true);
-         (await isSymlink(moduleOutputFolder, 'TestHtmlTmpl.html.tmpl')).should.equal(true);
-         (await isSymlink(moduleOutputFolder, 'TestStaticHtml.js')).should.equal(true);
-
-         // генерируемые файлы из исходников
-         (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
-
-         // генерируемые файлы на модуль
-         (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'contents.json')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'navigation-modules.json')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'static_templates.json')).should.equal(true);
-      };
-
+      // recheck build result again to check proper work of incremental build
       await check();
 
-      // второй раз, чтобы проверить не ломает ли чего инкрементальная сборка
-      await check();
+      /**
+       * after rebuild without "View" module:
+       * 1)html.tmpl must not be builded.
+       * 2)project build must be completed successfully
+       */
+      (await isRegularFile(moduleOutputFolder, 'TestHtmlTmpl.html')).should.equal(false);
 
       await clearWorkspace();
    });
@@ -1165,6 +1204,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'WS.Core',
                path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
             }
          ]
       };
@@ -1727,6 +1770,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'WS.Core',
                path: path.join(sourceFolder, 'WS.Core')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
             },
             {
                name: 'Modul',

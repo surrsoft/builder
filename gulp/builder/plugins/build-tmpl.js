@@ -57,6 +57,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             callback(null, file);
             return;
          }
+         if (!taskParameters.config.templateBuilder) {
+            logger.warning({
+               message: '"View" interface module doesn\'t exists in current project. WS.Core "*.tmpl/*.wml" templates will be ignored',
+               moduleInfo,
+               filePath: file.path
+            });
+            callback(null, file);
+            return;
+         }
          let outputMinFile = '';
          if (taskParameters.config.isReleaseMode) {
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(templateExtReg, '.min$1');

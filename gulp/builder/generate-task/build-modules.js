@@ -52,10 +52,11 @@ const { needSymlink } = require('../../common/helpers');
  * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForBuildModules(taskParameters, modulesForPatch) {
+function generateTaskForBuildModules(taskParameters) {
    const tasks = [];
    let countCompletedModules = 0;
-   const modulesForBuild = modulesForPatch.length > 0 ? modulesForPatch : taskParameters.config.modules;
+   const { config } = taskParameters;
+   const modulesForBuild = config.modulesForPatch.length > 0 ? config.modulesForPatch : config.modules;
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
       logger.progress(100 * countCompletedModules / modulesForBuild.length);
@@ -63,7 +64,7 @@ function generateTaskForBuildModules(taskParameters, modulesForPatch) {
    };
 
    const modulesMap = new Map();
-   for (const moduleInfo of taskParameters.config.modules) {
+   for (const moduleInfo of config.modules) {
       modulesMap.set(path.basename(moduleInfo.path), moduleInfo.path);
    }
 

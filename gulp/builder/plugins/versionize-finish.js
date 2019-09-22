@@ -18,11 +18,10 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
  * Объявление плагина
- * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(taskParameters, moduleInfo) {
+module.exports = function declarePlugin(moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
       try {
          if (!includeExts.includes(file.extname)) {

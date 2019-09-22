@@ -15,32 +15,31 @@ const logger = require('../../../lib/logger').logger(),
 
 /**
  * Генерация завершающий задачи для Release сборки.
- * @param {TaskParameters} taskParameters параметры для задач
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForFinalizeDistrib(taskParameters, modulesForPatch) {
-   if (!taskParameters.config.isReleaseMode) {
+function generateTaskForFinalizeDistrib(config) {
+   if (!config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(taskParameters, modulesForPatch)];
-   if (taskParameters.config.localizations.length > 0) {
-      tasks.push(generateTaskForNormalizeKey(taskParameters.config));
+   const tasks = [generateTaskForCopyResources(config)];
+   if (config.localizations.length > 0) {
+      tasks.push(generateTaskForNormalizeKey(config));
    }
 
    return gulp.series(tasks);
 }
 
-function generateTaskForCopyResources(taskParameters, modulesForPatch) {
-   const modulesToCopy = modulesForPatch.length > 0 ? modulesForPatch : taskParameters.config.modules;
+function generateTaskForCopyResources(config) {
+   const modulesToCopy = config.modulesForPatch.length > 0 ? config.modulesForPatch : config.modules;
    const tasks = modulesToCopy.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
 
       // необходимо, чтобы мы могли копировать содержимое .builder в output
       const dotInput = path.join(moduleInfo.output, '/.*/*.*');
-      const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
+      const moduleOutput = path.join(config.rawConfig.output, path.basename(moduleInfo.output));
       return function copyResources() {
          return gulp
             .src([input, dotInput], { dot: false, nodir: true })
@@ -56,7 +55,7 @@ function generateTaskForCopyResources(taskParameters, modulesForPatch) {
                   }
                })
             )
-            .pipe(gulpIf(!!taskParameters.config.version, versionizeFinish(taskParameters, moduleInfo)))
+            .pipe(gulpIf(!!config.version, versionizeFinish(moduleInfo)))
             .pipe(gulp.dest(moduleOutput));
       };
    });

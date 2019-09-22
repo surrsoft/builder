@@ -31,6 +31,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                callback(null, file);
                return;
             }
+            if (!taskParameters.config.templateBuilder) {
+               logger.warning({
+                  message: 'View module doesn\'t exists in current project. WS.Core "*.html.tmpl" templates will be ignored',
+                  moduleInfo,
+                  filePath: file.path
+               });
+               callback(null, file);
+               return;
+            }
 
             const relativeTmplPath = path.relative(moduleInfo.path, file.history[0]);
             const relativeTmplPathWithModuleName = helpers.prettifyPath(
