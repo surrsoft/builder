@@ -322,6 +322,22 @@ describe('gulp/builder/generate-workflow.js', () => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
 
+      const testResults = async() => {
+         const testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
+         const testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
+         testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
+         testModuleNewThemes['TestModule/test-online'].should.have.members([
+            'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
+         ]);
+         testModuleNewThemes.hasOwnProperty('TestModule/dark/subDirectoryForOnline/test-online').should.equal(true);
+         testModuleNewThemes['TestModule/dark/subDirectoryForOnline/test-online'].should.have.members([
+            'online'
+         ]);
+         testModuleNewThemes.hasOwnProperty('TestModule/subDirectoryForDarkMedium/test-online').should.equal(true);
+         testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
+            'online:dark:medium'
+         ]);
+      };
       const config = {
          cache: cacheFolder,
          output: outputFolder,
@@ -333,16 +349,16 @@ describe('gulp/builder/generate-workflow.js', () => {
          builderTests: true,
          modules: [
             {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            },
+            {
                name: 'SBIS3.CONTROLS',
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
                name: 'Controls-theme',
                path: path.join(sourceFolder, 'Controls-theme')
-            },
-            {
-               name: 'TestModule',
-               path: path.join(sourceFolder, 'TestModule')
             },
             {
                name: 'TestModule-anotherTheme-theme',
@@ -359,32 +375,16 @@ describe('gulp/builder/generate-workflow.js', () => {
          ]
       };
       await fs.writeJSON(configPath, config);
-
       await runWorkflowWithTimeout(30000);
-
-      let testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
-      let testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
-      testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
-      testModuleNewThemes['TestModule/test-online'].should.have.members([
-         'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
-      ]);
-      testModuleNewThemes.hasOwnProperty('TestModule/dark/subDirectoryForOnline/test-online').should.equal(true);
-      testModuleNewThemes['TestModule/dark/subDirectoryForOnline/test-online'].should.have.members([
-         'online'
-      ]);
-      testModuleNewThemes.hasOwnProperty('TestModule/subDirectoryForDarkMedium/test-online').should.equal(true);
-      testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
-         'online:dark:medium'
-      ]);
-
+      await testResults();
       await runWorkflowWithTimeout(30000);
+      await testResults();
 
-      testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
-      testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
-      testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
-      testModuleNewThemes['TestModule/test-online'].should.have.members([
-         'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
-      ]);
+      // set "TestModule" as module for patch, rebuild it and check results
+      config.modules[0].rebuild = true;
+      await fs.writeJSON(configPath, config);
+      await runWorkflowWithTimeout(30000);
+      await testResults();
       await clearWorkspace();
    });
 
