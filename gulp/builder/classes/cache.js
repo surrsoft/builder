@@ -43,6 +43,24 @@ class Cache {
       };
    }
 
+   // setting default store values for current interface module
+   setDefaultStore(moduleInfo) {
+      this.currentStore.modulesCache[moduleInfo.name] = {
+         componentsInfo: {},
+         routesInfo: {},
+         markupCache: {},
+         esCompileCache: {},
+         versionedModules: {},
+         cdnModules: {},
+         newThemesModules: {},
+         lessConfig: ''
+      };
+      this.currentStore.inputPaths[moduleInfo.path] = {
+         hash: '',
+         output: []
+      };
+   }
+
    async load(patchBuild) {
       await this.lastStore.load(this.config.cachePath);
 
@@ -58,25 +76,24 @@ class Cache {
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
       for (const moduleInfo of this.config.modules) {
-         // in patch for module without rebuild configuration copy builder cache as is if it exists
-         if (patchBuild && !moduleInfo.rebuild && this.lastStore.modulesCache[moduleInfo.name]) {
-            this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
-            this.currentStore.inputPaths[moduleInfo.path] = this.lastStore.inputPaths[moduleInfo.path];
+         if (patchBuild && this.lastStore.modulesCache[moduleInfo.name]) {
+            /**
+             * in patch for module with rebuild configuration we need to get new themes meta from the last cache value
+             * In patch build new themes interface modules may not be participating in patch build, so we can lose meta
+             * for this modules.
+             */
+            if (moduleInfo.rebuild) {
+               this.setDefaultStore(moduleInfo);
+               const currentStoreModulesCache = this.currentStore.modulesCache[moduleInfo.name];
+               const lastStoreModulesCache = this.lastStore.modulesCache[moduleInfo.name];
+               currentStoreModulesCache.newThemesModules = lastStoreModulesCache.newThemesModules;
+            } else {
+               // in patch for modules without rebuild configuration store cache "as is"
+               this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
+               this.currentStore.inputPaths[moduleInfo.path] = this.lastStore.inputPaths[moduleInfo.path];
+            }
          } else {
-            this.currentStore.modulesCache[moduleInfo.name] = {
-               componentsInfo: {},
-               routesInfo: {},
-               markupCache: {},
-               esCompileCache: {},
-               versionedModules: {},
-               cdnModules: {},
-               newThemesModules: {},
-               lessConfig: ''
-            };
-            this.currentStore.inputPaths[moduleInfo.path] = {
-               hash: '',
-               output: []
-            };
+            this.setDefaultStore(moduleInfo);
          }
       }
    }
