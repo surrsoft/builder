@@ -1,10 +1,10 @@
 define('Modul/Modul', [
-    'View/Executor/TClosure',
     'tslib',
+    'View/Executor/TClosure',
     'require',
     'exports',
     'css!theme?Modul/_es6/test'
-], function (thelpers, tslib_1, require, exports) {
+], function (tslib_1, thelpers, require, exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
         exports['wml!Modul/_es6/test'] = true;
         var wml_Modul__es6_test = function () {
