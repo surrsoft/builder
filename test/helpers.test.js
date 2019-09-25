@@ -156,4 +156,66 @@ describe('library pack helpers', () => {
       result = libPackHelpers.isPrivate(dependency);
       result.should.be.equal(false);
    });
+
+   it('check for external library dependencies added with sorting', () => {
+      const testExternalDeps = (extDeps) => {
+         const libraryParametersNames = [
+            {
+               type: 'Identifier',
+               name: 'require'
+            },
+            {
+               type: 'Identifier',
+               name: 'exports'
+            },
+         ];
+         const libraryDependencies = [
+            {
+               type: 'Literal',
+               value: 'require',
+               raw: "'require'"
+            },
+            {
+               type: 'Literal',
+               value: 'exports',
+               raw: "'exports'"
+            }
+         ];
+         const libraryDependenciesMeta = {
+            require: {
+               names: ['require']
+            },
+            exports: {
+               names: ['exports']
+            },
+            test1: {
+               names: ['t1']
+            },
+            test2: {
+               names: ['t2']
+            },
+            test3: {
+               names: ['t3']
+            }
+         };
+
+         libPackHelpers.addExternalDepsToLibrary(
+            extDeps,
+            libraryDependencies,
+            libraryDependenciesMeta,
+            libraryParametersNames
+         );
+
+         libraryDependencies[0].value.should.equal('test3');
+         libraryDependencies[1].value.should.equal('test2');
+         libraryDependencies[2].value.should.equal('test1');
+         libraryParametersNames[0].name.should.equal('t3');
+         libraryParametersNames[1].name.should.equal('t2');
+         libraryParametersNames[2].name.should.equal('t1');
+      };
+
+      testExternalDeps(['test1', 'test2', 'test3']);
+      testExternalDeps(['test3', 'test2', 'test1']);
+      testExternalDeps(['test2', 'test1', 'test3']);
+   });
 });
