@@ -166,7 +166,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
                if (
                   info.hasOwnProperty('lessDependencies') &&
-                  (taskParameters.config.isCoverageTests || taskParameters.config.builderTests)
+                  (taskParameters.config.lessCoverage || taskParameters.config.builderTests)
                ) {
                   const result = new Set();
                   info.lessDependencies.forEach((currentDependency) => {

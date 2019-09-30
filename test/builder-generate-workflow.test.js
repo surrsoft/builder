@@ -88,7 +88,85 @@ describe('gulp/builder/generate-workflow.js', () => {
       await initTest();
    });
 
-   it('compile less', async() => {
+   it('compile less with coverage', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         lessCoverage: true,
+         less: true,
+         themes: true,
+         typescript: true,
+         dependenciesGraph: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'Модуль без тем',
+               path: path.join(sourceFolder, 'Модуль без тем')
+            },
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflowWithTimeout();
+
+      const testModuleDepsPath = path.join(outputFolder, 'TestModule/module-dependencies.json');
+      let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+
+      lessDependenciesForTest['TestModule/stable'].should.have.members([
+         'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!SBIS3.CONTROLS/themes/_mixins',
+         'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-for-import',
+         'css!TestModule/Stable-for-theme-import',
+         'css!TestModule/Stable-with-import',
+         'css!TestModule/test-style-assign',
+         'css!TestModule/test-style-object',
+         'css!TestModule/test-theme-object',
+         'css!Модуль/Stable'
+      ]);
+
+      // запустим повторно таску
+      await runWorkflowWithTimeout();
+
+      lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+      lessDependenciesForTest['TestModule/stable'].should.have.members([
+         'css!Controls-theme/themes/default/helpers/_mixins',
+         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!SBIS3.CONTROLS/themes/_mixins',
+         'css!SBIS3.CONTROLS/themes/online/_variables',
+         'css!TestModule/Stable-for-import',
+         'css!TestModule/Stable-for-theme-import',
+         'css!TestModule/Stable-with-import',
+         'css!TestModule/test-style-assign',
+         'css!TestModule/test-style-object',
+         'css!TestModule/test-theme-object',
+         'css!Модуль/Stable'
+      ]);
+
+      await clearWorkspace();
+   });
+
+   it('compile less without coverage', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
 
@@ -99,7 +177,61 @@ describe('gulp/builder/generate-workflow.js', () => {
          themes: true,
          typescript: true,
          dependenciesGraph: true,
-         builderTests: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-theme',
+               path: path.join(sourceFolder, 'Controls-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'Модуль без тем',
+               path: path.join(sourceFolder, 'Модуль без тем')
+            },
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            }
+         ]
+      };
+
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflowWithTimeout();
+
+      const testModuleDepsPath = path.join(outputFolder, 'TestModule/module-dependencies.json');
+      let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+
+      lessDependenciesForTest.should.deep.equal({});
+
+      // запустим повторно таску
+      await runWorkflowWithTimeout();
+
+      lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+      lessDependenciesForTest.should.deep.equal({});
+
+      await clearWorkspace();
+   });
+
+   it('compile less', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         lessCoverage: true,
+         less: true,
+         themes: true,
+         typescript: true,
+         dependenciesGraph: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -162,22 +294,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.json.js'
       ]);
 
-      const testModuleDepsPath = path.join(outputFolder, 'TestModule/module-dependencies.json');
-      let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
-      lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-theme/themes/default/helpers/_mixins',
-         'css!Controls-theme/themes/default/helpers/_old-mixins',
-         'css!SBIS3.CONTROLS/themes/_mixins',
-         'css!SBIS3.CONTROLS/themes/online/_variables',
-         'css!TestModule/Stable-for-import',
-         'css!TestModule/Stable-for-theme-import',
-         'css!TestModule/Stable-with-import',
-         'css!TestModule/test-style-assign',
-         'css!TestModule/test-style-object',
-         'css!TestModule/test-theme-object',
-         'css!Модуль/Stable'
-      ]);
-
       const stableCss = await fs.readFile(path.join(moduleOutputFolder, 'Stable.css'), 'utf8');
 
       // autoprefixer enabled by default, so css result must have all needed prefixes
@@ -238,20 +354,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.less',
          'themes.config.json',
          'themes.config.json.js'
-      ]);
-      lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
-      lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-theme/themes/default/helpers/_mixins',
-         'css!Controls-theme/themes/default/helpers/_old-mixins',
-         'css!SBIS3.CONTROLS/themes/_mixins',
-         'css!SBIS3.CONTROLS/themes/online/_variables',
-         'css!TestModule/Stable-for-import',
-         'css!TestModule/Stable-for-theme-import',
-         'css!TestModule/Stable-with-import',
-         'css!TestModule/test-style-assign',
-         'css!TestModule/test-style-object',
-         'css!TestModule/test-theme-object',
-         'css!Модуль/Stable'
       ]);
 
       // update themes.config.json for interface module "Модуль". all less must be rebuilded for this new themes config.
