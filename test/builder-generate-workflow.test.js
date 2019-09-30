@@ -1381,11 +1381,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      const sourceTsMTime = await getMTime(path.join(sourceFolder, 'Модуль/StableTs.ts'));
+      const sourceTsMTime = await getMTime(path.join(sourceFolder, 'Модуль/StableTS.ts'));
 
       await runWorkflowWithTimeout(30000);
 
-      (await getMTime(path.join(sourceFolder, 'Модуль/StableTs.ts'))).should.equal(sourceTsMTime);
+      (await getMTime(path.join(sourceFolder, 'Модуль/StableTS.ts'))).should.equal(sourceTsMTime);
       await clearWorkspace();
    });
    describe('custom pack', () => {
