@@ -26,8 +26,18 @@ module.exports = function declarePlugin(moduleInfo) {
          try {
             const prettyStaticTemplates = {};
             for (const url of Object.keys(moduleInfo.staticTemplates)) {
+               const currentUrlList = helpers.descendingSort(moduleInfo.staticTemplates[url]);
                const prettyUrl = `/${helpers.removeLeadingSlashes(helpers.prettifyPath(url))}`;
-               prettyStaticTemplates[prettyUrl] = helpers.prettifyPath(moduleInfo.staticTemplates[url]);
+               currentUrlList.forEach((currentUrl, index) => {
+                  if (index === 0) {
+                     prettyStaticTemplates[prettyUrl] = helpers.prettifyPath(currentUrlList[0]);
+                  } else {
+                     logger.warning({
+                        message: `static templates meta: attempt to write another template ${currentUrl} into current url: ${prettyUrl}`,
+                        moduleInfo
+                     });
+                  }
+               });
             }
 
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последней статической html страницы в модуле.

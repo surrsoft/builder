@@ -10,6 +10,14 @@
       "packer/",
       "resources/"
    ],
+   "nyc": {
+      "exclude": [
+         "gulpfile.js",
+         "copy-to-dest.js",
+         "minify-dest.js",
+         "test/**/*"
+      ]
+   },
    "scripts": {
       "build": "npm run build:verify && npm run build:only",
       "build:verify": "npm run build:lint && npm run build:test",

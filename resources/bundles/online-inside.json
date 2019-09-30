@@ -328,6 +328,7 @@
   "resources/ImageEditor/ImageEditor/Editor.package.min",
   "resources/Informers/Informers.package.min",
   "resources/Informers/InformersCompatible.package.min",
+  "resources/File/file-wscore.package.min",
   "resources/Informers/informers-custom-events-popup.package.min",
   "resources/Informers/informers-custom-events.package.min",
   "resources/Interview/InterviewVote.package.min",

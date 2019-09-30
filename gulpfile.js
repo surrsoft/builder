@@ -41,7 +41,8 @@ try {
    // важно вернуть правильный код при выходе. сборка должна падать, если есть ошибки
    process.on('exit', (resultCode) => {
       logger.info(`Main process was exited with code: ${resultCode}`);
-      logger.correctExitCode(resultCode);
+      const exitCode = logger.getCorrectExitCode(resultCode);
+      process.exit(exitCode);
    });
 
    const gulp = require('gulp');

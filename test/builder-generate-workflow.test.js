@@ -821,11 +821,13 @@ describe('gulp/builder/generate-workflow.js', () => {
    it('static html', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/staticHtml');
       await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
 
       const config = {
          cache: cacheFolder,
          output: outputFolder,
          deprecatedWebPageTemplates: true,
+         htmlWml: true,
          contents: true,
          presentationServiceMeta: true,
          modules: [
@@ -837,6 +839,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Тема Скрепка',
                path: path.join(sourceFolder, 'Тема Скрепка')
+            },
+            {
+               name: 'View',
+               path: path.join(sourceFolder, 'View')
             }
          ]
       };
@@ -852,6 +858,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange_old.html',
          'ForRename_old.js',
          'ForRename.html',
+         'Test',
+         'TestASort',
          'Stable.js',
          'Stable.html',
          'contents.js',
@@ -951,7 +959,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             '  "/Stable.html": "Modul/Stable.html",\n' +
             '  "/Stable/One": "Modul/Stable.html",\n' +
             '  "/Stable/Two": "Modul/Stable.html",\n' +
-            '  "/Stable_Three": "Modul/Stable.html"\n' +
+            '  "/Stable_Three": "Modul/Stable.html",\n' +
+            '  "/TestHtmlTmpl.html": "Модуль/TestASort/TestHtmlTmpl.html"\n' +
             '}'
       );
 
@@ -984,6 +993,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForChange_new.html',
          'ForRename_new.js',
          'ForRename.html',
+         'Test',
+         'TestASort',
          'Stable.js',
          'Stable.html',
          'contents.js',
@@ -1086,7 +1097,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             '  "/Stable.html": "Modul/Stable.html",\n' +
             '  "/Stable/One": "Modul/Stable.html",\n' +
             '  "/Stable/Two": "Modul/Stable.html",\n' +
-            '  "/Stable_Three": "Modul/Stable.html"\n' +
+            '  "/Stable_Three": "Modul/Stable.html",\n' +
+            '  "/TestHtmlTmpl.html": "Модуль/TestASort/TestHtmlTmpl.html"\n' +
             '}'
       );
 
@@ -1353,6 +1365,29 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('filter sources', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/esAndTs');
+      await prepareTest(fixtureFolder);
+      const config = {
+         cache: cacheFolder,
+         output: sourceFolder,
+         typescript: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      const sourceTsMTime = await getMTime(path.join(sourceFolder, 'Модуль/StableTs.ts'));
+
+      await runWorkflowWithTimeout(30000);
+
+      (await getMTime(path.join(sourceFolder, 'Модуль/StableTs.ts'))).should.equal(sourceTsMTime);
+      await clearWorkspace();
+   });
    describe('custom pack', () => {
       const config = {
          cache: cacheFolder,
@@ -1362,8 +1397,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          themes: true,
          minimize: true,
          wml: true,
+         version: 'builder.unit.tests',
+         deprecatedXhtml: true,
          builderTests: true,
          customPack: true,
+         contents: true,
          compress: true,
          joinedMeta: true,
          dependenciesGraph: true,
@@ -1454,6 +1492,13 @@ describe('gulp/builder/generate-workflow.js', () => {
                'extendableBundles.json'
             )
          );
+         const correctSuperbundleConfig = await fs.readJson(
+            path.join(
+               sourceFolder,
+               'extendableBundlesResults',
+               'superbundle-result-config.json'
+            )
+         );
          const wsCoreBundles = await fs.readJson(path.join(outputFolder, 'WS.Core', 'bundles.json'));
 
          // WS.Core bundles meta must containing joined superbundle from extendable parts
@@ -1537,14 +1582,32 @@ describe('gulp/builder/generate-workflow.js', () => {
                config: '/InterfaceModule1/extend.package.json:superbundle-for-builder-tests.package.js'
             }
          });
+
+         /**
+          * check generated superbundle config meta to be strictly equal to
+          * correct meta.
+          */
+         const superbundleConfig = await fs.readJson(
+            path.join(
+               outputFolder,
+               'InterfaceModule1/.builder/superbundle-for-builder-tests.package.js.package.json'
+            )
+         );
+         superbundleConfig.should.deep.equal(correctSuperbundleConfig);
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
          let correctMembers = [
             '.builder',
+            'Test',
+            'TestASort',
             'Page.min.wml',
             'Page.min.wml.gz',
             'Page.wml',
+            'Page.min.xhtml',
+            'Page.xhtml',
+            'contents.js',
+            'contents.json',
             'Stable.css',
             'Stable.less',
             'Stable.min.css',
@@ -1563,7 +1626,13 @@ describe('gulp/builder/generate-workflow.js', () => {
             'themes.config.json.min.js',
             'themes.config.json.min.js.gz',
             'themes.config.min.json',
-            'themes.config.min.json.gz'
+            'themes.config.min.json.gz',
+            'test-projectMDeps.package.min.css',
+            'test-projectMDeps.package.min.css.br',
+            'test-projectMDeps.package.min.css.gz',
+            'test-projectMDeps.package.min.js',
+            'test-projectMDeps.package.min.js.br',
+            'test-projectMDeps.package.min.js.gz',
          ];
 
          if (!isWindows) {
@@ -1597,16 +1666,146 @@ describe('gulp/builder/generate-workflow.js', () => {
          // after source remove and project rebuild module-dependencies must not have node for current source file
          nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
       });
-      it('patch-module without extendable-bundles: after rebuild must not be saved extendBundles meta into WS.Core and root', async() => {
+      it('bundlesRoute meta for intersecting packages must have meta for the latest sorted package', async() => {
+         const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
+         bundlesRouteResult['InterfaceModule2/amdModule'].should.equal('resources/Modul/TestASort/test.package.min.js');
+         bundlesRouteResult['css!InterfaceModule2/moduleStyle'].should.equal('resources/Modul/TestASort/test.package.min.css');
+      });
+      it('patch module', async() => {
          config.modules[0].rebuild = true;
          await fs.writeJSON(configPath, config);
          await runWorkflowWithTimeout();
-
+      });
+      it('patch-module without extendable-bundles: after rebuild must not be saved extendBundles meta into WS.Core and root', async() => {
          (await isRegularFile(outputFolder, 'common-extend-bundles.json')).should.equal(false);
          (await isRegularFile(outputFolder, 'WS.Core/bundles.json')).should.equal(false);
          (await isRegularFile(outputFolder, 'WS.Core/bundlesRoute.json')).should.equal(false);
+      });
+      it('patch-bundlesRoute meta after patch rebuild for intersecting packages must have meta for the latest sorted package', async() => {
+         const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
+         bundlesRouteResult['InterfaceModule2/amdModule'].should.equal('resources/Modul/TestASort/test.package.min.js');
+         bundlesRouteResult['css!InterfaceModule2/moduleStyle'].should.equal('resources/Modul/TestASort/test.package.min.css');
+      });
+      it('patch-build must have module-dependencies for all modules(not only for the patching modules)', async() => {
+         /**
+          * reads package from "Modul" Interface module,
+          * that contains content from another interface module "InterfaceModule1".
+          * Patching of interface module "Modul" must not affect build of current package -
+          * that's the main argument of module-dependencies meta validity.
+          */
+         const resultPackage = await fs.readFile(path.join(moduleOutputFolder, 'test-projectMDeps.package.min.js'), 'utf8');
+         const correctResultPackage = await fs.readFile(
+            path.join(sourceFolder, 'correctResult/test-projectMDeps.package.min.js'),
+            'utf8'
+         );
+         resultPackage.should.equal(correctResultPackage);
+      });
+      it('patch - after patch for module "Modul" other interface modules cache must not be affected(files removal)', async() => {
+         const modulesCacheFolder = path.join(cacheFolder, 'incremental_build');
+
+         // check root interface module directory
+         let testDirectory = await fs.readdir(path.join(modulesCacheFolder, 'InterfaceModule1'));
+         testDirectory.should.have.members([
+            '.builder',
+            '_private',
+            'amdModule.js',
+            'amdModule.min.js',
+            'extend.package.json',
+            'library.modulepack.js',
+            'library.ts',
+            'library.js',
+            'library.min.js',
+            'module-dependencies.json',
+            'moduleStyle.css',
+            'moduleStyle.min.css',
+            'contents.js',
+            'contents.json'
+         ]);
+
+         // check builder meta
+         testDirectory = await fs.readdir(path.join(modulesCacheFolder, 'InterfaceModule1/.builder'));
+         testDirectory.should.have.members([
+            'cdn_modules.json',
+            'compiled-less.min.json',
+            'libraries.json',
+            'versioned_modules.json'
+         ]);
+
+         // check subdirectory of module
+         testDirectory = await fs.readdir(path.join(modulesCacheFolder, 'InterfaceModule1/_private'));
+         testDirectory.should.have.members([
+            'module1.ts',
+            'module1.js',
+            'module1.min.js',
+            'module2.ts',
+            'module2.js',
+            'module2.min.js',
+         ]);
+      });
+      it('patch - after patch build output result must contain only results of patched module and joined builder meta', async() => {
+         const outputFolderResults = await fs.readdir(outputFolder);
+         outputFolderResults.should.have.members([
+            'Modul',
+            'bundles.js',
+            'bundles.min.js',
+            'bundles.json',
+            'bundlesRoute.json',
+            'contents.js',
+            'contents.min.js',
+            'contents.json',
+            'module-dependencies.json',
+            'module-dependencies.min.json',
+            'router.js',
+            'router.min.js'
+         ]);
+      });
+      it('finish test', async() => {
          await clearWorkspace();
       });
+   });
+
+   it('pack static html - check paths validity to static packages', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packHTML');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+
+      const testResults = async() => {
+         /**
+          * dependencies in current test are static, so we can also add check for package hash.
+          */
+         const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
+         let containsNeededPackage = packedHtml.includes('href="/testService/resources/TestModule/static_packages/7497a16791b95bc13816581289af74d8.css"');
+         containsNeededPackage.should.equal(true);
+         containsNeededPackage = packedHtml.includes('src="/testService/resources/TestModule/static_packages/30ac01cebb99671a6238487f140a1e92.js"');
+         containsNeededPackage.should.equal(true);
+      };
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         deprecatedWebPageTemplates: true,
+         minimize: true,
+         less: true,
+         deprecatedStaticHtml: true,
+         dependenciesGrapg: true,
+         'url-service-path': '/testService/',
+         modules: [
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // запустим таску
+      await runWorkflowWithTimeout();
+      await testResults();
+
+      // check incremental build
+      await runWorkflowWithTimeout();
+      await testResults();
+      await clearWorkspace();
    });
 
    // проверим, что паковка собственных зависимостей корректно работает при пересборке

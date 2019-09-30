@@ -81,10 +81,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   })
                );
 
-               moduleInfo.staticTemplates[path.basename(outputPath)] = relativeTmplPathWithModuleName.replace(
+               const resultStaticTemplate = relativeTmplPathWithModuleName.replace(
                   '.tmpl',
                   ''
                );
+               if (moduleInfo.staticTemplates.hasOwnProperty(path.basename(outputPath))) {
+                  moduleInfo.staticTemplates[path.basename(outputPath)].push(resultStaticTemplate);
+               } else {
+                  moduleInfo.staticTemplates[path.basename(outputPath)] = [resultStaticTemplate];
+               }
             }
          } catch (error) {
             logger.error({ error });

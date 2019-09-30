@@ -71,10 +71,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
                if (result) {
                   const folderName = transliterate(moduleInfo.folderName);
                   const htmlPath = path.join(folderName, result.outFileName);
-                  moduleInfo.staticTemplates[result.outFileName] = htmlPath;
+                  if (moduleInfo.staticTemplates.hasOwnProperty(result.outFileName)) {
+                     moduleInfo.staticTemplates[result.outFileName].push(htmlPath);
+                  } else {
+                     moduleInfo.staticTemplates[result.outFileName] = [htmlPath];
+                  }
                   if (result.hasOwnProperty('urls') && result.urls && result.urls instanceof Array) {
                      for (const url of result.urls) {
-                        moduleInfo.staticTemplates[url] = htmlPath;
+                        if (moduleInfo.staticTemplates.hasOwnProperty(url)) {
+                           moduleInfo.staticTemplates[url].push(htmlPath);
+                        } else {
+                           moduleInfo.staticTemplates[url] = [htmlPath];
+                        }
                      }
                   }
                   const outputPath = path.join(moduleInfo.output, result.outFileName);

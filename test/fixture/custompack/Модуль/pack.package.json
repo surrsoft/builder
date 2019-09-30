@@ -8,4 +8,10 @@
     "Modul/*"
   ],
   "output": "test-brotli.package.js"
+}, {
+  "include": [
+    "Modul/*",
+    "InterfaceModule1/*"
+  ],
+  "output": "test-projectMDeps.package.js"
 }]

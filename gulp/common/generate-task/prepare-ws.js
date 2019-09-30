@@ -8,20 +8,14 @@
 'use strict';
 
 const path = require('path'),
-   os = require('os'),
    gulp = require('gulp'),
    plumber = require('gulp-plumber'),
    gulpChmod = require('gulp-chmod'),
-   workerPool = require('workerpool'),
    pluginCompileEsAndTs = require('../../builder/plugins/compile-es-and-ts-simple'),
    gulpIf = require('gulp-if'),
    changedInPlace = require('../../common/plugins/changed-in-place'),
    TaskParameters = require('../../common/classes/task-parameters'),
    logger = require('../../../lib/logger').logger();
-
-const {
-   generateTaskForTerminatePool
-} = require('../helpers');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -43,31 +37,17 @@ function generateTaskForPrepareWS(taskParameters) {
       };
    }
 
-   const pool = workerPool.pool(path.join(__dirname, '../worker-compile-es-and-ts.js'), {
-
-      // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
-      maxWorkers: os.cpus().length - 1 || 1,
-      env: {
-         'main-process-cwd': process.cwd()
-      },
-      forkOpts: {
-         execArgv: ['--max-old-space-size=1024']
-      }
-   });
-
-   const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false, pool);
-   const seriesTask = [];
+   const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false);
    const requiredModules = taskParameters.config.modules.filter(moduleInfo => moduleInfo.required);
    if (requiredModules.length) {
-      seriesTask.push(
-         gulp.parallel(
-            requiredModules
-               .map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
-         )
+      return gulp.parallel(
+         requiredModules
+            .map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
       );
    }
-   seriesTask.push(generateTaskForTerminatePool(localTaskParameters));
-   return gulp.series(seriesTask);
+   return function skipPrepareWS(done) {
+      done();
+   };
 }
 
 function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
