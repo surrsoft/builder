@@ -4,6 +4,7 @@ const initTest = require('./init-test');
 
 const helpers = require('../lib/helpers');
 const libPackHelpers = require('../lib/pack/helpers/librarypack');
+const logger = require('../lib/logger');
 
 describe('helpers', () => {
    before(async() => {
@@ -217,5 +218,61 @@ describe('library pack helpers', () => {
       testExternalDeps(['test1', 'test2', 'test3']);
       testExternalDeps(['test3', 'test2', 'test1']);
       testExternalDeps(['test2', 'test1', 'test3']);
+   });
+
+   describe('build exit code', () => {
+      before(() => {
+         logger.reset();
+      });
+      it('return 6 code if build has WARNING messages', () => {
+         const currentLogger = logger.setGulpLogger();
+         currentLogger.warning('warn message');
+         const exitCode = currentLogger.getCorrectExitCode(0);
+         exitCode.should.equal(6);
+         logger.reset();
+      });
+      it('return 1 code if build has ERROR messages', () => {
+         const currentLogger = logger.setGulpLogger();
+         currentLogger.error('warn message');
+         const exitCode = currentLogger.getCorrectExitCode(0);
+         exitCode.should.equal(1);
+         logger.reset();
+      });
+      it('return 0 code if build has only INFO messages', () => {
+         const currentLogger = logger.setGulpLogger();
+         currentLogger.info('info message');
+         const exitCode = currentLogger.getCorrectExitCode(0);
+         exitCode.should.equal(0);
+         logger.reset();
+      });
+      it('return 0 code if build has only DEBUG messages', () => {
+         const currentLogger = logger.setGulpLogger();
+         currentLogger.debug('debug message');
+         const exitCode = currentLogger.getCorrectExitCode(0);
+         exitCode.should.equal(0);
+         logger.reset();
+      });
+      it('always return 1 code if main process of current build was completed with fatal errors', () => {
+         const currentLogger = logger.setGulpLogger();
+         currentLogger.debug('debug message');
+         let exitCode = currentLogger.getCorrectExitCode(1);
+         exitCode.should.equal(1);
+         exitCode = currentLogger.getCorrectExitCode(256);
+         exitCode.should.equal(1);
+         currentLogger.info('info message');
+         exitCode = currentLogger.getCorrectExitCode(1);
+         exitCode.should.equal(1);
+         exitCode = currentLogger.getCorrectExitCode(256);
+         exitCode.should.equal(1);
+         currentLogger.warning('warning message');
+         exitCode = currentLogger.getCorrectExitCode(1);
+         exitCode.should.equal(1);
+         exitCode = currentLogger.getCorrectExitCode(256);
+         exitCode.should.equal(1);
+         logger.reset();
+      });
+      after(() => {
+         logger.setGulpLogger();
+      });
    });
 });

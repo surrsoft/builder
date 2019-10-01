@@ -1,0 +1,31 @@
+{
+  "includePackages": [
+    "InterfaceModule1/interfacemodule1.package.js"
+  ],
+  "extendsTo": "superbundle-for-builder-tests.package.js",
+  "packageName": "extend.package.json",
+  "configNum": 2,
+  "path": "/InterfaceModule1/extend.package.json",
+  "output": "superbundle-for-builder-tests.package.js",
+  "includeCore": true,
+  "platformPackage": true,
+  "include": [
+    "InterfaceModule1/*"
+  ],
+  "exclude": [
+    "InterfaceModule1/_private/*"
+  ],
+  "packagesRules": {
+    "InterfaceModule1/interfacemodule1.package.js": {
+      "include": [
+        "InterfaceModule1/*"
+      ],
+      "exclude": [
+        "InterfaceModule1/_private/*"
+      ]
+    }
+  },
+  "modules": [
+    "InterfaceModule1/*"
+  ]
+}

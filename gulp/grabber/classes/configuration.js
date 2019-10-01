@@ -29,7 +29,7 @@ class GrabberConfiguration {
 
    loadSync(argv) {
       this.configFile = ConfigurationReader.getProcessParameters(argv).config;
-      this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile);
+      this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile, process.cwd());
 
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 

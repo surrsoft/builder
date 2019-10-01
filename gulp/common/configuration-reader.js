@@ -28,26 +28,27 @@ function getProcessParameters(argv) {
 }
 
 /**
- * Прочитать файл конфигурации синхронно.
- * @param {string} configPath путь до файла конфигурации
- * @returns {Object} конфигурация в виде объекта
+ * Synchronously reads gulp configuration file.
+ * @param {string} configPath path for gulp config
+ * @param {string} currentWorkDir path to current process working directory
+ * @returns {Object} JSON-formatted object of current gulp configuration
  */
-function readConfigFileSync(configPath) {
+function readConfigFileSync(configPath, currentWorkDir) {
    if (!configPath) {
-      throw new Error('Файл конфигурации не задан.');
+      throw new Error('You need to set up the path to gulp configuration file.');
    }
 
-   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
+   const resolvedConfigPath = path.resolve(currentWorkDir, configPath);
    if (!fs.pathExistsSync(resolvedConfigPath)) {
-      throw new Error(`Файл конфигурации '${configPath}' не существует.`);
+      throw new Error(`Config file '${configPath}' doesn't exists.`);
    }
 
    let rawConfig = {};
-   const startErrorMessage = `Файл конфигурации ${configPath} не корректен.`;
+   const startErrorMessage = `Config file ${configPath} is invalid.`;
    try {
       rawConfig = fs.readJSONSync(resolvedConfigPath);
    } catch (e) {
-      e.message = `${startErrorMessage} Он должен представлять собой JSON-документ в кодировке UTF8. Ошибка: ${
+      e.message = `${startErrorMessage} It must be presented in UTF8-based JSON-formatted document. Error: ${
          e.message
       }`;
       throw e;
@@ -60,17 +61,17 @@ function readConfigFileSync(configPath) {
 
 function checkModules(rawConfig, root) {
    if (!rawConfig.hasOwnProperty('modules')) {
-      throw new Error('Не задан обязательный параметр modules');
+      throw new Error('Parameter "modules" must be specified.');
    }
    if (!Array.isArray(rawConfig.modules)) {
-      throw new Error('Параметр modules должен быть массивом');
+      throw new Error('Parameter "modules" must be specified as array only.');
    }
    if (rawConfig.modules.length === 0) {
-      throw new Error('Массив modules должен быть не пустым');
+      throw new Error('Parameter "modules" cannot be specified as empty array.');
    }
    for (const module of rawConfig.modules) {
       if (!module.hasOwnProperty('path') || !module.path) {
-         throw new Error('Для модуля не задан обязательный параметр path');
+         throw new Error(`For current module "${module.name}" path must be specified.`);
       }
 
       // если в конфигурации заданы относительные пути, разрешаем их в абсолютные
@@ -78,18 +79,18 @@ function checkModules(rawConfig, root) {
          module.path = path.resolve(root, module.path).replace(/\\/g, '/');
       }
       if (!fs.pathExistsSync(module.path)) {
-         throw new Error(`Директория ${module.path} не существует`);
+         throw new Error(`Path ${module.path} doesn't exists.`);
       }
    }
 }
 
 function checkCacheAndLogsPath(rawConfig, root, startErrorMessage) {
    if (!rawConfig.cache) {
-      throw new Error(`${startErrorMessage} Не задан обязательный параметр cache`);
+      throw new Error(`${startErrorMessage} Cache parameter must be specified.`);
    }
 
    if (!rawConfig.output) {
-      throw new Error(`${startErrorMessage} Не задан обязательный параметр output`);
+      throw new Error(`${startErrorMessage} Output parameter must be specified.`);
    }
 
    /**

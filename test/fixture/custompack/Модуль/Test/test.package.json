@@ -1,0 +1,6 @@
+{
+  "include": [
+    "InterfaceModule2/*"
+  ],
+  "output": "test.package.js"
+}
