@@ -127,7 +127,7 @@ describe('gulp configuration reader', () => {
       }
    });
    it('all relative paths must be resolved', async() => {
-      const getResolvedPath = currentPath => path.resolve(workspaceFolder, currentPath).replace(/\\/g, '');
+      const getResolvedPath = currentPath => path.resolve(workspaceFolder, currentPath).replace(/\\/g, '/');
       const config = {
          cache: './cache-folder',
          output: './output-folder',
