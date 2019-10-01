@@ -1628,10 +1628,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'themes.config.min.json',
             'themes.config.min.json.gz',
             'test-projectMDeps.package.min.css',
-            'test-projectMDeps.package.min.css.br',
             'test-projectMDeps.package.min.css.gz',
             'test-projectMDeps.package.min.js',
-            'test-projectMDeps.package.min.js.br',
             'test-projectMDeps.package.min.js.gz',
          ];
 
@@ -1642,7 +1640,9 @@ describe('gulp/builder/generate-workflow.js', () => {
                'test-brotli.package.min.css.br',
                'test-brotli.package.min.js.br',
                'themes.config.json.min.js.br',
-               'themes.config.min.json.br'
+               'themes.config.min.json.br',
+               'test-projectMDeps.package.min.css.br',
+               'test-projectMDeps.package.min.js.br'
             ]);
          }
 
