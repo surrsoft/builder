@@ -1,6 +1,9 @@
 {
   "include": [
-    "InterfaceModule2/*"
+    "ExternalInterfaceModule/*"
+  ],
+  "exclude": [
+    "ExternalInterfaceModule/amdModule"
   ],
   "output": "test.package.js"
 }
