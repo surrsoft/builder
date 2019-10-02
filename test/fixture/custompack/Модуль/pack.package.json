@@ -11,7 +11,7 @@
 }, {
   "include": [
     "Modul/*",
-    "InterfaceModule1/*"
+    "ExternalInterfaceModule/*"
   ],
-  "output": "test-projectMDeps.package.js"
+  "output": "TestBSort/test-projectMDeps.package.js"
 }]
