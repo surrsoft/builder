@@ -1411,6 +1411,10 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'Модуль')
             },
             {
+               name: 'ExternalInterfaceModule',
+               path: path.join(sourceFolder, 'ExternalInterfaceModule')
+            },
+            {
                name: 'InterfaceModule1',
                path: path.join(sourceFolder, 'InterfaceModule1')
             },
@@ -1555,15 +1559,21 @@ describe('gulp/builder/generate-workflow.js', () => {
          });
 
          /**
-          * In InterfaceModule1 we have packed into moduled superbundle library "library". bundlesRoute meta must
+          * In ExternalInterfaceModule we have packed into moduled superbundle library "library". bundlesRoute meta must
           * not have information about this library. "libraries" meta must have it.
           */
-         const resultModuleLibraries = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/.builder/libraries.json'));
-         const resultModuleBundlesRoute = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/bundlesRoute.json'));
+         const resultModuleLibraries = await fs.readJson(path.join(outputFolder, 'ExternalInterfaceModule/.builder/libraries.json'));
+         const resultModuleBundlesRoute = await fs.readJson(path.join(outputFolder, 'ExternalInterfaceModule/bundlesRoute.json'));
          resultModuleLibraries.should.have.members([
-            'InterfaceModule1/library'
+            'ExternalInterfaceModule/library'
          ]);
-         resultModuleBundlesRoute.should.deep.equal({});
+         resultModuleBundlesRoute.should.deep.equal({
+            'ExternalInterfaceModule/_private/module1': 'resources/Modul/TestBSort/test-projectMDeps.package.min.js',
+            'ExternalInterfaceModule/_private/module2': 'resources/Modul/TestBSort/test-projectMDeps.package.min.js',
+            'ExternalInterfaceModule/amdModule': 'resources/Modul/TestBSort/test-projectMDeps.package.min.js',
+            'ExternalInterfaceModule/library': 'resources/Modul/TestBSort/test-projectMDeps.package.min.js',
+            'css!ExternalInterfaceModule/moduleStyle': 'resources/Modul/TestBSort/test-projectMDeps.package.min.css'
+         });
 
          // build result must have correct meta about extendable bundles
          const resultExtendBundlesMeta = await fs.readJson(path.join(outputFolder, 'InterfaceModule1/extend-bundles.json'));
@@ -1601,6 +1611,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '.builder',
             'Test',
             'TestASort',
+            'TestBSort',
             'Page.min.wml',
             'Page.min.wml.gz',
             'Page.wml',
@@ -1626,11 +1637,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'themes.config.json.min.js',
             'themes.config.json.min.js.gz',
             'themes.config.min.json',
-            'themes.config.min.json.gz',
-            'test-projectMDeps.package.min.css',
-            'test-projectMDeps.package.min.css.gz',
-            'test-projectMDeps.package.min.js',
-            'test-projectMDeps.package.min.js.gz',
+            'themes.config.min.json.gz'
          ];
 
          if (!isWindows) {
@@ -1640,9 +1647,7 @@ describe('gulp/builder/generate-workflow.js', () => {
                'test-brotli.package.min.css.br',
                'test-brotli.package.min.js.br',
                'themes.config.json.min.js.br',
-               'themes.config.min.json.br',
-               'test-projectMDeps.package.min.css.br',
-               'test-projectMDeps.package.min.js.br'
+               'themes.config.min.json.br'
             ]);
          }
 
@@ -1668,11 +1673,38 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('bundlesRoute meta for intersecting packages must have meta for the latest sorted package', async() => {
          const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
-         bundlesRouteResult['InterfaceModule2/amdModule'].should.equal('resources/Modul/TestASort/test.package.min.js');
-         bundlesRouteResult['css!InterfaceModule2/moduleStyle'].should.equal('resources/Modul/TestASort/test.package.min.css');
+
+         /**
+          * bundlesRoute meta in "Modul" interface module must not contain information about packed external modules,
+          * it should be stored in proper interface module
+          */
+         bundlesRouteResult.hasOwnProperty('ExternalInterfaceModule/amdModule').should.equal(false);
+         bundlesRouteResult.hasOwnProperty('css!ExternalInterfaceModule/moduleStyle').should.equal(false);
+
+         const externalBundlesRouteResult = await fs.readJson(path.join(outputFolder, 'ExternalInterfaceModule/bundlesRoute.json'));
+         externalBundlesRouteResult['ExternalInterfaceModule/amdModule'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.js');
+         externalBundlesRouteResult['css!ExternalInterfaceModule/moduleStyle'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.css');
+      });
+      it('root bundles meta must have correct values', async() => {
+         const rootBundlesMeta = await fs.readJson(path.join(outputFolder, 'bundles.json'));
+         rootBundlesMeta.hasOwnProperty('resources/Modul/TestBSort/test-projectMDeps.package.min').should.equal(true);
+         rootBundlesMeta['resources/Modul/TestBSort/test-projectMDeps.package.min'].should.deep.equal([
+            'ExternalInterfaceModule/_private/module1',
+            'ExternalInterfaceModule/_private/module2',
+            'ExternalInterfaceModule/amdModule',
+            'ExternalInterfaceModule/library',
+            'Modul/themes.config.json',
+            'css!ExternalInterfaceModule/moduleStyle',
+            'css!Modul/Stable',
+            'html!Modul/Page'
+         ]);
+         const rootBundlesRouteMeta = await fs.readJson(path.join(outputFolder, 'bundlesRoute.json'));
+         rootBundlesRouteMeta.hasOwnProperty('ExternalInterfaceModule/amdModule').should.equal(true);
+         rootBundlesRouteMeta['ExternalInterfaceModule/amdModule'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.js');
       });
       it('patch module', async() => {
          config.modules[0].rebuild = true;
+         config.modules[1].rebuild = true;
          await fs.writeJSON(configPath, config);
          await runWorkflowWithTimeout();
       });
@@ -1683,8 +1715,17 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('patch-bundlesRoute meta after patch rebuild for intersecting packages must have meta for the latest sorted package', async() => {
          const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
-         bundlesRouteResult['InterfaceModule2/amdModule'].should.equal('resources/Modul/TestASort/test.package.min.js');
-         bundlesRouteResult['css!InterfaceModule2/moduleStyle'].should.equal('resources/Modul/TestASort/test.package.min.css');
+
+         /**
+          * bundlesRoute meta in "Modul" interface module must not contain information about packed external modules,
+          * it should be stored in proper interface module
+          */
+         bundlesRouteResult.hasOwnProperty('ExternalInterfaceModule/amdModule').should.equal(false);
+         bundlesRouteResult.hasOwnProperty('css!ExternalInterfaceModule/moduleStyle').should.equal(false);
+
+         const externalBundlesRouteResult = await fs.readJson(path.join(outputFolder, 'ExternalInterfaceModule/bundlesRoute.json'));
+         externalBundlesRouteResult['ExternalInterfaceModule/amdModule'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.js');
+         externalBundlesRouteResult['css!ExternalInterfaceModule/moduleStyle'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.css');
       });
       it('patch-build must have module-dependencies for all modules(not only for the patching modules)', async() => {
          /**
@@ -1693,7 +1734,7 @@ describe('gulp/builder/generate-workflow.js', () => {
           * Patching of interface module "Modul" must not affect build of current package -
           * that's the main argument of module-dependencies meta validity.
           */
-         const resultPackage = await fs.readFile(path.join(moduleOutputFolder, 'test-projectMDeps.package.min.js'), 'utf8');
+         const resultPackage = await fs.readFile(path.join(moduleOutputFolder, 'TestBSort/test-projectMDeps.package.min.js'), 'utf8');
          const correctResultPackage = await fs.readFile(
             path.join(sourceFolder, 'correctResult/test-projectMDeps.package.min.js'),
             'utf8'
@@ -1745,6 +1786,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('patch - after patch build output result must contain only results of patched module and joined builder meta', async() => {
          const outputFolderResults = await fs.readdir(outputFolder);
          outputFolderResults.should.have.members([
+            'ExternalInterfaceModule',
             'Modul',
             'bundles.js',
             'bundles.min.js',
