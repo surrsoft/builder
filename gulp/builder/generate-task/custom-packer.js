@@ -118,6 +118,7 @@ function generateTaskForCustomPack(taskParameters) {
       results = {
          bundles: {},
          bundlesRoute: {},
+         superBundles: {},
          excludedCSS: {},
          extendBundles: {}
       },

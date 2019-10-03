@@ -14,4 +14,9 @@
     "ExternalInterfaceModule/*"
   ],
   "output": "TestBSort/test-projectMDeps.package.js"
+}, {
+  "includePackages": [
+      "InterfaceModule1/interfacemodule1-second.package.js"
+  ],
+  "output": "TestBSort/test-superbundle.package.js"
 }]

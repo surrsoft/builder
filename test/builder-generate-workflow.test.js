@@ -1408,7 +1408,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          modules: [
             {
                name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
+               path: path.join(sourceFolder, 'Модуль'),
+               depends: ['WS.Core', 'Types']
             },
             {
                name: 'ExternalInterfaceModule',
@@ -1702,6 +1703,19 @@ describe('gulp/builder/generate-workflow.js', () => {
          rootBundlesRouteMeta.hasOwnProperty('ExternalInterfaceModule/amdModule').should.equal(true);
          rootBundlesRouteMeta['ExternalInterfaceModule/amdModule'].should.equal('resources/Modul/TestBSort/test-projectMDeps.package.min.js');
       });
+      it('superbundle\'s bundlesRoute meta must be saved in the same interface module', async() => {
+         const bundlesRoute = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
+         bundlesRoute.should.deep.equal({
+            'InterfaceModule1/_private/module1': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/_private/module2': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'Modul/themes.config.json': 'resources/Modul/test-brotli.package.min.js',
+            'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
+            'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
+            'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
+         });
+      });
       it('patch module', async() => {
          config.modules[0].rebuild = true;
          config.modules[1].rebuild = true;
@@ -1783,6 +1797,19 @@ describe('gulp/builder/generate-workflow.js', () => {
             'module2.min.js',
          ]);
       });
+      it('patch - superbundle\'s bundlesRoute meta must be saved in the same interface module', async() => {
+         const bundlesRoute = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
+         bundlesRoute.should.deep.equal({
+            'InterfaceModule1/_private/module1': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/_private/module2': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'Modul/themes.config.json': 'resources/Modul/test-brotli.package.min.js',
+            'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
+            'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
+            'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
+         });
+      });
       it('patch - after patch build output result must contain only results of patched module and joined builder meta', async() => {
          const outputFolderResults = await fs.readdir(outputFolder);
          outputFolderResults.should.have.members([
@@ -1801,7 +1828,57 @@ describe('gulp/builder/generate-workflow.js', () => {
             'router.min.js'
          ]);
       });
-      it('finish test', async() => {
+      it('finish patch tests pack', async() => {
+         await clearWorkspace();
+      });
+      it('for desktop application dont save bundlesRoute meta', async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/custompack');
+         await prepareTest(fixtureFolder);
+         await linkPlatform(sourceFolder);
+         const desktopConfig = {
+            cache: cacheFolder,
+            output: outputFolder,
+            typescript: true,
+            less: true,
+            themes: true,
+            minimize: true,
+            wml: true,
+            builderTests: true,
+            customPack: true,
+            sources: false,
+            modules: [
+               {
+                  name: 'Модуль',
+                  path: path.join(sourceFolder, 'Модуль')
+               },
+               {
+                  name: 'ExternalInterfaceModule',
+                  path: path.join(sourceFolder, 'ExternalInterfaceModule')
+               },
+               {
+                  name: 'InterfaceModule1',
+                  path: path.join(sourceFolder, 'InterfaceModule1')
+               }
+            ]
+         };
+         await fs.writeJSON(configPath, desktopConfig);
+
+         await runWorkflowWithTimeout();
+
+         /**
+          * bundlesRoute must not be saved in results. bundles meta must be saved.
+          * Only bundles.json meta from packer meta results uses in all desktop applications.
+          */
+         (await isRegularFile(moduleOutputFolder, 'bundlesRoute.json')).should.equal(false);
+         (await isRegularFile(moduleOutputFolder, 'bundles.json')).should.equal(true);
+         await runWorkflowWithTimeout();
+
+         /**
+          * bundlesRoute must not be saved in results. bundles meta must be saved.
+          * Only bundles.json meta from packer meta results uses in all desktop applications.
+          */
+         (await isRegularFile(moduleOutputFolder, 'bundlesRoute.json')).should.equal(false);
+         (await isRegularFile(moduleOutputFolder, 'bundles.json')).should.equal(true);
          await clearWorkspace();
       });
    });
