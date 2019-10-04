@@ -19,4 +19,10 @@
       "InterfaceModule1/interfacemodule1-second.package.js"
   ],
   "output": "TestBSort/test-superbundle.package.js"
+}, {
+  "include": [
+    "Modul/*",
+    "InterfaceModule2/*"
+  ],
+  "output": "TestBSort/test-projectExtDeps.package.js"
 }]

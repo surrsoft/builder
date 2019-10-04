@@ -6,5 +6,6 @@
   "resources/Modul/Test/test.package.min",
   "resources/Modul/TestASort/test.package.min",
   "resources/Modul/TestBSort/test-projectMDeps.package.min",
+  "resources/Modul/TestBSort/test-projectExtDeps.package.min",
   "resources/Modul/TestBSort/test-superbundle.package.min"
 ]
