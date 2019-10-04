@@ -135,7 +135,7 @@ function generateTaskForCustomPack(taskParameters) {
       generateCollectPackagesTasks(configs, taskParameters, root, bundlesList, modulesForPatch),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
       generateInterceptCollectorTask(taskParameters, root, results),
-      generateSaveResultsTask(taskParameters, results, root),
+      generateSaveResultsTask(taskParameters, results, root, modulesForPatch),
       generateFinalizeOptimizing(taskParameters, root)
    );
 }
@@ -220,12 +220,12 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
    };
 }
 
-function generateSaveResultsTask(taskParameters, results, applicationRoot) {
+function generateSaveResultsTask(taskParameters, results, applicationRoot, modulesForPatch) {
    return async function saveCustomPackerResults() {
       if (taskParameters.config.joinedMeta) {
          await saveRootBundlesMeta(applicationRoot, results);
       }
-      await saveModuleCustomPackResults(taskParameters, results, applicationRoot);
+      await saveModuleCustomPackResults(taskParameters, results, applicationRoot, modulesForPatch);
 
       /**
        * save "module-dependencies" meta for all project into cache. Will be needed
