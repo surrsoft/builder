@@ -29,7 +29,7 @@ const loaders = {
 
 /**
  * Read file and wrap as text module.
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  */
 async function baseTextLoader(module, base) {
    const content = await fs.readFile(module.fullPath, 'utf8');
@@ -40,20 +40,12 @@ async function baseTextLoader(module, base) {
 /**
  * Read js and inserts a module name into "define" function if name not specified
  * Use AST
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  */
 async function jsLoader(module) {
    const content = await fs.readFile(module.fullPath, 'utf8');
    if (!content || !module.amd) {
       return '';
-   }
-
-   /**
-    * For AMD-formatted modules without localization
-    * return content as is
-    */
-   if (module.amd && !module.defaultLocalization) {
-      return content;
    }
 
    const ast = esprima.parse(content);
@@ -120,7 +112,7 @@ async function jsLoader(module) {
 /**
  * Read *html and wrap as text module.
  *
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  */
 async function wmlLoader(module) {
    const content = await fs.readFile(module.fullPath, 'utf8');
@@ -129,24 +121,29 @@ async function wmlLoader(module) {
 
 /**
  * Read json and wrap as text module.
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  */
 async function jsonLoader(module) {
    const content = await fs.readJson(module.fullPath);
-   return `define("${module.fullName}", function() {return ${JSON.stringify(content)};});`;
+   return `define('${module.fullName}',function(){return ${JSON.stringify(content)};});`;
 }
 
 /**
  * Read file and wrap as text module
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  */
 async function textLoader(module) {
    const content = await fs.readFile(module.fullPath, 'utf8');
    return `define('${module.fullName}',function(){return ${JSON.stringify(content)};});`;
 }
 
+/**
+ * Returns module's content with condition to be used only in browser environment
+ * @param{Object} module - current module meta for packer
+ * @returns {Promise<string>}
+ */
 async function browserLoader(module) {
-   const ifCondition = 'if(typeof window !== "undefined")';
+   const ifCondition = "if(typeof window !== 'undefined')";
    const content = await loaders[module.moduleIn.plugin](module.moduleIn);
    if (!content) {
       return '';
@@ -155,7 +152,10 @@ async function browserLoader(module) {
 }
 
 /**
- * @param {Meta} module - module
+ * Loads module as usual with usage of current module plugin loader.
+ * Otherwise in case of error returns empty string(only for ENOENT and EISDIR
+ * error codes)
+ * @param {Meta} module - current module meta for packer
  */
 async function optionalLoader(module) {
    let content;
@@ -180,19 +180,19 @@ async function optionalLoader(module) {
 function getModuleConditionByPrefix(modulePrefix) {
    switch (modulePrefix) {
       case 'compatibleLayer':
-         return 'if(typeof window === \'undefined\' || window && window.location.href.indexOf("withoutLayout")===-1)';
+         return "if(typeof window === 'undefined' || window && window.location.href.indexOf('withoutLayout')===-1)";
       case 'msIe':
-         return 'if(typeof window !== \'undefined\' && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/))';
+         return "if(typeof window !== 'undefined' && navigator && navigator.appVersion.match(/MSIE\\s+(\\d+)/))";
 
       // browser
       default:
-         return 'if(typeof window !== \'undefined\')';
+         return "if(typeof window !== 'undefined')";
    }
 }
 
 /**
  *
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  * @param {String} base - site root
  */
 async function isLoader(module, base) {
@@ -245,7 +245,7 @@ function getTemplateI18nModule(module) {
  * Получает список доступных языков для локализации.
  * Вычитывает словарь, css для языка, css для страны и оборачивает их как модули для каждого из доступных языков.
  *
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  * @param {String} base - site root
  * @return {Function}
  */
@@ -276,10 +276,6 @@ function i18nLoader(module, base, themeName, languageConfig) {
       'if(lang && lang[1] == i18n.getLang()){return dep;}});' +
       'if(langDep){global.requirejs(langDep)}return i18n.rk.bind(i18n);});';
 }
-
-/**
- * @param {Meta} module - module
- */
 
 /**
  * Text wraps an 'if' that does not work in IE8-9
@@ -339,18 +335,14 @@ head.appendChild(style);\
  * @return {Function}
  */
 function rebaseUrls(root, sourceFile, content, resourceRoot) {
-   if (resourceRoot) {
-      return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot);
-   }
-   return rebaseUrlsToAbsolutePath(root, sourceFile, content);
+   return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot);
 }
 
 
 /**
  * Read css and Rebase urls and Wrap as module that inserts the tag style
  * Ignore IE8-9
- *
- * @param {Meta} module - module
+ * @param {Meta} module - current module meta for packer
  * @param {String} base - site root
  */
 async function cssLoader(
