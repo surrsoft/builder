@@ -16,6 +16,7 @@ const through = require('through2'),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
    libPackHelpers = require('../../../lib/pack/helpers/librarypack'),
+   helpers = require('../../../lib/helpers'),
    templateExtReg = /(\.tmpl|\.wml)$/;
 
 /**
@@ -84,6 +85,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
+         const startTime = Date.now();
          const [error, result] = await execInPool(
             taskParameters.pool,
             'buildTmpl',
@@ -91,6 +93,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             relativeFilePath,
             moduleInfo
          );
+         const endTime = Date.now();
+         logger.warning({
+            message: `Шаблон собрался за ${(endTime - startTime) / 1000}`,
+            filePath: path.relative(file.base, file.path),
+            moduleInfo
+         });
 
          if (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);
