@@ -738,6 +738,7 @@
   "resources/ServiceUpdateNotifier/service-update-notifier-dom.package.min",
   "resources/ServiceUpdateNotifier/service-update-notifier-resource.package.min",
   "resources/ServiceUpdateNotifier/service-update-notifier.package.min",
+  "resources/ServiceUpdateNotifier/service-update-notifier-update-notifier.package.min",
   "resources/Socnet/group-contacts.package.min",
   "resources/Socnet/group-controllers.package.min",
   "resources/Socnet/group-layout.package.min",
