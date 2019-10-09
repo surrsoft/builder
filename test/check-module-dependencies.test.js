@@ -16,6 +16,53 @@ const {
    isValidDependency
 } = require('../lib/check-module-dependencies');
 
+const
+   fs = require('fs-extra'),
+   { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
+
+const generateWorkflow = require('../gulp/builder/generate-workflow.js');
+
+const { linkPlatform } = require('./lib');
+
+const workspaceFolder = path.join(__dirname, 'workspace'),
+   cacheFolder = path.join(workspaceFolder, 'cache'),
+   outputFolder = path.join(workspaceFolder, 'output'),
+   sourceFolder = path.join(workspaceFolder, 'source'),
+   configPath = path.join(workspaceFolder, 'config.json');
+
+const clearWorkspace = function() {
+   return fs.remove(workspaceFolder);
+};
+
+const runWorkflow = function() {
+   return new Promise((resolve, reject) => {
+      generateWorkflow([`--config="${configPath}"`])((error) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve();
+         }
+      });
+   });
+};
+
+/**
+ * properly finish test in builder main workflow was freezed by unexpected
+ * critical errors from gulp plugins
+ * @returns {Promise<void>}
+ */
+const runWorkflowWithTimeout = async function(timeout) {
+   let result;
+   try {
+      result = await promiseWithTimeout(runWorkflow(), timeout || 600000);
+   } catch (err) {
+      result = err;
+   }
+   if (result instanceof TimeoutError) {
+      true.should.equal(false);
+   }
+};
+
 describe('check-module-dependencies', () => {
    const moduleDependencies = {
       nodes: {
@@ -153,5 +200,49 @@ describe('check-module-dependencies', () => {
       const nodeName = 'css!MyModule1/testNotExistingNode';
       const result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
       result.should.equal(false);
+   });
+
+   it('check module-dependencies flag must return errors list', async() => {
+      await linkPlatform(sourceFolder);
+      const testResults = async(value) => {
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         let resultsHasDepsAnalizerErrors = false;
+         messages.forEach((currentMessageObject) => {
+            if (currentMessageObject.message.includes('Error analizing dependencies: file for dependency')) {
+               resultsHasDepsAnalizerErrors = true;
+            }
+         });
+         resultsHasDepsAnalizerErrors.should.equal(value);
+      };
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         logs: path.join(workspaceFolder, 'logs'),
+         less: true,
+         themes: true,
+         typescript: true,
+         dependenciesGraph: true,
+         modules: [
+            {
+               name: 'WS.Core',
+               path: path.join(sourceFolder, 'WS.Core')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+      await runWorkflowWithTimeout();
+
+      // for build without deps checker result must not have messages with deps analizer errors
+      await testResults(false);
+
+      // enable deps checker and rebuild current test
+      config.checkModuleDependencies = 'error';
+      await fs.writeJSON(configPath, config);
+      await runWorkflowWithTimeout();
+
+      // for build with deps checker result must have messages with deps analizer errors
+      await testResults(true);
+      await clearWorkspace();
    });
 });
