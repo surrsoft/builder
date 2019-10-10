@@ -166,6 +166,59 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('new type locales: must compile js-locale and write it to contents only for existing json-locales', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/locales');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const correctContents = {
+         availableLanguage: {
+            en: 'English',
+            'en-US': 'English',
+            ru: 'Русский',
+            'ru-RU': 'Русский'
+         },
+         buildMode: 'debug',
+         defaultLanguage: 'ru-RU',
+         htmlNames: {},
+         modules: {
+            Modul: {
+               dict: [
+                  'en',
+                  'en-US',
+                  'ru-RU'
+               ],
+               name: 'Модуль'
+            }
+         }
+      };
+      const testResults = async() => {
+         const contents = await fs.readJson(path.join(moduleOutputFolder, 'contents.json'));
+         contents.should.deep.equal(correctContents);
+      };
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         'default-localization': 'ru-RU',
+         localization: ['en-US', 'ru-RU', 'en'],
+         contents: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+      await testResults();
+
+      // incremental build must be completed properly
+      await runWorkflowWithTimeout();
+      await testResults();
+      await clearWorkspace();
+   });
    it('compile less without coverage', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
