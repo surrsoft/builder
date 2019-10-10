@@ -220,11 +220,24 @@ class BuildConfiguration {
 
       if (hasLocalizations) {
          this.localizations = this.rawConfig.localization;
-         for (const currentLocal of this.localizations) {
-            if (!availableLanguage.hasOwnProperty(currentLocal)) {
-               throw new Error(`${startErrorMessage} Задан не корректный идентификатор локализаци: ${currentLocal}`);
+         const defaultLocalizationsToPush = new Set();
+         for (const currentLocale of this.localizations) {
+            if (!availableLanguage.hasOwnProperty(currentLocale)) {
+               throw new Error(`${startErrorMessage} This locale is not permitted: ${currentLocale}`);
+            }
+            const commonLocale = currentLocale.split('-').shift();
+            if (!availableLanguage.hasOwnProperty(currentLocale)) {
+               throw new Error(`${startErrorMessage} This default localization is not permitted: ${currentLocale}`);
+            }
+
+            // nothing to do if default locale was already been declared
+            if (commonLocale !== currentLocale) {
+               defaultLocalizationsToPush.add(commonLocale);
             }
          }
+
+         // add common locales to locales list
+         this.localizations = this.localizations.concat(...defaultLocalizationsToPush);
 
          this.defaultLocalization = this.rawConfig['default-localization'];
          if (!availableLanguage.hasOwnProperty(this.defaultLocalization)) {
