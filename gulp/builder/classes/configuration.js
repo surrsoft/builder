@@ -158,6 +158,13 @@ class BuildConfiguration {
                break;
          }
       }
+
+      if (this.rawConfig.hasOwnProperty('checkModuleDependencies')) {
+         const { checkModuleDependencies } = this.rawConfig;
+         if (typeof checkModuleDependencies === 'boolean' || typeof checkModuleDependencies === 'string') {
+            this.checkModuleDependencies = checkModuleDependencies;
+         }
+      }
    }
 
    /**
