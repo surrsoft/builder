@@ -47,7 +47,12 @@ const runWorkflow = function() {
 const runWorkflowWithTimeout = async function() {
    let result;
    try {
-      result = await promiseWithTimeout(runWorkflow(), 60000);
+      /**
+       * Some tasks on mac can be running slower, than on nix and windows.
+       * For example sources task running more than a minute, set timeout for
+       * 2 minutes to give an opportunity for task to be completed properly
+       */
+      result = await promiseWithTimeout(runWorkflow(), 120000);
    } catch (err) {
       result = err;
    }
