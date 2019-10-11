@@ -473,6 +473,39 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('content dictionaries - AMD-formatted dictionaries meta must be saved only for modules with it', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/dictionary');
+      await prepareTest(fixtureFolder);
+      const testResults = async() => {
+         const module1Meta = await fs.readFile(path.join(outputFolder, 'Module1/.builder/module.js'), 'utf8');
+         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-US","ru-RU"]};});');
+         (await isRegularFile(path.join(outputFolder, 'Module2/.builder'), 'module.js')).should.equal(false);
+      };
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         contents: true,
+         builderTests: true,
+         'default-localization': 'ru-RU',
+         localization: ['ru-RU', 'en-US'],
+         modules: [
+            {
+               name: 'Module1',
+               path: path.join(sourceFolder, 'Module1')
+            },
+            {
+               name: 'Module2',
+               path: path.join(sourceFolder, 'Module2')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+      await runWorkflowWithTimeout(30000);
+      await testResults();
+      await runWorkflowWithTimeout(30000);
+      await testResults();
+      await clearWorkspace();
+   });
    it('compile less - should return correct meta in "contents" for new themes', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
@@ -907,6 +940,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.js',
          'ForChange_old.html',
          'ForRename_old.js',
@@ -1042,6 +1076,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.js',
          'ForChange_new.html',
          'ForRename_new.js',
