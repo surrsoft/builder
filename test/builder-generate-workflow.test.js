@@ -2269,6 +2269,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         logs: path.join(workspaceFolder, 'logs'),
          typescript: true,
          minimize: true,
          wml: true,
@@ -2323,6 +2324,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'privateExternalDep.ts',
          'privateExternalDep.js',
          'privateExternalDep.min.js',
+         'relativePluginDependency.ts',
          'testNativeNamesImports.ts',
          'testNativeNamesImports.js',
          'testNativeNamesImports.min.js',
@@ -2372,6 +2374,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('libraries using relative dependencies with plugins must be ignored', async() => {
+         (await isRegularFile(moduleOutputFolder, 'relativePluginDependency.js')).should.equal(false);
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         const errorMessage = 'relative dependencies with plugin are not valid. ';
+         let relativeErrorExists = false;
+         messages.forEach((currentError) => {
+            if (currentError.message.includes(errorMessage)) {
+               relativeErrorExists = true;
+            }
+         });
+         relativeErrorExists.should.equal(true);
       });
       it('test-packed-library-dependencies-in-meta', async() => {
          const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
@@ -2461,6 +2475,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content-after-rebuild', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('after rebuild - libraries using relative dependencies with plugins must be ignored', async() => {
+         (await isRegularFile(moduleOutputFolder, 'relativePluginDependency.js')).should.equal(false);
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         const errorMessage = 'relative dependencies with plugin are not valid. ';
+         let relativeErrorExists = false;
+         messages.forEach((currentError) => {
+            if (currentError.message.includes(errorMessage)) {
+               relativeErrorExists = true;
+            }
+         });
+         relativeErrorExists.should.equal(true);
       });
       it('test-packed-library-dependencies-in-meta-after-rebuild', async() => {
          const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
