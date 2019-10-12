@@ -525,6 +525,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
             'online:dark:medium'
          ]);
+
+         // new themes meta must not be stored into ".builder/module.js" meta for localization module.
+         (await isRegularFile(path.join(outputFolder, 'TestModule/.builder'), 'module.js')).should.equal(false);
       };
       const config = {
          cache: cacheFolder,
