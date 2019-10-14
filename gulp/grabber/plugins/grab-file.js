@@ -9,7 +9,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    execInPool = require('../../common/exec-in-pool');
 
-const supportExtensions = ['.js', '.xhtml', '.tmpl'];
+const supportExtensions = ['.js', '.ts', '.xhtml', '.tmpl', '.wml'];
 
 /**
  * Объявление плагина
