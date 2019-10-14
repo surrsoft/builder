@@ -70,7 +70,10 @@ define('Modul/Modul', [
                     return tslib_1.__generator(this, function (_a) {
                         return [
                             2,
-                            { sum: param1 + param2 }
+                            {
+                                sum: param1 + param2,
+                                tplFn: template
+                            }
                         ];
                     });
                 });
