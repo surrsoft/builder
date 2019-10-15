@@ -923,6 +923,7 @@
   "resources/Warehouse/Docs/Mercury/Outflow/Registry/Filter/Filter.package.min",
   "resources/Warehouse/Docs/Mercury/Remains/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/Events/Registry.package.min",
+  "resources/Warehouse/Docs/MercuryEvents/Events/Registry/Filter/Filter.package.min",
   "resources/Warehouse/Docs/MercuryEvents/Inflow/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/Inflow/Registry/Filter/Filter.package.min",
   "resources/Warehouse/Docs/MercuryEvents/Outflow/Registry.package.min",
