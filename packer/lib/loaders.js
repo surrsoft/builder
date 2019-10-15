@@ -221,7 +221,7 @@ function getTemplateI18nModule(module) {
       code = `(function() {
    var availableDict = ${availableDict},
       langMatch = String(typeof document === 'undefined' ? '' : document.cookie).match(/lang=([A-z-]+)/),
-      langName = langMatch ? langMatch[1] : 'ru-RU',
+      langName = langMatch ? langMatch.split('-')[0] : 'ru',
       langModule = '${dictName}/lang/' + langName + '/' + langName + '.json';
    if (langName in availableDict) {
       define('${module.fullName}', ['Core/i18n', langModule], function(i18n, data) {
