@@ -525,6 +525,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
             'online:dark:medium'
          ]);
+
+         // new themes meta must not be stored into ".builder/module.js" meta for localization module.
+         (await isRegularFile(path.join(outputFolder, 'TestModule/.builder'), 'module.js')).should.equal(false);
       };
       const config = {
          cache: cacheFolder,
@@ -940,7 +943,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде"
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForChange.js',
          'ForChange_old.html',
          'ForRename_old.js',
@@ -1076,7 +1078,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         '.builder',
          'ForChange.js',
          'ForChange_new.html',
          'ForRename_new.js',
