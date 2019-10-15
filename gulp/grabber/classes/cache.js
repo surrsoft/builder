@@ -122,7 +122,7 @@ class Cache {
       }
 
       // dropCacheForMarkup устанавливается по результатам генерации json
-      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
+      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl') || prettyPath.endsWith('.wml'))) {
          return true;
       }
 

@@ -94,8 +94,8 @@ describe('gulp/grabber/generate-workflow.js', () => {
       await initTest();
    });
 
-   describe('проверка сбора фраз локализации по js коду', () => {
-      it('перезапуск без изменений', async() => {
+   describe('check localization words collector for js', () => {
+      it('rebuild without changes', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -109,7 +109,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в исходниках', async() => {
+      it('rebuild with changes in sources', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -128,7 +128,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async() => {
+      it('rebuild with changes in cache', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/javascript');
          await prepareTest(fixtureFolder);
@@ -149,8 +149,63 @@ describe('gulp/grabber/generate-workflow.js', () => {
       });
    });
 
-   describe('проверка сбора фраз локализации по xhtml коду', () => {
-      it('перезапуск без изменений', async() => {
+   describe('check localization words collector for ts', () => {
+      it('rebuild without changes', async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/typescript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext');
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext');
+
+         await clearWorkspace();
+      });
+
+      it('rebuild with changes in sources', async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/typescript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext');
+
+         await timeoutForMacOS();
+         const testFilePath = path.join(sourceFolder, 'Модуль/Component.ts');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+
+      it('rebuild with changes in cache', async() => {
+         //
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/typescript');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext');
+
+         await timeoutForMacOS();
+         const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
+         const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
+         await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflowWithTimeout();
+         await checkResult('ts', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+   });
+
+   describe('check localization words collector for xhtml code', () => {
+      it('rebuild without changes', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -164,7 +219,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в xhtml', async() => {
+      it('rebuild with changes in xhtml code', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -183,7 +238,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async() => {
+      it('rebuild with changes in cache', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
@@ -203,8 +258,8 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в js', async() => {
-         // при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
+      it('rebuild with changes in js code', async() => {
+         // Unlike 1st and 3rd builds, for 2nd build js source has @translatable option
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/xhtml');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -231,8 +286,8 @@ describe('gulp/grabber/generate-workflow.js', () => {
       });
    });
 
-   describe('проверка сбора фраз локализации по tmpl коду', () => {
-      it('перезапуск без изменений', async() => {
+   describe('check localization words collector for tmpl code', () => {
+      it('rebuild without changes', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -246,7 +301,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в tmpl', async() => {
+      it('rebuild with changes in tmpl code', async() => {
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -265,7 +320,7 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в кеше', async() => {
+      it('rebuild with changes in cache', async() => {
          //
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
@@ -285,8 +340,8 @@ describe('gulp/grabber/generate-workflow.js', () => {
          await clearWorkspace();
       });
 
-      it('перезапуск с изменениями в js', async() => {
-         // при 1-м и 3-м запуске в js есть @translatable, а при 2-м запуске - нет
+      it('rebuild with changes in js code', async() => {
+         // Unlike 1st and 3rd builds, for 2nd build js source has @translatable option
          const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/tmpl');
          await prepareTest(fixtureFolder);
          await fs.writeJSON(configPath, config);
@@ -308,6 +363,88 @@ describe('gulp/grabber/generate-workflow.js', () => {
 
          await runWorkflowWithTimeout();
          await checkResult('tmpl', 'AnyContext');
+
+         await clearWorkspace();
+      });
+   });
+
+   describe('check localization words collector for wml code', () => {
+      it('rebuild without changes', async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/wml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
+
+         await clearWorkspace();
+      });
+
+      it('rebuild with changes in wml code', async() => {
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/wml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
+
+         await timeoutForMacOS();
+         const testFilePath = path.join(sourceFolder, 'Модуль/Component.wml');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+
+      it('rebuild with changes in cache', async() => {
+         //
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/wml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
+
+         await timeoutForMacOS();
+         const cacheFilePath = path.join(cacheFolder, 'grabber-cache.json');
+         const cacheFileText = (await fs.readFile(cacheFilePath)).toString();
+         await fs.writeFile(cacheFilePath, cacheFileText.replace('AnyContext', 'AnyContext123'));
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext123');
+
+         await clearWorkspace();
+      });
+
+      it('rebuild with changes in js code', async() => {
+         // Unlike 1st and 3rd builds, for 2nd build js source has @translatable option
+         const fixtureFolder = path.join(__dirname, 'fixture/grabber-generate-workflow/wml');
+         await prepareTest(fixtureFolder);
+         await fs.writeJSON(configPath, config);
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
+
+         await timeoutForMacOS();
+         const testFilePath = path.join(sourceFolder, 'Модуль/ComponentWithOption.js');
+         const testFileText = (await fs.readFile(testFilePath)).toString();
+         await fs.writeFile(testFilePath, testFileText.replace('@translatable', '@translatable123'));
+
+         await runWorkflowWithTimeout();
+         const resultObj = await fs.readJSON(outputJson);
+         resultObj.length.should.equals(0);
+
+         await timeoutForMacOS();
+         await fs.writeFile(testFilePath, testFileText);
+
+         await runWorkflowWithTimeout();
+         await checkResult('wml', 'AnyContext');
 
          await clearWorkspace();
       });
