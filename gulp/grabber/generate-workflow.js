@@ -81,7 +81,7 @@ function generateTaskForLoadCache(taskParameters) {
 }
 
 function generateTaskForGrabSingleModule(taskParameters, moduleInfo) {
-   const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl)');
+   const moduleInput = path.join(moduleInfo.path, '/**/*.@(js|xhtml|tmpl|wml|ts)');
 
    return function grabModule() {
       return gulp
