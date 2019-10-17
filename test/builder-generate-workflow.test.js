@@ -528,6 +528,13 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          // new themes meta must not be stored into ".builder/module.js" meta for localization module.
          (await isRegularFile(path.join(outputFolder, 'TestModule/.builder'), 'module.js')).should.equal(false);
+
+         /**
+          * In case of using new themes algorythm for less compiling we must not compile less also for
+          * old themes. Result will be the same, but for the same time it will downgrade the speed
+          * because of compiling 2 styles for one less with the same result's content.
+          */
+         (await isRegularFile(path.join(outputFolder, 'TestModule-anotherTheme-theme'), 'badVariable.css')).should.equal(false);
       };
       const config = {
          cache: cacheFolder,
