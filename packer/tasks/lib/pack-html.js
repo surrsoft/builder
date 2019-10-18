@@ -402,19 +402,6 @@ async function packageSingleHtml(
    });
    const startNodes = getStartNodes(divs);
 
-   let applicationForRebase = '/';
-
-   /**
-    * We need to set application for rebase to get proper urls from site root fol old css packages
-    * for static html pages
-    * Ignore BL services("/service/"). app root can be selected only for project's UI services.
-    */
-   if (
-      taskParameters.config.urlServicePath &&
-      !taskParameters.config.urlServicePath.includes('/service')
-   ) {
-      applicationForRebase = taskParameters.config.urlServicePath;
-   }
    const filesToPack = await packInOrder(
       dg,
       startNodes,
@@ -423,7 +410,7 @@ async function packageSingleHtml(
       themeName,
       htmlName,
       availableLanguage,
-      path.join(applicationForRebase, 'resources/')
+      path.join(taskParameters.config.applicationForRebase, 'resources/')
    );
 
    // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
