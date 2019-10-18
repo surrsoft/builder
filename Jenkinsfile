@@ -4,10 +4,11 @@ import java.lang.Math
 node ('controls') {
 def version = "19.700"
 def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
-    ws (workspace){
+    dir (workspace){
         deleteDir()
         checkout([$class: 'GitSCM',
-            branches: [[name: "rc-${version}"]],
+            // branches: [[name: "rc-${version}"]],
+            branches: [[name: "19.700/bugfix/fix-ws2dir"]],
             doGenerateSubmoduleConfigurations: false,
             extensions: [[
                 $class: 'RelativeTargetDirectory',
