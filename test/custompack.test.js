@@ -31,7 +31,8 @@ describe('custompack', () => {
          localizations: [],
          sources: true,
          resourcesUrl: true,
-         urlServicePath: '/fixture/custompack/'
+         urlServicePath: '/fixture/custompack/',
+         applicationForRebase: '/fixture/custompack/'
       }
    };
    before(async() => {
@@ -349,7 +350,8 @@ describe('custompack-intersects', () => {
                localizations: [],
                sources: true,
                resourcesUrl: true,
-               modules: []
+               modules: [],
+               applicationForRebase: '/'
             }
          },
          results = {

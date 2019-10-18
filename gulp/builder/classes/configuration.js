@@ -183,15 +183,8 @@ class BuildConfiguration {
       return this.minimize || packingEnabled ? 'release' : 'debug';
    }
 
-   /**
-    * Загрузка конфигурации из аргументов запуска утилиты.
-    * Возможна только синхронная версия, т.к. это нужно делать перед генерацей workflow.
-    * @param {string[]} argv массив аргументов запуска утилиты
-    */
-   loadSync(argv) {
-      this.configFile = ConfigurationReader.getProcessParameters(argv).config;
-      this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile, process.cwd());
-
+   // Configure of main info for current project build.
+   configMainBuildInfo() {
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
       // version есть только при сборке дистрибутива
@@ -273,6 +266,70 @@ class BuildConfiguration {
          this.logFolder = this.rawConfig.logs;
       }
 
+      if (this.rawConfig.hasOwnProperty('multi-service')) {
+         this.multiService = this.rawConfig['multi-service'];
+      }
+
+      if (this.rawConfig.hasOwnProperty('url-service-path')) {
+         this.urlServicePath = this.rawConfig['url-service-path'];
+      }
+
+      if (this.multiService && this.urlServicePath) {
+         /** Temporarily decision: for multi-service auth application don't add UI-service name into
+          * styles URL's. Why we need this? Because of there are 2 projects with the same configuration:
+          * SBISDisk and authentication-ps for billing - both of them are multi-service applications, but
+          * at the same time "SBISDisk" needs "/shared/" service to be added in their custom packages,
+          * on the other hand "authentication-ps for billing" needs URLs without service name.
+          * Permanent decision for this situation is to add an opportunity for set special flag in project's
+          * s3* configuration files.
+          * TODO remove it after task completion.
+          * https://online.sbis.ru/opendoc.html?guid=fbf769d7-9879-4c13-8ec2-419374da510f
+          */
+         if (
+            this.urlServicePath.includes('/auth') ||
+            this.urlServicePath.includes('/service')
+         ) {
+            this.applicationForRebase = '/';
+         } else {
+            this.applicationForRebase = this.urlServicePath;
+         }
+      } else if (this.urlServicePath && !this.urlServicePath.includes('/service')) {
+         this.applicationForRebase = this.urlServicePath;
+      } else {
+         this.applicationForRebase = '/';
+      }
+
+      if (this.rawConfig.hasOwnProperty('url-default-service-path')) {
+         this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
+      } else {
+         this.urlDefaultServicePath = this.urlServicePath;
+      }
+
+      /**
+       * Temporarily enable extendable bundles only for sbis plugin to avoid
+       * patches building in online project.
+       * TODO remove it after task completion
+       * https://online.sbis.ru/opendoc.html?guid=7e4b2c14-4779-471a-935f-2fd12990d814
+       * @type {*|boolean}
+       */
+      this.isSbisPlugin = this.rawConfig.cld_name && this.rawConfig.cld_name.startsWith('SbisPlugin');
+      this.extendBundles = this.isSbisPlugin;
+      if (this.rawConfig.hasOwnProperty('builderTests')) {
+         this.builderTests = this.rawConfig.builderTests;
+         this.extendBundles = true;
+      }
+   }
+
+   /**
+    * Загрузка конфигурации из аргументов запуска утилиты.
+    * Возможна только синхронная версия, т.к. это нужно делать перед генерацей workflow.
+    * @param {string[]} argv массив аргументов запуска утилиты
+    */
+   loadSync(argv) {
+      this.configFile = ConfigurationReader.getProcessParameters(argv).config;
+      this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile, process.cwd());
+      this.configMainBuildInfo();
+
       clearSourcesSymlinks(this.cachePath);
 
       // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
@@ -309,34 +366,6 @@ class BuildConfiguration {
             }
          }
          this.modules.push(moduleInfo);
-      }
-
-      if (this.rawConfig.hasOwnProperty('multi-service')) {
-         this.multiService = this.rawConfig['multi-service'];
-      }
-
-      if (this.rawConfig.hasOwnProperty('url-service-path')) {
-         this.urlServicePath = this.rawConfig['url-service-path'];
-      }
-
-      if (this.rawConfig.hasOwnProperty('url-default-service-path')) {
-         this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
-      } else {
-         this.urlDefaultServicePath = this.urlServicePath;
-      }
-
-      /**
-       * Temporarily enable extendable bundles only for sbis plugin to avoid
-       * patches building in online project.
-       * TODO remove it after task completion
-       * https://online.sbis.ru/opendoc.html?guid=7e4b2c14-4779-471a-935f-2fd12990d814
-       * @type {*|boolean}
-       */
-      this.isSbisPlugin = this.rawConfig.cld_name && this.rawConfig.cld_name.startsWith('SbisPlugin');
-      this.extendBundles = this.isSbisPlugin;
-      if (this.rawConfig.hasOwnProperty('builderTests')) {
-         this.builderTests = this.rawConfig.builderTests;
-         this.extendBundles = true;
       }
    }
 }
