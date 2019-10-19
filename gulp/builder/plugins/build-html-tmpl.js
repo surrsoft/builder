@@ -45,18 +45,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const relativeTmplPathWithModuleName = helpers.prettifyPath(
                path.join(path.basename(moduleInfo.path), relativeTmplPath)
             );
-            const servicesPath = `${taskParameters.config.urlDefaultServicePath}service/`;
-
             const [error, result] = await execInPool(
                taskParameters.pool,
                'buildHtmlTmpl',
                [
                   file.contents.toString(),
                   file.history[0],
+                  {
+                     multiService: taskParameters.config.multiService,
+                     servicesPath: `${taskParameters.config.urlDefaultServicePath}service/`,
+                     application: taskParameters.config.applicationForRebase
+                  },
                   relativeTmplPathWithModuleName,
-                  componentsPropertiesFilePath,
-                  taskParameters.config.multiService,
-                  servicesPath
+                  componentsPropertiesFilePath
                ],
                file.history[0],
                moduleInfo
