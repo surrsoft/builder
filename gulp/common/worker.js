@@ -127,10 +127,9 @@ try {
    async function buildHtmlTmpl(
       text,
       fullPath,
+      serviceConfig,
       relativeFilePath,
-      componentsPropertiesFilePath,
-      isMultiService,
-      servicesPath
+      componentsPropertiesFilePath
    ) {
       if (!processingTmpl) {
          initializeWSForWorker();
@@ -139,10 +138,9 @@ try {
       return processingTmpl.buildHtmlTmpl(
          text,
          fullPath,
+         serviceConfig,
          relativeFilePath,
-         await readComponentsProperties(componentsPropertiesFilePath),
-         isMultiService,
-         servicesPath
+         await readComponentsProperties(componentsPropertiesFilePath)
       );
    }
 
