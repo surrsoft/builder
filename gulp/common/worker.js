@@ -104,7 +104,7 @@ try {
    async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath, templateExt) {
       if (!processingTmpl) {
          initializeWSForWorker();
-         processingTmpl = require('../../lib/processing-tmpl');
+         processingTmpl = require('../../lib/templates/processing-tmpl');
       }
       return processingTmpl.buildTmpl(
          processingTmpl.minifyTmpl(text),
@@ -134,7 +134,7 @@ try {
    ) {
       if (!processingTmpl) {
          initializeWSForWorker();
-         processingTmpl = require('../../lib/processing-tmpl');
+         processingTmpl = require('../../lib/templates/processing-tmpl');
       }
       return processingTmpl.buildHtmlTmpl(
          text,
@@ -170,7 +170,7 @@ try {
    async function buildXhtml(text, relativeFilePath) {
       if (!buildXhtmlPrimitive) {
          initializeWSForWorker();
-         buildXhtmlPrimitive = require('../../lib/processing-xhtml').buildXhtml;
+         buildXhtmlPrimitive = require('../../lib/templates/processing-xhtml').buildXhtml;
       }
       return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
    }
