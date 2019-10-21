@@ -39,7 +39,7 @@ describe('convert html.tmpl', () => {
          templatesConfig.RUMEnabled.should.equal('false');
          templatesConfig.pageName.should.equal('');
          templatesConfig.servicesPath.should.equal('/service/');
-      }
+      };
       it('multiService without application', () => {
          const templatesConfig = new TemplatesBuilder();
          templatesConfig.setCommonRootInfo({
