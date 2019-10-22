@@ -934,6 +934,7 @@
   "resources/Warehouse/Docs/MercuryEvents/WriteOff/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/WriteOff/Registry/Filter/Filter.package.min",
   "resources/Warehouse/Docs/MercuryEvents/Transfer/Registry/Filter/Filter.package.min",
+  "resources/Warehouse/Docs/MercuryEvents/Transfer/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/TransferIn/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/TransferOut/Registry.package.min",
   "resources/Warehouse/Docs/MercuryEvents/TransferIn/Registry/Filter/Filter.package.min",
