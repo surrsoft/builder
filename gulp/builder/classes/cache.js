@@ -131,6 +131,24 @@ class Cache {
          return true;
       }
 
+      // новая версия билдера может быть полностью не совместима
+      const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
+      if (isNewBuilder) {
+         logger.info(`Версия builder'а не соответствует сохранённому значению в кеше. ${finishText}`);
+         return true;
+      }
+
+      // если нет хотя бы одной папки не оказалось на месте, нужно сбросить кеш
+      const promisesExists = [];
+      for (const moduleInfo of this.config.modules) {
+         promisesExists.push(fs.pathExists(moduleInfo.output));
+      }
+      const resultsExists = await Promise.all(promisesExists);
+      if (resultsExists.includes(false)) {
+         logger.info(`Как минимум один из результирующих каталогов был удалён. ${finishText}`);
+         return true;
+      }
+
       /**
        * for patch and branch tests skip deep checker.
        * In patch build some modules have extra flags for rebuild
@@ -158,23 +176,6 @@ class Cache {
          return true;
       }
 
-      // новая версия билдера может быть полностью не совместима
-      const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
-      if (isNewBuilder) {
-         logger.info(`Версия builder'а не соответствует сохранённому значению в кеше. ${finishText}`);
-         return true;
-      }
-
-      // если нет хотя бы одной папки не оказалось на месте, нужно сбросить кеш
-      const promisesExists = [];
-      for (const moduleInfo of this.config.modules) {
-         promisesExists.push(fs.pathExists(moduleInfo.output));
-      }
-      const resultsExists = await Promise.all(promisesExists);
-      if (resultsExists.includes(false)) {
-         logger.info(`Как минимум один из результирующих каталогов был удалён. ${finishText}`);
-         return true;
-      }
       return false;
    }
 
