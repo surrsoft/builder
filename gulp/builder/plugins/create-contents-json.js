@@ -65,7 +65,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             this.push(contentsJsonFile);
             const
                currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop(),
-               moduleMeta = JSON.stringify(moduleInfo.contents.modules[currentModuleName]);
+               moduleMeta = moduleInfo.contents.modules[currentModuleName],
+               moduleMetaResult = {};
+
+            /**
+             * in module.js meta i18n needs only "dict" property to use, store it if
+             */
+            if (moduleMeta.hasOwnProperty('dict')) {
+               moduleMetaResult.dict = moduleMeta.dict;
+            }
 
             /**
              * meta for module must contain dictionary list for current Interface module. Otherwise there
@@ -73,8 +81,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              * default meta in this case
              */
             try {
-               assert.strictEqual({}, moduleMeta);
-               const moduleMetaContent = `define('${currentModuleName}/.builder/module',[],function(){return ${moduleMeta};});`;
+               assert.deepStrictEqual({}, moduleMetaResult);
+            } catch (err) {
+               const moduleMetaContent = `define('${currentModuleName}/.builder/module',[],function(){return ${JSON.stringify(moduleMetaResult)};});`;
                const moduleMetaFile = new Vinyl({
                   path: '.builder/module.js',
                   contents: Buffer.from(moduleMetaContent),
@@ -89,9 +98,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                });
                this.push(moduleMetaFile);
                this.push(moduleMetaMinFile);
-            } catch (err) {
-               callback(null);
-               return;
             }
          } catch (error) {
             logger.error({

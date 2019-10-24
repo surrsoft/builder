@@ -166,6 +166,59 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('new type locales: must compile js-locale and write it to contents only for existing json-locales', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/locales');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const correctContents = {
+         availableLanguage: {
+            en: 'English',
+            'en-US': 'English',
+            ru: 'Русский',
+            'ru-RU': 'Русский'
+         },
+         buildMode: 'debug',
+         defaultLanguage: 'ru-RU',
+         htmlNames: {},
+         modules: {
+            Modul: {
+               dict: [
+                  'en',
+                  'en-US',
+                  'ru-RU'
+               ],
+               name: 'Модуль'
+            }
+         }
+      };
+      const testResults = async() => {
+         const contents = await fs.readJson(path.join(moduleOutputFolder, 'contents.json'));
+         contents.should.deep.equal(correctContents);
+      };
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         'default-localization': 'ru-RU',
+         localization: ['en-US', 'ru-RU', 'en'],
+         contents: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            }
+         ]
+      };
+
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+      await testResults();
+
+      // incremental build must be completed properly
+      await runWorkflowWithTimeout();
+      await testResults();
+      await clearWorkspace();
+   });
    it('compile less without coverage', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
@@ -420,6 +473,39 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('content dictionaries - AMD-formatted dictionaries meta must be saved only for modules with it', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/dictionary');
+      await prepareTest(fixtureFolder);
+      const testResults = async() => {
+         const module1Meta = await fs.readFile(path.join(outputFolder, 'Module1/.builder/module.js'), 'utf8');
+         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-US","ru-RU"]};});');
+         (await isRegularFile(path.join(outputFolder, 'Module2/.builder'), 'module.js')).should.equal(false);
+      };
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         contents: true,
+         builderTests: true,
+         'default-localization': 'ru-RU',
+         localization: ['ru-RU', 'en-US'],
+         modules: [
+            {
+               name: 'Module1',
+               path: path.join(sourceFolder, 'Module1')
+            },
+            {
+               name: 'Module2',
+               path: path.join(sourceFolder, 'Module2')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+      await runWorkflowWithTimeout(30000);
+      await testResults();
+      await runWorkflowWithTimeout(30000);
+      await testResults();
+      await clearWorkspace();
+   });
    it('compile less - should return correct meta in "contents" for new themes', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
@@ -439,6 +525,16 @@ describe('gulp/builder/generate-workflow.js', () => {
          testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
             'online:dark:medium'
          ]);
+
+         // new themes meta must not be stored into ".builder/module.js" meta for localization module.
+         (await isRegularFile(path.join(outputFolder, 'TestModule/.builder'), 'module.js')).should.equal(false);
+
+         /**
+          * In case of using new themes algorythm for less compiling we must not compile less also for
+          * old themes. Result will be the same, but for the same time it will downgrade the speed
+          * because of compiling 2 styles for one less with the same result's content.
+          */
+         (await isRegularFile(path.join(outputFolder, 'TestModule-anotherTheme-theme'), 'badVariable.css')).should.equal(false);
       };
       const config = {
          cache: cacheFolder,
@@ -2181,6 +2277,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         logs: path.join(workspaceFolder, 'logs'),
          typescript: true,
          minimize: true,
          wml: true,
@@ -2235,6 +2332,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'privateExternalDep.ts',
          'privateExternalDep.js',
          'privateExternalDep.min.js',
+         'relativePluginDependency.ts',
          'testNativeNamesImports.ts',
          'testNativeNamesImports.js',
          'testNativeNamesImports.min.js',
@@ -2284,6 +2382,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('libraries using relative dependencies with plugins must be ignored', async() => {
+         (await isRegularFile(moduleOutputFolder, 'relativePluginDependency.js')).should.equal(false);
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         const errorMessage = 'relative dependencies with plugin are not valid. ';
+         let relativeErrorExists = false;
+         messages.forEach((currentError) => {
+            if (currentError.message.includes(errorMessage)) {
+               relativeErrorExists = true;
+            }
+         });
+         relativeErrorExists.should.equal(true);
       });
       it('test-packed-library-dependencies-in-meta', async() => {
          const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
@@ -2373,6 +2483,18 @@ describe('gulp/builder/generate-workflow.js', () => {
       it('test-output-file-content-after-rebuild', async() => {
          const resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members(correctOutputContentList);
+      });
+      it('after rebuild - libraries using relative dependencies with plugins must be ignored', async() => {
+         (await isRegularFile(moduleOutputFolder, 'relativePluginDependency.js')).should.equal(false);
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         const errorMessage = 'relative dependencies with plugin are not valid. ';
+         let relativeErrorExists = false;
+         messages.forEach((currentError) => {
+            if (currentError.message.includes(errorMessage)) {
+               relativeErrorExists = true;
+            }
+         });
+         relativeErrorExists.should.equal(true);
       });
       it('test-packed-library-dependencies-in-meta-after-rebuild', async() => {
          const moduleDeps = await fs.readJson(path.join(moduleOutputFolder, 'module-dependencies.json'));
