@@ -702,7 +702,6 @@
   "resources/SBIS3.CONTROLS/sbis3controls-uniteditor.package.min",
   "resources/SBIS3.CONTROLS/sbis3controls-waitindicator.package.min",
   "resources/SBIS3.CONTROLS/sbis3controls-wsbuttons.package.min",
-  "resources/SBIS3.CONTROLS/thirdparty-tinymce.package.min",
   "resources/SBIS3.Plugin/sbis3plugin_clipboard.package.min",
   "resources/SBIS3.Plugin/sbis3plugin_desktop.package.min",
   "resources/SBIS3.Plugin/sbis3plugin_oldPluginSupport.package.min",
