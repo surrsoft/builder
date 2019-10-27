@@ -8,7 +8,7 @@ const chai = require('chai'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
    workerPool = require('workerpool'),
-   { resolveThemeName } = require('../lib/build-less');
+   builderConstants = require('../lib/builder-constants');
 
 const { expect } = chai;
 
@@ -19,9 +19,15 @@ const workspaceFolder = path.join(__dirname, 'workspace'),
    modulePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule')),
    sbis3ControlsPath = path.join(workspaceFolder, 'SBIS3.CONTROLS'),
    themes = {
-      'online': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
-      'presto': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/presto'),
-      'carry': path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/carry')
+      'online': {
+         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online')
+      },
+      'presto': {
+         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/presto')
+      },
+      'carry': {
+         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/carry')
+      }
    };
 
 const clearWorkspace = function() {
@@ -60,20 +66,26 @@ describe('gulp/common/worker.js', () => {
                'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
             }
          };
-         const themeName = resolveThemeName(filePath, modulePath);
-         const [, resultsBuildLess] = await execInPool(pool, 'processLessFile', [
-            text,
+         const lessInfo = {
             filePath,
-            {
-               name: themeName,
-               path: themes[themeName]
-            },
-            gulpModulesInfo
+            modulePath,
+            text,
+            themes,
+            moduleLessConfig: { old: true, multi: false },
+            multiThemes: {},
+            newThemes: {},
+            autoprefixerOptions: builderConstants.defaultAutoprefixerOptions
+         };
+         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+            lessInfo,
+            gulpModulesInfo,
+            false,
+            themes
          ]);
-         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess.imports.length.should.equal(2);
-         resultsBuildLess.text.should.equal('');
+         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.text.should.equal('');
       } finally {
          await clearWorkspace();
          await pool.terminate();
@@ -110,20 +122,26 @@ describe('gulp/common/worker.js', () => {
                'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
             }
          };
-         const themeName = resolveThemeName(filePath, modulePath);
-         const [, resultsBuildLess] = await execInPool(pool, 'processLessFile', [
-            text,
+         const lessInfo = {
             filePath,
-            {
-               name: themeName,
-               path: themes[themeName]
-            },
-            gulpModulesInfo
+            modulePath,
+            text,
+            themes,
+            moduleLessConfig: { old: true, multi: false },
+            multiThemes: {},
+            newThemes: {},
+            autoprefixerOptions: builderConstants.defaultAutoprefixerOptions
+         };
+         const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
+            lessInfo,
+            gulpModulesInfo,
+            false,
+            themes
          ]);
-         resultsBuildLess.hasOwnProperty('imports').should.equal(true);
-         resultsBuildLess.hasOwnProperty('text').should.equal(true);
-         resultsBuildLess.imports.length.should.equal(2);
-         resultsBuildLess.text.should.equal(
+         resultsBuildLess[0].compiled.hasOwnProperty('imports').should.equal(true);
+         resultsBuildLess[0].compiled.hasOwnProperty('text').should.equal(true);
+         resultsBuildLess[0].compiled.imports.length.should.equal(2);
+         resultsBuildLess[0].compiled.text.should.equal(
             ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n"
          );
       } finally {
@@ -148,23 +166,29 @@ describe('gulp/common/worker.js', () => {
          const gulpModulesInfo = {
             pathsForImport: [],
             gulpModulesPaths: {
-               'SBIS3.CONTROLS': sbis3ControlsPath
+               'SBIS3.CONTROLS': sbis3ControlsPath,
+               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
             }
          };
-         const themeName = resolveThemeName(filePath, modulePath);
-         const [, lessResult] = await execInPool(pool, 'processLessFile', [
-            text,
+         const lessInfo = {
             filePath,
-            {
-               name: themeName,
-               path: themes[themeName]
-            },
+            modulePath,
+            text,
+            themes,
+            moduleLessConfig: { old: true, multi: false },
+            multiThemes: {},
+            newThemes: {},
+            autoprefixerOptions: builderConstants.defaultAutoprefixerOptions
+         };
+         const [, lessResult] = await execInPool(pool, 'buildLess', [
+            lessInfo,
             gulpModulesInfo,
-            {}
+            false,
+            themes
          ]);
 
          // заменяем слеши, иначе не сравнить на linux и windows одинаково
-         const errorMessage = lib.trimLessError(lessResult.error.replace(/\\/g, '/'));
+         const errorMessage = lib.trimLessError(lessResult[0].error.replace(/\\/g, '/'));
          errorMessage.should.equal(" in line 1: 'notExist' wasn't found.");
       } finally {
          await clearWorkspace();

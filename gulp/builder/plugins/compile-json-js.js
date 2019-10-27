@@ -36,6 +36,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             /**
+             * dont build AMD-formatted json files for *.package.json and *.config.json. It's common
+             * builder config files, participating only in project's build.
+             */
+            if (!file.basename.includes('.json') || file.basename.includes('package.json') || file.basename.endsWith('.config.json')) {
+               callback(null, file);
+               return;
+            }
+
+            /**
              * Remove AMD-formatted json sources from stream if json source file
              * exists. It will be compiled into AMD-formatted json file.
              * Needed to avoid double symlink issue in debug build(double symlinks
@@ -53,10 +62,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
                return;
             }
-            if (!['.json'].includes(file.extname) || file.basename.includes('package.json')) {
-               callback(null, file);
-               return;
-            }
 
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.(json)$/, '.json.js');
             const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
@@ -68,13 +73,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                callback(null, file);
                return;
             }
-
-            // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы
-            logger.debug({
-               message: 'Компилируем в json.js',
-               filePath: file.history[0],
-               moduleInfo
-            });
 
             let
                relativeFilePath = path.relative(moduleInfo.path, file.history[0]),
