@@ -31,6 +31,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
+            if (!['.es', '.ts', '.js'].includes(file.extname)) {
+               callback(null, file);
+               return;
+            }
+
             /**
              * Если имеется скомпилированный вариант для typescript или ES6 в исходниках, нам необходимо
              * выкинуть его из потока Gulp, чтобы не возникало ситуации, когда в потоке будут
@@ -48,11 +53,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   callback(null, file);
                }
-               return;
-            }
-
-            if (!['.es', '.ts'].includes(file.extname)) {
-               callback(null, file);
                return;
             }
             if (file.path.endsWith('.d.ts')) {
@@ -78,13 +78,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            // выводим пока в режиме debug, чтобы никого не сподвигнуть удалять файлы пока
-            logger.debug({
-               message: 'Компилируем в ES5',
-               filePath: file.history[0],
-               moduleInfo
-            });
-
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
             relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
 
@@ -108,9 +101,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
 
-            // алиас для совместимости с кэшем шаблонов при паковке библиотек.
-            result.nodeName = result.moduleName;
-            taskParameters.cache.storeCompiledES(file.history[0], moduleInfo.name, result);
+            /**
+             * ts compiled cache is required only in libraries packer, that can be enabled with
+             * builder flag "minimize"
+             */
+            if (taskParameters.config.minimize) {
+               // алиас для совместимости с кэшем шаблонов при паковке библиотек.
+               result.nodeName = result.moduleName;
+               taskParameters.cache.storeCompiledES(file.history[0], moduleInfo.name, result);
+            }
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
             newFile.compiled = true;
