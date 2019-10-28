@@ -162,45 +162,6 @@ describe('build less', () => {
          .should.equal(" in line 1: 'notExist' wasn't found.");
    });
 
-   it('variables.less from themes', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes/presto/_variables.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
-   });
-
-   it('ignore folder _less. №1', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, '_less/themes/presto/normal.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
-   });
-
-   it('ignore folder _less. №2', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes\\presto\\_less\\normal.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
-   });
-
    it('less from WS.Deprecated', async() => {
       const filePath = path.join(workspaceFolder, 'WS.Deprecated/Controls/TabControl/TabControl.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';

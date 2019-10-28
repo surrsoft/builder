@@ -330,8 +330,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable_online.css',
          'Stable.less',
          'module-dependencies.json',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       noThemesResultsFiles.should.have.members([
@@ -343,8 +342,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.css',
          'Stable.less',
          'module-dependencies.json',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       const stableCss = await fs.readFile(path.join(moduleOutputFolder, 'Stable.css'), 'utf8');
@@ -392,8 +390,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable_online.css',
          'module-dependencies.json',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       noThemesResultsFiles.should.have.members([
@@ -405,8 +402,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'module-dependencies.json',
          'Stable.css',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       // update themes.config.json for interface module "Модуль". all less must be rebuilded for this new themes config.
@@ -426,8 +422,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable_online.css',
          'module-dependencies.json',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
@@ -444,8 +439,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'module-dependencies.json',
          'stable.js',
          'stable.ts',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       // disable old themes for current project.
@@ -466,8 +460,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'module-dependencies.json',
          'stable.js',
          'stable.ts',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       await clearWorkspace();
@@ -693,8 +686,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable.css',
          'Stable_online.css',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       const noThemesDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Modul_bez_tem'));
       noThemesDirectoryExists.should.equal(false);
@@ -746,8 +738,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRename_old.less',
          'Stable.css',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       // изменим "исходники"
@@ -766,8 +757,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'ForRename_old.less',
          'Stable.css',
          'Stable.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       await clearWorkspace();
    });
@@ -1730,9 +1720,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'test-brotli.package.min.js',
             'test-brotli.package.min.js.gz',
             'themes.config.json',
-            'themes.config.json.js',
-            'themes.config.json.min.js',
-            'themes.config.json.min.js.gz',
             'themes.config.min.json',
             'themes.config.min.json.gz'
          ];
@@ -1743,7 +1730,6 @@ describe('gulp/builder/generate-workflow.js', () => {
                'Stable.min.css.br',
                'test-brotli.package.min.css.br',
                'test-brotli.package.min.js.br',
-               'themes.config.json.min.js.br',
                'themes.config.min.json.br'
             ]);
          }
@@ -1790,7 +1776,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'ExternalInterfaceModule/_private/module2',
             'ExternalInterfaceModule/amdModule',
             'ExternalInterfaceModule/library',
-            'Modul/themes.config.json',
             'css!ExternalInterfaceModule/moduleStyle',
             'css!Modul/Stable',
             'html!Modul/Page'
@@ -1806,7 +1791,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/_private/module2': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
-            'Modul/themes.config.json': 'resources/Modul/test-brotli.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
@@ -1900,7 +1884,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/_private/module2': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
-            'Modul/themes.config.json': 'resources/Modul/test-brotli.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'

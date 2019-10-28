@@ -9,11 +9,11 @@ const through = require('through2'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
+   execInPool = require('../../common/exec-in-pool'),
    pMap = require('p-map'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
-   { buildLess } = require('../../../lib/build-less'),
    { getThemeModifier } = require('../generate-task/collect-style-themes'),
    { defaultAutoprefixerOptions } = require('../../../lib/builder-constants'),
    cssExt = /\.css$/;
@@ -200,12 +200,9 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
-            let isLangCss = false;
-
-            if (moduleInfo.contents.availableLanguage) {
-               const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
-               isLangCss = avlLang.includes(file.basename.replace('.less', ''));
-               file.isLangCss = isLangCss;
+            if (!['.less', '.css'].includes(file.extname)) {
+               callback(null, file);
+               return;
             }
 
             /**
@@ -228,9 +225,12 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                return;
             }
 
-            if (!file.path.endsWith('.less')) {
-               callback(null, file);
-               return;
+            let isLangCss = false;
+
+            if (moduleInfo.contents.availableLanguage) {
+               const avlLang = Object.keys(moduleInfo.contents.availableLanguage);
+               isLangCss = avlLang.includes(file.basename.replace('.less', ''));
+               file.isLangCss = isLangCss;
             }
 
             /**
@@ -264,6 +264,15 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                   });
                }
 
+               callback(null, file);
+               return;
+            }
+
+            /**
+             * private less files are used only for imports into another less, so we can
+             * ignore them and return as common file into gulp stream
+             */
+            if (file.basename.startsWith('_')) {
                callback(null, file);
                return;
             }
@@ -329,21 +338,20 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      newThemes,
                      autoprefixerOptions
                   };
-                  const results = await buildLess(
-                     {
-                        pool: taskParameters.pool,
-                        fileSourcePath: currentLessFile.history[0],
-                        moduleInfo
-                     },
-                     lessInfo,
-                     gulpModulesInfo,
-                     currentLessFile.isLangCss,
-                     allThemes
+                  const [, results] = await execInPool(
+                     taskParameters.pool,
+                     'buildLess',
+                     [
+                        lessInfo,
+                        gulpModulesInfo,
+                        currentLessFile.isLangCss,
+                        allThemes
+                     ],
+                     currentLessFile.history[0],
+                     moduleInfo
                   );
                   for (const result of results) {
-                     if (result.ignoreMessage) {
-                        logger.debug(result.ignoreMessage);
-                     } else if (result.error) {
+                     if (result.error) {
                         let errorObject;
                         if (result.failedLess) {
                            const moduleNameForFail = getModuleNameForFailedImportLess(
@@ -419,9 +427,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                   });
                }
                this.push(currentLessFile);
-            },
-            {
-               concurrency: 20
             }
          );
          if (errors) {
