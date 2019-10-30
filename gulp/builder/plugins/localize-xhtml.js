@@ -28,6 +28,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             callback(null, file);
             return;
          }
+
+         if (!taskParameters.config.templateBuilder) {
+            logger.warning({
+               message: '"View" or "UI" interface module doesn\'t exists in current project. "*.xhtml" templates will be ignored',
+               moduleInfo,
+               filePath: file.path
+            });
+            callback(null, file);
+            return;
+         }
+
          const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
          const [error, newText] = await execInPool(taskParameters.pool, 'prepareXHTML', [
             file.contents.toString(),

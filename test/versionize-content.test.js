@@ -413,6 +413,10 @@ describe('versionize-content', () => {
                path: path.join(sourceFolder, 'View')
             },
             {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
+            },
+            {
                name: 'Vdom',
                path: path.join(sourceFolder, 'Vdom')
             },
