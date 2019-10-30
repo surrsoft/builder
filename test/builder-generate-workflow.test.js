@@ -929,6 +929,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'View',
                path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
             }
          ]
       };
@@ -1222,6 +1226,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'View',
                path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
             }
          ]
       };
@@ -1281,7 +1289,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await check();
 
       /**
-       * after rebuild without "View" module:
+       * after rebuild without "View" and "UI" module:
        * 1)html.tmpl must not be builded.
        * 2)project build must be completed successfully
        */
@@ -1408,6 +1416,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'View',
                path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'UI',
+               path: path.join(sourceFolder, 'View')
             }
          ]
       };
@@ -1520,6 +1532,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'View',
                path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
             },
             {
                name: 'Vdom',
@@ -2034,6 +2050,10 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'View')
             },
             {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
+            },
+            {
                name: 'Vdom',
                path: path.join(sourceFolder, 'Vdom')
             },
@@ -2274,6 +2294,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'View',
                path: path.join(sourceFolder, 'View')
+            },
+            {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI')
             },
             {
                name: 'Modul',

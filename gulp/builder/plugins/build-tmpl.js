@@ -59,7 +59,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
          if (!taskParameters.config.templateBuilder) {
             logger.warning({
-               message: '"View" interface module doesn\'t exists in current project. WS.Core "*.tmpl/*.wml" templates will be ignored',
+               message: '"View" or "UI" interface module doesn\'t exists in current project. "*.tmpl/*.wml" templates will be ignored',
                moduleInfo,
                filePath: file.path
             });
