@@ -1,23 +1,19 @@
-/* eslint-disable no-unused-vars */
 'use strict';
 
 const initTest = require('./init-test');
 const { parseCurrentModuleName, getThemeModifier } = require('../gulp/builder/generate-task/collect-style-themes');
 const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
 const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
-const assert = require('assert');
 const
    path = require('path'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
-   pMap = require('p-map'),
+   { resolveThemeName } = require('../lib/less/build-less'),
    {
-      processLessFile,
-      resolveThemeName,
-      buildLess,
       getThemeImport,
-      getCurrentImports
-   } = require('../lib/build-less');
+      getCurrentImports,
+      processLessFile
+   } = require('../lib/less/helpers');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    pathsForImport = [workspaceFolder],
