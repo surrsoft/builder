@@ -10,11 +10,9 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   pMap = require('p-map'),
    helpers = require('../../../lib/helpers'),
    Vinyl = require('vinyl'),
    fs = require('fs-extra'),
-   { getThemeModifier } = require('../generate-task/collect-style-themes'),
    { defaultAutoprefixerOptions } = require('../../../lib/builder-constants'),
    cssExt = /\.css$/;
 
@@ -126,37 +124,6 @@ function getNewThemesList(allThemes) {
 }
 
 /**
- * Gets proper theme modificator for current building less. If modifier doesnt exists in theme
- * modifiers list, empty string will be returned.
- * Example:
- * Module has 2 themes:
- * 1)online - TestModule-online-theme/_theme.less
- * 2)online:dark-large - TestModule-online-theme/dark-large/_theme.less
- * For less TestModule-online-theme/dark-large/someDirectory/test.less
- * correct modifier must be "dark-large".
- * For less TestModule-online-theme/someDirectory/test.less
- * correct modifier must be "".
- * @param{String} themeModifier - resolved modifier for less
- * @param{String} moduleModifiers - current theme modifiers list
- * @returns {string}
- */
-function getThemeModificatorForLess(themeModifier, moduleModifiers) {
-   // themeModifier will be empty for root themed less
-   if (!themeModifier) {
-      return '';
-   }
-   let result = '';
-   let currentThemeModifier = themeModifier;
-   while (currentThemeModifier !== '.' && !result) {
-      if (moduleModifiers.includes(currentThemeModifier)) {
-         result = currentThemeModifier;
-      }
-      currentThemeModifier = path.dirname(currentThemeModifier);
-   }
-   return result;
-}
-
-/**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -175,7 +142,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    // check for offline plugin application
    const multiThemes = getMultiThemesList(allThemes, taskParameters.config.themes);
    const newThemes = getNewThemesList(allThemes);
-   const currentModuleNewTheme = taskParameters.cache.getNewStyleTheme(moduleInfo.name);
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
       case 'boolean':
@@ -195,12 +161,32 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          break;
    }
 
+   /**
+    * skip new themes interface modules. Gulp have own plugin for this situation.
+    */
+   if (newThemes[moduleName]) {
+      return through.obj(
+         function onTransform(file, encoding, callback) {
+            callback(null, file);
+         }
+      );
+   }
+
    return through.obj(
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
          try {
             if (!['.less', '.css'].includes(file.extname)) {
+               callback(null, file);
+               return;
+            }
+
+            /**
+             * private less files are used only for imports into another less, so we can
+             * ignore them and return as common file into gulp stream
+             */
+            if (file.basename.startsWith('_')) {
                callback(null, file);
                return;
             }
@@ -233,28 +219,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                file.isLangCss = isLangCss;
             }
 
-            /**
-             * store every building less from new theme's interface modules
-             * into builder cache to store theme into "contents" builder meta info
-             */
-            if (newThemes[moduleName] && !path.basename(file.path).startsWith('_')) {
-               const themeModifier = getThemeModificatorForLess(
-                  getThemeModifier(moduleInfo.path, file.path),
-                  currentModuleNewTheme.modifiers
-               );
-               const relativePathByModifier = path.relative(
-                  path.join(moduleInfo.path, themeModifier),
-                  file.path
-               );
-               const currentLessName = relativePathByModifier.replace('.less', '');
-               taskParameters.cache.storeNewThemesModules(
-                  newThemes[moduleName].moduleName,
-                  currentLessName,
-                  themeModifier,
-                  newThemes[moduleName].themeName
-               );
-            }
-
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], getOutput(file, '.css'), moduleInfo);
 
@@ -268,14 +232,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                return;
             }
 
-            /**
-             * private less files are used only for imports into another less, so we can
-             * ignore them and return as common file into gulp stream
-             */
-            if (file.basename.startsWith('_')) {
-               callback(null, file);
-               return;
-            }
             moduleLess.push(file);
             callback(null);
          } catch (error) {
@@ -324,18 +280,16 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             }
          }
          let errors = false;
-         await pMap(
-            moduleLess,
-            async(currentLessFile) => {
+         const promises = [];
+         Object.keys(moduleLess).forEach((lessFile) => {
+            promises.push((async(currentLessFile) => {
                try {
                   const lessInfo = {
                      filePath: currentLessFile.history[0],
                      modulePath: moduleInfo.path,
                      text: currentLessFile.contents.toString(),
-                     themes: taskParameters.config.themes,
                      moduleLessConfig,
                      multiThemes,
-                     newThemes,
                      autoprefixerOptions
                   };
                   const [, results] = await execInPool(
@@ -427,8 +381,9 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                   });
                }
                this.push(currentLessFile);
-            }
-         );
+            })(moduleLess[lessFile]));
+         });
+         await Promise.all(promises);
          if (errors) {
             logger.info(`Информация об Интерфейсных модулей для компилятора less: ${JSON.stringify(gulpModulesInfo)}`);
          }
