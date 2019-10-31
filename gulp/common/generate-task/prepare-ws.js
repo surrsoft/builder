@@ -24,14 +24,14 @@ const path = require('path'),
  */
 function generateTaskForPrepareWS(taskParameters) {
    /**
-    * в случае отсутствия необоходимости сборки шаблонов
-    * нам не нужно совершать предварительную компиляцию
-    * ядра и его инициализацию в пуле воркеров, поэтому
-    * данную таску можно пропустить.
-    * Исключение - тесты билдера. Для них надо
-    * инициализировать ядро.
+    * Core typescript compiling and initialize is needed by builder
+    * in this cases:
+    * 1) templates build enabled.
+    * 2) Builder unit tests
+    * 3) localization enabled.
     */
-   if (!taskParameters.config.needTemplates && !taskParameters.config.builderTests) {
+   if (!taskParameters.config.needTemplates && !taskParameters.config.builderTests &&
+      !taskParameters.config.localizations.length > 0) {
       return function skipPrepareWS(done) {
          done();
       };

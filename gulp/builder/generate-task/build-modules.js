@@ -18,6 +18,7 @@ const gulpBuildHtmlTmpl = require('../plugins/build-html-tmpl'),
    packLibrary = require('../plugins/pack-library'),
    compileJsonToJs = require('../plugins/compile-json-js'),
    { compileLess } = require('../plugins/compile-less'),
+   { compileNewLess } = require('../plugins/compile-new-less'),
    changedInPlace = require('../../common/plugins/changed-in-place'),
    addComponentInfo = require('../plugins/add-component-info'),
    buildStaticHtml = require('../plugins/build-static-html'),
@@ -129,6 +130,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
             .pipe(gulpIf(config.less, compileLess(taskParameters, moduleInfo, gulpModulesInfo)))
+            .pipe(gulpIf(config.less, compileNewLess(taskParameters, moduleInfo, gulpModulesInfo)))
             .pipe(gulpIf(config.htmlWml, gulpBuildHtmlTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(config.deprecatedWebPageTemplates, buildStaticHtml(taskParameters, moduleInfo, modulesMap)))
 
