@@ -825,13 +825,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       // gulp_config was changed, so we need to ensure cache platform folder for old build was removed
       (await fs.pathExists(path.join(cacheFolder, 'platform'))).should.equal(false);
 
-      // source symlinks must have new actual list of source modules
-      const sourceSymlinksDirectoryList = await fs.readdir(path.join(cacheFolder, 'temp-modules'));
-      sourceSymlinksDirectoryList.should.have.members([
-         'SBIS3.CONTROLS',
-         'Controls-theme',
-         'Модуль'
-      ]);
+      // source symlinks must be removed after every build to ensure actuality of modules list.
+      (await fs.pathExists(path.join(cacheFolder, 'temp-modules'))).should.equal(false);
       await clearWorkspace();
    });
 

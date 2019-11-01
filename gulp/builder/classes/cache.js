@@ -784,6 +784,12 @@ class Cache {
             concurrency: 20
          }
       );
+
+      // always remove source's symlinks. Modules list may be different between 2 builds.
+      results.push({
+         needRemove: true,
+         filePath: path.join(cachePath, 'temp-modules')
+      });
       return results
          .map((obj) => {
             if (obj.needRemove) {
