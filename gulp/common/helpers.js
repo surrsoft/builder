@@ -56,6 +56,11 @@ function needSymlink(config, moduleInfo) {
          return false;
       }
 
+      if (file.basename === 'en.css') {
+         console.log('!!!найдена css для проекта, будет сделан симлинк');
+         console.log(`по пути ${file.output} существует симлинк: ${fs.pathExistsSync(file.output)}`);
+      }
+
       // нельзя использовать симлинки для файлов, которые мы сами генерируем.
       // абсолютный путь в relativePath  может получиться только на windows, если не получилось построить относительный
       const relativePath = path.relative(moduleInfo.path, file.history[0]);
