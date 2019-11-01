@@ -121,6 +121,9 @@ class BuildConfiguration {
 
       // enable autoprefixer postprocessor in less compiler
       this.autoprefixer = true;
+
+      // enable core typescript compilation and initialize for gulp plugins
+      this.initCore = false;
    }
 
    /**
@@ -382,6 +385,15 @@ class BuildConfiguration {
       if (mainModulesForTemplates.View && mainModulesForTemplates.UI) {
          this.templateBuilder = true;
       }
+
+      /**
+       * Core typescript compiling and initialize is needed by builder
+       * in this cases:
+       * 1) templates build enabled.
+       * 2) Builder unit tests
+       * 3) localization enabled.
+       */
+      this.initCore = this.needTemplates || this.builderTests || this.localizations.length > 0;
    }
 }
 
