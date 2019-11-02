@@ -19,6 +19,7 @@ const {
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
    outputFolder = path.join(workspaceFolder, 'output'),
+   logsFolder = path.join(workspaceFolder, 'logs'),
    sourceFolder = path.join(workspaceFolder, 'source'),
    configPath = path.join(workspaceFolder, 'config.json'),
    moduleOutputFolder = path.join(outputFolder, 'Modul'),
@@ -471,12 +472,22 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
       const testResults = async() => {
          const module1Meta = await fs.readFile(path.join(outputFolder, 'Module1/.builder/module.js'), 'utf8');
-         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-US","ru-RU"]};});');
+         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-US","en.css","ru-RU"]};});');
          (await isRegularFile(path.join(outputFolder, 'Module2/.builder'), 'module.js')).should.equal(false);
+         const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
+         const errorMessage = 'Attempt to use css from root lang directory, use less instead!';
+         let cssLangErrorExists = false;
+         messages.forEach((currentError) => {
+            if (currentError.message === errorMessage) {
+               cssLangErrorExists = true;
+            }
+         });
+         cssLangErrorExists.should.equal(true);
       };
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         logs: logsFolder,
          contents: true,
          builderTests: true,
          'default-localization': 'ru-RU',
@@ -2280,7 +2291,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
-         logs: path.join(workspaceFolder, 'logs'),
+         logs: logsFolder,
          typescript: true,
          minimize: true,
          wml: true,
