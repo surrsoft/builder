@@ -13,6 +13,7 @@ const through = require('through2'),
    Vinyl = require('vinyl'),
    path = require('path'),
    logger = require('../../../lib/logger').logger(),
+   { unixifyPath } = require('../../../lib/helpers'),
    DictionaryIndexer = require('../../../lib/i18n/dictionary-indexer');
 
 /**
@@ -35,6 +36,20 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.extname === '.json') {
                indexer.addLocalizationJson(moduleInfo.path, file.path, locale);
             } else if (file.extname === '.css') {
+               const prettyRelativePath = unixifyPath(file.relative);
+
+               /**
+                * css locales in root lang aren't allowed. All this sources will be merged into root lang css content.
+                * That's why source lang css can't be described in the root lang directory, for this case use less.
+                */
+               if (prettyRelativePath === `lang/${locale}/${locale}.css` && file.history.length === 1) {
+                  logger.error({
+                     message: 'Attempt to use css from root lang directory, use less instead!',
+                     filePath: file.path,
+                     moduleInfo
+                  });
+                  taskParameters.cache.markFileAsFailed(file.history[0]);
+               }
                indexer.addLocalizationCSS(moduleInfo.path, file.path, locale, file.contents.toString());
             }
          } catch (error) {
