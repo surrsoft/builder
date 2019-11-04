@@ -53,10 +53,13 @@ class ModuleInfo {
          if (isShareOnWindows(cachePath)) {
             throw new Error('На windows путь до кеша не может быть сетевым .');
          }
-         if (fs.pathExistsSync(newPath)) {
-            fs.unlinkSync(newPath);
+         try {
+            fs.ensureSymlinkSync(this.path, newPath, 'dir');
+         } catch (err) {
+            const errorMessage = 'An error occured while creating symlinks to source modules.\n' +
+               'Make sure you\'re running your CLI or IDE with administrator rules(or with sudo rules in linux)';
+            throw new Error(errorMessage);
          }
-         fs.ensureSymlinkSync(this.path, newPath, 'dir');
          this.path = newPath;
       }
    }
