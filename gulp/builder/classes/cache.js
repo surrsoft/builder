@@ -397,7 +397,17 @@ class Cache {
     */
    addDependencies(filePath, imports) {
       const prettyPath = helpers.prettifyPath(filePath);
-      this.currentStore.dependencies[prettyPath] = imports.map(helpers.prettifyPath);
+      if (!this.currentStore.dependencies.hasOwnProperty(prettyPath)) {
+         this.currentStore.dependencies[prettyPath] = [];
+      }
+
+      // add new imports into less dependencies
+      imports.forEach((currentImport) => {
+         const prettyImport = helpers.unixifyPath(currentImport);
+         if (!this.currentStore.dependencies[prettyPath].includes(prettyImport)) {
+            this.currentStore.dependencies[prettyPath].push(prettyImport);
+         }
+      });
    }
 
    getDependencies(filePath) {
