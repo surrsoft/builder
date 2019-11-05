@@ -23,15 +23,7 @@ const path = require('path'),
  * @returns {Undertaker.TaskFunction}
  */
 function generateTaskForPrepareWS(taskParameters) {
-   /**
-    * Core typescript compiling and initialize is needed by builder
-    * in this cases:
-    * 1) templates build enabled.
-    * 2) Builder unit tests
-    * 3) localization enabled.
-    */
-   if (!taskParameters.config.needTemplates && !taskParameters.config.builderTests &&
-      !taskParameters.config.localizations.length > 0) {
+   if (!taskParameters.config.initCore) {
       return function skipPrepareWS(done) {
          done();
       };
