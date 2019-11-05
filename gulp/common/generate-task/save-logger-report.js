@@ -7,9 +7,7 @@
 
 'use strict';
 
-const logger = require('../../../lib/logger').logger(),
-   path = require('path'),
-   fs = require('fs-extra');
+const logger = require('../../../lib/logger').logger();
 
 /**
  * Генерация задачи сохранения отчета об ошибках в json формате.
@@ -17,30 +15,18 @@ const logger = require('../../../lib/logger').logger(),
  * @returns {function(): (Promise)}
  */
 module.exports = function generateTaskForSaveLoggerReport(taskParameters) {
-   return function saveReport() {
-      return new Promise(async(resolve, reject) => {
-         try {
-            if (taskParameters.config.logFolder) {
-               const logsLevels = logger.getMessagesLevel();
-               const messages = logger.getMessageForReport();
-
-               const reportFilePath = path.join(taskParameters.config.logFolder, 'builder_report.json');
-               await fs.outputJSON(reportFilePath, { messages });
-               let resultMessage = 'build was completed ';
-               if (logsLevels.warnings || logsLevels.errors) {
-                  resultMessage += `with warnings or errors. See ${reportFilePath} for additional info!`;
-               } else {
-                  resultMessage += 'successfully!';
-               }
-
-               // eslint-disable-next-line no-console
-               console.log(resultMessage);
-            }
-         } catch (error) {
-            logger.error({ error });
-            reject(error);
-         }
-         resolve();
-      });
+   if (!taskParameters.config.builderTests) {
+      return function skipSaveReport(done) {
+         done();
+      };
+   }
+   return function saveReport(done) {
+      /**
+       * save logger report by this way only for builder unit tests.
+       * In other cases save logger report before main gulp process exit
+       * to catch all unexpected gulp tasks errors and store them into report
+       */
+      logger.saveLoggerReport(taskParameters.config.logFolder);
+      done();
    };
 };
