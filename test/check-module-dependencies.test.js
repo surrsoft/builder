@@ -223,6 +223,7 @@ describe('check-module-dependencies', () => {
          themes: true,
          typescript: true,
          dependenciesGraph: true,
+         builderTests: true,
          modules: [
             {
                name: 'WS.Core',
