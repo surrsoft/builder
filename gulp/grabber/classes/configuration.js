@@ -25,6 +25,9 @@ class GrabberConfiguration {
 
       // путь до папки с кешем
       this.cachePath = '';
+
+      // builder grabber task requires initialized core
+      this.initCore = true;
    }
 
    loadSync(argv) {
@@ -39,7 +42,7 @@ class GrabberConfiguration {
       }
 
       for (const module of this.rawConfig.modules) {
-         const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path);
+         const moduleInfo = new ModuleInfo(module.name, module.responsible, module.path, module.required);
          moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath, false);
          this.modules.push(moduleInfo);
       }

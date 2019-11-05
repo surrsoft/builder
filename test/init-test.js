@@ -25,7 +25,7 @@ function copyWS(modules) {
 
    const config = new Config();
    config.cachePath = fixtureWSPath;
-   config.needTemplates = true;
+   config.initCore = true;
    config.modules = modules;
    const taskParameters = new TaskParameters(config, null);
    return new Promise((resolve) => {
