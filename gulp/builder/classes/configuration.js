@@ -264,6 +264,14 @@ class BuildConfiguration {
 
       if (this.rawConfig.hasOwnProperty('logs')) {
          this.logFolder = this.rawConfig.logs;
+
+         /**
+          * set Logfolder into gulp process environment to save logger report
+          * properly, even for unexpected gulp tasks errors. Exception - fatal process
+          * errors(f.e. OOM), that aborts current process and kills any availability for
+          * saving any additional info about what just happened
+           */
+         process.env.logFolder = this.rawConfig.logs;
       }
 
       if (this.rawConfig.hasOwnProperty('multi-service')) {

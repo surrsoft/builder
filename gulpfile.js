@@ -40,6 +40,7 @@ try {
 
    // важно вернуть правильный код при выходе. сборка должна падать, если есть ошибки
    process.on('exit', (resultCode) => {
+      logger.saveLoggerReport(process.env.logFolder);
       logger.info(`Main process was exited with code: ${resultCode}`);
       const exitCode = logger.getCorrectExitCode(resultCode);
       process.exit(exitCode);
