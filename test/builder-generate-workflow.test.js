@@ -2378,6 +2378,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                'Modul.js',
                'Modul2.js',
                'Modul.modulepack.js',
+               'Module2.js',
+               'Module2.modulepack.js',
                'libraryCycle.js',
                'privateDepCycle.js',
                'privateExternalDep.js',
@@ -2443,6 +2445,17 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-not-amd-as-external-deps', async() => {
+         const module2Output = path.join(outputFolder, 'Modul2');
+         const compiledEsOutputPath = path.join(module2Output, 'Module2.js');
+         const packedCompiledEsOutputPath = path.join(module2Output, 'Module2.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Module2.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Module2.modulepack.js']);
       });
       it('test-native-variable-names-processing', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
@@ -2558,6 +2571,17 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
          packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+      });
+      it('test-not-amd-as-external-deps-after-rerun', async() => {
+         const module2Output = path.join(outputFolder, 'Modul2');
+         const compiledEsOutputPath = path.join(module2Output, 'Module2.js');
+         const packedCompiledEsOutputPath = path.join(module2Output, 'Module2.modulepack.js');
+
+         const compiledEsContent = await fs.readFile(compiledEsOutputPath);
+         const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
+
+         compiledEsContent.toString().should.equal(correctModulesContent['Module2.js']);
+         packedCompiledEsContent.toString().should.equal(correctModulesContent['Module2.modulepack.js']);
       });
       it('test-native-variable-names-processing-after-rerun', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
