@@ -32,7 +32,7 @@ function saveNewThemesToContents(taskParameters, moduleInfo) {
          });
          this.push(contentsJsFile);
 
-         // readed contents is not needed anymore, so through it out from the gulp stream.
+         // readed contents is not needed anymore, so throw it out from the gulp stream.
          callback(null);
       }
    );
