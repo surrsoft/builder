@@ -2164,33 +2164,33 @@ describe('gulp/builder/generate-workflow.js', () => {
          const TsContent = await fs.readFile(TsOutputPath);
 
          removeRSymbol(EsContent.toString()).should.equal(
-            "define('Modul/StableES', [\n" +
-               "    'require',\n" +
-               "    'exports',\n" +
-               "    'Modul/Di'\n" +
-               '], function (require, exports, Di_es_1) {\n' +
-               "    'use strict';\n" +
-               "    Object.defineProperty(exports, '__esModule', { value: true });\n" +
-               '    var Factory = { Di: Di_es_1.default };\n' +
+            'define("Modul/StableES", ["require", "exports", "Modul/Di"], function (require, exports, Di_es_1) {\n' +
+               '    "use strict";\n' +
+               '    Object.defineProperty(exports, "__esModule", { value: true });\n' +
+               '    var Factory = {\n' +
+               '        Di: Di_es_1.default\n' +
+               '    };\n' +
                '    exports.default = Factory;\n' +
-               '});'
+               '});\n'
          );
          removeRSymbol(TsContent.toString()).should.equal(
-            "define('Modul/StableTS', [\n" +
-               "    'require',\n" +
-               "    'exports',\n" +
-               "    'Modul/Di',\n" +
-               "    'browser!/cdn/sound/id3-reader/id3-minimized.js',\n" +
-               "    'is!browser?/cdn/sound/id3-reader/id3-minimized.js',\n" +
-               "    'is!browser?cdn/sound/id3-reader/id3-minimized.js',\n" +
-               "    '/cdn/sound/id3-reader/id3-minimized.js',\n" +
-               "    'cdn/sound/id3-reader/id3-minimized.js'\n" +
+            'define("Modul/StableTS", [' +
+               '"require", ' +
+               '"exports", ' +
+               '"Modul/Di", ' +
+               '"browser!/cdn/sound/id3-reader/id3-minimized.js", ' +
+               '"is!browser?/cdn/sound/id3-reader/id3-minimized.js", ' +
+               '"is!browser?cdn/sound/id3-reader/id3-minimized.js", ' +
+               '"/cdn/sound/id3-reader/id3-minimized.js", ' +
+               '"cdn/sound/id3-reader/id3-minimized.js"' +
                '], function (require, exports, Di_es_1) {\n' +
-               "    'use strict';\n" +
-               "    Object.defineProperty(exports, '__esModule', { value: true });\n" +
-               '    var Factory = { Di: Di_es_1.default };\n' +
+               '    "use strict";\n' +
+               '    Object.defineProperty(exports, "__esModule", { value: true });\n' +
+               '    var Factory = {\n' +
+               '        Di: Di_es_1.default\n' +
+               '    };\n' +
                '    exports.default = Factory;\n' +
-               '});'
+               '});\n'
          );
       };
 
@@ -2391,8 +2391,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             async(basename) => {
                const readedFile = await fs.readFile(path.join(correctModulesPath, basename), 'utf8');
                correctModulesContent[basename] = readedFile
-                  .slice(readedFile.indexOf('define('), readedFile.length)
-                  .replace(/\n$/, '');
+                  .slice(readedFile.indexOf('define('), readedFile.length);
             },
             {
                concurrency: 5

@@ -6,12 +6,8 @@
  * скомпиленный модуль, так и его запакованный результат.
  */
 
-define('Modul/libraryCycle', [
-    'require',
-    'exports',
-    'Modul/_es6/test-cycle-library'
-], function (require, exports, test_cycle_library_es_1) {
+define("Modul/libraryCycle", ["require", "exports", "Modul/_es6/test-cycle-library"], function (require, exports, test_cycle_library_es_1) {
     'use strict';
-    Object.defineProperty(exports, '__esModule', { value: true });
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = test_cycle_library_es_1.default;
 });

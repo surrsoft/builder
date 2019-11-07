@@ -62,7 +62,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            const result = await compileEsAndTs(relativeFilePath, file.contents.toString());
+            const result = await compileEsAndTs(relativeFilePath, file.contents.toString(), moduleInfo.name);
             const newFile = file.clone();
             newFile.contents = Buffer.from(result.text);
             newFile.path = file.path.replace(/\.(es|ts)$/, '.js');

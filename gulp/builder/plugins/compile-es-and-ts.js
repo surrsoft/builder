@@ -84,7 +84,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compileEsAndTs',
-               [relativeFilePath, file.contents.toString()],
+               [relativeFilePath, file.contents.toString(), moduleInfo.name],
                file.history[0],
                moduleInfo
             );
