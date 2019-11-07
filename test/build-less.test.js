@@ -1,23 +1,19 @@
-/* eslint-disable no-unused-vars */
 'use strict';
 
 const initTest = require('./init-test');
 const { parseCurrentModuleName, getThemeModifier } = require('../gulp/builder/generate-task/collect-style-themes');
 const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
 const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
-const assert = require('assert');
 const
    path = require('path'),
    lib = require('./lib'),
    helpers = require('../lib/helpers'),
-   pMap = require('p-map'),
+   { resolveThemeName } = require('../lib/less/build-less'),
    {
-      processLessFile,
-      resolveThemeName,
-      buildLess,
       getThemeImport,
-      getCurrentImports
-   } = require('../lib/build-less');
+      getCurrentImports,
+      processLessFile
+   } = require('../lib/less/helpers');
 
 const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build-less')),
    pathsForImport = [workspaceFolder],
@@ -160,45 +156,6 @@ describe('build less', () => {
       return lib
          .trimLessError(errorMessage)
          .should.equal(" in line 1: 'notExist' wasn't found.");
-   });
-
-   it('variables.less from themes', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes/presto/_variables.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
-   });
-
-   it('ignore folder _less. №1', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, '_less/themes/presto/normal.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
-   });
-
-   it('ignore folder _less. №2', async() => {
-      const retailModulePath = path.join(workspaceFolder, 'Retail');
-      const filePath = path.join(retailModulePath, 'themes\\presto\\_less\\normal.less');
-      const text = '';
-      const lessInfo = {
-         modulePath: retailModulePath,
-         filePath,
-         text
-      };
-      const result = await buildLess({}, lessInfo, gulpModulesInfo);
-      result[0].hasOwnProperty('ignoreMessage').should.equal(true);
    });
 
    it('less from WS.Deprecated', async() => {

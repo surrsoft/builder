@@ -99,14 +99,12 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRename_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       noThemesResultsFiles.should.have.members([
          'ForRename_old.css',
          'ForRename_old.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       const forRenameNewFilePath = path.join(moduleSourceFolder, 'ForRename_new.less');
@@ -127,8 +125,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRename_new.css',
          'ForRename_new_online.css',
          'ForRename_new.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       noThemesResultsFiles.should.have.members([
@@ -136,8 +133,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRename_old.less',
          'ForRename_new.css',
          'ForRename_new.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
@@ -154,15 +150,13 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
          'ForRename_new_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
       noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       noThemesResultsFiles.should.have.members([
          'ForRename_new.css',
          'ForRename_new.less',
-         'themes.config.json',
-         'themes.config.json.js'
+         'themes.config.json'
       ]);
 
       await clearWorkspace();

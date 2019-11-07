@@ -59,6 +59,11 @@ describe('builder', () => {
                required: true
             },
             {
+               name: 'UI',
+               path: path.join(sourceFolder, 'UI'),
+               required: true
+            },
+            {
                name: 'Vdom',
                path: path.join(sourceFolder, 'Vdom'),
                required: true

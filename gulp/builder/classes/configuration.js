@@ -264,6 +264,14 @@ class BuildConfiguration {
 
       if (this.rawConfig.hasOwnProperty('logs')) {
          this.logFolder = this.rawConfig.logs;
+
+         /**
+          * set Logfolder into gulp process environment to save logger report
+          * properly, even for unexpected gulp tasks errors. Exception - fatal process
+          * errors(f.e. OOM), that aborts current process and kills any availability for
+          * saving any additional info about what just happened
+           */
+         process.env.logFolder = this.rawConfig.logs;
       }
 
       if (this.rawConfig.hasOwnProperty('multi-service')) {
@@ -334,6 +342,11 @@ class BuildConfiguration {
 
       // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
       this.modulesForPatch = [];
+
+      const mainModulesForTemplates = {
+         View: false,
+         UI: false
+      };
       for (const module of this.rawConfig.modules) {
          const moduleInfo = new ModuleInfo(
             module.name,
@@ -350,10 +363,17 @@ class BuildConfiguration {
          }
 
          /**
-          * "View" module needed for template's build.
+          * Builder needs "View" and "UI" Interface modules for template's build plugin.
           */
-         if (moduleInfo.name === 'View') {
-            this.templateBuilder = true;
+         switch (moduleInfo.name) {
+            case 'View':
+               mainModulesForTemplates.View = true;
+               break;
+            case 'UI':
+               mainModulesForTemplates.UI = true;
+               break;
+            default:
+               break;
          }
          moduleInfo.symlinkInputPathToAvoidProblems(this.cachePath, true);
 
@@ -366,6 +386,9 @@ class BuildConfiguration {
             }
          }
          this.modules.push(moduleInfo);
+      }
+      if (mainModulesForTemplates.View && mainModulesForTemplates.UI) {
+         this.templateBuilder = true;
       }
    }
 }

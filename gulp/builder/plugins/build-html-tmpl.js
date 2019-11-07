@@ -33,7 +33,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
             if (!taskParameters.config.templateBuilder) {
                logger.warning({
-                  message: 'View module doesn\'t exists in current project. WS.Core "*.html.tmpl" templates will be ignored',
+                  message: '"View" or "UI" module doesn\'t exists in current project. "*.html.tmpl" templates will be ignored',
                   moduleInfo,
                   filePath: file.path
                });
