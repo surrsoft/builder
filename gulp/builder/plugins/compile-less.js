@@ -292,7 +292,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      multiThemes,
                      autoprefixerOptions
                   };
-                  const [, results] = await execInPool(
+                  const [error, results] = await execInPool(
                      taskParameters.pool,
                      'buildLess',
                      [
@@ -304,6 +304,16 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      currentLessFile.history[0],
                      moduleInfo
                   );
+                  if (error) {
+                     taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
+                     logger.error({
+                        message: 'Uncaught less compiler error',
+                        error,
+                        filePath: currentLessFile.history[0],
+                        moduleInfo
+                     });
+                     return;
+                  }
                   for (const result of results) {
                      if (result.error) {
                         let errorObject;
