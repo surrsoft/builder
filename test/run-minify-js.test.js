@@ -54,6 +54,13 @@ describe('run minify-js', () => {
          '})();';
 
       const result = runMinifyJs('virtual.js', text, false);
+      const text1 =
+         '(function() {\n' +
+         "   const test = () => { return '123'; }; test();" +
+         '})();';
+
+      const result1 = runMinifyJs('virtual.js', text1, false);
+      console.log(result1);
       result.code.should.equal(
          '(function(){var e="undefined"===typeof tclosure||!tclosure?arguments[arguments.length-1]:tclosure;if("undefined"===typeof e)console.log(1)})();'
       );
