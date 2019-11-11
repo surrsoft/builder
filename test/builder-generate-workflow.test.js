@@ -503,9 +503,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
 
-      const testResults = async() => {
-         const testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
-         const testModuleNewThemes = testModuleContents.modules.TestModule.newThemes;
+      const testModuleThemes = (currentContents) => {
+         const testModuleNewThemes = currentContents.modules.TestModule.newThemes;
          testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
          testModuleNewThemes['TestModule/test-online'].should.have.members([
             'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
@@ -518,6 +517,25 @@ describe('gulp/builder/generate-workflow.js', () => {
          testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
             'online:dark:medium'
          ]);
+      };
+      const testResults = async() => {
+         // test contents.json for correct new themes content
+         let testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
+         testModuleThemes(testModuleContents);
+
+         // also contents.js needs to be tested for correct content of new themes
+         testModuleContents = await fs.readFile(path.join(outputFolder, 'TestModule/contents.js'), 'utf8');
+         testModuleContents = JSON.parse(testModuleContents.slice(9, testModuleContents.length));
+         testModuleThemes(testModuleContents);
+
+         // test common contents.json for correct new themes content
+         let testCommonModuleContents = await fs.readJson(path.join(outputFolder, 'contents.json'));
+         testModuleThemes(testCommonModuleContents);
+
+         // also contents.js needs to be tested for correct content of new themes
+         testCommonModuleContents = await fs.readFile(path.join(outputFolder, 'TestModule/contents.js'), 'utf8');
+         testCommonModuleContents = JSON.parse(testCommonModuleContents.slice(9, testCommonModuleContents.length));
+         testModuleThemes(testModuleContents);
 
          // new themes meta must not be stored into ".builder/module.js" meta for localization module.
          (await isRegularFile(path.join(outputFolder, 'TestModule/.builder'), 'module.js')).should.equal(false);
@@ -538,6 +556,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          dependenciesGraph: true,
          contents: true,
          builderTests: true,
+         joinedMeta: true,
          modules: [
             {
                name: 'TestModule',
