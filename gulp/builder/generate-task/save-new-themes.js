@@ -22,12 +22,17 @@ function saveNewThemesToContents(taskParameters, moduleInfo) {
             currentContents.modules[moduleInfo.runtimeModuleName].newThemes = newThemesModules;
          }
 
+         // save current module contents into root common contents if needed
+         if (taskParameters.config.joinedMeta) {
+            helpers.joinContents(taskParameters.config.commonContents, currentContents);
+         }
+
          const newFile = file.clone();
          newFile.contents = Buffer.from(JSON.stringify(helpers.sortObject(currentContents), null, 2));
          this.push(newFile);
          const contentsJsFile = new Vinyl({
             path: 'contents.js',
-            contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(moduleInfo.contents))}`),
+            contents: Buffer.from(`contents=${JSON.stringify(helpers.sortObject(currentContents))}`),
             moduleInfo
          });
          this.push(contentsJsFile);
@@ -39,12 +44,14 @@ function saveNewThemesToContents(taskParameters, moduleInfo) {
 }
 
 module.exports = function generateTaskForSaveNewThemes(taskParameters) {
-   if (!taskParameters.config.contents) {
+   const { config } = taskParameters;
+   if (!config.contents) {
       return function skipSaveNewThemes(done) {
          done();
       };
    }
-   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+   const modulesForBuild = config.modulesForPatch.length > 0 ? config.modulesForPatch : config.modules;
+   const tasks = modulesForBuild.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/contents.json');
       return function saveNewThemes() {
          return gulp
