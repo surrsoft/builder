@@ -2451,8 +2451,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['external_public_deps.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['external_public_deps.modulepack.js']);
       });
       it('test-recurse', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'Modul.js');
@@ -2461,8 +2461,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Modul.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['Modul.modulepack.js']);
       });
       it('test-not-amd-as-external-deps', async() => {
          const module2Output = path.join(outputFolder, 'Modul2');
@@ -2472,8 +2472,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Module2.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Module2.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Module2.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['Module2.modulepack.js']);
       });
       it('test-native-variable-names-processing', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
@@ -2482,8 +2482,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['testNativeNamesImports.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
       });
       it('test-recurse-library-dependencies-in-store', async() => {
          const moduleSourcePath = helpers.unixifyPath(path.join(cacheFolder, 'temp-modules/Modul/Модуль.es'));
@@ -2502,7 +2502,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
 
          (await isRegularFile(moduleOutputFolder, 'privateDepCycle.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['privateDepCycle.js']);
       });
       it('test-cycle-library-dependency', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
@@ -2510,7 +2510,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
 
          (await isRegularFile(moduleOutputFolder, 'libraryCycle.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['libraryCycle.js']);
       });
       it('test-external-private-dependency', async() => {
          let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
@@ -2518,13 +2518,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          let compiledEsContent = await fs.readFile(compiledEsOutputPath);
          (await isRegularFile(module2OutputFolder, 'Modul.modulepack.js')).should.equal(false);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Modul2.js']);
 
          compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
 
          compiledEsContent = await fs.readFile(compiledEsOutputPath);
          (await isRegularFile(module2OutputFolder, 'privateExternalDep.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workflow-rebuilded', async() => {
          await runWorkflowWithTimeout();
@@ -2563,8 +2563,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['external_public_deps.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['external_public_deps.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['external_public_deps.modulepack.js']);
       });
       it('test-recurse-library-dependencies-in-store-after-rebuild', async() => {
          const moduleSourcePath = helpers.unixifyPath(path.join(cacheFolder, 'temp-modules/Modul/Модуль.es'));
@@ -2587,8 +2587,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Modul.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Modul.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Modul.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['Modul.modulepack.js']);
       });
       it('test-not-amd-as-external-deps-after-rerun', async() => {
          const module2Output = path.join(outputFolder, 'Modul2');
@@ -2598,8 +2598,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Module2.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['Module2.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Module2.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['Module2.modulepack.js']);
       });
       it('test-native-variable-names-processing-after-rerun', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'testNativeNamesImports.js');
@@ -2608,8 +2608,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
          const packedCompiledEsContent = await fs.readFile(packedCompiledEsOutputPath);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.js']);
-         packedCompiledEsContent.toString().should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['testNativeNamesImports.js']);
+         removeRSymbol(packedCompiledEsContent.toString()).should.equal(correctModulesContent['testNativeNamesImports.modulepack.js']);
       });
       it('test-cycle-private-dependency-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'privateDepCycle.js');
@@ -2617,7 +2617,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
 
          (await isRegularFile(moduleOutputFolder, 'privateDepCycle.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['privateDepCycle.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['privateDepCycle.js']);
       });
       it('test-cycle-library-dependency-after-rebuild', async() => {
          const compiledEsOutputPath = path.join(moduleOutputFolder, 'libraryCycle.js');
@@ -2625,7 +2625,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const compiledEsContent = await fs.readFile(compiledEsOutputPath);
 
          (await isRegularFile(moduleOutputFolder, 'libraryCycle.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['libraryCycle.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['libraryCycle.js']);
       });
       it('test-external-private-dependency-after-rebuild', async() => {
          let compiledEsOutputPath = path.join(module2OutputFolder, 'Modul.js');
@@ -2633,13 +2633,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          let compiledEsContent = await fs.readFile(compiledEsOutputPath);
          (await isRegularFile(module2OutputFolder, 'Modul.modulepack.js')).should.equal(false);
 
-         compiledEsContent.toString().should.equal(correctModulesContent['Modul2.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['Modul2.js']);
 
          compiledEsOutputPath = path.join(moduleOutputFolder, 'privateExternalDep.js');
 
          compiledEsContent = await fs.readFile(compiledEsOutputPath);
          (await isRegularFile(module2OutputFolder, 'privateExternalDep.modulepack.js')).should.equal(false);
-         compiledEsContent.toString().should.equal(correctModulesContent['privateExternalDep.js']);
+         removeRSymbol(compiledEsContent.toString()).should.equal(correctModulesContent['privateExternalDep.js']);
       });
       it('workspace-cleared', async() => {
          await clearWorkspace();
