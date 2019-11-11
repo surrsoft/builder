@@ -55,7 +55,6 @@
       "strip-bom": "3.0.0",
       "tensor-xmldom": "0.2.0-b9",
       "through2": "2.0.3",
-      "typescript": "3.7.2",
       "saby-typescript": "git+https://github.com/saby/TypeScript.git#rc-20.1000",
       "saby-units": "git+https://github.com/saby/Units.git#rc-20.1000",
       "uglify-js": "3.3.23",
