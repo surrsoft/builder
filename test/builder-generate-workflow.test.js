@@ -141,7 +141,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'css!TestModule/Stable-for-theme-import',
          'css!TestModule/Stable-with-import',
          'css!TestModule/test-style-assign',
-         'css!TestModule/test-style-object',
+         'css!TestModule/test-styles-object',
          'css!TestModule/test-theme-object',
          'css!Модуль/Stable'
       ]);
@@ -159,7 +159,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'css!TestModule/Stable-for-theme-import',
          'css!TestModule/Stable-with-import',
          'css!TestModule/test-style-assign',
-         'css!TestModule/test-style-object',
+         'css!TestModule/test-styles-object',
          'css!TestModule/test-theme-object',
          'css!Модуль/Stable'
       ]);
