@@ -7,7 +7,7 @@ def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
     dir (workspace){
         deleteDir()
         checkout([$class: 'GitSCM',
-            branches: [[name: "19.720/bugfix/bls/fix_jf_1511"]],
+            branches: [[name: "rc-${version}"]],
             doGenerateSubmoduleConfigurations: false,
             extensions: [[
                 $class: 'RelativeTargetDirectory',
@@ -25,7 +25,7 @@ def workspace = "/home/sbis/workspace/builder_${version}/${BRANCH_NAME}"
 			LocalDateTime start_time = LocalDateTime.now();
 			echo "Время начала сборки: ${start_time}"
 			try {
-				start.start(version, workspace, helper)
+				start.start(version, workspace)
 			} finally {
 				LocalDateTime end_time = LocalDateTime.now();
 				echo "Время конца сборки: ${end_time}"
