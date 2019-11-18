@@ -60,7 +60,6 @@ const extensionsForRemove = [
    '.markdown',
    '.map',
    '.min.js',
-   '.d.ts',
    '.test.js',
    '.log',
    '.svg',
@@ -95,8 +94,7 @@ function needRemove(filePath, isDir) {
       }
       for (const ext of extensionsForRemove) {
          if (basename.endsWith(ext)) {
-            // dont remove .d.ts files from typescript libraries. Needed by typescript compiler
-            return !(ext === '.d.ts' && filePath.replace(/\\/g, '/').includes('node_modules/typescript'));
+            return true;
          }
       }
    }
