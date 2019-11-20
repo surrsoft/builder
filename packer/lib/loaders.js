@@ -1,8 +1,8 @@
 'use strict';
 
-const esprima = require('esprima');
+const acorn = require('acorn');
 const { traverse } = require('estraverse');
-const escodegen = require('escodegen');
+const astring = require('astring');
 const path = require('path');
 const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./css-helpers').rebaseUrls;
@@ -48,7 +48,7 @@ async function jsLoader(module) {
       return '';
    }
 
-   const ast = esprima.parse(content);
+   const ast = acorn.parse(content);
    traverse(ast, {
       enter: function detectAnonymousModules(node) {
          if (
@@ -100,7 +100,7 @@ async function jsLoader(module) {
     * rebuild module content and return as result
     */
    if (module.rebuild) {
-      return escodegen.generate(ast, {
+      return astring.generate(ast, {
          format: {
             compact: true
          }
@@ -234,7 +234,7 @@ function getTemplateI18nModule(module) {
    }
 })();
 `;
-   return escodegen.generate(esprima.parse(code), {
+   return astring.generate(acorn.parse(code), {
       format: {
          compact: true
       }

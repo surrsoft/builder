@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const esprima = require('esprima');
+const acorn = require('acorn');
 const { traverse } = require('estraverse');
 const pMap = require('p-map');
 const cssHelpers = require('../../lib/css-helpers');
@@ -343,7 +343,7 @@ function getThemeFromWsConfig(wsConfig) {
    const script = wsConfig.firstChild.data
       .replace('%{CONFIG.GLOBAL_PARAMS}', 'true')
       .replace('%{CONFIG.USER_PARAMS}', 'false');
-   const ast = esprima.parseScript(script, { tolerant: true });
+   const ast = acorn.parseScript(script, { tolerant: true });
    let themeName = null;
 
    traverse(ast, {
