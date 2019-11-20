@@ -86,7 +86,7 @@ describe('packer loaders', () => {
             defaultLocalization: 'Module_localization'
          };
          const result = await packLoaders.js(module);
-         result.should.equal('define(\'Module/amdModule\',[\'Module/someDependency\',\'Module_localization\'],function(){return{_moduleName:\'Module/amdModule\'};});');
+         result.should.equal('define(\'Module/amdModule\', [\'Module/someDependency\', \'Module_localization\'], function () {return {_moduleName: \'Module/amdModule\'};});');
       });
    });
    it('templates loader', async() => {

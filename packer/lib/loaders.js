@@ -78,7 +78,7 @@ async function jsLoader(module) {
                   });
                }
                node.arguments[1].elements.push({
-                  raw: module.defaultLocalization,
+                  raw: `'${module.defaultLocalization}'`,
                   type: 'Literal',
                   value: module.defaultLocalization
                });
@@ -100,11 +100,7 @@ async function jsLoader(module) {
     * rebuild module content and return as result
     */
    if (module.rebuild) {
-      return astring.generate(ast, {
-         format: {
-            compact: true
-         }
-      });
+      return astring.generate(ast, { lineEnd: '', indent: '' });
    }
    return content;
 }

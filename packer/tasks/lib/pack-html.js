@@ -343,7 +343,7 @@ function getThemeFromWsConfig(wsConfig) {
    const script = wsConfig.firstChild.data
       .replace('%{CONFIG.GLOBAL_PARAMS}', 'true')
       .replace('%{CONFIG.USER_PARAMS}', 'false');
-   const ast = acorn.parseScript(script, { tolerant: true });
+   const ast = acorn.parse(script, { tolerant: true });
    let themeName = null;
 
    traverse(ast, {

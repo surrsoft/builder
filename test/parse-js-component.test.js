@@ -18,7 +18,7 @@ describe('parse js component', () => {
    it('file with error', () => {
       expect(() => {
          parseJsComponent('define(');
-      }).to.throw('Line 1: Unexpected end of input');
+      }).to.throw('SyntaxError: Unexpected token (1:7)');
    });
    it('empty module name', () => {
       const result = parseJsComponent('define(function(){});');

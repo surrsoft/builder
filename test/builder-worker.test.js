@@ -156,10 +156,10 @@ describe('gulp/common/worker.js', () => {
          await prepareTest();
          let error;
          [error] = await execInPool(pool, 'parseJsComponent', ['define(']);
-         expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+         expect(error).to.have.property('message', 'Ошибка при парсинге: SyntaxError: Unexpected token (1:7)');
 
          [error] = await execInPool(pool, 'parseRoutes', ['define(']);
-         expect(error).to.have.property('message', 'Ошибка при парсинге: Error: Line 1: Unexpected end of input');
+         expect(error).to.have.property('message', 'Ошибка при парсинге: SyntaxError: Unexpected token (1:7)');
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Error.less'));
          const text = (await fs.readFile(filePath)).toString();

@@ -19,7 +19,7 @@ describe('processing routes.js', () => {
       it('file with error', () => {
          expect(() => {
             processingRoutes.parseRoutes('define(');
-         }).to.throw('Line 1: Unexpected end of input');
+         }).to.throw('SyntaxError: Unexpected token (1:7)');
       });
       it('route to component', () => {
          const result = processingRoutes.parseRoutes(
