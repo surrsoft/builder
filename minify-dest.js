@@ -70,6 +70,12 @@ const extensionsForRemove = [
 ];
 const foldersForRemove = ['.bin', '.idea', 'test', 'examples', 'example', '.vscode', '.github'];
 
+const exclusions = [
+
+   // "workerpool" uses minified script for execute(see their's package.json for details). So we can't remove it.
+   'workerpool.min.js'
+];
+
 function recursiveReadDir(folder, results) {
    const files = fs.readdirSync(folder);
    for (const file of files) {
@@ -89,6 +95,9 @@ function needRemove(filePath, isDir) {
          return true;
       }
    } else {
+      if (exclusions.includes(basename)) {
+         return false;
+      }
       if (filesForRemove.includes(basename)) {
          return true;
       }
