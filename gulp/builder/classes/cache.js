@@ -283,8 +283,7 @@ class Cache {
          return true;
       }
 
-      // если сборка с локализацией и свойства компонентов поменялись
-      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl'))) {
+      if (this.dropCacheForMarkup && (prettyPath.endsWith('.xhtml') || prettyPath.endsWith('.tmpl') || prettyPath.endsWith('.wml'))) {
          return true;
       }
 
