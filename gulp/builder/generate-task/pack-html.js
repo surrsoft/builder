@@ -10,7 +10,8 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    DepGraph = require('../../../packer/lib/dependency-graph'),
-   pluginPackHtml = require('../plugins/pack-html');
+   pluginPackHtml = require('../plugins/pack-html'),
+   startTask = require('../../common/start-task-with-timer');
 
 /**
  * Генерация задачи паковки для статических html.
@@ -50,9 +51,12 @@ function generateTaskForPackHtml(taskParameters) {
       };
    });
 
+   const packHtml = startTask('static html packer', taskParameters);
    return gulp.series(
+      packHtml.start,
       generateTaskForLoadDG(taskParameters.cache, depGraph),
-      gulp.parallel(tasks)
+      gulp.parallel(tasks),
+      packHtml.finish
    );
 }
 

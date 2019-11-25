@@ -26,11 +26,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const indexer = new DictionaryIndexer(taskParameters.config.localizations);
    return through.obj(
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             // нам нужны только css и json локализации
             const locale = file.stem;
             if ((file.extname !== '.json' && file.extname !== '.css') || !taskParameters.config.localizations.includes(locale)) {
                callback(null, file);
+               taskParameters.storePluginTime('index localization dictionary', startTime);
                return;
             }
             if (file.extname === '.json') {
@@ -61,10 +63,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('index localization dictionary', startTime);
       },
 
       /* @this Stream */
       function onFlush(callback) {
+         const startTime = Date.now();
          try {
             for (const locale of taskParameters.config.localizations) {
                const mergedCSSCode = indexer.extractMergedCSSCode(moduleInfo.output, locale);
@@ -105,6 +109,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback();
+         taskParameters.storePluginTime('index localization dictionary', startTime);
       }
    );
 };

@@ -11,28 +11,35 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger(),
    normalizeKey = require('../../../lib/i18n/normalize-key'),
-   versionizeFinish = require('../plugins/versionize-finish');
+   versionizeFinish = require('../plugins/versionize-finish'),
+   startTask = require('../../common/start-task-with-timer');
 
 /**
  * Генерация завершающий задачи для Release сборки.
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
-function generateTaskForFinalizeDistrib(config) {
-   if (!config.isReleaseMode) {
+function generateTaskForFinalizeDistrib(taskParameters) {
+   if (!taskParameters.config.isReleaseMode) {
       return function skipFinalizeDistrib(done) {
          done();
       };
    }
 
-   const tasks = [generateTaskForCopyResources(config)];
-   if (config.localizations.length > 0) {
-      tasks.push(generateTaskForNormalizeKey(config));
+   const tasks = [generateTaskForCopyResources(taskParameters)];
+   if (taskParameters.config.localizations.length > 0) {
+      tasks.push(generateTaskForNormalizeKey(taskParameters));
    }
 
-   return gulp.series(tasks);
+   const finalizeDistrib = startTask('finalize distrib', taskParameters);
+   return gulp.series(
+      finalizeDistrib.start,
+      tasks,
+      finalizeDistrib.finish
+   );
 }
 
-function generateTaskForCopyResources(config) {
+function generateTaskForCopyResources(taskParameters) {
+   const { config } = taskParameters;
    const modulesToCopy = config.modulesForPatch.length > 0 ? config.modulesForPatch : config.modules;
    const tasks = modulesToCopy.map((moduleInfo) => {
       const input = path.join(moduleInfo.output, '/**/*.*');
@@ -55,7 +62,7 @@ function generateTaskForCopyResources(config) {
                   }
                })
             )
-            .pipe(gulpIf(!!config.version, versionizeFinish(moduleInfo)))
+            .pipe(gulpIf(!!config.version, versionizeFinish(taskParameters, moduleInfo)))
             .pipe(gulp.dest(moduleOutput));
       };
    });
@@ -63,10 +70,11 @@ function generateTaskForCopyResources(config) {
    return gulp.parallel(tasks);
 }
 
-function generateTaskForNormalizeKey(config) {
+function generateTaskForNormalizeKey(taskParameters) {
    return async function normalizeKeyTask(done) {
+      const startTime = Date.now();
       try {
-         await normalizeKey(config.rawConfig.output, config.localizations);
+         await normalizeKey(taskParameters.config.rawConfig.output, taskParameters.config.localizations);
          done();
       } catch (e) {
          logger.error({
@@ -74,6 +82,7 @@ function generateTaskForNormalizeKey(config) {
             error: e
          });
       }
+      taskParameters.storePluginTime('normalize key', startTime);
    };
 }
 

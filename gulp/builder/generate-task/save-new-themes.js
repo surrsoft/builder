@@ -10,6 +10,7 @@ const logger = require('../../../lib/logger').logger();
 const through = require('through2');
 const helpers = require('../../../lib/helpers');
 const Vinyl = require('vinyl');
+const startTask = require('../../common/start-task-with-timer');
 
 function saveNewThemesToContents(taskParameters, moduleInfo) {
    return through.obj(
@@ -72,5 +73,10 @@ module.exports = function generateTaskForSaveNewThemes(taskParameters) {
             .pipe(gulp.dest(moduleInfo.output));
       };
    });
-   return gulp.parallel(tasks);
+   const saveNewThemes = startTask('save new themes', taskParameters);
+   return gulp.series(
+      saveNewThemes.start,
+      gulp.parallel(tasks),
+      saveNewThemes.finish
+   );
 };

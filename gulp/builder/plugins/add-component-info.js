@@ -21,13 +21,16 @@ const through = require('through2'),
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          if (file.cached) {
             callback(null, file);
+            taskParameters.storePluginTime('parseJsComponent', startTime);
             return;
          }
 
          if (componentCantBeParsed(file)) {
             callback(null, file);
+            taskParameters.storePluginTime('parseJsComponent', startTime);
             return;
          }
 
@@ -52,8 +55,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
          taskParameters.cache.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
          callback(null, file);
+         taskParameters.storePluginTime('parseJsComponent', startTime);
       },
       function onFlush(callback) {
+         const startTime = Date.now();
          try {
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
@@ -69,6 +74,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                moduleInfo
             });
          }
+         taskParameters.storePluginTime('parseJsComponent', startTime);
          callback();
       }
    );

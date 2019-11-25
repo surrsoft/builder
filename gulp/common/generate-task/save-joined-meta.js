@@ -26,6 +26,8 @@ module.exports = function generateTaskForSaveJoinedMeta(taskParameters) {
       };
    }
    return async function saveJoinedMeta() {
+      const startTime = Date.now();
+
       // save joined module-dependencies for non-jinnee application
       const root = taskParameters.config.rawConfig.output;
       if (taskParameters.config.dependenciesGraph) {
@@ -67,5 +69,6 @@ module.exports = function generateTaskForSaveJoinedMeta(taskParameters) {
       if (taskParameters.config.isReleaseMode) {
          await fs.writeFile(path.join(root, 'router.min.js'), routerContent);
       }
+      taskParameters.storeTaskTime('save joined presentation service meta', startTime);
    };
 };

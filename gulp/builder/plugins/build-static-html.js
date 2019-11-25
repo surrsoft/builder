@@ -29,6 +29,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
          callback(null, file);
       },
       async function onFlush(callback) {
+         const startTime = Date.now();
          try {
             const configForReplaceInHTML = {
                urlServicePath: taskParameters.config.urlServicePath,
@@ -104,6 +105,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
             });
          }
          callback();
+         taskParameters.storePluginTime('build static html', startTime);
       }
    );
 };

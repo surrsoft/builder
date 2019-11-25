@@ -21,6 +21,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    taskParameters.versionedModules = {};
    return through.obj(
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
+
          /**
           * для оставшихся модулей(минифицированные css, статические html) также
           * не забываем записать в кэш информацию
@@ -33,10 +35,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             );
          }
          callback(null, file);
+         taskParameters.storePluginTime('presentation service meta', startTime);
       },
 
       /* @this Stream */
       function onFlush(callback) {
+         const startTime = Date.now();
          try {
             const versionedModules = [];
             const versionCache = taskParameters.cache.getVersionedModulesCache(moduleInfo.name);
@@ -79,6 +83,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback();
+         taskParameters.storePluginTime('presentation service meta', startTime);
       }
    );
 };

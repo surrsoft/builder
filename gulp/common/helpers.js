@@ -75,9 +75,11 @@ function needSymlink(config, moduleInfo) {
  * @returns {function(): *}
  */
 function generateTaskForLoadCache(taskParameters) {
-   return function loadCache() {
+   return async function loadCache() {
+      const startTime = Date.now();
       const { modulesForPatch } = taskParameters.config;
-      return taskParameters.cache.load(modulesForPatch && modulesForPatch.length > 0);
+      await taskParameters.cache.load(modulesForPatch && modulesForPatch.length > 0);
+      taskParameters.storeTaskTime('loadCache', startTime);
    };
 }
 
@@ -88,6 +90,8 @@ function generateTaskForLoadCache(taskParameters) {
  */
 function generateTaskForInitWorkerPool(taskParameters) {
    return async function initWorkerPool() {
+      const startTime = Date.now();
+
       // переменная окружения ws-core-path задана в тестах
       let wsCorePath = process.env['ws-core-path'];
 
@@ -130,6 +134,7 @@ function generateTaskForInitWorkerPool(taskParameters) {
             }
          })
       );
+      taskParameters.storeTaskTime('initWorkerPool', startTime);
    };
 }
 

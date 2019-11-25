@@ -176,9 +176,11 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (!['.less', '.css'].includes(file.extname)) {
                callback(null, file);
+               taskParameters.storePluginTime('less compiler', startTime);
                return;
             }
 
@@ -188,6 +190,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
              */
             if (file.basename.startsWith('_')) {
                callback(null, file);
+               taskParameters.storePluginTime('less compiler', startTime);
                return;
             }
 
@@ -205,9 +208,11 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      moduleInfo
                   });
                   callback(null);
+                  taskParameters.storePluginTime('less compiler', startTime);
                   return;
                }
                callback(null, file);
+               taskParameters.storePluginTime('less compiler', startTime);
                return;
             }
 
@@ -229,6 +234,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                }
 
                callback(null, file);
+               taskParameters.storePluginTime('less compiler', startTime);
                return;
             }
 
@@ -244,10 +250,12 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             });
             callback(null, file);
          }
+         taskParameters.storePluginTime('less compiler', startTime);
       },
 
       /* @this Stream */
       async function onFlush(callback) {
+         const startTime = Date.now();
          let moduleLessConfig = taskParameters.cache.getModuleLessConfiguration(moduleInfo.name);
          if (!moduleLessConfig) {
             moduleLessConfig = setDefaultLessConfiguration();
@@ -409,6 +417,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          if (needSaveImportLogs) {
             await fs.outputJson(lessImportsLogsPath, lessImportsLogs);
          }
+         taskParameters.storePluginTime('less compiler', startTime);
          callback();
       }
    );

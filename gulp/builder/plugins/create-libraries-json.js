@@ -23,16 +23,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const libraries = [];
    return through.obj(
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          if (file.library) {
             libraries.push(file);
             callback(null);
          } else {
             callback(null, file);
          }
+         taskParameters.storePluginTime('presentation service meta', startTime);
       },
 
       /* @this Stream */
       async function onFlush(callback) {
+         const startTime = Date.now();
          try {
             let librariesMeta = [];
             const prettyCacheModulePath = helpers.prettifyPath(transliterate(moduleInfo.output));
@@ -78,6 +81,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback();
+         taskParameters.storePluginTime('presentation service meta', startTime);
       }
    );
 };

@@ -21,11 +21,13 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
  * @param {ModuleInfo} moduleInfo информация о модуле
  * @returns {stream}
  */
-module.exports = function declarePlugin(moduleInfo) {
+module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(function onTransform(file, encoding, callback) {
+      const startTime = Date.now();
       try {
          if (!includeExts.includes(file.extname)) {
             callback(null, file);
+            taskParameters.storePluginTime('versionize', startTime);
             return;
          }
 
@@ -46,5 +48,6 @@ module.exports = function declarePlugin(moduleInfo) {
          });
       }
       callback(null, file);
+      taskParameters.storePluginTime('versionize', startTime);
    });
 };

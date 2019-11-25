@@ -29,9 +29,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (!file.contents) {
                callback();
+               taskParameters.storePluginTime('jsonJs', startTime);
                return;
             }
 
@@ -41,6 +43,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              */
             if (!file.basename.includes('.json') || file.basename.includes('package.json') || file.basename.endsWith('.config.json')) {
                callback(null, file);
+               taskParameters.storePluginTime('jsonJs', startTime);
                return;
             }
 
@@ -60,6 +63,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   callback(null, file);
                }
+               taskParameters.storePluginTime('jsonJs', startTime);
                return;
             }
 
@@ -71,6 +75,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputMinPath, moduleInfo);
                callback(null, file);
+               taskParameters.storePluginTime('jsonJs', startTime);
                return;
             }
 
@@ -91,6 +96,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo
                });
                callback(null, file);
+               taskParameters.storePluginTime('jsonJs', startTime);
                return;
             }
 
@@ -109,6 +115,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.history[0]
             });
          }
+         taskParameters.storePluginTime('jsonJs', startTime);
          callback(null, file);
       }
    );

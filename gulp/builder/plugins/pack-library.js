@@ -42,6 +42,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          if (
             !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
@@ -54,10 +55,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          } else {
             callback(null, file);
          }
+
+         taskParameters.storePluginTime('pack libraries', startTime);
       },
 
       /* @this Stream */
       async function onFlush(callback) {
+         const startTime = Date.now();
          const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
          await pMap(
             libraries,
@@ -127,6 +131,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
          );
          callback(null);
+         taskParameters.storePluginTime('pack libraries', startTime);
       }
    );
 };
