@@ -1,3 +1,8 @@
+/**
+ * Main unit-tests for builder workflow generator(main workflow for 'build' task)
+ * @author Kolbeshin F.A.
+ */
+
 'use strict';
 
 const initTest = require('./init-test');
