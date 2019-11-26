@@ -87,9 +87,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (error) {
                   taskParameters.cache.markFileAsFailed(library.history[0]);
                   logger.error({
-                     message: 'Ошибка при паковке библиотеки',
+                     message: 'Error while packing library',
                      error,
-                     filePath: library.history[0]
+                     filePath: library.history[0],
+                     moduleInfo
                   });
                } else {
                   library.modulepack = result.compiled;
