@@ -59,7 +59,7 @@
       "saby-units": "git+https://github.com/saby/Units.git#rc-20.1000",
       "uglify-js": "3.3.23",
       "vinyl": "2.2.0",
-      "workerpool": "5.0.2",
+      "workerpool": "2.3.0",
       "iltorb": "2.4.3",
       "semver": "6.3.0"
    },
