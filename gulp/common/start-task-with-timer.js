@@ -17,15 +17,13 @@ module.exports = function startTask(name, taskParameters, onStart, onFinish) {
       startTime = Date.now();
    };
 
-   result.pluginFinish = (taskName, pluginName, onPluginFinish) => {
-      return (done) => {
-         taskParameters.storePluginTime(pluginName, startTime);
-         taskParameters.storeTaskTime(taskName, startTime);
-         if (onPluginFinish) {
-            onPluginFinish();
-         }
-         done();
-      };
+   result.pluginFinish = (taskName, pluginName, onPluginFinish) => (done) => {
+      taskParameters.storePluginTime(pluginName, startTime);
+      taskParameters.storeTaskTime(taskName, startTime);
+      if (onPluginFinish) {
+         onPluginFinish();
+      }
+      done();
    };
 
    result.finish = (done) => {
