@@ -302,7 +302,17 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                         allThemes
                      ],
                      currentLessFile.history[0],
-                     moduleInfo
+                     moduleInfo,
+
+                     /**
+                      * for some project in one execute machine builder can be used multiple times in parallel -
+                      * f.e. in offline desktop application building debug and release versions of current product.
+                      * In this case will be created 2x more node.js workers, than we have CPU threads in current
+                      * machine, that would cause "resources war" between 2 builder workerpools and significant
+                      * performance decrease. In this case we need extra timeout for heavy tasks
+                      * (less compiler is the heaviest of all builder tasks for worker)
+                      */
+                     600000
                   );
                   if (error) {
                      taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
