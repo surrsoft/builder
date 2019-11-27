@@ -19,13 +19,16 @@ const through = require('through2'),
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(async function onTransform(file, encoding, callback) {
+      const startTime = Date.now();
       try {
          if (file.cached) {
             callback(null, file);
+            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
          if (file.extname !== '.xhtml') {
             callback(null, file);
+            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
 
@@ -36,6 +39,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.path
             });
             callback(null, file);
+            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
 
@@ -65,5 +69,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          });
       }
       callback(null, file);
+      taskParameters.storePluginTime('localize xhtml', startTime);
    });
 };

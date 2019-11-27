@@ -47,6 +47,7 @@ const logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate');
 
 const { needSymlink } = require('../../common/helpers');
+const startTask = require('../../common/start-task-with-timer');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -77,7 +78,12 @@ function generateTaskForBuildModules(taskParameters) {
          )
       );
    }
-   return gulp.parallel(tasks);
+   const buildModule = startTask('buildModule', taskParameters);
+   return gulp.series(
+      buildModule.start,
+      gulp.parallel(tasks),
+      buildModule.finish
+   );
 }
 
 function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
@@ -168,14 +174,14 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
                })
             )
             .pipe(gulpIf(config.presentationServiceMeta, createRoutesInfoJson(taskParameters, moduleInfo)))
-            .pipe(gulpIf(config.presentationServiceMeta, createNavigationModulesJson(moduleInfo)))
+            .pipe(gulpIf(config.presentationServiceMeta, createNavigationModulesJson(taskParameters, moduleInfo)))
 
             // createContentsJson зависит от buildStaticHtml и addComponentInfo
             .pipe(gulpIf(config.contents, createContentsJson(taskParameters, moduleInfo)))
             .pipe(gulpIf(config.customPack, createLibrariesJson(taskParameters, moduleInfo)))
 
             // createStaticTemplatesJson зависит от buildStaticHtml и gulpBuildHtmlTmpl
-            .pipe(gulpIf(config.presentationServiceMeta, createStaticTemplatesJson(moduleInfo)))
+            .pipe(gulpIf(config.presentationServiceMeta, createStaticTemplatesJson(taskParameters, moduleInfo)))
             .pipe(gulpIf(needModuleDependencies, createModuleDependenciesJson(taskParameters, moduleInfo)))
             .pipe(filterCached())
             .pipe(gulpIf(config.isSourcesOutput, filterSources()))

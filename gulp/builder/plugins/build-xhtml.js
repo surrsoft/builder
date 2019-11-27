@@ -24,9 +24,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (file.extname !== '.xhtml') {
                callback(null, file);
+               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
             if (!taskParameters.config.templateBuilder) {
@@ -36,6 +38,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   filePath: file.path
                });
                callback(null, file);
+               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.xhtml/, '.min.xhtml');
@@ -44,6 +47,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
+               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
 
@@ -120,6 +124,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('build xhtml', startTime);
       }
    );
 };

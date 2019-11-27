@@ -22,6 +22,7 @@ function generateTaskForGenerateJson(taskParameters) {
       };
    }
    return async function generateJson() {
+      const startTime = Date.now();
       try {
          const folders = [];
          for (const module of taskParameters.config.modules) {
@@ -74,6 +75,7 @@ function generateTaskForGenerateJson(taskParameters) {
             error
          });
       }
+      taskParameters.storeTaskTime('json-generator', startTime);
    };
 }
 

@@ -28,17 +28,20 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          const isJsonJs = file.basename.endsWith('.json.js');
 
          try {
             if (!isJsonJs && !includeExts.includes(file.extname)) {
                callback(null, file);
+               taskParameters.storePluginTime('minify other', startTime);
                return;
             }
 
             for (const regex of excludeRegexes) {
                if (regex.test(file.path)) {
                   callback(null, file);
+                  taskParameters.storePluginTime('minify other', startTime);
                   return;
                }
             }
@@ -56,6 +59,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
+               taskParameters.storePluginTime('minify other', startTime);
                return;
             }
 
@@ -98,6 +102,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('minify other', startTime);
       }
    );
 };

@@ -9,6 +9,8 @@ const gulp = require('gulp'),
    path = require('path'),
    plumber = require('gulp-plumber');
 
+const startTask = require('../../common/start-task-with-timer');
+
 const compressPlugin = require('../plugins/compress'),
    logger = require('../../../lib/logger').logger();
 
@@ -50,7 +52,12 @@ function generateTaskForCompress(taskParameters) {
       };
    });
 
-   return gulp.parallel(tasks);
+   const compressTask = startTask('compress', taskParameters);
+   return gulp.series(
+      compressTask.start,
+      gulp.parallel(tasks),
+      compressTask.finish
+   );
 }
 
 module.exports = generateTaskForCompress;

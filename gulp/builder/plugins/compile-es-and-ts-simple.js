@@ -25,23 +25,28 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (!file.contents) {
                callback();
+               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
             if (!['.es', '.ts'].includes(file.extname)) {
                callback(null, file);
+               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
             if (file.path.endsWith('.d.ts')) {
                callback(null, file);
+               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
             if (file.cached) {
                callback(null, file);
+               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
             let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
@@ -59,6 +64,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo
                });
                callback(null, file);
+               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
@@ -76,6 +82,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('typescript', startTime);
       }
    );
 };

@@ -138,9 +138,11 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (file.extname !== '.less') {
                callback(null, file);
+               taskParameters.storePluginTime('compile new less', startTime);
                return;
             }
 
@@ -152,6 +154,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
              */
             if (isPrivateLess) {
                callback(null, file);
+               taskParameters.storePluginTime('compile new less', startTime);
                return;
             }
 
@@ -179,6 +182,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputCssFile, moduleInfo);
                callback(null, file);
+               taskParameters.storePluginTime('compile new less', startTime);
                return;
             }
 
@@ -252,6 +256,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('compile new less', startTime);
       }
    );
 }

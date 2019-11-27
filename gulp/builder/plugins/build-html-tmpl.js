@@ -26,9 +26,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             if (!file.path.endsWith('.html.tmpl')) {
                callback(null, file);
+               taskParameters.storePluginTime('build html-tmpl', startTime);
                return;
             }
             if (!taskParameters.config.templateBuilder) {
@@ -37,6 +39,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo,
                   filePath: file.path
                });
+               taskParameters.storePluginTime('build html-tmpl', startTime);
                callback(null, file);
                return;
             }
@@ -96,6 +99,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             logger.error({ error });
          }
          callback(null, file);
+         taskParameters.storePluginTime('build html-tmpl', startTime);
       }
    );
 };

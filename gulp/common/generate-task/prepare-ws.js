@@ -15,6 +15,7 @@ const path = require('path'),
    gulpIf = require('gulp-if'),
    changedInPlace = require('../../common/plugins/changed-in-place'),
    TaskParameters = require('../../common/classes/task-parameters'),
+   startTask = require('../start-task-with-timer'),
    logger = require('../../../lib/logger').logger();
 
 /**
@@ -30,11 +31,17 @@ function generateTaskForPrepareWS(taskParameters) {
    }
 
    const localTaskParameters = new TaskParameters(taskParameters.config, taskParameters.cache, false);
+   localTaskParameters.tasksTimer = taskParameters.tasksTimer;
    const requiredModules = taskParameters.config.modules.filter(moduleInfo => moduleInfo.required);
+   const buildWSModule = startTask('buildWSModule', localTaskParameters);
    if (requiredModules.length) {
-      return gulp.parallel(
-         requiredModules
-            .map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
+      return gulp.series(
+         buildWSModule.start,
+         gulp.parallel(
+            requiredModules
+               .map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
+         ),
+         buildWSModule.finish
       );
    }
    return function skipPrepareWS(done) {

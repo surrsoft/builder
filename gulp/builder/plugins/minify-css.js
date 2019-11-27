@@ -24,17 +24,20 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          try {
             // Нужно вызвать taskParameters.cache.addOutputFile для less, чтобы не удалился *.min.css файл.
             // Ведь самой css не будет в потоке при повторном запуске
             if (!['.css', '.less'].includes(file.extname)) {
                callback(null, file);
+               taskParameters.storePluginTime('minify css', startTime);
                return;
             }
 
             for (const regex of stylesToExcludeFromMinify) {
                if (regex.test(file.path)) {
                   callback(null, file);
+                  taskParameters.storePluginTime('minify css', startTime);
                   return;
                }
             }
@@ -60,12 +63,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo);
                });
                callback(null, file);
+               taskParameters.storePluginTime('minify css', startTime);
                return;
             }
 
             // Минифицировать less не нужно
             if (file.extname !== '.css') {
                callback(null, file);
+               taskParameters.storePluginTime('minify css', startTime);
                return;
             }
 
@@ -109,6 +114,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
+         taskParameters.storePluginTime('minify css', startTime);
       }
    );
 };

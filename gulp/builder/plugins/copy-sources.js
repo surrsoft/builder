@@ -69,9 +69,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
    return through.obj(
       function onTransform(file, encoding, callback) {
+         const startTime = Date.now();
          if (file.basename === 'module-dependencies.json') {
             moduleDepsMetaFile = file;
             callback(null);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
 
@@ -84,6 +86,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             } else {
                callback(null);
             }
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
 
@@ -92,6 +95,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
           */
          if (!extensions.has(file.extname)) {
             callback(null, file);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
 
@@ -100,21 +104,25 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
           */
          if (file.basename === 'contents.json') {
             callback(null, file);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
 
          if (file.basename === 'versioned_modules.json') {
             versionedMetaFile = file;
             callback(null);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
          if (file.basename === 'cdn_modules.json') {
             cdnMetaFile = file;
             callback(null);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
          if (!checkSourceNecessityByConfig(buildConfig, file.extname)) {
             callback(null);
+            taskParameters.storePluginTime('copy sources', startTime);
             return;
          }
 
@@ -129,9 +137,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (debugMode || isMinified || file.basename.endsWith('.min.original.js')) {
                   modulesToCheck.push(file);
                   callback(null);
+                  taskParameters.storePluginTime('copy sources', startTime);
                   return;
                }
                callback(null);
+               taskParameters.storePluginTime('copy sources', startTime);
                return;
             case '.json':
                /**
@@ -139,14 +149,17 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                 */
                if (debugMode || isMinified || file.basename.endsWith('.package.json')) {
                   callback(null, file);
+                  taskParameters.storePluginTime('copy sources', startTime);
                   return;
                }
                callback(null);
+               taskParameters.storePluginTime('copy sources', startTime);
                return;
             case '.less':
             case '.ts':
             case '.es':
                callback(null);
+               taskParameters.storePluginTime('copy sources', startTime);
                return;
 
             // templates, .css, .jstpl, typescript sources, less
@@ -155,12 +168,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   modulesToCheck.push(file);
                }
                callback(null);
+               taskParameters.storePluginTime('copy sources', startTime);
                break;
          }
       },
 
       /* @this Stream */
       function onFlush(callback) {
+         const startTime = Date.now();
          const moduleDeps = taskParameters.cache.getModuleDependencies();
          const currentModulePrivateLibraries = new Set();
          const modulesToRemoveFromMeta = new Map();
@@ -180,6 +195,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                modulesToRemoveFromMeta.set(currentRelativePath, normalizedModuleName);
                taskParameters.cache.removeVersionedModule(currentModule.history[0], moduleInfo.name);
                taskParameters.cache.removeCdnModule(currentModule.history[0], moduleInfo.name);
+               taskParameters.storePluginTime('copy sources', startTime);
                return;
             }
             this.push(currentModule);
@@ -217,6 +233,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
 
          callback();
+         taskParameters.storePluginTime('copy sources', startTime);
       }
    );
 };

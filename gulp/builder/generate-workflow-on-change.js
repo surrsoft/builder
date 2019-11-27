@@ -14,7 +14,8 @@ const path = require('path'),
    gulpRename = require('gulp-rename'),
    gulpChmod = require('gulp-chmod'),
    plumber = require('gulp-plumber'),
-   helpers = require('../../lib/helpers');
+   helpers = require('../../lib/helpers'),
+   startTask = require('../../gulp/common/start-task-with-timer');
 
 const Cache = require('./classes/cache'),
    Configuration = require('./classes/configuration.js'),
@@ -114,7 +115,7 @@ function generateTaskForBuildFile(taskParameters, filePath) {
          done();
       };
    }
-   return function buildModule() {
+   const buildModule = function buildModule() {
       return gulp
          .src(filePathInProject, { dot: false, nodir: true, base: currentModuleInfo.path })
          .pipe(
@@ -146,6 +147,12 @@ function generateTaskForBuildFile(taskParameters, filePath) {
             )
          );
    };
+   const buildFile = startTask('buildModule', taskParameters);
+   return gulp.series(
+      buildFile.start,
+      buildModule,
+      buildFile.finish
+   );
 }
 function generateTaskForCheckVersion(taskParameters) {
    return function checkBuilderVersion(done) {

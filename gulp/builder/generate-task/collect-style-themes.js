@@ -19,6 +19,7 @@ const gulp = require('gulp'),
    configLessChecker = require('../../../lib/config-less-checker');
 
 const logger = require('../../../lib/logger').logger();
+const startTask = require('../../common/start-task-with-timer');
 
 /**
  * Parses current interface module name. Checks it for new theme name template:
@@ -172,12 +173,16 @@ function generateTaskForCollectThemes(taskParameters) {
       };
    });
 
+   const collectStyleThemes = startTask(
+      'collectStyleThemes',
+      taskParameters,
+      null,
+      () => taskParameters.cache.checkThemesForUpdate
+   );
    return gulp.series(
+      collectStyleThemes.start,
       gulp.parallel(tasks),
-      (done) => {
-         taskParameters.cache.checkThemesForUpdate();
-         done();
-      }
+      collectStyleThemes.finish
    );
 }
 

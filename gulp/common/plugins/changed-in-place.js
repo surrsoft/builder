@@ -17,6 +17,7 @@ const logger = require('../../../lib/logger').logger(),
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo = null) {
    return through.obj(async function onTransform(file, encoding, callback) {
+      const startTime = Date.now();
       try {
          const isChanged = taskParameters.cache.isFileChanged(file.path, file.contents, moduleInfo);
          if (isChanged instanceof Promise) {
@@ -27,6 +28,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo = null) {
       } catch (error) {
          logger.error({ error });
       }
+      taskParameters.storePluginTime('changedInPlace', startTime);
       callback(null, file);
    });
 };

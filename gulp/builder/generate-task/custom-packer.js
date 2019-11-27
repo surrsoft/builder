@@ -22,6 +22,8 @@ const gulp = require('gulp'),
    fs = require('fs-extra'),
    transliterate = require('../../../lib/transliterate');
 
+const startTask = require('../../common/start-task-with-timer');
+
 function generateSetSuperBundles(configs, root, modulesForPatch) {
    return function setSuperBundles() {
       return setSuperBundle(configs, root, modulesForPatch);
@@ -129,14 +131,23 @@ function generateTaskForCustomPack(taskParameters) {
       .filter(moduleInfo => moduleInfo.rebuild)
       .map(moduleInfo => path.basename(moduleInfo.output));
 
+   const customPack = startTask('custom pack', taskParameters);
    return gulp.series(
+      customPack.start,
       generateDepsGraphTask(depsTree, taskParameters.cache),
+      customPack.pluginFinish('custom pack', 'get dependencies graph', customPack.setStartTime),
       generateTaskForBundlesListGetter(bundlesList),
+      customPack.pluginFinish('custom pack', 'get bundles approved list', customPack.setStartTime),
       generateCollectPackagesTasks(configs, taskParameters, root, bundlesList, modulesForPatch),
+      customPack.pluginFinish('custom pack', 'collect packages configs', customPack.setStartTime),
       generateCustomPackageTask(configs, taskParameters, depsTree, results, root),
+      customPack.pluginFinish('custom pack', 'build packages', customPack.setStartTime),
       generateInterceptCollectorTask(taskParameters, root, results),
+      customPack.pluginFinish('custom pack', 'collect intercepts', customPack.setStartTime),
       generateSaveResultsTask(taskParameters, results, root, modulesForPatch),
-      generateFinalizeOptimizing(taskParameters, root)
+      customPack.pluginFinish('custom pack', 'save results', customPack.setStartTime),
+      generateFinalizeOptimizing(taskParameters, root),
+      customPack.pluginFinish('custom pack', 'finalize optimizing', customPack.setStartTime)
    );
 }
 
