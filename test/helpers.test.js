@@ -5,6 +5,7 @@ const initTest = require('./init-test');
 const helpers = require('../lib/helpers');
 const libPackHelpers = require('../lib/pack/helpers/librarypack');
 const logger = require('../lib/logger');
+const modulePathToRequire = require('../lib/modulepath-to-require');
 
 describe('helpers', () => {
    before(async() => {
@@ -274,5 +275,19 @@ describe('library pack helpers', () => {
       after(() => {
          logger.setGulpLogger();
       });
+   });
+
+   it('normalize modulepath to require name', () => {
+      const testName = (name, result) => modulePathToRequire.getPrettyPath(name).should.equal(result);
+
+      testName('WS.Core/ext/requirejs/plugins/i18n', 'i18n');
+      testName('WS.Core/ext/requirejs/plugins/js', 'js');
+      testName('WS.Core/ext/requirejs/plugin/i18n', 'WS.Core/ext/requirejs/plugin/i18n');
+      testName('WS.Core/lib/testName', 'Lib/testName');
+      testName('WS.Core/core/testName', 'Core/testName');
+      testName('WS.Core/transport/testName', 'Transport/testName');
+      testName('WS.Core/css/testName', 'WS/css/testName');
+      testName('WS.Deprecated/testName', 'Deprecated/testName');
+      testName('MyModule/test1', 'MyModule/test1');
    });
 });
