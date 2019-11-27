@@ -197,13 +197,25 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             if (file.extname === '.css') {
                const lessInSource = await fs.pathExists(file.path.replace(cssExt, '.less'));
                if (lessInSource) {
-                  const warnMessage = 'Compiled style from sources will be ignored: ' +
-                     'current style will be compiled from less source analog';
-                  logger.warning({
-                     message: warnMessage,
-                     filePath: file.path,
-                     moduleInfo
-                  });
+                  const
+                     warnMessage = 'Compiled style from sources will be ignored: ' +
+                     'current style will be compiled from less source analog',
+                     logObj = {
+                        message: warnMessage,
+                        filePath: file.path,
+                        moduleInfo
+                     };
+
+                  /**
+                   * for local stands building in debug mode log existing css messages as info for debug.
+                   * In other cases log it as warnings to ensure for build department to handle this
+                   * messages and report an error for responsible employees
+                   */
+                  if (taskParameters.config.isReleaseMode()) {
+                     logger.warning(logObj);
+                  } else {
+                     logger.debug(logObj);
+                  }
                   callback(null);
                   return;
                }
