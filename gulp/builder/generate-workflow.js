@@ -134,7 +134,6 @@ function generateTaskForSaveTimeReport(taskParameters) {
                plugin: '-',
                Time: timeFormatter(tasksTimer[currentTask].summary)
             });
-            totalSummary += tasksTimer[currentTask].summary;
             for (const currentPlugin of sortedPlugins) {
                resultJson.push({
                   Task: currentTask,
@@ -142,8 +141,8 @@ function generateTaskForSaveTimeReport(taskParameters) {
                   currentPlugin,
                   Time: timeFormatter(tasksTimer[currentTask].plugins[currentPlugin].summary)
                });
-               totalSummary += tasksTimer[currentTask].plugins[currentPlugin].summary;
             }
+            totalSummary += tasksTimer[currentTask].summary;
          } else {
             resultJson.push({
                Task: currentTask,

@@ -214,7 +214,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                    * In other cases log it as warnings to ensure for build department to handle this
                    * messages and report an error for responsible employees
                    */
-                  if (taskParameters.config.isReleaseMode()) {
+                  if (taskParameters.config.isReleaseMode) {
                      logger.warning(logObj);
                   } else {
                      logger.debug(logObj);
