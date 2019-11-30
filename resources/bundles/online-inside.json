@@ -327,6 +327,7 @@
   "resources/HR/packages/vacancies.package.min",
   "resources/HR/packages/vdom_vacancies.package.min",
   "resources/ImageEditor/ImageEditor/Editor.package.min",
+  "resources/Inferno/inferno-library.package.min",
   "resources/Informers/Informers.package.min",
   "resources/Informers/InformersCompatible.package.min",
   "resources/File/file-wscore.package.min",
