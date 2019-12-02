@@ -4,7 +4,11 @@
 const fs = require('fs-extra'),
    path = require('path');
 
-
+/**
+ * Parse all parameters of current node command
+ * @param{Array} argv - arguments from cli for current command
+ * @returns Array
+ */
 function getProcessParameters(argv) {
    const result = {};
    for (const argument of argv) {
@@ -103,6 +107,7 @@ function readDevDependencies() {
    return Object.keys(packageJson.devDependencies);
 }
 
+// exclude devDependencies from minifier to avoid problems with it in builder unit tests
 const librariesToExclude = readDevDependencies();
 
 function recursiveReadDir(folder, results) {
