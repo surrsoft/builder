@@ -45,6 +45,7 @@
   "resources/BookingPublic/packages/bookingPublicUtil.package.min",
   "resources/CRM/crm_common_mini.package.min",
   "resources/CRM/crm_data.package.min",
+  "resources/CRM/crm_phone.package.min",
   "resources/CRMDesktop/crm_staff_choice.package.min",
   "resources/Capital/CapitalContent.package.min",
   "resources/CAInside/Inory/RegInory.package.min",
