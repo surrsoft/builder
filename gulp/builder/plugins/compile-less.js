@@ -301,6 +301,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          }
          let errors = false;
          const promises = [];
+         const errorsList = {};
          Object.keys(moduleLess).forEach((lessFile) => {
             promises.push((async(currentLessFile) => {
                try {
@@ -339,15 +340,14 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      logger.error({
                         message: 'Uncaught less compiler error',
                         error,
-                        filePath: currentLessFile.history[0],
-                        moduleInfo
+                        filePath: currentLessFile.history[0]
                      });
                      return;
                   }
+
                   for (const result of results) {
                      if (result.error) {
-                        let errorObject;
-                        if (result.failedLess) {
+                        if (result.type) {
                            const moduleNameForFail = getModuleNameForFailedImportLess(
                               currentLessFile.base,
                               result.failedLess
@@ -355,25 +355,26 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                            const moduleInfoForFail = taskParameters.config.modules.find(
                               currentModuleInfo => currentModuleInfo.name === moduleNameForFail
                            );
-                           const errorLoadAttempts = result.error.slice(result.error.indexOf('Tried -'), result.error.length);
-                           result.error = result.error.replace(errorLoadAttempts, '');
+                           let message = result.error;
 
-                           const message = `Bad import detected ${result.error}. Check interface module of current import ` +
-                              `for existing in current project. Needed by: ${currentLessFile.history[0]}. ` +
-                              `For theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n${errorLoadAttempts}`;
-                           errorObject = {
+                           // add more additional logs information for bad import in less
+                           if (result.type === 'import') {
+                              const errorLoadAttempts = result.error.slice(result.error.indexOf('Tried -'), result.error.length);
+                              result.error = result.error.replace(errorLoadAttempts, '');
+
+                              message = `Bad import detected ${result.error}. Check interface module of current import ` +
+                                 `for existing in current project. Needed by: ${currentLessFile.history[0]}. ` +
+                                 `For theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n${errorLoadAttempts}`;
+                           }
+                           errorsList[result.failedLess] = {
                               message,
-                              filePath: result.failedLess,
                               moduleInfo: moduleInfoForFail
                            };
                         } else {
-                           errorObject = {
-                              message: `Ошибка компиляции less: ${result.error}`,
-                              filePath: currentLessFile.history[0],
-                              moduleInfo
-                           };
+                           const message = `Less compiler error: ${result.error}. Source file: ${currentLessFile.history[0]}. ` +
+                              `Theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n`;
+                           logger.error({ message });
                         }
-                        logger.error(errorObject);
                         errors = true;
                         taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
                      } else {
@@ -416,7 +417,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                   logger.error({
                      message: 'Ошибка builder\'а при компиляции less',
                      error,
-                     moduleInfo,
                      filePath: currentLessFile.history[0]
                   });
                }
@@ -424,7 +424,14 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             })(moduleLess[lessFile]));
          });
          await Promise.all(promises);
+
+         /**
+          * log error for current fallen less only once to avoid logs hell if error will be in one on theme's sources.
+          */
          if (errors) {
+            Object.keys(errorsList).forEach(
+               failedLessFile => logger.error({ filePath: failedLessFile, ...errorsList[failedLessFile] })
+            );
             logger.info(`Информация об Интерфейсных модулей для компилятора less: ${JSON.stringify(gulpModulesInfo)}`);
          }
          if (taskParameters.config.customPack) {
