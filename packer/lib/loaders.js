@@ -221,12 +221,13 @@ function getTemplateI18nModule(module) {
       code = `(function() {
    var availableDict = ${availableDict},
       langMatch = String(typeof document === 'undefined' ? '' : document.cookie).match(/lang=([A-z-]+)/),
-      langName = langMatch ? langMatch[1].split('-')[0] : 'ru',
+      localeName = langMatch ? langMatch[1] : 'ru-RU',
+      langName = localeName.split('-')[0],
       langModule = '${dictName}/lang/' + langName + '/' + langName + '.json';
    if (langName in availableDict) {
       define('${module.fullName}', ['Core/i18n', langModule], function(i18n, data) {
          if (data){
-            i18n.setDict(data, langModule, langName);
+            i18n.setDict(data, langModule, localeName);
          }
       });
    } else {
