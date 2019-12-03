@@ -568,6 +568,15 @@ class Cache {
    storeNewThemesModules(moduleName, lessName, themeModifier, themeName) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       const currentLessControl = helpers.unixifyPath(`${moduleName}/${lessName}`);
+
+      /**
+       * current module cache will not be existing in this case:
+       * Theme module exists in current project(f.e. MyModule-default-theme), but
+       * it's origin isn't existing(module "MyModule")
+       */
+      if (!currentModuleCache) {
+         throw new Error(`For theme module ${moduleName} make sure for existing original interface module in your project!`);
+      }
       if (!currentModuleCache.newThemesModules.hasOwnProperty(currentLessControl)) {
          currentModuleCache.newThemesModules[currentLessControl] = [];
       }
