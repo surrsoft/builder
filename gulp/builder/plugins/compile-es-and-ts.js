@@ -25,7 +25,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
-         const startTime = Date.now();
          try {
             if (!file.contents) {
                callback();
@@ -34,7 +33,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             if (!['.es', '.ts', '.js'].includes(file.extname)) {
                callback(null, file);
-               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
@@ -55,12 +53,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                } else {
                   callback(null, file);
                }
-               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
             if (file.path.endsWith('.d.ts')) {
                callback(null, file);
-               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
@@ -79,7 +75,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsMapFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputModulepackJsFile, moduleInfo);
                callback(null, file);
-               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
@@ -93,6 +88,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                file.history[0],
                moduleInfo
             );
+            taskParameters.storePluginTime('typescript', result.passedTime, true);
             if (error) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
@@ -101,7 +97,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   moduleInfo
                });
                callback(null, file);
-               taskParameters.storePluginTime('typescript', startTime);
                return;
             }
 
@@ -131,7 +126,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.history[0]
             });
          }
-         taskParameters.storePluginTime('typescript', startTime);
          callback(null, file);
       }
    );

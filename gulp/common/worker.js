@@ -103,15 +103,20 @@ try {
     * @returns {Promise<{text, nodeName, dependencies}>}
     */
    async function buildTmpl(text, relativeFilePath, componentsPropertiesFilePath, templateExt) {
+      const startTime = Date.now();
       if (!processingTmpl) {
          initializeWSForWorker();
          processingTmpl = require('../../lib/templates/processing-tmpl');
       }
-      return processingTmpl.buildTmpl(
+      const result = await processingTmpl.buildTmpl(
          processingTmpl.minifyTmpl(text),
          relativeFilePath,
          await readComponentsProperties(componentsPropertiesFilePath),
          templateExt
+      );
+      return Object.assign(
+         result,
+         { passedTime: Date.now() - startTime }
       );
    }
 
@@ -132,17 +137,22 @@ try {
       relativeFilePath,
       componentsPropertiesFilePath
    ) {
+      const startTime = Date.now();
       if (!processingTmpl) {
          initializeWSForWorker();
          processingTmpl = require('../../lib/templates/processing-tmpl');
       }
-      return processingTmpl.buildHtmlTmpl(
+      const content = await processingTmpl.buildHtmlTmpl(
          text,
          fullPath,
          serviceConfig,
          relativeFilePath,
          await readComponentsProperties(componentsPropertiesFilePath)
       );
+      return {
+         content,
+         passedTime: Date.now() - startTime
+      };
    }
 
    /**
@@ -150,14 +160,16 @@ try {
     * (строки в разметке и переводимые опции).
     * @param {string} text содержимое файла
     * @param {string} componentsPropertiesFilePath путь до json-файла описания компонентов
-    * @returns {Promise<String>}
+    * @returns {Object}
     */
    async function prepareXHTML(text, componentsPropertiesFilePath) {
+      const startTime = Date.now();
       if (!prepareXHTMLPrimitive) {
          initializeWSForWorker();
          prepareXHTMLPrimitive = require('../../lib/i18n/prepare-xhtml');
       }
-      return prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
+      const newText = await prepareXHTMLPrimitive(text, await readComponentsProperties(componentsPropertiesFilePath));
+      return { newText, passedTime: Date.now() - startTime };
    }
 
    /**
@@ -167,11 +179,15 @@ try {
     * @returns {Promise<{nodeName, text}>}
     */
    async function buildXhtml(text, relativeFilePath) {
+      const startTime = Date.now();
       if (!buildXhtmlPrimitive) {
          initializeWSForWorker();
          buildXhtmlPrimitive = require('../../lib/templates/processing-xhtml').buildXhtml;
       }
-      return buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
+      return Object.assign(
+         buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath),
+         { passedTime: Date.now() - startTime }
+      );
    }
 
    /**

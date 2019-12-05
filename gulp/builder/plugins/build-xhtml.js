@@ -24,11 +24,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
-         const startTime = Date.now();
          try {
             if (file.extname !== '.xhtml') {
                callback(null, file);
-               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
             if (!taskParameters.config.templateBuilder) {
@@ -38,7 +36,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   filePath: file.path
                });
                callback(null, file);
-               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
             const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.xhtml/, '.min.xhtml');
@@ -47,7 +44,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
                callback(null, file);
-               taskParameters.storePluginTime('build xhtml', startTime);
                return;
             }
 
@@ -67,7 +63,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
                   message: 'Ошибка компиляции XHTML',
-                  errorBuild,
+                  error: errorBuild,
                   moduleInfo,
                   filePath: relativeFilePath
                });
@@ -83,12 +79,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (file.cdnLinked) {
                   resultBuild.cdnLinked = true;
                }
+               taskParameters.storePluginTime('build xhtml', resultBuild.passedTime, true);
                taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
                newText = resultBuild.text;
 
                // если xhtml не возможно минифицировать, то запишем оригинал
 
                const [error, obj] = await execInPool(taskParameters.pool, 'uglifyJs', [file.path, newText, true]);
+               taskParameters.storePluginTime('build xhtml', obj.passedTime, true);
                newText = obj.code;
                if (error) {
                   taskParameters.cache.markFileAsFailed(file.history[0]);
@@ -124,7 +122,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
-         taskParameters.storePluginTime('build xhtml', startTime);
       }
    );
 };

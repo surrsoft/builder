@@ -23,15 +23,12 @@ const through = require('through2'),
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(
       async function onTransform(file, encoding, callback) {
-         const startTime = Date.now();
          if (file.cached) {
             callback(null, file);
-            taskParameters.storePluginTime('presentation service meta', startTime);
             return;
          }
          if (!file.path.endsWith('.routes.js')) {
             callback(null, file);
-            taskParameters.storePluginTime('presentation service meta', startTime);
             return;
          }
 
@@ -51,14 +48,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                moduleInfo
             });
          } else {
+            taskParameters.storePluginTime('routes-info', routeInfo.passedTime, true);
+            delete routeInfo.passedTime;
             taskParameters.cache.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
          }
          callback(null, file);
-         taskParameters.storePluginTime('presentation service meta', startTime);
       },
 
       /* @this Stream */
       function onFlush(callback) {
+         const startTime = Date.now();
          try {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.
 
@@ -91,6 +90,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                moduleInfo
             });
          }
+         taskParameters.storePluginTime('routes-info', startTime);
          callback();
       }
    );

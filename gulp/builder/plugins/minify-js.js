@@ -58,18 +58,15 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onTransform(file, encoding, callback) {
-         const startTime = Date.now();
          try {
             if (file.extname !== '.js') {
                callback(null, file);
-               taskParameters.storePluginTime('minify js', startTime);
                return;
             }
 
             for (const regex of excludeRegexes) {
                if (regex.test(file.path)) {
                   callback(null, file);
-                  taskParameters.storePluginTime('minify js', startTime);
                   return;
                }
             }
@@ -100,7 +97,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
                callback(null, file);
-               taskParameters.storePluginTime('minify js', startTime);
                return;
             }
 
@@ -121,6 +117,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      filePath: file.path
                   });
                } else {
+                  taskParameters.storePluginTime('minify js', minified.passedTime, true);
                   minText = minified.code;
                }
                const newFile = file.clone();
@@ -147,6 +144,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      filePath: file.path
                   });
                } else {
+                  taskParameters.storePluginTime('minify js', minifiedOriginal.passedTime, true);
                   minOriginalText = minifiedOriginal.code;
                }
 
@@ -180,6 +178,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      filePath: outputModulepackJsFile
                   });
                } else {
+                  taskParameters.storePluginTime('minify js', minified.passedTime, true);
                   minText = minified.code;
                }
                const newFile = file.clone();
@@ -219,7 +218,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
          }
          callback(null, file);
-         taskParameters.storePluginTime('minify js', startTime);
       }
    );
 };
