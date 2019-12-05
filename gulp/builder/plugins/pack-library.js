@@ -61,7 +61,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onFlush(callback) {
-         const startTime = Date.now();
          const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
          await pMap(
             libraries,
@@ -93,6 +92,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      moduleInfo
                   });
                } else {
+                  taskParameters.storePluginTime('pack libraries', result.passedTime, true);
                   library.modulepack = result.compiled;
 
                   /**
@@ -132,7 +132,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
          );
          callback(null);
-         taskParameters.storePluginTime('pack libraries', startTime);
       }
    );
 };

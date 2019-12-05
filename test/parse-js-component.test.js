@@ -12,22 +12,22 @@ describe('parse js component', () => {
       await initTest();
    });
    it('empty file', () => {
-      const result = parseJsComponent('');
+      const result = parseJsComponent('', true);
       Object.getOwnPropertyNames(result).length.should.equal(0);
    });
    it('file with error', () => {
       expect(() => {
-         parseJsComponent('define(');
+         parseJsComponent('define(', true);
       }).to.throw('Line 1: Unexpected end of input');
    });
    it('empty module name', () => {
-      const result = parseJsComponent('define(function(){});');
+      const result = parseJsComponent('define(function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(0);
    });
    it('normal module name', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){});');
+      const result = parseJsComponent('define("My.Module/Name", function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(1);
-      result.componentName.should.equal('My.Module/Name');
+      result.componentName.should.equal('My.Module/Name', true);
       result.hasOwnProperty('isNavigation').should.equal(false);
    });
    it('declare object webpage', () => {
@@ -40,7 +40,7 @@ describe('parse js component', () => {
             '   outFileName: "ca_stub",' +
             '   trash:"trash"' +
             '};' +
-            'return module;});'
+            'return module;});', true
       );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
@@ -61,7 +61,7 @@ describe('parse js component', () => {
             '   trash:"trash"' +
             '};' +
             'module.title = "TestTitle";' +
-            'return module;});'
+            'return module;});', true
       );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
@@ -81,7 +81,7 @@ describe('parse js component', () => {
             'module.webPage.htmlTemplate = "\\\\Тема Скрепка\\\\Шаблоны\\\\empty-template.html";' +
             'module.webPage.title = "Пожалуйста, подождите...";' +
             'module.webPage.outFileName = "ca_stub";' +
-            'return module;});'
+            'return module;});', true
       );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
@@ -103,7 +103,7 @@ describe('parse js component', () => {
             '   trash:"trash",' +
             '   urls: ["url/one", "/urlTwo"]' +
             '};' +
-            'return module;});'
+            'return module;});', true
       );
       Object.getOwnPropertyNames(result).length.should.equal(2);
       result.componentName.should.equal('My.Module/Name');
@@ -117,27 +117,27 @@ describe('parse js component', () => {
    });
 
    it('declare dependencies module', () => {
-      const result = parseJsComponent('define("My.Module/Name", ["My.Dep/Name1", "My.Dep/Name2"], function(){});');
+      const result = parseJsComponent('define("My.Module/Name", ["My.Dep/Name1", "My.Dep/Name2"], function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(3);
       result.componentDep.should.have.members(['My.Dep/Name1', 'My.Dep/Name2']);
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(false);
    });
    it('declare dependencies module, empty name', () => {
-      const result = parseJsComponent('define(["My.Dep/Name1", "My.Dep/Name2"], function(){});');
+      const result = parseJsComponent('define(["My.Dep/Name1", "My.Dep/Name2"], function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(1);
       result.componentDep.should.have.members(['My.Dep/Name1', 'My.Dep/Name2']);
       result.hasOwnProperty('isNavigation').should.equal(false);
    });
    it('declare empty dependencies module', () => {
-      const result = parseJsComponent('define("My.Module/Name", [], function(){});');
+      const result = parseJsComponent('define("My.Module/Name", [], function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(3);
       result.componentDep.should.have.members([]);
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(false);
    });
    it('declare empty dependencies module №2', () => {
-      const result = parseJsComponent('define("My.Module/Name", function(){});');
+      const result = parseJsComponent('define("My.Module/Name", function(){});', true);
       Object.getOwnPropertyNames(result).length.should.equal(1);
       result.hasOwnProperty('isNavigation').should.equal(false);
    });

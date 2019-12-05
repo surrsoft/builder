@@ -24,14 +24,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const jsFiles = [];
    return through.obj(
       function onTransform(file, encoding, callback) {
-         const startTime = Date.now();
          if (file.extname !== '.js' || file.library) {
             callback(null, file);
          } else {
             jsFiles.push(file);
             callback();
          }
-         taskParameters.storePluginTime('own dependencies packer', startTime);
       },
 
       /* @this Stream */

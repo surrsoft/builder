@@ -52,11 +52,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const moduleName = path.basename(moduleInfo.output);
 
    return through.obj(async function onTransform(file, encoding, callback) {
-      const startTime = Date.now();
       try {
          if (!['.tmpl', '.wml'].includes(file.extname)) {
             callback(null, file);
-            taskParameters.storePluginTime('build tmpl', startTime);
             return;
          }
          if (!taskParameters.config.templateBuilder) {
@@ -66,7 +64,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.path
             });
             callback(null, file);
-            taskParameters.storePluginTime('build tmpl', startTime);
             return;
          }
          let outputMinFile = '';
@@ -79,7 +76,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
             }
             callback(null, file);
-            taskParameters.storePluginTime('build tmpl', startTime);
             return;
          }
 
@@ -106,6 +102,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: relativeFilePath
             });
          } else {
+            taskParameters.storePluginTime('build tmpl', result.passedTime, true);
             const externalPrivateDependencies = checkForExternalPrivateDeps(
                moduleName,
                result.dependencies
@@ -162,6 +159,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      filePath: relativeFilePath.replace(templateExtReg, '.min$1')
                   });
                } else {
+                  taskParameters.storePluginTime('build tmpl', obj.passedTime, true);
                   newText = obj.code;
                }
             }
@@ -197,6 +195,5 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          });
       }
       callback(null, file);
-      taskParameters.storePluginTime('build tmpl', startTime);
    });
 };

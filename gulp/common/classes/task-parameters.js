@@ -43,9 +43,9 @@ class TaskParameters {
       this.tasksTimer[currentTask].summary += summary;
    }
 
-   storePluginTime(currentPlugin, startTime) {
+   storePluginTime(currentPlugin, startTime, fromWorker) {
       // calculate plugin worktime for current file.
-      const summary = Date.now() - startTime;
+      const summary = fromWorker ? startTime : Date.now() - startTime;
       if (!this.tasksTimer[this.currentTask]) {
          this.tasksTimer[this.currentTask] = {
             plugins: Object.create(null, { summary: { value: 0, writable: true } }),

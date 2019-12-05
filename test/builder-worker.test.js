@@ -51,10 +51,10 @@ describe('gulp/common/worker.js', () => {
       try {
          await prepareTest();
 
-         const [, resultParseJsComponent] = await execInPool(pool, 'parseJsComponent', ['']);
+         const [, resultParseJsComponent] = await execInPool(pool, 'parseJsComponent', ['', true]);
          Object.keys(resultParseJsComponent).length.should.equal(0);
 
-         const [, resultParseRoutes] = await execInPool(pool, 'parseRoutes', ['']);
+         const [, resultParseRoutes] = await execInPool(pool, 'parseRoutes', ['', true]);
          Object.keys(resultParseRoutes).length.should.equal(0);
 
          const filePath = helpers.prettifyPath(path.join(modulePath, 'Empty.less'));
@@ -98,7 +98,7 @@ describe('gulp/common/worker.js', () => {
          await prepareTest();
 
          const textForParseJsComponent = 'define("My.Module/Name", function(){});';
-         const [, resultParseJsComponent] = await execInPool(pool, 'parseJsComponent', [textForParseJsComponent]);
+         const [, resultParseJsComponent] = await execInPool(pool, 'parseJsComponent', [textForParseJsComponent, true]);
          Object.keys(resultParseJsComponent).length.should.equal(1);
          resultParseJsComponent.componentName.should.equal('My.Module/Name');
 
@@ -108,7 +108,7 @@ describe('gulp/common/worker.js', () => {
             "      '/test_1.html': 'js!SBIS3.Test1'\n" +
             '   };\n' +
             '};\n';
-         const [, resultParseRoutes] = await execInPool(pool, 'parseRoutes', [textForParseRoutes]);
+         const [, resultParseRoutes] = await execInPool(pool, 'parseRoutes', [textForParseRoutes, true]);
          Object.getOwnPropertyNames(resultParseRoutes).length.should.equal(1);
          Object.getOwnPropertyNames(resultParseRoutes['/test_1.html']).length.should.equal(1);
          resultParseRoutes['/test_1.html'].controller.should.equal('js!SBIS3.Test1');

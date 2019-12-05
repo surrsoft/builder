@@ -19,16 +19,13 @@ const through = require('through2'),
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    return through.obj(async function onTransform(file, encoding, callback) {
-      const startTime = Date.now();
       try {
          if (file.cached) {
             callback(null, file);
-            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
          if (file.extname !== '.xhtml') {
             callback(null, file);
-            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
 
@@ -39,12 +36,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.path
             });
             callback(null, file);
-            taskParameters.storePluginTime('localize xhtml', startTime);
             return;
          }
 
          const componentsPropertiesFilePath = path.join(taskParameters.config.cachePath, 'components-properties.json');
-         const [error, newText] = await execInPool(taskParameters.pool, 'prepareXHTML', [
+         const [error, result] = await execInPool(taskParameters.pool, 'prepareXHTML', [
             file.contents.toString(),
             componentsPropertiesFilePath
          ]);
@@ -57,7 +53,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                filePath: file.path
             });
          } else {
-            file.contents = Buffer.from(newText);
+            taskParameters.storePluginTime('localize xhtml', result.passedTime, true);
+            file.contents = Buffer.from(result.newText);
          }
       } catch (error) {
          taskParameters.cache.markFileAsFailed(file.history[0]);
@@ -69,6 +66,5 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          });
       }
       callback(null, file);
-      taskParameters.storePluginTime('localize xhtml', startTime);
    });
 };
