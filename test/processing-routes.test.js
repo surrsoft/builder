@@ -13,12 +13,12 @@ describe('processing routes.js', () => {
    });
    describe('parse routes', () => {
       it('empty file', () => {
-         const result = processingRoutes.parseRoutes('');
+         const result = processingRoutes.parseRoutes('', true);
          Object.getOwnPropertyNames(result).length.should.equal(0);
       });
       it('file with error', () => {
          expect(() => {
-            processingRoutes.parseRoutes('define(');
+            processingRoutes.parseRoutes('define(', true);
          }).to.throw('Line 1: Unexpected end of input');
       });
       it('route to component', () => {
@@ -28,7 +28,7 @@ describe('processing routes.js', () => {
                "      '/test_1.html': 'js!SBIS3.Test1',\n" +
                "      '/test_2.html': 'js!SBIS3.Test2'\n" +
                '   };\n' +
-               '};\n'
+               '};\n', true
          );
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1.html']).length.should.equal(1);
@@ -45,7 +45,7 @@ describe('processing routes.js', () => {
                "      '/test_2/': function (req, res) {\n" +
                '      }\n' +
                '   }\n' +
-               '};'
+               '};', true
          );
          Object.getOwnPropertyNames(result).length.should.equal(2);
          Object.getOwnPropertyNames(result['/test_1/']).length.should.equal(1);
@@ -66,7 +66,7 @@ describe('processing routes.js', () => {
             '};';
 
          expect(() => {
-            processingRoutes.parseRoutes(text);
+            processingRoutes.parseRoutes(text, true);
          }).to.throw(
             'Некоторые роутинги не являются корректными. ' +
                'Роутинг должен задаваться строкой, которая начинается с символа "/". Список некорректных роутингов: test_1'
@@ -76,7 +76,7 @@ describe('processing routes.js', () => {
          const text = 'module.exports = "TEST";';
 
          expect(() => {
-            processingRoutes.parseRoutes(text);
+            processingRoutes.parseRoutes(text, true);
          }).to.throw('Экспортируется не объект и не функция');
       });
    });

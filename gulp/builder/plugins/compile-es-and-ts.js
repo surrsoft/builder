@@ -88,7 +88,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                file.history[0],
                moduleInfo
             );
-            taskParameters.storePluginTime('typescript', result.passedTime, true);
             if (error) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
                logger.error({
@@ -100,6 +99,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
+            taskParameters.storePluginTime('typescript', result.passedTime, true);
             taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
 
             /**
