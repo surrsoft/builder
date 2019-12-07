@@ -26,6 +26,7 @@
   "FEDEngine/",
   "GeoComponents/",
   "PrintingTemplates/",
+  "CloudControl/",
   "ACS/PluginAuthorizer.ts(17,14): error TS2339:",
   "ACS/PluginAuthorizer.ts(24,18): error TS2339:",
   "ACS/PluginAuthorizer.ts(25,38): error TS2339:",
