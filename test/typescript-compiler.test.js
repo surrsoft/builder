@@ -19,18 +19,18 @@ describe('typescript compiler', () => {
    });
    it('should return corrent compilerOptions in depends of content format(basic ts module or amd-formatted)', () => {
       let tsContent = "define('Module/myComponent', [], function() { return 'test123'; }";
-      let result = getTranspileOptions(null, 'Module/someAnotherName', tsContent);
+      let result = getTranspileOptions('Module/someAnotherName.js', 'Module/someAnotherName', tsContent);
 
       // if ts module amd-formatted, compilerOptions shouldn't contain "module" option
       result.compilerOptions.hasOwnProperty('module').should.equal(false);
 
-      result = getTranspileOptions(null, 'Module/myComponent', tsContent);
+      result = getTranspileOptions('Module/myComponent.js', 'Module/myComponent', tsContent);
 
       // if ts module amd-formatted, compilerOptions shouldn't contain "module" option
       result.compilerOptions.hasOwnProperty('module').should.equal(false);
 
       tsContent = "import { getter } './getterModule; export default getter;'";
-      result = getTranspileOptions(null, 'Module/someAnotherName', tsContent);
+      result = getTranspileOptions('Module/someAnotherName.js', 'Module/someAnotherName', tsContent);
 
       result.compilerOptions.hasOwnProperty('module').should.equal(true);
    });
