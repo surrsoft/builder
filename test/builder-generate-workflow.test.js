@@ -875,7 +875,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
       let resultsFiles, routesInfoResult;
 
-      const testResults = async() => {
+      const testResults = async(currentUrl) => {
          // проверим, что все нужные файлы появились в "стенде", лишние удалились
          resultsFiles = await fs.readdir(moduleOutputFolder);
          resultsFiles.should.have.members([
@@ -891,6 +891,11 @@ describe('gulp/builder/generate-workflow.js', () => {
          ]);
          routesInfoResult = await fs.readJson(path.join(moduleOutputFolder, 'routes-info.json'));
          routesInfoResult.hasOwnProperty('resources/Modul/tsRouting.routes.js').should.equal(true);
+         const currentRouting = routesInfoResult['resources/Modul/tsRouting.routes.js'];
+         currentRouting[currentUrl].should.deep.equal({
+            controller: 'Modul/Test1',
+            isMasterPage: false
+         });
       };
       const config = {
          cache: cacheFolder,
@@ -908,13 +913,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // запустим таску
       await runWorkflowWithTimeout();
-      await testResults();
-      routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
-         '/ForChange_old.html': {
-            controller: 'Modul/Test1',
-            isMasterPage: false
-         }
-      });
+      await testResults('/ForChange_old.html');
 
       await fs.writeFile(
          path.join(sourceFolder, 'Модуль/tsRouting.routes.ts'),
@@ -929,13 +928,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // запустим повторно таску
       await runWorkflowWithTimeout();
-      await testResults();
-      routesInfoResult['resources/Modul/tsRouting.routes.js'].should.deep.equal({
-         '/ForChange_new.html': {
-            controller: 'Modul/Test1',
-            isMasterPage: false
-         }
-      });
+      await testResults('/ForChange_new.html');
       await clearWorkspace();
    });
 
@@ -2178,15 +2171,27 @@ describe('gulp/builder/generate-workflow.js', () => {
             'StableES.js',
             'StableTS.js',
             'StableES.es',
-            'StableTS.ts'
+            'StableTS.ts',
+            'Stable.routes.ts',
+            'Stable.routes.js'
          ]);
 
          const EsOutputPath = path.join(moduleOutputFolder, 'StableES.js');
          const TsOutputPath = path.join(moduleOutputFolder, 'StableTS.js');
+         const RoutesTsOutputPath = path.join(moduleOutputFolder, 'Stable.routes.js');
 
          const EsContent = await fs.readFile(EsOutputPath);
          const TsContent = await fs.readFile(TsOutputPath);
+         const RoutesTsContent = await fs.readFile(RoutesTsOutputPath);
 
+         removeRSymbol(RoutesTsContent.toString()).should.equal(
+            '"use strict";\n' +
+            'module.exports = function () {\n' +
+            '    return {\n' +
+            '        \'/Module/Test\': function () { }\n' +
+            '    };\n' +
+            '};\n'
+         );
          removeRSymbol(EsContent.toString()).should.equal(
             'define("Modul/StableES", ["require", "exports", "Modul/Di"], function (require, exports, Di_es_1) {\n' +
                '    "use strict";\n' +
