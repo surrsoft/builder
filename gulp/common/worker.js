@@ -184,10 +184,8 @@ try {
          initializeWSForWorker();
          buildXhtmlPrimitive = require('../../lib/templates/processing-xhtml').buildXhtml;
       }
-      return Object.assign(
-         buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath),
-         { passedTime: Date.now() - startTime }
-      );
+      const content = await buildXhtmlPrimitive(await runMinifyXhtmlAndHtml(text), relativeFilePath);
+      return Object.assign(content, { passedTime: Date.now() - startTime });
    }
 
    /**
