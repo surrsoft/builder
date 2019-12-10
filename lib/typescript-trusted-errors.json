@@ -1,6 +1,4 @@
 [
-  "Permission/",
-
   "Browser/_Event/Server/_class/deliver/IndexedDB.ts",
   "Browser/_Event/Server/_class/deliver/IndexedDB.ts(69,23): error TS2558:",
   "Browser/_Event/Server/_class/transport/ExclusiveProxy.ts",
