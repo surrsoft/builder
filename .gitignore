@@ -3,6 +3,8 @@ node_modules
 .DS_Store
 .vscode
 .nyc_output
+builder_compilation_errors.log
+builder_report.json
 eslint-report.log
 xunit-result.xml
 xunit.log
