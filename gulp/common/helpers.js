@@ -119,20 +119,28 @@ function generateTaskForInitWorkerPool(taskParameters) {
          .filter(currentModule => currentModule.required)
          .map(currentModule => currentModule.name);
 
+      const workerPoolConfig = {
+         maxWorkers: maxWorkers || 1,
+         forkOpts: {
+            env: {
+               logs: getLogLevel(process.argv),
+               'ws-core-path': wsCorePath,
+               'main-process-cwd': process.cwd(),
+               'required-modules': JSON.stringify(requiredModules)
+            },
+            execArgv: ['--max-old-space-size=1024']
+         }
+      };
+
+      // save worker's config in cache to use it as debug info
+      await fs.outputJson(
+         path.join(taskParameters.config.cachePath, 'workerpool-config.json'),
+         Object.assign({ systemMaxWorkers: os.cpus().length }, workerPoolConfig)
+      );
+
       // Нельзя занимать больше ядер чем есть. Основной процесс тоже потребляет ресурсы
       taskParameters.setWorkerPool(
-         workerPool.pool(path.join(__dirname, '../common/worker.js'), {
-            maxWorkers: maxWorkers || 1,
-            forkOpts: {
-               env: {
-                  logs: getLogLevel(process.argv),
-                  'ws-core-path': wsCorePath,
-                  'main-process-cwd': process.cwd(),
-                  'required-modules': JSON.stringify(requiredModules)
-               },
-               execArgv: ['--max-old-space-size=1024']
-            }
-         })
+         workerPool.pool(path.join(__dirname, '../common/worker.js'), workerPoolConfig)
       );
       taskParameters.storeTaskTime('initWorkerPool', startTime);
    };
