@@ -6,6 +6,11 @@ const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
 
 const { expect } = chai;
+const fs = require('fs-extra');
+const path = require('path');
+const removeRSymbol = function(str) {
+   return str.replace(/\r/g, '');
+};
 
 describe('parse js component', () => {
    before(async() => {
@@ -159,5 +164,42 @@ describe('parse js component', () => {
       );
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
+   });
+
+   describe('typescript dynamic import checker', () => {
+      const moduleDirectory = path.join(__dirname, 'fixture/parse-js-component/typescript-dynamic-imports/TestModule');
+      const testCommonCase = async(fileName) => {
+         const text = await fs.readFile(`${moduleDirectory}/${fileName}`);
+         const result = parseJsComponent(removeRSymbol(text.toString()));
+         result.hasOwnProperty('patchedText').should.equal(false);
+      };
+      it('promise as new expession, should be patched in case of using require and not having it\'s own catch errors callback', async() => {
+         const text = await fs.readFile(path.join(moduleDirectory, 'myModule.js'));
+         const result = parseJsComponent(removeRSymbol(text.toString()));
+         result.patchedText.should.equal('define("TestModule/myModule", ["require", "exports"], function (require, exports) {\n' +
+            '   "use strict";\n' +
+            '   new Promise(function (resolve_1, reject_1) {\n' +
+            '    require([\'module\'], resolve_1, reject_1);\n' +
+            '}).then(function () {\n' +
+            '    return \'first one\';\n' +
+            '}).then(function () {\n' +
+            '    return \'another one\';\n' +
+            '}).catch(function (err) {\n' +
+            '    require.onError(err);\n' +
+            '})\n' +
+            '});\n');
+      });
+      it('declared promise in variable should be ignored', async() => {
+         await testCommonCase('declaredInVariable.js');
+      });
+      it('returned promise should be ignored', async() => {
+         await testCommonCase('returnedPromise.js');
+      });
+      it('some random promise new expression without require should be ignored', async() => {
+         await testCommonCase('someAnotherPromise.js');
+      });
+      it('new promise expression with custom catch callback should be ignored', async() => {
+         await testCommonCase('withCustomCatch.js');
+      });
    });
 });

@@ -50,6 +50,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                moduleInfo
             });
          }
+         if (componentInfo.patchedText) {
+            file.contents = Buffer.from(componentInfo.patchedText);
+         }
          taskParameters.storePluginTime('parseJsComponent', componentInfo.passedTime, true);
          delete componentInfo.passedTime;
          taskParameters.cache.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
