@@ -6,6 +6,12 @@ const chai = require('chai'),
    parseJsComponent = require('../lib/parse-js-component');
 
 const { expect } = chai;
+const fs = require('fs-extra');
+const path = require('path');
+const removeRSymbol = function(str) {
+   return str.replace(/\r/g, '');
+};
+const runUglifyJs = require('../lib/run-uglify-js');
 
 describe('parse js component', () => {
    before(async() => {
@@ -159,5 +165,82 @@ describe('parse js component', () => {
       );
       result.hasOwnProperty('isNavigation').should.equal(true);
       result.isNavigation.should.equal(true);
+   });
+
+   describe('typescript dynamic import checker', () => {
+      const moduleDirectory = path.join(__dirname, 'fixture/parse-js-component/typescript-dynamic-imports/TestModule');
+      const testCommonCase = async(fileName) => {
+         const text = await fs.readFile(`${moduleDirectory}/${fileName}`);
+         const result = parseJsComponent(removeRSymbol(text.toString()));
+         result.hasOwnProperty('patchedText').should.equal(false);
+      };
+      describe('should be patched in case of using require and not having it\'s own catch errors callback', () => {
+         it('promise as new expession', async() => {
+            const text = await fs.readFile(path.join(moduleDirectory, 'myModule.js'));
+            const result = parseJsComponent(removeRSymbol(text.toString()));
+            result.patchedText.should.equal("define('TestModule/myModule', [\n" +
+               "    'require',\n" +
+               "    'exports'\n" +
+               '], function (require, exports) {\n' +
+               "    'use strict';\n" +
+               '    (new Promise(function (resolve_1, reject_1) {\n' +
+               "        require(['module'], resolve_1, reject_1);\n" +
+               '    }).then(function () {\n' +
+               "        return 'first one';\n" +
+               '    }).then(function () {\n' +
+               "        return 'another one';\n" +
+               '    }).catch(function (err) {\n' +
+               '        require.onError(err);\n' +
+               '    }))\n' +
+               '});');
+            const minifiedResult = runUglifyJs('virtual.js', result.patchedText);
+            minifiedResult.code.should.equal('define("TestModule/myModule",["require","exports"],function(t,n){"use strict";new Promise(function(n,e){t(["module"],n,e)}).then(function(){return"first one"}).then(function(){return"another one"}).catch(function(n){t.onError(n)})});');
+         });
+
+         it('nested promises as new expession', async() => {
+            const text = await fs.readFile(path.join(moduleDirectory, 'nestedDynamicImports.js'));
+            const result = parseJsComponent(removeRSymbol(text.toString()));
+            result.patchedText.should.equal('define(\'TestModule/test\', [\n' +
+               '    \'require\',\n' +
+               '    \'exports\'\n' +
+               '], function (require, exports) {\n' +
+               '    \'use strict\';\n' +
+               '    (new Promise(function (resolve_1, reject_1) {\n' +
+               '        require([\'someModuleName\'], resolve_1, reject_1);\n' +
+               '    }).then(function (component) {\n' +
+               '        (new Promise(function (resolve_2, reject_2) {\n' +
+               '            require([\'Core/IoC\'], resolve_2, reject_2);\n' +
+               '        }).then(function (IoC) {\n' +
+               '            (new Promise(function (resolve_3, reject_3) {\n' +
+               '                require([\'someAnotherNestedModuleName\'], resolve_3, reject_3);\n' +
+               '            }).then(function (someAnotherNestedModuleName) {\n' +
+               '                console.log(\'someAnotherNestedModuleName: \' + someAnotherNestedModuleName);\n' +
+               '            }).catch(function (err) {\n' +
+               '                require.onError(err);\n' +
+               '            }))\n' +
+               '            IoC.resolve(\'ILogger\').error(\'EngineUser/Panel\', \'someError\');\n' +
+               '        }).catch(function (err) {\n' +
+               '            require.onError(err);\n' +
+               '        }))\n' +
+               '    }).catch(function (err) {\n' +
+               '        require.onError(err);\n' +
+               '    }))\n' +
+               '});');
+            const minifiedResult = runUglifyJs('virtual.js', result.patchedText);
+            minifiedResult.code.should.equal('define("TestModule/test",["require","exports"],function(n,e){"use strict";new Promise(function(e,o){n(["someModuleName"],e,o)}).then(function(e){new Promise(function(e,o){n(["Core/IoC"],e,o)}).then(function(e){new Promise(function(e,o){n(["someAnotherNestedModuleName"],e,o)}).then(function(e){console.log("someAnotherNestedModuleName: "+e)}).catch(function(e){n.onError(e)}),e.resolve("ILogger").error("EngineUser/Panel","someError")}).catch(function(e){n.onError(e)})}).catch(function(e){n.onError(e)})});');
+         });
+      });
+      it('declared promise in variable should be ignored', async() => {
+         await testCommonCase('declaredInVariable.js');
+      });
+      it('returned promise should be ignored', async() => {
+         await testCommonCase('returnedPromise.js');
+      });
+      it('some random promise new expression without require should be ignored', async() => {
+         await testCommonCase('someAnotherPromise.js');
+      });
+      it('new promise expression with custom catch callback should be ignored', async() => {
+         await testCommonCase('withCustomCatch.js');
+      });
    });
 });
