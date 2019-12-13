@@ -1,15 +1,16 @@
 define('Modul/Modul', [
     'tslib',
+    'i18n!Modul',
     'View/Executor/TClosure',
     'require',
     'exports',
     'css!theme?Modul/_es6/test'
-], function (tslib_1, thelpers, require, exports) {
+], function (tslib_1, rk, thelpers, require, exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
         exports['wml!Modul/_es6/test'] = true;
         var wml_Modul__es6_test = function () {
         var exports = {};
-        var result = function (thelpers) {
+        var result = function (thelpers, rk) {
             function debug() {
                 debugger;
             }
@@ -44,7 +45,7 @@ define('Modul/Modul', [
             templateFunction.stable = true;
             templateFunction.reactiveProps = [];
             return templateFunction;
-        }(thelpers);
+        }(thelpers, rk);
         if (result instanceof Function) {
             return result;
         } else if (result && Object.getPrototypeOf(result) !== Object.prototype) {
