@@ -67,7 +67,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.(json)$/, '.json.js');
+            const currentFileBase = file.history[0].startsWith(moduleInfo.path) ? moduleInfo.path : moduleInfo.output;
+            const relativePath = path.relative(currentFileBase, file.history[0]).replace(/\.(json)$/, '.json.js');
             const outputPath = path.join(moduleInfo.output, transliterate(relativePath));
             const outputMinPath = outputPath.replace(/\.js$/, '.min.js');
 
@@ -80,10 +81,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             let
-               relativeFilePath = path.relative(moduleInfo.path, file.history[0]),
+               relativeFilePath = path.relative(currentFileBase, file.history[0]),
                result;
 
-            relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
+            relativeFilePath = path.join(path.basename(currentFileBase), relativeFilePath);
 
             try {
                result = compileJsonToJs(relativeFilePath, file.contents.toString());
