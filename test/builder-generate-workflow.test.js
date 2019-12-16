@@ -1491,6 +1491,48 @@ describe('gulp/builder/generate-workflow.js', () => {
       await clearWorkspace();
    });
 
+   it('minimize third-party libraries', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/minimize');
+      const testResults = async() => {
+         const firstMinifiedContent = await fs.readFile(path.join(outputFolder, 'ThirdPartyModule/third-party/test.min.js'), 'utf8');
+         const secondMinifiedContent = await fs.readFile(path.join(outputFolder, 'ThirdPartyModule/third-party/test2.min.js'), 'utf8');
+
+         // source library with minified version must be written into output as is
+         removeRSymbol(firstMinifiedContent).should.equal('define(\'ThirdPartyModule/test\', [\'someDependency\'], function (dep1) {\n' +
+            '   /* minified content from sources */\n' +
+            '   return {\n' +
+            '      dep1: dep1,\n' +
+            '      _moduleName: \'ThirdPartyModule/test\'\n' +
+            '   }\n' +
+            '});');
+
+         // source library without minified version must be minified by builder
+         removeRSymbol(secondMinifiedContent).should.equal(
+            'define("ThirdPartyModule/test2",["someDependency","someAnotherDependency"],function(e,d){return{dep1:e,dep2:d,_moduleName:"ThirdPartyModule/test2"}});'
+         );
+      };
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         minimize: true,
+         modules: [
+            {
+               name: 'ThirdPartyModule',
+               path: path.join(sourceFolder, 'ThirdPartyModule')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+      await testResults();
+      await runWorkflowWithTimeout();
+      await testResults();
+      await clearWorkspace();
+   });
+
    it('filter sources', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/esAndTs');
       await prepareTest(fixtureFolder);
