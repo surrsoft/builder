@@ -131,7 +131,6 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             )
             .pipe(changedInPlace(taskParameters, moduleInfo))
             .pipe(gulpIf(config.typescript, compileEsAndTs(taskParameters, moduleInfo)))
-            .pipe(compileJsonToJs(taskParameters, moduleInfo))
             .pipe(addComponentInfo(taskParameters, moduleInfo))
 
             // compileLess зависит от addComponentInfo. Нужно для сбора темизируемых less.
@@ -146,6 +145,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization || config.wml, buildTmpl(taskParameters, moduleInfo)))
             .pipe(gulpIf(config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
+            .pipe(compileJsonToJs(taskParameters, moduleInfo))
 
             /**
              * packLibrary зависит от addComponentInfo, поскольку нам

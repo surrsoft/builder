@@ -190,6 +190,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             Modul: {
                dict: [
                   'en',
+                  'en-GB',
                   'en-US',
                   'ru-RU'
                ],
@@ -200,6 +201,42 @@ describe('gulp/builder/generate-workflow.js', () => {
       const testResults = async() => {
          const contents = await fs.readJson(path.join(moduleOutputFolder, 'contents.json'));
          contents.should.deep.equal(correctContents);
+         const listOfDictionaries = await fs.readdir(path.join(moduleOutputFolder, 'lang/en'));
+         listOfDictionaries.should.have.members([
+            'en-GB.js',
+            'en-GB.json',
+            'en-GB.json.js',
+            'en-US.js',
+            'en-US.json',
+            'en-US.json.js',
+            'en.js',
+            'en.json',
+            'en.json.js'
+         ]);
+         const currentDictDirectory = path.join(moduleOutputFolder, 'lang/en');
+         (await fs.readJson(path.join(currentDictDirectory, 'en.json'))).should.deep.equal({
+            '10 или 12': '10 or 12',
+            'Это словарь!': 'This is dictionary!'
+         });
+         (await fs.readJson(path.join(currentDictDirectory, 'en-US.json'))).should.deep.equal({
+            '10 или 12': '10 or 12',
+            'Это словарь!': 'This is dictionary! God, bless America!',
+            'Ключ для США': 'US key'
+         });
+         (await fs.readJson(path.join(currentDictDirectory, 'en-GB.json'))).should.deep.equal({
+            '10 или 12': '10 or 12',
+            'Это словарь!': 'This is dictionary! God, save the queen!',
+            'Ключ для Британии': 'GB key'
+         });
+         (await fs.readFile(path.join(currentDictDirectory, 'en-US.js'), 'utf8')).includes(
+            'global.requirejs(["Core/i18n","Modul/lang/en/en-US.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-US.json", "en");});'
+         ).should.equal(true);
+         (await fs.readFile(path.join(currentDictDirectory, 'en-GB.js'), 'utf8')).includes(
+            'global.requirejs(["Core/i18n","Modul/lang/en/en-GB.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-GB.json", "en");});'
+         ).should.equal(true);
+         (await fs.readFile(path.join(currentDictDirectory, 'en.js'), 'utf8')).includes(
+            'global.requirejs(["Core/i18n","Modul/lang/en/en.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en.json", "en");});'
+         ).should.equal(true);
       };
       const config = {
          cache: cacheFolder,
@@ -477,7 +514,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
       const testResults = async() => {
          const module1Meta = await fs.readFile(path.join(outputFolder, 'Module1/.builder/module.js'), 'utf8');
-         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-US","en.css","ru-RU"]};});');
+         module1Meta.should.equal('define(\'Module1/.builder/module\',[],function(){return {"dict":["en","en-GB","en-US","en.css","ru-RU"]};});');
          (await isRegularFile(path.join(outputFolder, 'Module2/.builder'), 'module.js')).should.equal(false);
          const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
          const errorMessage = 'Attempt to use css from root lang directory, use less instead!';

@@ -29,14 +29,32 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const startTime = Date.now();
          try {
             // нам нужны только css и json локализации
-            const locale = file.stem;
+            const locale = path.basename(path.dirname(file.path));
             if ((file.extname !== '.json' && file.extname !== '.css') || !taskParameters.config.localizations.includes(locale)) {
                callback(null, file);
                taskParameters.storePluginTime('index localization dictionary', startTime);
                return;
             }
             if (file.extname === '.json') {
-               indexer.addLocalizationJson(moduleInfo.path, file.path, locale);
+               const region = file.stem;
+               const isDefaultLocale = region === locale;
+               indexer.addLocalizationJson(
+                  moduleInfo.path,
+                  file.path,
+                  locale,
+                  isDefaultLocale ? null : region,
+                  JSON.parse(file.contents)
+               );
+
+               /**
+                * specific region locales is needed only for generating
+                * merged region and default locales
+                */
+               if (!isDefaultLocale) {
+                  callback(null);
+                  taskParameters.storePluginTime('index localization dictionary', startTime);
+                  return;
+               }
             } else if (file.extname === '.css') {
                const prettyRelativePath = unixifyPath(file.relative);
 
@@ -52,7 +70,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   });
                   taskParameters.cache.markFileAsFailed(file.history[0]);
                }
-               indexer.addLocalizationCSS(moduleInfo.path, file.path, locale, file.contents.toString());
+               indexer.addLocalizationCSS(file.path, locale, file.contents.toString());
             }
          } catch (error) {
             logger.error({
@@ -83,7 +101,33 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      })
                   );
                }
-
+               const mergedDictionary = indexer.extractMergedDicts(locale);
+               if (mergedDictionary) {
+                  Object.keys(mergedDictionary).forEach((currentRegion) => {
+                     const regionDictPath = path.join(moduleInfo.output, 'lang', locale, `${locale}-${currentRegion}.json`);
+                     this.push(
+                        new Vinyl({
+                           base: moduleInfo.output,
+                           path: regionDictPath,
+                           contents: Buffer.from(JSON.stringify(mergedDictionary[currentRegion])),
+                           history: [regionDictPath, regionDictPath],
+                           unitedDict: true
+                        })
+                     );
+                     const loaderCodeWithRegion = indexer.extractLoaderCode(moduleInfo.output, locale, currentRegion);
+                     if (loaderCodeWithRegion) {
+                        const loaderPath = path.join(moduleInfo.output, 'lang', locale, `${locale}-${currentRegion}.js`);
+                        this.push(
+                           new Vinyl({
+                              base: moduleInfo.output,
+                              path: loaderPath,
+                              contents: Buffer.from(loaderCodeWithRegion),
+                              unitedDict: true
+                           })
+                        );
+                     }
+                  });
+               }
                const loaderCode = indexer.extractLoaderCode(moduleInfo.output, locale);
                if (loaderCode) {
                   const loaderPath = path.join(moduleInfo.output, 'lang', locale, `${locale}.js`);
