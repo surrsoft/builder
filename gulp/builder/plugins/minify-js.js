@@ -23,6 +23,7 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
+   fs = require('fs-extra'),
    esExt = /\.(es|ts)$/;
 
 const excludeRegexes = [
@@ -47,6 +48,8 @@ const excludeRegexes = [
    /.*[/\\]WS\.Core[/\\]ext[/\\]requirejs[/\\]r\.js/
 ];
 
+const thirdPartyModule = /.*[/\\]third-party[/\\].*/;
+
 /**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
@@ -69,6 +72,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   callback(null, file);
                   return;
                }
+            }
+
+            // dont minify source third-party library if it was already minified
+            if (thirdPartyModule.test(file.path) && await fs.pathExists(file.path.replace(/\.js$/, '.min.js'))) {
+               callback(null, file);
+               return;
             }
 
             let outputFileWoExt;
