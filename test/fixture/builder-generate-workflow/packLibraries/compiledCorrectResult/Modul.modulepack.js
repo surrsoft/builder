@@ -38,7 +38,7 @@ define('Modul/Modul', [
                         defCollection = undefined;
                     }
                 } catch (e) {
-                    thelpers.templateError('Modul/es6/test', e, data);
+                    thelpers.templateError('Modul/_es6/test', e, data);
                 }
                 return out || markupGenerator.createText('');
             };
