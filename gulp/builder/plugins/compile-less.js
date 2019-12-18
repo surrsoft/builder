@@ -364,9 +364,14 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                               moduleInfo: moduleInfoForFail
                            };
                         } else {
-                           const message = `Less compiler error: ${result.error}. Source file: ${currentLessFile.history[0]}. ` +
-                              `Theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n`;
-                           logger.error({ message });
+                           const messageParts = [];
+                           messageParts.push(`Less compiler error: ${result.error}. Source file: ${currentLessFile.history[0]}. `);
+                           if (result.theme) {
+                              messageParts.push(`Theme: ${result.theme.name}. `);
+                              messageParts.push(`Theme type: ${result.theme.isDefault ? 'old' : 'new'}`);
+                           }
+                           messageParts.push('\n');
+                           logger.error({ message: messageParts.join('') });
                         }
                         errors = true;
                         taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
