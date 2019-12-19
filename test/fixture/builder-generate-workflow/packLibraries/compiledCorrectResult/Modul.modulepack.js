@@ -17,7 +17,7 @@ define('Modul/Modul', [
             var deps = Array.prototype.slice.call(arguments);
             var depsLocal = {};
             var includedTemplates = {};
-            var templateFunction = function Unknown(data, attr, context, isVdom, sets) {
+            var templateFunction = function Modul__es6_test(data, attr, context, isVdom, sets) {
                 var forCounter = 0;
                 var templateCount = 0;
                 var key = thelpers.validateNodeKey(attr && attr.key);
@@ -38,7 +38,7 @@ define('Modul/Modul', [
                         defCollection = undefined;
                     }
                 } catch (e) {
-                    thelpers.templateError('undefined', e, data);
+                    thelpers.templateError('Modul/_es6/test', e, data);
                 }
                 return out || markupGenerator.createText('');
             };
