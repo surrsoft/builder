@@ -173,34 +173,39 @@ describe('build less', () => {
    });
 
    it('get correct variables import', () => {
+      const defaultThemeObject = {
+         module: 'Controls-theme',
+         dirname: 'themes/default',
+         name: 'default'
+      };
       let result = getThemeImport({
          isDefault: true,
          name: 'online',
          path: 'SBIS3.CONTROLS/themes/online/_variables'
-      }, true);
+      }, defaultThemeObject);
       result.should.equal('@import \'SBIS3.CONTROLS/themes/online/_variables/_variables\';');
       result = getThemeImport({
          isDefault: true,
          name: 'online',
          path: 'SBIS3.CONTROLS/themes/online/_variables',
          variablesFromLessConfig: 'Controls-theme'
-      }, true);
+      }, defaultThemeObject);
       result.should.equal('@import \'Controls-theme/themes/default/default\';');
       result = getThemeImport({
          isDefault: true,
          name: 'default',
          path: 'Controls-theme/themes/default'
-      }, true);
+      }, defaultThemeObject);
       result.should.equal('@import \'Controls-theme/themes/default/default\';');
       result = getThemeImport({
          isDefault: true,
          name: 'carry'
-      }, true);
+      }, defaultThemeObject);
       result.should.equal('@import \'Controls-theme/themes/default/_variables\';');
       result = getThemeImport({
          isDefault: true,
          name: 'default'
-      }, false);
+      }, {});
       result.should.equal('');
    });
 
