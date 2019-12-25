@@ -7,7 +7,6 @@ const path = require('path');
 const fs = require('fs-extra');
 const rebaseUrlsToAbsolutePath = require('./css-helpers').rebaseUrls;
 const helpers = require('../../lib/helpers');
-const langRegExp = /lang\/([a-z]{2}-[A-Z]{2})/;
 
 const loaders = {
    default: baseTextLoader,
@@ -20,7 +19,6 @@ const loaders = {
    text: textLoader,
    browser: browserLoader,
    optional: optionalLoader,
-   i18n: i18nLoader,
    is: isLoader,
 
    css: cssLoader,
@@ -213,69 +211,6 @@ async function isLoader(module, base) {
       return `${ifCondition}else{${moduleNoContent}}`;
    }
    return ifCondition;
-}
-
-function getTemplateI18nModule(module) {
-   const dictName = String(module.fullName || '').replace('_localization', ''),
-      availableDict = JSON.stringify(module.availableDict || {}),
-      code = `(function() {
-   var availableDict = ${availableDict},
-      langMatch = String(typeof document === 'undefined' ? '' : document.cookie).match(/lang=([A-z-]+)/),
-      localeName = langMatch ? langMatch[1] : 'ru-RU',
-      langName = localeName.split('-')[0],
-      langModule = '${dictName}/lang/' + langName + '/' + langName + '.json';
-   if (langName in availableDict) {
-      define('${module.fullName}', ['Core/i18n', langModule], function(i18n, data) {
-         if (data){
-            i18n.setDict(data, langModule, localeName);
-         }
-      });
-   } else {
-      define('${module.fullName}', function() {});
-   }
-})();
-`;
-   return escodegen.generate(esprima.parse(code), {
-      format: {
-         compact: true
-      }
-   });
-}
-
-/**
- * Получает список доступных языков для локализации.
- * Вычитывает словарь, css для языка, css для страны и оборачивает их как модули для каждого из доступных языков.
- *
- * @param {Meta} module - current module meta for packer
- * @param {String} base - site root
- * @return {Function}
- */
-function i18nLoader(module, base, themeName, languageConfig) {
-   const
-      deps = ['Core/i18n'],
-      { availableLanguage, defaultLanguage } = languageConfig;
-
-   if (!availableLanguage || !defaultLanguage || !module.deps) {
-      return getTemplateI18nModule(module);
-   }
-   const
-      noCssDeps = module.deps.filter(dependency => dependency.indexOf('native-css!') === -1),
-      noLangDeps = [],
-      langDeps = [];
-
-   deps.concat(noCssDeps).forEach((dependency) => {
-      if (dependency.match(langRegExp) === null) {
-         noLangDeps.push(dependency);
-      } else {
-         langDeps.push(dependency);
-      }
-   });
-
-   // дописываем зависимость только от необходимого языка
-   return `define('${module.fullName}',${JSON.stringify(noLangDeps)},function(i18n){` +
-      `var langDep=${JSON.stringify(langDeps)}.filter(function(dep){var lang=dep.match(${langRegExp});` +
-      'if(lang && lang[1] == i18n.getLang()){return dep;}});' +
-      'if(langDep){global.requirejs(langDep)}return i18n.rk.bind(i18n);});';
 }
 
 /**

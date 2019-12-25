@@ -1603,6 +1603,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          minimize: true,
          wml: true,
          version: 'builder.unit.tests',
+         localization: ['en', 'ru', 'ru-RU'],
+         'default-localization': 'ru-RU',
          deprecatedXhtml: true,
          builderTests: true,
          customPack: true,
@@ -1820,6 +1822,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          let correctMembers = [
             '.builder',
             'Test',
+            'lang',
             'TestASort',
             'TestBSort',
             'Page.min.wml',
