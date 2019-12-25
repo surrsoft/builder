@@ -97,7 +97,7 @@ function packDictClassic(modules, applicationRoot, availableLanguage) {
             const [currentLocale, currentRegion] = lang.split('-');
             const fullPath = getAmdDictionaryPath(applicationRoot, moduleName, currentLocale, currentRegion);
 
-            if (needPushDict(moduleName, lang, isPackedDict)) {
+            if (needPushDict(moduleName, lang, isPackedDict) && fs.existsSync(fullPath)) {
                const dictTextModule = createJsonJsModule(moduleName, fullPath, lang);
                dictPack[lang].push(dictTextModule);
 
