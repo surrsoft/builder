@@ -239,14 +239,13 @@ describe('build less', () => {
             path: 'path/to/myAnotherTheme'
          }
       };
-      const allThemes = {
+      const allThemes = Object.assign({
          'TestModule-online-theme': {
             type: 'new',
             moduleName: 'TestModule',
             themeName: 'online'
-         },
-         ...multiThemes
-      };
+         }
+      }, multiThemes);
       const result = getMultiThemesList(allThemes, true);
       result.should.deep.equal(multiThemes);
    });
