@@ -1678,8 +1678,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
 
       it('joined meta must have all common builder meta files', async() => {
-         (await isRegularFile(outputFolder, 'module-dependencies.json')).should.equal(true);
-         (await isRegularFile(outputFolder, 'module-dependencies.min.json')).should.equal(true);
          (await isRegularFile(outputFolder, 'bundles.js')).should.equal(true);
          (await isRegularFile(outputFolder, 'bundles.min.js')).should.equal(true);
          (await isRegularFile(outputFolder, 'router.js')).should.equal(true);
