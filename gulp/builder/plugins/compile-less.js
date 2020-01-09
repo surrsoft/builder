@@ -433,7 +433,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             logger.info(`Information about interface modules used by less compiler during the build: ${JSON.stringify(gulpModulesInfo)}`);
          }
          if (taskParameters.config.customPack) {
-
             /**
              * Because there is a possibility of writing compiled-less meta in SDK(this one is strictly
              * forbidden on UNIX-based OS without a special permission - sudo),
