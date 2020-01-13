@@ -46,8 +46,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          if (
             !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
+
+            // Correctly get the relative path from the surface of path-ancestors of the compiling library
             !libPackHelpers.isPrivate(
-               helpers.removeLeadingSlashes(file.path.replace(sourceRoot, ''))
+               helpers.removeLeadingSlashes(file.history[0].replace(sourceRoot, ''))
             )
          ) {
             libraries.push(file);
