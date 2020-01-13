@@ -37,17 +37,20 @@ function getPrivatePartsCache(taskParameters, moduleInfo) {
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
    const libraries = [];
+
+   // sourceRoot variable is already have unixified module path.
    const sourceRoot = path.dirname(moduleInfo.path);
    return through.obj(
 
       /* @this Stream */
       function onTransform(file, encoding, callback) {
          const startTime = Date.now();
+         const prettyPath = helpers.unixifyPath(file.path);
          if (
             !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
             !libPackHelpers.isPrivate(
-               helpers.removeLeadingSlashes(file.path.replace(sourceRoot, ''))
+               helpers.removeLeadingSlashes(prettyPath.replace(sourceRoot, ''))
             )
          ) {
             libraries.push(file);
