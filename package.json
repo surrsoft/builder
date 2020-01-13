@@ -82,7 +82,8 @@
       "Router": "git+https://github.com/saby/router.git#rc-20.2000",
       "saby-types": "git+https://github.com/saby/Types.git#rc-20.2000",
       "wasaby-app": "git+https://github.com/saby/wasaby-app.git#rc-20.2000",
-      "saby-ui": "git+https://github.com/saby/UI.git#rc-20.2000"
+      "saby-ui": "git+https://github.com/saby/UI.git#rc-20.2000",
+      "saby-inferno": "git+https://github.com/saby/inferno.git#rc-20.2000"
    },
    "engines": {
       "node": ">=10.14.2"
