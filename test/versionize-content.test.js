@@ -407,6 +407,7 @@ describe('versionize-content', () => {
          wml: true,
          minimize: true,
          version: 'test',
+         'multi-service': true,
          modules: [
             {
                name: 'Модуль',
@@ -440,20 +441,31 @@ describe('versionize-content', () => {
       await runWorkflowWithTimeout();
       (await isRegularFile(outputFolder, 'Modul/Page.wml')).should.equal(true);
       (await isRegularFile(outputFolder, 'Modul/Page.min.wml')).should.equal(true);
-      const sourceContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.wml'))).toString();
-      const compiledContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.min.wml'))).toString();
+      const templateSourceContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.wml'))).toString();
+      const templateCompiledContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.min.wml'))).toString();
 
       // проверим, что в исходниках ссылки остались прежними, а в скомпилированном появилась версия и суффикс min
-      const sourceNotChanged = sourceContent.includes('contents.js') &&
-         sourceContent.includes('require-min.js') &&
-         sourceContent.includes('bundles.js') &&
-         sourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
-      sourceNotChanged.should.equal(true);
-      const compiledChanged = compiledContent.includes('contents.min.js') &&
-         compiledContent.includes('bundles.min.js') &&
-         compiledContent.includes('require-min.js') &&
-         !compiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
-      compiledChanged.should.equal(true);
+      const templateSourceNotChanged = templateSourceContent.includes('contents.js') &&
+         templateSourceContent.includes('require-min.js') &&
+         templateSourceContent.includes('bundles.js') &&
+         templateSourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
+      templateSourceNotChanged.should.equal(true);
+      const templateCompiledChanged = templateCompiledContent.includes('contents.min.js') &&
+         templateCompiledContent.includes('bundles.min.js') &&
+         templateCompiledContent.includes('require-min.js') &&
+         !templateCompiledContent.includes('require-min.js?x_module=%{MODULE_VERSION_STUB=Modul}');
+      templateCompiledChanged.should.equal(true);
+
+      const styleSourceContent = (await fs.readFile(path.join(outputFolder, 'Modul/cbuc-icons.css'))).toString();
+      const styleCompiledContent = (await fs.readFile(path.join(outputFolder, 'Modul/cbuc-icons.min.css'))).toString();
+
+      // проверим, что в исходниках ссылки остались прежними, а в скомпилированном появилась версия и суффикс min
+      const styleSourceNotChanged = styleSourceContent.includes("url('cbuc-icons/cbuc-icons.eot#iefix')") &&
+         styleSourceContent.includes("url('cbuc-icons/cbuc-icons.woff2')");
+      styleSourceNotChanged.should.equal(true);
+      const styleCompiledChanged = styleCompiledContent.includes('url(cbuc-icons/cbuc-icons.eot?x_module=%{MODULE_VERSION_STUB=Modul}&x_version=test#iefix)') &&
+         styleCompiledContent.includes('url(cbuc-icons/cbuc-icons.woff2?x_module=%{MODULE_VERSION_STUB=Modul}&x_version=test)');
+      styleCompiledChanged.should.equal(true);
       await clearWorkspace();
    });
 });
