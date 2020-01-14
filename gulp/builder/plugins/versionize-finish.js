@@ -1,8 +1,9 @@
 /**
- * Плагин для версионирования после инкрементальной сборки. Убирает версионирование
- * из исходников, оставляет placeholder в минифицированных модулях.
- * Связан с versionize-to-stub
- * @author Бегунов Ал. В.
+ * Post-incremental build plugin for version-conjugation.
+ * Doing rollback of version-conjugation in links of source-files
+ * and saves as is conjugated links in compiled minified files.
+ * In dependent of versionize-to-stub
+ * @author Begunov A.V.
  */
 
 'use strict';
@@ -10,18 +11,21 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const VERSION_STUB = /(\.min)?(\.[\w]+?)\?x_module=%{MODULE_VERSION_STUB=.+?}/g;
+const mainRegex = '(\\.min)?(\\.[\\w]+?)\\?x_module=%{MODULE_VERSION_STUB=.+?}';
 
 // urls without version. For multi-service applications with the same domain
 const uniqueUrls = /(bundles|contents)\.min\.js/g;
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
- * Объявление плагина
- * @param {ModuleInfo} moduleInfo информация о модуле
+ * Plugin declaration
+ * @param{TaskParameters} taskParameters - whole parameters list(gulp configuration, all builder cache, etc. )
+ * using by current running Gulp-task.
+ * @param{ModuleInfo} moduleInfo core info about the interface module
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   const fullRegex = new RegExp(`${mainRegex}(&x_version=${taskParameters.config.version})?`, 'g');
    return through.obj(function onTransform(file, encoding, callback) {
       const startTime = Date.now();
       try {
@@ -35,13 +39,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const text = file.contents.toString();
             file.contents = Buffer.from(
                text
-                  .replace(VERSION_STUB, '$2')
+                  .replace(fullRegex, '$2')
                   .replace(uniqueUrls, '$1.js')
             );
          }
       } catch (error) {
          logger.error({
-            message: "Ошибка builder'а при версионировании",
+            message: "Builder's error occurred by version-conjugation task",
             error,
             moduleInfo,
             filePath: file.path
