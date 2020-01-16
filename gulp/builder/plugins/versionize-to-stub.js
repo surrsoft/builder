@@ -1,7 +1,8 @@
 /**
- * Плагин для версионирования в процессе инкрементальной сборки. В места, где должна быть версия, добавляет заглушку.
- * Связан с versionize-finish
- * @author Бегунов Ал. В.
+ * Plugin for doing version header conjunctions in process of incremental build. Adds placeholder in places that are
+ * having version header conjunctions in links.
+ * In dependent of versionize-finish
+ * @author Begunov Al.V.
  */
 
 'use strict';
@@ -40,23 +41,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          let result;
 
          if (file.extname === '.css') {
-            result = versionizeStyles(
-               file,
-               moduleInfo,
-               {
-                  multiService: taskParameters.config.multiService,
-                  currentVersion: taskParameters.config.version
-               }
-            );
+            result = versionizeStyles(file, moduleInfo);
          } else if (['.html', '.tmpl', '.xhtml', '.wml'].includes(file.extname)) {
-            result = versionizeTemplates(
-               file,
-               moduleInfo,
-               {
-                  multiService: taskParameters.config.multiService,
-                  currentVersion: taskParameters.config.version
-               }
-            );
+            result = versionizeTemplates(file, moduleInfo);
          }
 
          file.contents = Buffer.from(result.newText);
