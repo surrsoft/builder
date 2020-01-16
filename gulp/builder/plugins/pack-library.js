@@ -45,7 +45,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       /* @this Stream */
       function onTransform(file, encoding, callback) {
          const startTime = Date.now();
-         const prettyPath = helpers.unixifyPath(file.path);
          if (
             !helpers.componentCantBeParsed(file) &&
             esExt.test(file.history[0]) &&
