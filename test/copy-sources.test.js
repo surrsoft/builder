@@ -89,8 +89,17 @@ describe('copy sources', () => {
 
          moduleDependencies.nodes.hasOwnProperty('Modul/_private/module1').should.equal(false);
          moduleDependencies.nodes.hasOwnProperty('tmpl!Modul/_private/template1').should.equal(false);
-         cdnModulesMeta.length.should.equal(0);
-         versionedModulesMeta.length.should.equal(0);
+
+         /**
+          * Check for existing of only packed libraries in versioned_modules
+          * and cdn_modules meta files after completion of the build
+          */
+         cdnModulesMeta.should.have.members([
+            'Modul/library1.min.js'
+         ]);
+         versionedModulesMeta.should.have.members([
+            'Modul/library1.min.js'
+         ]);
       };
 
       const config = {
