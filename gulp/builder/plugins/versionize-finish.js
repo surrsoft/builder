@@ -1,9 +1,9 @@
 /**
- * Post-incremental build plugin for version-conjugation.
- * Doing rollback of version-conjugation in links of source-files
+ * Post-incremental build plugin for version-conjunction.
+ * Doing rollback of version-conjunction in links of source-files
  * and saves as is conjugated links in compiled minified files.
  * In dependent of versionize-to-stub
- * @author Begunov A.V.
+ * @author Begunov Al.V.
  */
 
 'use strict';
@@ -45,7 +45,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
       } catch (error) {
          logger.error({
-            message: "Builder's error occurred by version-conjugation task",
+            message: "Builder's error occurred by do-version-header-conjunction task",
             error,
             moduleInfo,
             filePath: file.path
