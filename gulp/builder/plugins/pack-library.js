@@ -124,6 +124,14 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      taskParameters.cache.addDependencies(library.history[0], result.fileDependencies);
                   }
                   library.library = true;
+
+                  /**
+                   * Also add packed libraries in versioned_modules and cdn_modules meta files in case of
+                   * having packed private dependencies with an appropriate content to be replaced further
+                   * by jinnee
+                   */
+                  library.versioned = result.versioned;
+                  library.cdnLinked = result.cdnLinked;
                }
                this.push(library);
             },
