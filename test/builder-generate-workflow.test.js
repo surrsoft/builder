@@ -1456,12 +1456,13 @@ describe('gulp/builder/generate-workflow.js', () => {
 
    it('versionize-meta', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/versionize-meta');
-      const builderMetaOutput = path.join(moduleOutputFolder, '.builder');
+      const builderMetaOutput = path.join(outputFolder, 'Module/.builder');
       await prepareTest(fixtureFolder);
       await linkPlatform(sourceFolder);
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         typescript: true,
          less: true,
          minimize: true,
          wml: true,
@@ -1471,8 +1472,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          'default-localization': false,
          modules: [
             {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
+               name: 'Module',
+               path: path.join(sourceFolder, 'Module')
             },
             {
                name: 'WS.Core',
@@ -1496,16 +1497,19 @@ describe('gulp/builder/generate-workflow.js', () => {
       let versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
       let cdnModules = await fs.readJson(path.join(builderMetaOutput, 'cdn_modules.json'));
       versionedModules.should.have.members([
-         'Modul/TimeTester.min.tmpl',
-         'Modul/browser.min.css',
-         'Modul/browser-with-real-cdn.min.css',
-         'Modul/demo.html'
+         'Module/_private/TimeTester.min.tmpl',
+         'Module/browser.min.css',
+         'Module/browser-with-real-cdn.min.css',
+         'Module/demo.html',
+         'Module/someLibrary.min.js'
       ]);
       cdnModules.should.have.members([
-         'Modul/TimeTester.min.tmpl',
-         'Modul/TimeTester.tmpl',
-         'Modul/browser.min.css',
-         'Modul/browser.css'
+         'Module/_private/TimeTester.min.tmpl',
+         'Module/_private/TimeTester.tmpl',
+         'Module/browser.min.css',
+         'Module/browser.css',
+         'Module/someLibrary.js',
+         'Module/someLibrary.min.js'
       ]);
 
       // прогоним ещё раз, создание мета-файла версионирования должно нормально работать в инкрементальной сборке
@@ -1514,16 +1518,19 @@ describe('gulp/builder/generate-workflow.js', () => {
       versionedModules = await fs.readJson(path.join(builderMetaOutput, 'versioned_modules.json'));
       cdnModules = await fs.readJson(path.join(builderMetaOutput, 'cdn_modules.json'));
       versionedModules.should.have.members([
-         'Modul/TimeTester.min.tmpl',
-         'Modul/browser.min.css',
-         'Modul/browser-with-real-cdn.min.css',
-         'Modul/demo.html'
+         'Module/_private/TimeTester.min.tmpl',
+         'Module/browser.min.css',
+         'Module/browser-with-real-cdn.min.css',
+         'Module/demo.html',
+         'Module/someLibrary.min.js'
       ]);
       cdnModules.should.have.members([
-         'Modul/TimeTester.min.tmpl',
-         'Modul/TimeTester.tmpl',
-         'Modul/browser.min.css',
-         'Modul/browser.css'
+         'Module/_private/TimeTester.min.tmpl',
+         'Module/_private/TimeTester.tmpl',
+         'Module/browser.min.css',
+         'Module/browser.css',
+         'Module/someLibrary.js',
+         'Module/someLibrary.min.js'
       ]);
       await clearWorkspace();
    });
