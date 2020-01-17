@@ -2,7 +2,7 @@
 
 const initTest = require('./init-test');
 const path = require('path');
-const workspaceFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packLibraries/Modul');
+const workspaceFolder = path.join(__dirname, 'fixture/builder-generate-workflow/_packLibraries/Modul');
 const { runCompilerAndCheckForErrors } = require('../lib/typescript-compiler');
 const { getTranspileOptions } = require('../lib/compile-es-and-ts');
 
