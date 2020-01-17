@@ -2382,7 +2382,7 @@ describe('gulp/builder/generate-workflow.js', () => {
    });
 
    describe('pack-library', () => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packLibraries');
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/_packLibraries');
       const config = {
          cache: cacheFolder,
          output: outputFolder,
