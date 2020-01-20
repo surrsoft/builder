@@ -91,7 +91,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
    const { config } = taskParameters;
    const hasLocalization = config.localizations.length > 0;
    const needModuleDependencies = config.dependenciesGraph || config.customPack ||
-      config.deprecatedStaticHtml || config.minimize;
+      config.deprecatedStaticHtml || config.minimize || config.checkModuleDependencies;
 
    const pathsForImportSet = new Set();
    for (const modulePath of modulesMap.values()) {

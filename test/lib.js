@@ -53,18 +53,18 @@ function linkPlatform(sourceFolder) {
    const nodeModulesPath = path.join(__dirname, '../node_modules');
    fs.ensureDirSync(sourceFolder);
    return Promise.all([
-      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), path.join(sourceFolder, 'WS.Core'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(sourceFolder, 'View'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'sbis3-ws/Vdom'), path.join(sourceFolder, 'Vdom'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'Router/Router'), path.join(sourceFolder, 'Router'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'saby-inferno/Inferno'), path.join(sourceFolder, 'Inferno'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'saby-types/Types'), path.join(sourceFolder, 'Types'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'saby-i18n/I18n'), path.join(sourceFolder, 'I18n'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'wasaby-app/src/Application'), path.join(sourceFolder, 'Application'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Env'), path.join(sourceFolder, 'Env'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/SbisEnv'), path.join(sourceFolder, 'SbisEnv'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'rmi/src/client/Browser'), path.join(sourceFolder, 'Browser'), 'dir'),
-      fs.symlink(path.join(nodeModulesPath, 'saby-ui/UI'), path.join(sourceFolder, 'UI'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'sbis3-ws/WS.Core'), path.join(sourceFolder, 'WS.Core'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'sbis3-ws/View'), path.join(sourceFolder, 'View'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'sbis3-ws/Vdom'), path.join(sourceFolder, 'Vdom'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'Router/Router'), path.join(sourceFolder, 'Router'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'saby-inferno/Inferno'), path.join(sourceFolder, 'Inferno'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'saby-types/Types'), path.join(sourceFolder, 'Types'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'saby-i18n/I18n'), path.join(sourceFolder, 'I18n'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'wasaby-app/src/Application'), path.join(sourceFolder, 'Application'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'rmi/src/client/Env'), path.join(sourceFolder, 'Env'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'rmi/src/client/SbisEnv'), path.join(sourceFolder, 'SbisEnv'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'rmi/src/client/Browser'), path.join(sourceFolder, 'Browser'), 'dir'),
+      fs.ensureSymlink(path.join(nodeModulesPath, 'saby-ui/UI'), path.join(sourceFolder, 'UI'), 'dir'),
    ]);
 }
 
