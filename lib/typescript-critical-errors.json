@@ -64,6 +64,7 @@
   "ServiceUpdateNotifier/",
   "Summation/",
   "Summation-default-theme/",
+  "LongOperations-default-theme/",
   "StaffSelection/",
   "TaxesMain/",
   "TestDevTools/",
@@ -87,5 +88,18 @@
   "WS.Deprecated/",
   "WSTest/",
   "WSTests/",
-  "WSUnit/"
+  "WSUnit/",
+  "WS3Browser/",
+  "WS3ColumnsEditor/",
+  "WS3DialogAction/",
+  "WS3ExpandPanel/",
+  "WS3ExportPresets/",
+  "WS3Header/",
+  "WS3LinkProcessor/",
+  "WS3LongOperations/",
+  "WS3MiniCard/",
+  "WS3NavigationPanel/",
+  "WS3Page/",
+  "WS3ReportFilter/",
+  "WS3RoutesMessage/"
 ]
