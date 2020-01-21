@@ -201,9 +201,19 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             this.push(currentModule);
          });
 
-         // remove private parts of libraries from module-dependencies meta
+         /**
+          * we have to remove all private modules of packed libraries from
+          * module-dependencies meta because of theirs further non-existing in
+          * desktop applications.
+          */
          currentModulePrivateLibraries.forEach((moduleName) => {
             delete moduleDeps.nodes[moduleName];
+            delete moduleDeps.links[moduleName];
+            Object.keys(moduleDeps.links).forEach((currentLink) => {
+               if (moduleDeps.links[currentLink].includes(moduleName)) {
+                  delete moduleDeps.links[currentLink];
+               }
+            });
          });
 
          if (moduleDepsMetaFile) {

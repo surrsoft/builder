@@ -27,6 +27,12 @@ module.exports = function generateTaskForSaveLoggerReport(taskParameters) {
        * to catch all unexpected gulp tasks errors and store them into report
        */
       logger.saveLoggerReport(taskParameters.config.logFolder);
+
+      /**
+       * reset logger messages after it was saved in artifacts. Needed by builder
+       * unit-test proper work
+       */
+      logger.reset();
       done();
    };
 };

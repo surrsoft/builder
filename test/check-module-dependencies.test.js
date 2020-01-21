@@ -100,7 +100,11 @@ describe('check-module-dependencies', () => {
    const projectModulesNames = modules.map(
       moduleInfo => path.basename(moduleInfo.path)
    );
-   const outputDirectory = path.join(__dirname, 'fixture/check-module-dependencies');
+   const buildConfig = {
+      rawConfig: {
+         output: path.join(__dirname, 'fixture/check-module-dependencies')
+      }
+   };
    before(async() => {
       await initTest();
    });
@@ -170,40 +174,45 @@ describe('check-module-dependencies', () => {
 
    it('check dependencies validity: meta nodes has current dependency', async() => {
       let nodeName = 'css!MyModule1/module1';
-      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
 
       nodeName = 'css!Lib/Control';
-      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
    });
 
    it('check dependencies validity: meta nodes doesn\'t have current dependency, but exists in output', async() => {
       let nodeName = 'css!MyModule1/testFileSystemCheck';
-      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      let result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
 
       nodeName = 'css!Lib/styleInFileSystem';
-      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
 
       nodeName = 'text!MyModule1/index.html';
-      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
+      result.should.equal(true);
+
+      nodeName = 'html!MyModule1/oldTemplate';
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
 
       nodeName = 'browser!text!MyModule1/index.html';
-      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(true);
    });
 
    it('check dependencies validity: meta nodes doesn\'t have current dependency and doesn\'t exists in output', async() => {
       const nodeName = 'css!MyModule1/testNotExistingNode';
-      const result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, outputDirectory);
+      const result = await isValidDependency(projectModulesNames, moduleDependencies, nodeName, buildConfig);
       result.should.equal(false);
    });
 
    it('check module-dependencies flag must return errors list', async() => {
       await linkPlatform(sourceFolder);
+      const fixtureFolder = path.join(__dirname, 'fixture/check-module-dependencies');
       const testResults = async(value) => {
          const { messages } = await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'));
          let resultsHasDepsAnalizerErrors = false;
@@ -226,8 +235,8 @@ describe('check-module-dependencies', () => {
          builderTests: true,
          modules: [
             {
-               name: 'WS.Core',
-               path: path.join(sourceFolder, 'WS.Core')
+               name: 'MyModule',
+               path: path.join(fixtureFolder, 'MyModule')
             }
          ]
       };
@@ -244,6 +253,51 @@ describe('check-module-dependencies', () => {
 
       // for build with deps checker result must have messages with deps analizer errors
       await testResults(true);
+      await clearWorkspace();
+   });
+   it('check module-dependencies flag must not return list of errors for private modules of packed libraries', async() => {
+      await linkPlatform(sourceFolder);
+      const fixtureFolder = path.join(__dirname, 'fixture/check-module-dependencies');
+      const testResults = async(value) => {
+         const currentMessages = (await fs.readJson(path.join(workspaceFolder, 'logs/builder_report.json'))).messages;
+         let resultsHasDepsAnalizerErrors = false;
+         currentMessages.forEach((currentMessageObject) => {
+            if (currentMessageObject.message.includes('Error analizing dependencies: file for dependency')) {
+               resultsHasDepsAnalizerErrors = true;
+            }
+         });
+         resultsHasDepsAnalizerErrors.should.equal(value);
+      };
+
+      const gulpConfig = {
+         cache: cacheFolder,
+         output: outputFolder,
+         logs: path.join(workspaceFolder, 'logs'),
+         less: true,
+         themes: true,
+         typescript: true,
+         dependenciesGraph: true,
+         minimize: true,
+         sources: false,
+         checkModuleDependencies: 'error',
+         builderTests: true,
+         modules: [
+            {
+               name: 'MyModule1',
+               path: path.join(fixtureFolder, 'MyModule1')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, gulpConfig);
+      await runWorkflowWithTimeout();
+
+      // for build without deps checker result must not have messages with deps analizer errors
+      await testResults(false);
+
+      await runWorkflowWithTimeout();
+
+      // for build with deps checker result must have messages with deps analizer errors
+      await testResults(false);
       await clearWorkspace();
    });
 });
