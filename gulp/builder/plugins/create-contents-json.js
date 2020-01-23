@@ -1,6 +1,6 @@
 /**
  * Плагин для создания contents.json и contents.js (информация для require, описание локализации и т.д.)
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

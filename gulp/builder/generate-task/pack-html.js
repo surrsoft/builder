@@ -1,6 +1,6 @@
 /**
  * Генерация задачи паковки для статических html.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

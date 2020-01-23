@@ -1,6 +1,6 @@
 /**
  * Плагин для создания routes-info.json (информация для работы роутинга)
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

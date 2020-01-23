@@ -3,7 +3,7 @@
  * Doing rollback of version-conjunction in links of source-files
  * and saves as is conjugated links in compiled minified files.
  * In dependent of versionize-to-stub
- * @author Begunov Al.V.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

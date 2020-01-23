@@ -6,7 +6,7 @@
  * 2) module-dependencies - используется плагином SBIS Dependency Tree.
  * Остальные файлы(bundles.json и bundlesRoute.json) будут сохранены в соответствующей таске по
  * сохранению результатов кастомной паковки.
- * @author Колбешин Ф.А.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

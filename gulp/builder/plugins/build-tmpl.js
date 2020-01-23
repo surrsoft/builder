@@ -4,7 +4,7 @@
  * Плагин для компиляции xml из *.tmpl файлов в js.
  * В debug (при локализации) заменяет оригинальный файл.
  * В release создаёт новый файл *.min.tmpl.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

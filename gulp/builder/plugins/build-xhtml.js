@@ -1,7 +1,7 @@
 /**
  * Плагин для компиляции xml из *.xhtml файлов в js для release режима.
  * Создаёт новый файл *.min.xhtml.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';
