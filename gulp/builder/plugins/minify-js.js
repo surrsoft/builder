@@ -12,7 +12,7 @@
  *   - Simple.min.js - минифицированный файл по Simple.modulepack.js
  *   - Simple.min.js.map - source map для Simple.min.js по Simple.modulepack.js
  *
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

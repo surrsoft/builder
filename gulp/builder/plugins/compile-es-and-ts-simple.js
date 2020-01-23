@@ -1,7 +1,7 @@
 /**
  * Плагин для компиляции ECMAScript 6+ и TypeScript в JavaScript (ES5).
  * Без учёта инкрементальной сборки. Нужно для подготовки WS для исполнения в билдере.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

@@ -2,7 +2,7 @@
 
 /**
  * Основной исполняемый файл Builder'а. Подробности по запуску в README.md
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

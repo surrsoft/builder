@@ -1,6 +1,6 @@
 /**
  * Плагин для создания navigation-modules.json (информация для работы аккордеона)
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

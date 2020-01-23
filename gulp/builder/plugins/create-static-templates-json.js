@@ -1,6 +1,6 @@
 /**
  * Плагин для создания static_templates.json (информация для корреткной отдачи статических html в сервисе представлений)
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

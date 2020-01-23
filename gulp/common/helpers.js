@@ -1,6 +1,6 @@
 /**
  * Вспомогательные функциия для сборки
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 'use strict';
 
