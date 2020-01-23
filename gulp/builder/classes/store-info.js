@@ -1,11 +1,32 @@
 /**
- * @author Бегунов Ал. В.
+ * @author Begunov Al.V.
  */
 'use strict';
 
 const fs = require('fs-extra'),
    path = require('path'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   pMap = require('p-map');
+
+/**
+ * Reads all files in selected meta folder and joins it into
+ * one root cache meta
+ * @param{String} cachePath - path to current build cache path
+ * @param{String} currentMetaName - name of folder to be used for reading module-by-module meta files from it
+ * @returns {Promise<void>}
+ */
+async function readAllFilesByCurrentCacheMeta(cachePath, currentMetaName) {
+   const result = {};
+   const currentCacheFilesList = await fs.readdir(path.join(cachePath, currentMetaName));
+   await pMap(
+      currentCacheFilesList,
+      async(currentModuleCache) => {
+         const currentModuleName = path.basename(currentModuleCache, '.json');
+         result[currentModuleName] = await fs.readJson(path.join(cachePath, currentMetaName, currentModuleCache));
+      }
+   );
+   return result;
+}
 
 /**
  * Класс с данными про текущую сборку. Для реализации инкрементальной сборки.
@@ -83,7 +104,7 @@ class StoreInfo {
             });
          }
          try {
-            this.modulesCache = await fs.readJson(path.join(cacheDirectory, 'modules-cache.json'));
+            this.modulesCache = await readAllFilesByCurrentCacheMeta(cacheDirectory, 'modules-cache');
          } catch (error) {
             logger.info({
                message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'modules-cache.json')}`,
@@ -135,11 +156,22 @@ class StoreInfo {
             spaces: 1
          }
       );
-      await fs.outputJson(
-         path.join(cacheDirectory, 'modules-cache.json'),
-         this.modulesCache,
-         {
-            spaces: 1
+
+      /**
+       * separate builder cache meta, particularly "modules-cache.json", by
+       * appropriating interface modules to reduce RAM overflow to make further
+       * debugging processes simpler.
+       */
+      await pMap(
+         Object.keys(this.modulesCache),
+         async(currentModule) => {
+            await fs.outputJson(
+               path.join(cacheDirectory, 'modules-cache', `${currentModule}.json`),
+               this.modulesCache[currentModule],
+               {
+                  spaces: 1
+               }
+            );
          }
       );
       await fs.outputJson(
