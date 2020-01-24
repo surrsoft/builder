@@ -63,7 +63,7 @@ async function nativePackFiles(filesToPack, base, themeName) {
  * @param {Array.<String>} files - пути до файлов
  * @param {String} root - корень сайта
  */
-async function packCSS(files, root, resourceRoot) {
+async function packCSS(files, root, packagePath) {
    const filesContent = {};
    await pMap(
       files,
@@ -72,7 +72,12 @@ async function packCSS(files, root, resourceRoot) {
             return;
          }
          const content = await fs.readFile(filePath, 'utf8');
-         filesContent[filePath] = cssHelpers.rebaseUrls(root, filePath, content.toString(), resourceRoot);
+         filesContent[filePath] = cssHelpers.rebaseUrls({
+            root,
+            sourceFile: filePath,
+            css: content.toString(),
+            packagePath
+         });
       },
       { concurrency: 5 }
    );
@@ -118,7 +123,7 @@ function generateFakeModules(filesToPack, themeName, staticHtmlName) {
  * @param {String} themeName - название темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName, resourceRoot) {
+async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, staticHtmlName, resourceRoot, packagePath) {
    const isOfflineClient = await checkItIsOfflineClient(applicationRoot);
    const jsForPack = orderQueue.js.filter((node) => {
       const fullPath = node.moduleYes ? node.moduleYes.fullPath : node.fullPath;
@@ -154,7 +159,7 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
    const dictResult = {}, localeCssResult = {};
    const [jsResult, cssResult] = await Promise.all([
       nativePackFiles(jsForPack, applicationRoot, themeName),
-      packCSS(cssForPack, applicationRoot, resourceRoot),
+      packCSS(cssForPack, applicationRoot, packagePath),
       Promise.all(
          Object.keys(orderQueue.dict).map(async(locale) => {
             dictResult[locale] = await nativePackFiles(orderQueue.dict[locale], applicationRoot);
@@ -190,14 +195,14 @@ async function getJsAndCssPackage(orderQueue, applicationRoot, themeName, static
  * @param {String} themeName - имя темы
  * @param {String} staticHtmlName - имя статической html странички
  */
-function packInOrder(dg, modArray, root, applicationRoot, themeName, staticHtmlName, availableLanguage, resourceRoot) {
+function packInOrder(dg, modArray, root, themeName, staticHtmlName, availableLanguage, resourceRoot, packagePath) {
    let orderQueue;
 
    orderQueue = dg.getLoadOrder(modArray);
-   orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, applicationRoot);
-   orderQueue = commonPackage.prepareResultQueue(orderQueue, applicationRoot, availableLanguage);
+   orderQueue = commonPackage.prepareOrderQueue(dg, orderQueue, root);
+   orderQueue = commonPackage.prepareResultQueue(orderQueue, root, availableLanguage);
 
-   return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName, resourceRoot);
+   return getJsAndCssPackage(orderQueue, root, themeName, staticHtmlName, resourceRoot, packagePath);
 }
 
 function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
@@ -419,11 +424,13 @@ async function packageSingleHtml(
       dg,
       startNodes,
       root,
-      root,
       themeName,
       htmlName,
       availableLanguage,
-      path.join(taskParameters.config.applicationForRebase, 'resources/')
+      path.join(taskParameters.config.applicationForRebase, 'resources/'),
+
+      // internally it uses path.dirname so we need to supply a filename
+      path.join(packageHome, 'someFakeName.css')
    );
 
    // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +

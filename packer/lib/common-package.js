@@ -241,7 +241,6 @@ async function limitingNativePackFiles(
       filesToPack = packageConfig.orderQueue,
       availableLanguage = taskParameters.config.localizations,
       defaultLanguage = taskParameters.config.defaultLocalization,
-      { resourcesUrl } = taskParameters.config,
       result = {};
 
    if (filesToPack && filesToPack.length) {
@@ -289,10 +288,7 @@ async function limitingNativePackFiles(
                      availableLanguage,
                      defaultLanguage
                   },
-                  {
-                     application,
-                     resourcesUrl
-                  }
+                  packageConfig.extendsTo ? 'someFakePackage.css' : packageConfig.packagePath
                );
 
                if (fullPath) {

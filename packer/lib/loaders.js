@@ -270,8 +270,8 @@ head.appendChild(style);\
  * @param {Function} f - callback
  * @return {Function}
  */
-function rebaseUrls(root, sourceFile, content, resourceRoot) {
-   return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot);
+function rebaseUrls(root, sourceFile, content, resourceRoot, packagePath) {
+   return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot, packagePath);
 }
 
 
@@ -286,18 +286,20 @@ async function cssLoader(
    base,
    themeName,
    languageConfig,
-   rootConfig
+   packagePath
 ) {
    const suffix = themeName ? `__${themeName}` : '';
-   const { application } = rootConfig;
-   const resourcesUrl = rootConfig.resourcesUrl ? 'resources/' : '';
    let modulePath = module.fullPath;
    if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
       modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
    }
-   const resourceRoot = `${path.join(application, resourcesUrl)}`;
    let cssContent = await fs.readFile(modulePath, 'utf8');
-   cssContent = rebaseUrls(base, modulePath, cssContent, resourceRoot);
+   cssContent = rebaseUrls({
+      root: base,
+      sourceFile: modulePath,
+      css: cssContent,
+      packagePath
+   });
    cssContent = styleTagLoader(cssContent);
    cssContent = asModuleWithContent(cssContent, module.fullName);
    cssContent = onlyForIE10AndAbove(cssContent, module.fullName);
