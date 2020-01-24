@@ -10,7 +10,12 @@ const invalidUrl = /^(\/|#|data:|[a-z]+:\/\/)(?=.*)/i;
 const importCss = /@import[^;]+;/gi;
 
 function rebaseUrlsToAbsolutePath(cssConfig) {
-   const { root, sourceFile, css, packagePath } = cssConfig;
+   const {
+      root,
+      sourceFile,
+      css,
+      packagePath
+   } = cssConfig;
    let result;
 
    const rootForRebase = path.join(root, packagePath);
