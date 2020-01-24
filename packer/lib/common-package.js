@@ -241,7 +241,6 @@ async function limitingNativePackFiles(
       filesToPack = packageConfig.orderQueue,
       availableLanguage = taskParameters.config.localizations,
       defaultLanguage = taskParameters.config.defaultLocalization,
-      { resourcesUrl } = taskParameters.config,
       result = {};
 
    if (filesToPack && filesToPack.length) {
@@ -289,10 +288,13 @@ async function limitingNativePackFiles(
                      availableLanguage,
                      defaultLanguage
                   },
-                  {
-                     application,
-                     resourcesUrl
-                  }
+
+                  /**
+                   * for extendable bundles custom css packages further will be joined and saved
+                   * in the application root. Therefore we need to transmit application root instead of
+                   * custom package root in this case.
+                   */
+                  packageConfig.extendsTo ? 'someFakePackage.css' : packageConfig.packagePath
                );
 
                if (fullPath) {

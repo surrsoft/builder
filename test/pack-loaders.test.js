@@ -286,83 +286,31 @@ describe('packer loaders', () => {
    });
    describe('css loader', () => {
       const cssRoot = path.join(loadersRoot, 'cssLoader');
-      describe('common style packing', () => {
-         it('without resourceRoot', async() => {
-            const rootConfig = {
-               application: '/'
-            };
-            const module = {
-               fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
-               fullName: 'css!MyModule/moduleStyle'
-            };
-            const result = await packLoaders.css(module, cssRoot, null, null, rootConfig);
-            const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/common.js'), 'utf8');
-            result.should.equal(correctResult);
-         });
-         it('with resourceRoot', async() => {
-            const rootConfig = {
-               application: '/',
-               resourcesUrl: true
-            };
-            const module = {
-               fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
-               fullName: 'css!MyModule/moduleStyle'
-            };
-            const result = await packLoaders.css(module, cssRoot, null, null, rootConfig);
-            const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/commonWithResourceRoot.js'), 'utf8');
-            result.should.equal(correctResult);
-         });
-      });
-      describe('common style packing with service', () => {
-         it('without resourceRoot', async() => {
-            const rootConfig = {
-               application: '/testService/'
-            };
-            const module = {
-               fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
-               fullName: 'css!MyModule/moduleStyle'
-            };
-            const result = await packLoaders.css(module, cssRoot, null, null, rootConfig);
-            const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/commonWithApplication.js'), 'utf8');
-            result.should.equal(correctResult);
-         });
-         it('with resourceRoot', async() => {
-            const rootConfig = {
-               application: '/testService/',
-               resourcesUrl: true
-            };
-            const module = {
-               fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
-               fullName: 'css!MyModule/moduleStyle'
-            };
-            const result = await packLoaders.css(module, cssRoot, null, null, rootConfig);
-            const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/commonWithApplicationAndResources.js'), 'utf8');
-            result.should.equal(correctResult);
-         });
+      const relativePackagePath = 'someFakePath.css';
+      it('common style packing', async() => {
+         const module = {
+            fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
+            fullName: 'css!MyModule/moduleStyle'
+         };
+         const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
+         const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/common.js'), 'utf8');
+         result.should.equal(correctResult);
       });
       it('SBIS3.CONTROLS old theme suffix must return content from themed css', async() => {
-         const rootConfig = {
-            application: '/testService/',
-            resourcesUrl: true
-         };
          const module = {
             fullPath: path.join(cssRoot, 'SBIS3.CONTROLS/moduleStyle.css'),
             fullName: 'css!SBIS3.CONTROLS/moduleStyle'
          };
-         const result = await packLoaders.css(module, cssRoot, 'testTheme', null, rootConfig);
+         const result = await packLoaders.css(module, cssRoot, 'testTheme', null, relativePackagePath);
          const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/controlsCorrectResultWithTheme.js'), 'utf8');
          result.should.equal(correctResult);
       });
       it('SBIS3.CONTROLS packed theme must contains wsconfig theme checker', async() => {
-         const rootConfig = {
-            application: '/testService/',
-            resourcesUrl: true
-         };
          const module = {
             fullPath: path.join(cssRoot, 'SBIS3.CONTROLS/moduleStyle.css'),
             fullName: 'css!SBIS3.CONTROLS/moduleStyle'
          };
-         const result = await packLoaders.css(module, cssRoot, null, null, rootConfig);
+         const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
          const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/controlsCorrectResult.js'), 'utf8');
          result.should.equal(correctResult);
       });
