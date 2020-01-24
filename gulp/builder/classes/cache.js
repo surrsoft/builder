@@ -304,11 +304,12 @@ class Cache {
 
       if (this.lastStore.inputPaths[prettyPath].hash !== hash) {
          /**
-          * if View/Builder components was changed, we need to rebuild all templates in project
-          * with current templates processor changes
+          * if View/Builder components were changed, we need to rebuild all templates in project
+          * with current templates processor changes. Also check UI components for changing between
+          * 2 builds, it's using by static VDOM pages compiler.
           */
-         if (prettyPath.includes('/View/Builder/')) {
-            logger.info(`View/Builder components was changed. All templates for current project will be rebuilded. Changed component: ${prettyPath}`);
+         if (prettyPath.includes('temp-modules/View/Builder/') || prettyPath.includes('temp-modules/UI/')) {
+            logger.info(`Templates compiling components was changed. All templates will be rebuilt for current project. Changed component: ${prettyPath}`);
             this.dropCacheForMarkup = true;
          }
          if (prettyPath.endsWith('.less') || prettyPath.endsWith('.js') || prettyPath.endsWith('.es') || prettyPath.endsWith('.ts') || prettyPath.endsWith('.ts')) {
