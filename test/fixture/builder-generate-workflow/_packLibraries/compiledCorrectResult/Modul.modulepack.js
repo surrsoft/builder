@@ -34,7 +34,7 @@ define('Modul/Modul', [
                             'key': key + '0_'
                         }, [], attr, defCollection, viewController)], key, defCollection);
                     if (defCollection && defCollection.def) {
-                        out = markupGenerator.chain(out, defCollection, attr);
+                        out = markupGenerator.chain(out, defCollection, this);
                         defCollection = undefined;
                     }
                 } catch (e) {
