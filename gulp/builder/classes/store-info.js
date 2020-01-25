@@ -1,5 +1,5 @@
 /**
- * @author Begunov Al.V.
+ * @author Kolbeshin F.A.
  */
 'use strict';
 

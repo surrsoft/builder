@@ -1,6 +1,6 @@
 /**
  * Воркер для пула воркеров. Используется для сборки статики и сбора локализуемых фраз.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 /* eslint-disable no-console, global-require, no-inner-declarations */

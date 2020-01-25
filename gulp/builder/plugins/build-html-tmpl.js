@@ -1,6 +1,6 @@
 /**
  * Плагин для генерации статических html по *.html.tmpl файлам.
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

@@ -1,6 +1,6 @@
 /**
  * Плагин для создания versioned_modules.json (список проверсионированных файлах)
- * @author Колбешин Ф.А.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

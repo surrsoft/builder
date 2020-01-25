@@ -1,6 +1,6 @@
 /**
  * Плагин для минификации css
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

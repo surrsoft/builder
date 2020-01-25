@@ -1,6 +1,6 @@
 /**
  * Плагин для создания module-dependencies.json (зависимости компонентов и их расположение. для runtime паковка)
- * @author Бегунов Ал. В.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';
