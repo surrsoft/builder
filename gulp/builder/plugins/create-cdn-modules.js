@@ -1,6 +1,6 @@
 /**
  * Плагин для создания cdn_modules.json (список файлов, в которых прописаны ссылки на cdn)
- * @author Колбешин Ф.А.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';

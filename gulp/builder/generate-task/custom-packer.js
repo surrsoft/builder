@@ -1,6 +1,6 @@
 /**
  * Генерация задачи кастомной паковки.
- * @author Колбешин Ф.А.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';
