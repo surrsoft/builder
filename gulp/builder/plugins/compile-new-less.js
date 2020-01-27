@@ -155,6 +155,21 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
                return;
             }
 
+            /**
+             * log information about empty less files. Developers should get
+             * rid of empty and unused source files for avoiding of creating a dump
+             * in theirs repos.
+             */
+            if (file.contents.length === 0) {
+               logger.warning({
+                  message: 'Empty less file is discovered. Please, remove it and appropriate imports of it in other less files',
+                  filePath: file.path,
+                  moduleInfo
+               });
+               callback(null, file);
+               return;
+            }
+
             const isPrivateLess = file.basename.startsWith('_');
 
             /**
