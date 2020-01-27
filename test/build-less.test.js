@@ -57,6 +57,15 @@ describe('build less', () => {
       result.imports.length.should.equal(0);
       result.text.should.equal('');
    });
+   it('less with hex-rgba', async() => {
+      const filePath = helpers.prettifyPath(path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less'));
+      const text = '.test { box-shadow: 0 4px 24px #d2e2f3e0; }';
+      const result = await processLessFile(text, filePath, defaultModuleThemeObject, gulpModulesInfo);
+      result.imports.length.should.equal(2);
+      result.text.should.equal('.test {\n' +
+         '  box-shadow: 0 4px 24px #d2e2f3e0;\n' +
+         '}\n');
+   });
    it('less with defau`lt theme', async() => {
       const filePath = path.join(workspaceFolder, 'AnyModule/bla/bla/long/path/test.less');
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
