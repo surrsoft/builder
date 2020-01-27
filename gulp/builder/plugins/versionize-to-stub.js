@@ -2,7 +2,7 @@
  * Plugin for doing version header conjunctions in process of incremental build. Adds placeholder in places that are
  * having version header conjunctions in links.
  * In dependent of versionize-finish
- * @author Begunov Al.V.
+ * @author Kolbeshin F.A.
  */
 
 'use strict';
