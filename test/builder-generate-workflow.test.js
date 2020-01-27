@@ -93,6 +93,16 @@ describe('gulp/builder/generate-workflow.js', () => {
    before(async() => {
       await initTest();
    });
+   const testEmptyLessLog = async(lessName) => {
+      const { messages } = await fs.readJson(path.join(logsFolder, 'builder_report.json'));
+      let result = false;
+      messages.forEach((curMesObj) => {
+         if (curMesObj.message.includes('Empty less file is discovered.') && curMesObj.file.endsWith(lessName)) {
+            result = true;
+         }
+      });
+      result.should.be.equal(true);
+   };
 
    it('compile less with coverage', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
@@ -325,6 +335,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          lessCoverage: true,
          less: true,
+         logs: logsFolder,
+         builderTests: true,
          themes: true,
          typescript: true,
          dependenciesGraph: true,
@@ -355,6 +367,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // запустим таску
       await runWorkflowWithTimeout();
+      await testEmptyLessLog('emptyLess.less');
 
       let resultsFiles;
       let noThemesResultsFiles;
@@ -418,6 +431,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // запустим повторно таску
       await runWorkflowWithTimeout();
+      await testEmptyLessLog('emptyLess.less');
 
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -453,6 +467,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       // rebuild static with new theme
       await runWorkflowWithTimeout();
+      await testEmptyLessLog('emptyLess.less');
 
       // in results of interface module "Модуль" must exist only css with theme postfix(new theme scheme)
       resultsFiles = await fs.readdir(moduleOutputFolder);
@@ -479,6 +494,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable-with-import.css',
          'Stable-with-import.less',
          'Stable-with-import_online.css',
+         'emptyLess.less',
          'module-dependencies.json',
          'stable.js',
          'stable.ts',
@@ -489,7 +505,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       config.oldThemes = false;
       await fs.writeJSON(configPath, config);
 
-      await runWorkflow();
+      await runWorkflowWithTimeout();
+      await testEmptyLessLog('emptyLess.less');
 
       // in results of module TestModule must not exists styles for old themes
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
@@ -500,6 +517,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable-for-theme-import_online.css',
          'Stable-with-import.less',
          'Stable-with-import_online.css',
+         'emptyLess.less',
          'module-dependencies.json',
          'stable.js',
          'stable.ts',
@@ -603,6 +621,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const config = {
          cache: cacheFolder,
          output: outputFolder,
+         logs: logsFolder,
          less: true,
          themes: true,
          typescript: true,
@@ -640,8 +659,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
       await runWorkflowWithTimeout(30000);
       await testResults();
+      await testEmptyLessLog('emptyLessNewTheme.less');
       await runWorkflowWithTimeout(30000);
       await testResults();
+      await testEmptyLessLog('emptyLessNewTheme.less');
 
       // set "TestModule" as module for patch, rebuild it and check results
       config.modules[0].rebuild = true;

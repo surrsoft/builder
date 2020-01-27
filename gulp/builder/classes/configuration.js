@@ -271,8 +271,8 @@ class BuildConfiguration {
          /**
           * set Logfolder into gulp process environment to save logger report
           * properly, even for unexpected gulp tasks errors. Exception - fatal process
-          * errors(f.e. OOM), that aborts current process and kills any availability for
-          * saving any additional info about what just happened
+          * errors(f.e. OOM), that aborts current process and kills any availability of
+          * saving some additional info about just happened
            */
          process.env.logFolder = this.rawConfig.logs;
       }
