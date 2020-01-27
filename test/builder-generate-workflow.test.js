@@ -2154,10 +2154,12 @@ describe('gulp/builder/generate-workflow.js', () => {
           * dependencies in current test are static, so we can also add check for package hash.
           */
          const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
-         let containsNeededPackage = packedHtml.includes('href="/testService/resources/TestModule/static_packages/7497a16791b95bc13816581289af74d8.css"');
+         let containsNeededPackage = packedHtml.includes('href="/testService/resources/TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css"');
          containsNeededPackage.should.equal(true);
          containsNeededPackage = packedHtml.includes('src="/testService/resources/TestModule/static_packages/30ac01cebb99671a6238487f140a1e92.js"');
          containsNeededPackage.should.equal(true);
+         const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css'), 'utf8');
+         staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png)}');
       };
 
       const config = {

@@ -196,26 +196,14 @@ describe('custompack', () => {
       });
    });
    const testCssPath = path.join(applicationRoot, 'packcss/testRebaseURL.css');
-   it('rebaseUrl correct path without url-service-path', async() => {
-      const urlServicePath = '/';
+   it('rebaseUrl should return correct relative url to the requested file', async() => {
       const resultCSS = await rebaseCSS(
          testCssPath,
          applicationRoot,
-         urlServicePath
+         './testRebaseURL.css'
       );
       removeAllNewLines(resultCSS).should.equal(
-         '.online-Sidebar_logoDefault{background-image:url(/resources/packcss/images/logo-en.svg)}'
-      );
-   });
-   it('rebaseUrl correct path with url-service-path', async() => {
-      const urlServicePath = '/someTestPath/';
-      const resultCSS = await rebaseCSS(
-         testCssPath,
-         applicationRoot,
-         urlServicePath
-      );
-      removeAllNewLines(resultCSS).should.equal(
-         '.online-Sidebar_logoDefault{background-image:url(/someTestPath/resources/packcss/images/logo-en.svg)}'
+         '.online-Sidebar_logoDefault{background-image:url(packcss/images/logo-en.svg)}'
       );
    });
 

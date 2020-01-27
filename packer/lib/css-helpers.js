@@ -9,9 +9,16 @@ const helpers = require('../../lib/helpers');
 const invalidUrl = /^(\/|#|data:|[a-z]+:\/\/)(?=.*)/i;
 const importCss = /@import[^;]+;/gi;
 
-function rebaseUrlsToAbsolutePath(root, sourceFile, css, resourceRoot) {
+function rebaseUrlsToAbsolutePath(cssConfig) {
+   const {
+      root,
+      sourceFile,
+      css,
+      relativePackagePath
+   } = cssConfig;
    let result;
-   const resourceRootWithSlash = resourceRoot ? path.join('/', resourceRoot) : '/';
+
+   const rootForRebase = path.join(root, relativePackagePath);
    try {
       result = postcss()
          .use(
@@ -21,16 +28,20 @@ function rebaseUrlsToAbsolutePath(root, sourceFile, css, resourceRoot) {
                   if (invalidUrl.test(asset.url)) {
                      return asset.url;
                   }
-                  return `${helpers.prettifyPath(path.join(resourceRootWithSlash, path.relative(dir.to, path.join(dir.from, asset.url))))}`;
+
+                  return helpers.prettifyPath(
+                     path.relative(
+                        dir.to,
+                        path.join(dir.from, asset.url)
+                     )
+                  );
                }
             })
          )
          .process(css, {
             parser: safe,
             from: sourceFile,
-
-            // internally it uses path.dirname so we need to supply a filename
-            to: path.join(root, 'someFakeInline.css')
+            to: rootForRebase
          }).css;
    } catch (e) {
       logger.warning({
