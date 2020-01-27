@@ -1752,6 +1752,14 @@ describe('gulp/builder/generate-workflow.js', () => {
          (await isRegularFile(outputFolder, 'contents.js')).should.equal(true);
          (await isRegularFile(outputFolder, 'contents.min.js')).should.equal(true);
       });
+      it('packed as javascript content styles in usual package should have correct related urls', async() => {
+         const resultExtendBundlesMeta = await fs.readFile(
+            path.join(outputFolder, 'InterfaceModule1/interfacemodule1-styles-in-js.package.min.js'),
+            'utf8'
+         );
+         const result = resultExtendBundlesMeta.includes('url(InterfaceModule1/images/logo-en.svg?x_module=%{MODULE_VERSION_STUB=InterfaceModule1})');
+         result.should.equal(true);
+      });
       it('exclude new unknown for builder packages', async() => {
          (await isRegularFile(moduleOutputFolder, 'test.package.min.js')).should.equal(false);
          (await isRegularFile(moduleOutputFolder, 'test.package.min.css')).should.equal(false);
@@ -1855,6 +1863,7 @@ describe('gulp/builder/generate-workflow.js', () => {
                modules: [
                   'InterfaceModule1/amdModule',
                   'InterfaceModule1/library',
+                  'css!InterfaceModule1/amdModule',
                   'css!InterfaceModule1/moduleStyle'
                ],
                config: '/InterfaceModule1/extend.package.json:superbundle-for-builder-tests.package.js'
@@ -1974,6 +1983,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
+            'css!InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
          });
@@ -2027,6 +2037,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             '_private',
             'amdModule.js',
             'amdModule.min.js',
+            'amdModule.css',
+            'amdModule.min.css',
             'extend.package.json',
             'library.modulepack.js',
             'library.ts',
@@ -2067,6 +2079,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
+            'css!InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
          });

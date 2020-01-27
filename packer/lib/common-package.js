@@ -290,11 +290,12 @@ async function limitingNativePackFiles(
                   },
 
                   /**
-                   * for extendable bundles custom css packages further will be joined and saved
-                   * in the application root. Therefore we need to transmit application root instead of
-                   * custom package root in this case.
+                   * Packed as javascript content css files will be put
+                   * into page content with style tag, where all css url paths are
+                   * related to the site root. Therefore we need to rebase urls
+                   * from application root instead of current css path.
                    */
-                  packageConfig.extendsTo ? 'someFakePackage.css' : packageConfig.packagePath
+                  'someFakePackage.css'
                );
 
                if (fullPath) {
