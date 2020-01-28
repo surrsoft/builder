@@ -286,7 +286,8 @@ async function limitingNativePackFiles(
                   null,
                   {
                      availableLanguage,
-                     defaultLanguage
+                     defaultLanguage,
+                     resourcesUrl: taskParameters.config.resourcesUrl
                   },
 
                   /**
