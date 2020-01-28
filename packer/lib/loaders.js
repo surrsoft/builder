@@ -214,37 +214,15 @@ async function isLoader(module, base) {
 }
 
 /**
- * Text wraps an 'if' that does not work in IE8-9
- * @param {Function} f - callback
+ * add AMD-shell and if condition for extra checking of
+ * current Javascript executing location(client-side or
+ * server-side)
+ * @param {Function} content - content of the css style
+ * @param {String} modName - current style AMD-name
  * @return {Function}
  */
-function onlyForIE10AndAbove(content, modName) {
-   let ifConditionThemes;
-   const ifCondition = 'if(typeof window !== "undefined" && window.atob){';
-
-   if (
-      modName.startsWith('css!SBIS3.CONTROLS') ||
-      modName.startsWith('css!Controls') ||
-      modName.startsWith('css!Deprecated/Controls')
-   ) {
-      ifConditionThemes =
-         'var global=(function(){return this || (0,eval)(this);})();if(global.wsConfig && global.wsConfig.themeName){return;}';
-   }
-   if (ifConditionThemes) {
-      const indexVar = content.indexOf('var style = document.createElement(');
-      return `${ifCondition + content.slice(0, indexVar) + ifConditionThemes + content.slice(indexVar)}}`;
-   }
-   return `${ifCondition + content}}`;
-}
-
-/**
- * Wrap text (function) as module with name
- * @param {Function} f - callback
- * @param {String} modName - module name
- * @return {Function}
- */
-function asModuleWithContent(content, modName) {
-   return `define('${modName}', ${content});`;
+function addIfConditionAndAMDShell(content, modName) {
+   return `if(typeof window !== "undefined" && window.atob){define('${modName}', ${content});}`;
 }
 
 /**
@@ -276,22 +254,16 @@ async function cssLoader(
    pluginConfig,
    relativePackagePath
 ) {
-   const suffix = themeName ? `__${themeName}` : '';
-   let modulePath = module.fullPath;
-   if (suffix && module.fullName.includes('SBIS3.CONTROLS')) {
-      modulePath = `${modulePath.slice(0, -4) + suffix}.css`;
-   }
-   let cssContent = await fs.readFile(modulePath, 'utf8');
+   let cssContent = await fs.readFile(module.fullPath, 'utf8');
    cssContent = rebaseUrls({
       root: base,
-      sourceFile: modulePath,
+      sourceFile: module.fullPath,
       css: cssContent,
       relativePackagePath,
       resourcesUrl: pluginConfig && pluginConfig.resourcesUrl
    });
    cssContent = styleTagLoader(cssContent);
-   cssContent = asModuleWithContent(cssContent, module.fullName);
-   cssContent = onlyForIE10AndAbove(cssContent, module.fullName);
+   cssContent = addIfConditionAndAMDShell(cssContent, module.fullName);
    return cssContent;
 }
 
