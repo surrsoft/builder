@@ -1752,6 +1752,15 @@ describe('gulp/builder/generate-workflow.js', () => {
          (await isRegularFile(outputFolder, 'contents.js')).should.equal(true);
          (await isRegularFile(outputFolder, 'contents.min.js')).should.equal(true);
       });
+      it('private packages should be generated despite of theirs not existing in bundles approved list', async() => {
+         (await isRegularFile(moduleOutputFolder, 'private.min.original.js')).should.equal(true);
+         const resultPackage = await fs.readFile(path.join(moduleOutputFolder, 'private.min.js'), 'utf8');
+         const correctResultPackage = await fs.readFile(
+            path.join(sourceFolder, 'correctResult/privatePackage.js'),
+            'utf8'
+         );
+         resultPackage.should.equal(correctResultPackage);
+      });
       it('exclude new unknown for builder packages', async() => {
          (await isRegularFile(moduleOutputFolder, 'test.package.min.js')).should.equal(false);
          (await isRegularFile(moduleOutputFolder, 'test.package.min.css')).should.equal(false);
@@ -1903,7 +1912,14 @@ describe('gulp/builder/generate-workflow.js', () => {
             'test-brotli.package.min.js.gz',
             'themes.config.json',
             'themes.config.min.json',
-            'themes.config.min.json.gz'
+            'themes.config.min.json.gz',
+            'private.js',
+            'private.min.css',
+            'private.min.css.gz',
+            'private.min.js',
+            'private.min.js.gz',
+            'private.min.original.js',
+            'private.package.json',
          ];
 
          if (!isWindows) {
@@ -1912,7 +1928,9 @@ describe('gulp/builder/generate-workflow.js', () => {
                'Stable.min.css.br',
                'test-brotli.package.min.css.br',
                'test-brotli.package.min.js.br',
-               'themes.config.min.json.br'
+               'themes.config.min.json.br',
+               'private.min.css.br',
+               'private.min.js.br',
             ]);
          }
 
@@ -1940,7 +1958,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
 
          /**
-          * bundlesRoute meta in "Modul" interface module must not contain information about packed external modules,
+          * bundlesRoute meta in 'Modul" interface module must not contain information about packed external modules,
           * it should be stored in proper interface module
           */
          bundlesRouteResult.hasOwnProperty('ExternalInterfaceModule/amdModule').should.equal(false);
@@ -1958,6 +1976,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'ExternalInterfaceModule/_private/module2',
             'ExternalInterfaceModule/amdModule',
             'ExternalInterfaceModule/library',
+            'Modul/private',
             'css!ExternalInterfaceModule/moduleStyle',
             'css!Modul/Stable',
             'html!Modul/Page'
@@ -1974,6 +1993,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
+            'Modul/private': 'resources/Modul/test-brotli.package.min.js',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
          });
@@ -2066,6 +2086,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'InterfaceModule1/_private/module2': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/amdModule': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
             'InterfaceModule1/library': 'resources/Modul/TestBSort/test-superbundle.package.min.js',
+            'Modul/private': 'resources/Modul/test-brotli.package.min.js',
             'css!InterfaceModule1/moduleStyle': 'resources/Modul/TestBSort/test-superbundle.package.min.css',
             'css!Modul/Stable': 'resources/Modul/test-brotli.package.min.css',
             'html!Modul/Page': 'resources/Modul/test-brotli.package.min.js'
