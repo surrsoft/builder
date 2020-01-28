@@ -7,6 +7,7 @@
     "css!InterfaceModule3/amdModule",
     "InterfaceModule1/amdModule",
     "InterfaceModule1/library",
-    "css!InterfaceModule1/moduleStyle"
+    "css!InterfaceModule1/moduleStyle",
+    "css!InterfaceModule1/amdModule"
   ]
 }

@@ -16,4 +16,12 @@
     "InterfaceModule1/*"
   ],
   "output": "interfacemodule1-second.package.js"
+}, {
+  "include": [
+    "InterfaceModule1/*"
+  ],
+  "exclude": [
+    "css!InterfaceModule1/*"
+  ],
+  "output": "interfacemodule1-styles-in-js.package.js"
 }]
