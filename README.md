@@ -341,7 +341,9 @@ P.S. не забывайте об актуализации ветки Builder, �
     "build": "node node_modules/gulp/bin/gulp build --gulpfile=gulpfile.js --config=../../builder.json"
     
 Пример подобного задания можете посмотреть [здесь.](https://github.com/saby/ui/blob/rc-20.1000/package.json#L19)
-    
+
+
 Далее остаётся из консоли выполнить команду
 
     npm run build
+
