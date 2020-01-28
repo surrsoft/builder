@@ -284,35 +284,15 @@ describe('packer loaders', () => {
          result.should.equal(correctResult);
       });
    });
-   describe('css loader', () => {
+   it('css loader', async() => {
       const cssRoot = path.join(loadersRoot, 'cssLoader');
       const relativePackagePath = 'someFakePath.css';
-      it('common style packing', async() => {
-         const module = {
-            fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
-            fullName: 'css!MyModule/moduleStyle'
-         };
-         const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
-         const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/common.js'), 'utf8');
-         result.should.equal(correctResult);
-      });
-      it('SBIS3.CONTROLS old theme suffix must return content from themed css', async() => {
-         const module = {
-            fullPath: path.join(cssRoot, 'SBIS3.CONTROLS/moduleStyle.css'),
-            fullName: 'css!SBIS3.CONTROLS/moduleStyle'
-         };
-         const result = await packLoaders.css(module, cssRoot, 'testTheme', null, relativePackagePath);
-         const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/controlsCorrectResultWithTheme.js'), 'utf8');
-         result.should.equal(correctResult);
-      });
-      it('SBIS3.CONTROLS packed theme must contains wsconfig theme checker', async() => {
-         const module = {
-            fullPath: path.join(cssRoot, 'SBIS3.CONTROLS/moduleStyle.css'),
-            fullName: 'css!SBIS3.CONTROLS/moduleStyle'
-         };
-         const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
-         const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/controlsCorrectResult.js'), 'utf8');
-         result.should.equal(correctResult);
-      });
+      const module = {
+         fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
+         fullName: 'css!MyModule/moduleStyle'
+      };
+      const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
+      const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/common.js'), 'utf8');
+      result.should.equal(correctResult);
    });
 });
