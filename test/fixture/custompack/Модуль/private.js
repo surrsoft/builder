@@ -1,0 +1,1 @@
+define('Modul/private', [], function(){return {_moduleName: 'Modul/private'};});
