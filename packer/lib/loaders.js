@@ -5,7 +5,7 @@ const { traverse } = require('estraverse');
 const escodegen = require('escodegen');
 const path = require('path');
 const fs = require('fs-extra');
-const rebaseUrlsToAbsolutePath = require('./css-helpers').rebaseUrls;
+const { rebaseUrls } = require('./css-helpers');
 const helpers = require('../../lib/helpers');
 
 const loaders = {
@@ -264,18 +264,6 @@ head.appendChild(style);\
 }
 
 /**
- * Rebase urls to absolute path in css
- * @param {String} root - absolute path root
- * @param {String} sourceFile - path to css
- * @param {Function} f - callback
- * @return {Function}
- */
-function rebaseUrls(root, sourceFile, content, resourceRoot, relativePackagePath) {
-   return rebaseUrlsToAbsolutePath(root, sourceFile, content, resourceRoot, relativePackagePath);
-}
-
-
-/**
  * Read css and Rebase urls and Wrap as module that inserts the tag style
  * Ignore IE8-9
  * @param {Meta} module - current module meta for packer
@@ -285,7 +273,7 @@ async function cssLoader(
    module,
    base,
    themeName,
-   languageConfig,
+   pluginConfig,
    relativePackagePath
 ) {
    const suffix = themeName ? `__${themeName}` : '';
@@ -298,7 +286,8 @@ async function cssLoader(
       root: base,
       sourceFile: modulePath,
       css: cssContent,
-      relativePackagePath
+      relativePackagePath,
+      resourcesUrl: pluginConfig && pluginConfig.resourcesUrl
    });
    cssContent = styleTagLoader(cssContent);
    cssContent = asModuleWithContent(cssContent, module.fullName);

@@ -14,7 +14,8 @@ function rebaseUrlsToAbsolutePath(cssConfig) {
       root,
       sourceFile,
       css,
-      relativePackagePath
+      relativePackagePath,
+      resourcesUrl
    } = cssConfig;
    let result;
 
@@ -29,12 +30,18 @@ function rebaseUrlsToAbsolutePath(cssConfig) {
                      return asset.url;
                   }
 
-                  return helpers.prettifyPath(
+                  /**
+                   * path to style can be joined in 2 different ways:
+                   * 1) for local demo-examples(f.e. controls) - site root + relative link by site root
+                   * 2) for ordinary stand - site root + resources + relative link by site root
+                   * A normalized relative path will be returned according to these facts.
+                   */
+                  return `${resourcesUrl ? 'resources/' : ''}${helpers.prettifyPath(
                      path.relative(
                         dir.to,
                         path.join(dir.from, asset.url)
                      )
-                  );
+                  )}`;
                }
             })
          )
