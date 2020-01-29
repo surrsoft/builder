@@ -1166,6 +1166,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       // проверим, что все нужные файлы появились в "стенде", лишние удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
+         '.builder',
          'ForChange.js',
          'ForChange_new.html',
          'ForRename_new.js',
