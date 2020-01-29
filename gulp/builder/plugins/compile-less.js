@@ -187,8 +187,9 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
              * in theirs repos.
              */
             if (file.contents.length === 0) {
+               const extension = file.extname.slice(1, file.extname.length);
                logger.warning({
-                  message: 'Empty less file is discovered. Please, remove it and appropriate imports of it in other less files',
+                  message: `Empty ${extension} file is discovered. Please, remove it and appropriate imports of it in other less files`,
                   filePath: file.path,
                   moduleInfo
                });
