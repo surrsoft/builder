@@ -1,4 +1,4 @@
-define('TestModule/testComponent', ['browser!TestModule/Test/component1', 'is?compatibleLayer?TestModule/Test/component2'], function(component1) {
+define('TestModule/testComponent', ['browser!TestModule/Test/component1', 'is?compatibleLayer?TestModule/Test/component2', 'i18n!TestModule'], function(component1) {
    'use strict';
    var TestModule = {
       test: component1
