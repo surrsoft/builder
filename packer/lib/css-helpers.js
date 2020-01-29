@@ -14,8 +14,7 @@ function rebaseUrlsToAbsolutePath(cssConfig) {
       root,
       sourceFile,
       css,
-      relativePackagePath,
-      resourcesUrl
+      relativePackagePath
    } = cssConfig;
    let result;
 
