@@ -1,5 +1,4 @@
 /**
- * Генерация задачи паковки для статических html.
  * @author Kolbeshin F.A.
  */
 
@@ -11,15 +10,19 @@ const gulp = require('gulp'),
 const logger = require('../../../lib/logger').logger(),
    DepGraph = require('../../../packer/lib/dependency-graph'),
    pluginPackHtml = require('../plugins/pack-html'),
-   startTask = require('../../common/start-task-with-timer');
+   packInlineScripts = require('../plugins/pack-inline-scripts'),
+   startTask = require('../../common/start-task-with-timer'),
+   gulpIf = require('gulp-if');
 
 /**
- * Генерация задачи паковки для статических html.
- * @param {TaskParameters} taskParameters параметры для задач
- * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
+ * Generation of the task for static html pages packing.
+ * @param{TaskParameters} taskParameters - whole parameters list(gulp configuration, all builder cache, etc. )
+ * using by current running Gulp-task.
+ * @returns {Undertaker.TaskFunction|function(done)} returns an empty function in case of un-appropriate flags to
+ * avoid gulp unexpected completion with errors.
  */
 function generateTaskForPackHtml(taskParameters) {
-   if (!taskParameters.config.deprecatedStaticHtml) {
+   if (!taskParameters.config.deprecatedStaticHtml && taskParameters.config.inlineScripts) {
       return function skipPackHtml(done) {
          done();
       };
@@ -27,8 +30,6 @@ function generateTaskForPackHtml(taskParameters) {
    const depGraph = new DepGraph();
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
       const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
-
-      // интересны именно файлы на первом уровне вложенности в модулях
       const input = path.join(moduleOutput, '/**/*.html');
 
       return function packHtml() {
@@ -38,7 +39,7 @@ function generateTaskForPackHtml(taskParameters) {
                plumber({
                   errorHandler(err) {
                      logger.error({
-                        message: 'Задача packHtml завершилась с ошибкой',
+                        message: 'packHTML task was completed with errors',
                         error: err,
                         moduleInfo
                      });
@@ -46,7 +47,14 @@ function generateTaskForPackHtml(taskParameters) {
                   }
                })
             )
-            .pipe(pluginPackHtml(taskParameters, moduleInfo, depGraph))
+            .pipe(gulpIf(
+               taskParameters.config.deprecatedStaticHtml,
+               pluginPackHtml(taskParameters, moduleInfo, depGraph)
+            ))
+            .pipe(gulpIf(
+               !taskParameters.config.inlineScripts,
+               packInlineScripts(taskParameters, moduleInfo)
+            ))
             .pipe(gulp.dest(moduleOutput));
       };
    });

@@ -13,32 +13,32 @@ const ConfigurationReader = require('../../common/configuration-reader'),
    availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
- * Класс с данными о конфигурации сборки
+ * Class with data about configuration of the build.
  */
 class BuildConfiguration {
    constructor() {
-      // путь до файла конфигурации
+      // path to the configuration file
       this.configFile = '';
 
-      // не приукрашенные данные конфигурации. используются в changes-store для решения о сбросе кеша
+      // ordinary configuration data to be used in changes store for getting a solution about builder cache reset.
       this.rawConfig = {};
 
-      // список объектов, содержащий в себе полную информацию о модулях.
+      // objects list of full information about every single interface module of the building project
       this.modules = [];
 
-      // путь до папки с кешем
+      // path to the folder of builder cache
       this.cachePath = '';
 
-      // папка с результатами сборки
+      // path to the folder of the build results.
       this.outputPath = '';
 
-      // список поддерживаемых локалей
+      // list of supported locales
       this.localizations = [];
 
-      // локаль по умолчанию
+      // default locale
       this.defaultLocalization = '';
 
-      // если проект не мультисервисный, то в статических html нужно заменить некоторые переменные
+      // replace some variables in static html pages in case of project not to be multi-service
       this.multiService = false;
 
       // Current service relative url
@@ -124,6 +124,13 @@ class BuildConfiguration {
 
       // enable core typescript compilation and initialize for gulp plugins
       this.initCore = false;
+
+      /**
+       * inline scripts in static html pages. If flag takes value of false, replace those scripts to
+       * separated javascript files, which will be containing the content of sliced inline script.
+       * Otherwise return html page content as is.
+       */
+      this.inlineScripts = true;
    }
 
    /**
@@ -188,7 +195,7 @@ class BuildConfiguration {
 
    // Configure of main info for current project build.
    configMainBuildInfo() {
-      const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
+      const startErrorMessage = `Configuration file ${this.configFile} isn't valid.`;
 
       // version есть только при сборке дистрибутива
       if (this.rawConfig.hasOwnProperty('version') && typeof this.rawConfig.version === 'string') {
@@ -202,8 +209,10 @@ class BuildConfiguration {
       if (!this.isReleaseMode) {
          this.outputPath = this.rawConfig.output;
       } else {
-         // некоторые задачи для сборки дистрибутивак не совместимы с инкрементальной сборкой,
-         // потому собираем в папке кеша, а потом копируем в целевую директорию
+         /**
+          * Some of builder tasks for building of the distributive aren't compatible with incremental build.
+          * Therefore project'll be built into the cache folder and copy results into the targeting directory then.
+          */
          this.outputPath = path.join(this.cachePath, 'incremental_build');
 
          // always enable tsc compiler in release mode
@@ -218,7 +227,7 @@ class BuildConfiguration {
          this.rawConfig.hasOwnProperty('default-localization') && !!this.rawConfig['default-localization'];
 
       if (hasDefaultLocalization !== hasLocalizations) {
-         throw new Error(`${startErrorMessage} Список локализаций и дефолтная локализация не согласованы`);
+         throw new Error(`${startErrorMessage} default localization was specified, but there is no locales list in build config. Please, specify it.`);
       }
 
       if (hasLocalizations) {
@@ -233,7 +242,7 @@ class BuildConfiguration {
                throw new Error(`${startErrorMessage} This default localization is not permitted: ${currentLocale}`);
             }
 
-            // nothing to do if default locale was already been declared
+            // There is nothing to do if default locale has already been declared
             if (commonLocale !== currentLocale) {
                defaultLocalizationsToPush.add(commonLocale);
             }
@@ -245,14 +254,14 @@ class BuildConfiguration {
          this.defaultLocalization = this.rawConfig['default-localization'];
          if (!availableLanguage.hasOwnProperty(this.defaultLocalization)) {
             throw new Error(
-               `${startErrorMessage} Задан не корректный идентификатор локализаци по умолчанию: ${
+               `${startErrorMessage} There is an incorrect identity of localization by default: ${
                   this.defaultLocalization
                }`
             );
          }
 
          if (!this.localizations.includes(this.defaultLocalization)) {
-            throw new Error(`${startErrorMessage} Локализация по умолчанию не указана в списке доступных локализаций`);
+            throw new Error(`${startErrorMessage} default locale isn't included into locales list`);
          }
       }
 
@@ -332,9 +341,9 @@ class BuildConfiguration {
    }
 
    /**
-    * Загрузка конфигурации из аргументов запуска утилиты.
-    * Возможна только синхронная версия, т.к. это нужно делать перед генерацей workflow.
-    * @param {string[]} argv массив аргументов запуска утилиты
+    * Configuration loading with using of the utility executing args. Synchronous loading
+    * is the only option here because of common build workflow generating afterwards.
+    * @param {string[]} argv utility running cli arguments
     */
    loadSync(argv) {
       this.configFile = ConfigurationReader.getProcessParameters(argv).config;
@@ -395,11 +404,11 @@ class BuildConfiguration {
       }
 
       /**
-       * Core typescript compiling and initialize is needed by builder
+       * Typescript compiling and afterward initializing of platform core is needed by builder
        * in this cases:
-       * 1) templates build enabled.
-       * 2) Builder unit tests
-       * 3) localization enabled.
+       * 1) build of templates is enabled.
+       * 2) This is builder unit tests execution.
+       * 3) localization was enabled for current project.
        */
       this.initCore = this.needTemplates || this.builderTests || this.localizations.length > 0;
    }
