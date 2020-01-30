@@ -532,4 +532,53 @@ async function packageSingleHtml(
    return newDom;
 }
 
-module.exports = { packageSingleHtml };
+/**
+ * Packs inline scripts of the html page into separated javascript files.
+ * @param{String} outputPath - path to the project building result directory.
+ * @param{String} pagePath - path to the
+ * @param pageContent
+ * @returns {Promise<{newPageContent, scripts: Array}>}
+ */
+function packInlineScripts(outputPath, pagePath, pageContent, resourceRoot) {
+   const dom = domHelpers.domify(pageContent);
+   const pageScripts = dom.getElementsByTagName('script');
+   const relativePageFolder = helpers.prettifyPath(
+      path.relative(outputPath, path.dirname(pagePath))
+   );
+   const pageName = path.basename(pagePath).split('.').shift();
+   const scripts = [];
+   for (let script = 0; script < pageScripts.length; script++) {
+      if (pageScripts[script].childNodes.length > 0) {
+         const normalizedRelatedPath = `${relativePageFolder}/inlineScripts/${pageName}-${script}.js`;
+         let inlineScriptContent = '';
+         for (let content = 0; content < pageScripts[script].childNodes.length; content++) {
+            inlineScriptContent += domHelpers.stringify(pageScripts[script].childNodes[content]);
+         }
+
+         // we should ignore inline scripts without javascript content to be packed
+         if (inlineScriptContent.trim()) {
+            const newScript = domHelpers.mkDomNode(
+               pageScripts[script].ownerDocument,
+               'script',
+               {
+                  id: `${pageName}-inlineScript-${script}`,
+                  src: `${resourceRoot}${normalizedRelatedPath}`
+               }
+            );
+
+            pageScripts[script].parentNode.insertBefore(newScript, pageScripts[script].nextSibling);
+            pageScripts[script].parentNode.removeChild(pageScripts[script]);
+            scripts.push({
+               path: path.join(outputPath, normalizedRelatedPath),
+               content: inlineScriptContent
+            });
+         }
+      }
+   }
+   return {
+      newPageContent: domHelpers.stringify(dom),
+      scripts
+   };
+}
+
+module.exports = { packageSingleHtml, packInlineScripts };

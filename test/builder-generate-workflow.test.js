@@ -2203,7 +2203,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          minimize: true,
          less: true,
          deprecatedStaticHtml: true,
-         dependenciesGrapg: true,
+         dependenciesGraph: true,
          'url-service-path': '/testService/',
          modules: [
             {
@@ -2221,6 +2221,78 @@ describe('gulp/builder/generate-workflow.js', () => {
       // check incremental build
       await runWorkflowWithTimeout();
       await testResults();
+      await clearWorkspace();
+   });
+
+   it('pack inline scripts - check for current packing of inline scripts into separated javascript files', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/packHTML');
+      await prepareTest(fixtureFolder);
+      await linkPlatform(sourceFolder);
+
+      const testResults = async(resourceRoot) => {
+         /**
+          * dependencies in current test are static, so we can also add check for package hash.
+          */
+         const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
+         let containsNeededPackage = packedHtml.includes(`<script id="testPage-inlineScript-0" src="${resourceRoot}TestModule/inlineScripts/testPage-0.js"> </script>`);
+         containsNeededPackage.should.equal(true);
+
+         /**
+          * there is another inline script with empty content, so it should be skipped by packer
+          * Example from current test - <script type="text/javascript" id="ws-include-components"></script>
+          */
+         containsNeededPackage = packedHtml.includes(`<script id="testPage-inlineScript-1" src="${resourceRoot}TestModule/inlineScripts/testPage-1.js"> </script>`);
+         containsNeededPackage.should.equal(false);
+
+         // packed javascript content of inline script should be correctly saved to correct file path
+         const inlinePackageContent = await fs.readFile(path.join(outputFolder, 'TestModule/inlineScripts/testPage-0.js'), 'utf8');
+         const correctInlinePackageContent = await fs.readFile(path.join(fixtureFolder, 'correctInlineScript.js'), 'utf8');
+         removeRSymbol(inlinePackageContent).should.equal(removeRSymbol(correctInlinePackageContent));
+      };
+
+      const runTestIteration = async(resourceUrl) => {
+         // run first iteration of project building with new configuration
+         await runWorkflowWithTimeout();
+         await testResults(resourceUrl);
+
+         // run second iteration of the building for incremental build checking
+         await runWorkflowWithTimeout();
+         await testResults(resourceUrl);
+      };
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         deprecatedWebPageTemplates: true,
+         minimize: true,
+         less: true,
+         inlineScripts: false,
+         'url-service-path': '/testService/',
+         modules: [
+            {
+               name: 'TestModule',
+               path: path.join(sourceFolder, 'TestModule')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runTestIteration('/testService/resources/');
+
+      config.resourcesUrl = false;
+      await fs.writeJSON(configPath, config);
+
+      await runTestIteration('/testService/');
+
+      config.multiService = true;
+      await fs.writeJSON(configPath, config);
+
+      await runTestIteration('%{RESOURCE_ROOT}');
+
+      config.resourcesUrl = true;
+      await fs.writeJSON(configPath, config);
+
+      await runTestIteration('%{RESOURCE_ROOT}');
       await clearWorkspace();
    });
 
