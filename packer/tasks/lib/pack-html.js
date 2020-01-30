@@ -439,14 +439,18 @@ async function packageSingleHtml(
    const filesToPack = await packInOrder(
       dg,
       startNodes,
-      root,
+      helpers.prettifyPath(root),
       themeName,
       htmlName,
       availableLanguage,
-      path.join(taskParameters.config.applicationForRebase, 'resources/'),
+      helpers.prettifyPath(
+         path.join(taskParameters.config.applicationForRebase, 'resources/')
+      ),
 
       // internally it uses path.dirname so we need to supply a filename
-      path.join(packageHome, 'someFakeName.css')
+      helpers.prettifyPath(
+         path.join(packageHome, 'someFakeName.css')
+      )
    );
 
    // Запишем в статическую html зависимости от ВСЕХ пакетов(основные js и css пакеты +
