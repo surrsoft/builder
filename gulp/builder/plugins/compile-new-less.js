@@ -228,16 +228,14 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      result.error = result.error.replace(errorLoadAttempts, '');
 
                      message = `Bad import detected ${result.error}. Check interface module of current import ` +
-                        `for existing in current project. Needed by: ${file.history[0]}. ` +
-                        `For theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n${errorLoadAttempts}`;
+                        `for existing in current project. Needed by: ${file.history[0]}.\n${errorLoadAttempts}`;
                   }
                   errorsList[result.failedLess] = {
                      message,
                      moduleInfo: moduleInfoForFail
                   };
                } else {
-                  const message = `Less compiler error: ${result.error}. Source file: ${file.history[0]}. ` +
-                     `Theme: ${result.theme.name}. Theme type: ${result.theme.isDefault ? 'old' : 'new'}\n`;
+                  const message = `Less compiler error: ${result.error}. Source file: ${file.history[0]}.\n`;
                   logger.error({ message });
                }
                errors = true;
