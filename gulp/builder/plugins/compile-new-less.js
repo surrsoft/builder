@@ -215,7 +215,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
                newThemes,
                autoprefixerOptions
             };
-            const [, result] = await execInPool(
+            const [error, result] = await execInPool(
                taskParameters.pool,
                'buildNewLess',
                [
@@ -225,6 +225,15 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
                file.history[0],
                moduleInfo
             );
+            if (error) {
+               taskParameters.cache.markFileAsFailed(file.history[0]);
+               logger.error({
+                  message: 'Uncaught new less compiler error',
+                  error,
+                  filePath: file.history[0]
+               });
+               return;
+            }
             taskParameters.storePluginTime('new less compiler', result.passedTime, true);
             if (result.error) {
                if (result.type) {
