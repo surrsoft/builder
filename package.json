@@ -74,7 +74,7 @@
       "eslint-plugin-promise": "3.8.0",
       "mocha": "5.2.0",
       "nyc": "12.0.2",
-      "wasaby-controls": "git+ssh://github.com:saby/wasaby-controls.git#rc-20.1100",
+      "wasaby-controls": "git+https://github.com/saby/wasaby-controls.git#rc-20.1100",
       "sbis3-json-generator": "git+ssh://git@git.sbis.ru:root/sbis3-json-generator.git#rc-20.1100",
       "rmi": "git+ssh://git@git.sbis.ru:sbis/rmi.git#rc-20.1100",
       "sbis3-ws": "git+ssh://git@git.sbis.ru:sbis/ws.git#rc-20.1100",
