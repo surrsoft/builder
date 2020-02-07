@@ -274,7 +274,12 @@ describe('build less', () => {
    describe('get correct imports for current less', () => {
       const oldTheme = {
          path: 'path/to/default',
-         name: 'default'
+         name: 'default',
+         isDefault: true
+      };
+      const multiTheme = {
+         path: 'path/to/myTheme',
+         name: 'myTheme'
       };
       const oldThemeWithCustomVariables = {
          path: 'path/to/online',
@@ -283,7 +288,8 @@ describe('build less', () => {
          variablesFromLessConfig: 'Controls-theme'
       };
       const oldThemeWithoutPath = {
-         name: 'default'
+         name: 'default',
+         isDefault: true
       };
       const newTheme = {
          type: 'new',
@@ -299,7 +305,7 @@ describe('build less', () => {
          result.length.should.equal(3);
          result.should.have.members([
             '@import \'path/to/default/default\';',
-            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@import "SBIS3.CONTROLS/themes/_mixins";',
             '@themeName: default;'
          ]);
       });
@@ -308,8 +314,17 @@ describe('build less', () => {
          result.length.should.equal(3);
          result.should.have.members([
             '@import \'Controls-theme/themes/default/default\';',
-            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@import "SBIS3.CONTROLS/themes/_mixins";',
             '@themeName: default;'
+         ]);
+      });
+      it('multi theme - should return correct imports list', () => {
+         const result = getCurrentImports('path/to/some/less.less', multiTheme, gulpModulesInfo.gulpModulesPaths);
+         result.length.should.equal(3);
+         result.should.have.members([
+            '@import \'path/to/myTheme/myTheme\';',
+            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@themeName: myTheme;'
          ]);
       });
       it('old theme - for theme with custom variables', () => {
@@ -323,7 +338,7 @@ describe('build less', () => {
          result.length.should.equal(3);
          result.should.have.members([
             '@import \'Controls-theme/themes/default/default\';',
-            '@import \'Controls-theme/themes/default/helpers/_mixins\';',
+            '@import "SBIS3.CONTROLS/themes/_mixins";',
             '@themeName: online;'
          ]);
       });
