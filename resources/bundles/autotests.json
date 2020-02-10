@@ -1,3 +1,4 @@
 [
-  "resources/ModuleWithPackage/moduleWithPackage.package.min"
+  "resources/ModuleWithPackage/moduleWithPackage.package.min",
+  "resources/TestPackerExt/test-ext.package.min"
 ]
