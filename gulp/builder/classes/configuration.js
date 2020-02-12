@@ -411,6 +411,10 @@ class BuildConfiguration {
        * 3) localization was enabled for current project.
        */
       this.initCore = this.needTemplates || this.builderTests || this.localizations.length > 0;
+
+      if (this.branchTests) {
+         throw new Error('this message gives us an information about successfully ruined build using testing builder. If you see this, congratulations!');
+      }
    }
 }
 
