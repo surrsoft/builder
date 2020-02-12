@@ -188,7 +188,6 @@ class BuildConfiguration {
 
    // Configure of main info for current project build.
    configMainBuildInfo() {
-      // eslint-disable-next-line no-unreachable
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
       // version есть только при сборке дистрибутива
