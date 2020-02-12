@@ -445,9 +445,9 @@ describe('versionize-content', () => {
       const templateCompiledContent = (await fs.readFile(path.join(outputFolder, 'Modul/Page.min.wml'))).toString();
 
       // проверим, что в исходниках ссылки остались прежними, а в скомпилированном появилась версия и суффикс min
-      const templateSourceNotChanged = templateSourceContent.includes('contents.js') &&
-         templateSourceContent.includes('require-min.js') &&
-         templateSourceContent.includes('bundles.js') &&
+      const templateSourceNotChanged = templateSourceContent.includes('contents.js"') &&
+         templateSourceContent.includes('require-min.js"') &&
+         templateSourceContent.includes('bundles.js"') &&
          templateSourceContent.includes('src="{{item.get(image) ? item.get(image) : \'/resources/SBIS3.CONTROLS/themes/online/img/defaultFolder.png\'}}" />');
       templateSourceNotChanged.should.equal(true);
       const templateCompiledChanged = templateCompiledContent.includes('contents.min.js?x_module=test&amp;x_app=%{PRODUCT_NAME}') &&
