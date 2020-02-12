@@ -188,6 +188,14 @@ class BuildConfiguration {
 
    // Configure of main info for current project build.
    configMainBuildInfo() {
+      /**
+       * We need to throw down build of current project on purpose to check
+       * is it an actual builder using with changes have taken instead of
+       * stable builder from SDK
+       */
+      throw new Error('Test!!!Build must be crashed by this test throwing error!');
+
+      // eslint-disable-next-line no-unreachable
       const startErrorMessage = `Файл конфигурации ${this.configFile} не корректен.`;
 
       // version есть только при сборке дистрибутива
