@@ -25,14 +25,19 @@ describe('less configuration checker', () => {
       config.old.variables.should.equal('SBIS3.CONTROLS');
    });
 
-   it('should set Controls-theme variables for "old" option', () => {
+   it('should set Controls-default-theme variables for "old" option', () => {
       const config = {
          old: {
             variables: 'Controls-theme'
          }
       };
       configLessChecker.checkOptions(config);
-      config.old.variables.should.equal('Controls-theme');
+
+      /**
+       * alias of Controls-theme to Controls-default-theme will be removed after it'll be removed from controls repo
+       * themes configuration.
+       */
+      config.old.variables.should.equal('Controls-default-theme');
    });
 
    it('should set correct default variables value for "old" option if incorrect variables value entered', () => {

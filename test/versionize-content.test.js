@@ -364,12 +364,12 @@ describe('versionize-content', () => {
 
       // проверим версионирование рядовых шрифтов
       currentFile = {
-         contents: '<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2"/>',
+         contents: '<link href="{{resourceRoot}}Controls-default-theme/fonts/cbuc-icons/cbuc-icons.woff2"/>',
          base,
          path: filePath
       };
       result = versionizeContent.versionizeTemplates(currentFile, currentModuleInfo, versionParams, 'test-version');
-      result.newText.should.equal('<link href="{{resourceRoot}}Controls-theme/themes/default/fonts/cbuc-icons/cbuc-icons.woff2?x_module=%{MODULE_VERSION_STUB=Controls-theme}"/>');
+      result.newText.should.equal('<link href="{{resourceRoot}}Controls-default-theme/fonts/cbuc-icons/cbuc-icons.woff2?x_module=%{MODULE_VERSION_STUB=Controls-default-theme}"/>');
       result.errors.should.equal(true);
       currentFile.versioned.should.equal(true);
 
