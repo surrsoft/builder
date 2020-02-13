@@ -11,10 +11,7 @@
 const through = require('through2'),
    logger = require('../../../lib/logger').logger();
 
-const mainRegex = '(\\.min)?(\\.[\\w]+?)\\?x_module=%{MODULE_VERSION_STUB=.+?}';
-
-// urls without version. For multi-service applications with the same domain
-const uniqueUrls = /(bundles|contents)\.min\.js/g;
+const mainRegex = /(\.min)?(\.[\w]+?)\?x_module=%{MODULE_VERSION_STUB=.+?}/g;
 const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
 
 /**
@@ -25,7 +22,11 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
-   const fullRegex = new RegExp(`${mainRegex}(&x_version=${taskParameters.config.version})?`, 'g');
+   // regex for main root URLs. We have to remove version headers from files that has to be used in page with s3debug
+   const rootUrlsRegex = new RegExp(
+      `(bundles|contents|router)\\.min\\.js(\\?x_module=${taskParameters.config.version})?(&x_app=%{PRODUCT_NAME})?`,
+      'g'
+   );
    return through.obj(function onTransform(file, encoding, callback) {
       const startTime = Date.now();
       try {
@@ -39,8 +40,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const text = file.contents.toString();
             file.contents = Buffer.from(
                text
-                  .replace(fullRegex, '$2')
-                  .replace(uniqueUrls, '$1.js')
+                  .replace(mainRegex, '$2')
+                  .replace(rootUrlsRegex, '$1.js')
             );
          }
       } catch (error) {
