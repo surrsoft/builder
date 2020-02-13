@@ -74,8 +74,8 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',

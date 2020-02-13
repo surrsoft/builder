@@ -63,7 +63,7 @@ describe('gulp/common/worker.js', () => {
             pathsForImport: [workspaceFolder],
             gulpModulesPaths: {
                'SBIS3.CONTROLS': sbis3ControlsPath,
-               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+               'Controls-default-theme': path.join(workspaceFolder, 'Controls-default-theme')
             }
          };
          const lessInfo = {
@@ -119,7 +119,7 @@ describe('gulp/common/worker.js', () => {
             pathsForImport: [workspaceFolder],
             gulpModulesPaths: {
                'SBIS3.CONTROLS': sbis3ControlsPath,
-               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+               'Controls-default-theme': path.join(workspaceFolder, 'Controls-default-theme')
             }
          };
          const lessInfo = {
@@ -167,7 +167,7 @@ describe('gulp/common/worker.js', () => {
             pathsForImport: [],
             gulpModulesPaths: {
                'SBIS3.CONTROLS': sbis3ControlsPath,
-               'Controls-theme': path.join(workspaceFolder, 'Controls-theme')
+               'Controls-default-theme': path.join(workspaceFolder, 'Controls-default-theme')
             }
          };
          const lessInfo = {

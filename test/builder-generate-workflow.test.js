@@ -137,8 +137,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -163,8 +163,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
 
       lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-theme/themes/default/helpers/_mixins',
-         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!Controls-default-theme/_mixins',
+         'css!Controls-default-theme/_old-mixins',
          'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
          'css!TestModule/Stable-for-import',
@@ -181,8 +181,8 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
       lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-theme/themes/default/helpers/_mixins',
-         'css!Controls-theme/themes/default/helpers/_old-mixins',
+         'css!Controls-default-theme/_mixins',
+         'css!Controls-default-theme/_old-mixins',
          'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
          'css!TestModule/Stable-for-import',
@@ -304,8 +304,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -361,8 +361,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -656,8 +656,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'TestModule-anotherTheme-theme',
@@ -702,8 +702,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          themes: true,
          modules: [
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -733,8 +733,8 @@ describe('gulp/builder/generate-workflow.js', () => {
          themes: true,
          modules: [
             {
-               name: 'Controls-theme',
-               path: path.join(renamedSourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(renamedSourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -766,8 +766,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -804,7 +804,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       noThemesDirectoryExists.should.equal(false);
       const sbis3controlsDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'SBIS3.CONTROLS'));
       sbis3controlsDirectoryExists.should.equal(false);
-      const controlsThemeDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Controls-theme'));
+      const controlsThemeDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Controls-default-theme'));
       controlsThemeDirectoryExists.should.equal(false);
       await clearWorkspace();
    });
@@ -824,8 +824,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -889,8 +889,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -921,8 +921,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -941,7 +941,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       const sourceSymlinksDirectoryList = await fs.readdir(path.join(cacheFolder, 'temp-modules'));
       sourceSymlinksDirectoryList.should.have.members([
          'SBIS3.CONTROLS',
-         'Controls-theme',
+         'Controls-default-theme',
          'Модуль'
       ]);
       await clearWorkspace();
@@ -1323,8 +1323,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -1381,8 +1381,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
@@ -1466,8 +1466,8 @@ describe('gulp/builder/generate-workflow.js', () => {
                path: path.join(sourceFolder, 'SBIS3.CONTROLS')
             },
             {
-               name: 'Controls-theme',
-               path: path.join(sourceFolder, 'Controls-theme')
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
             },
             {
                name: 'Модуль',
