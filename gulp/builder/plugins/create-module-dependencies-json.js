@@ -114,11 +114,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const json = {
                links: {},
                nodes: {},
-               packedLibraries: {},
-               lessDependencies: {}
+               packedLibraries: {}
             };
-
-            const filePathToRelativeInResources = (filePath) => {
+            if (taskParameters.config.branchTests || taskParameters.config.builderTests) {
+               json.lessDependencies = {};
+               json.requireJsSubstitutions = {};
+            }
+            const storeNode = (mDeps, nodeName, objectToStore, filePath) => {
                const ext = path.extname(filePath);
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const rebasedRelativePath = resourcesUrl ? path.join('resources', relativePath) : relativePath;
@@ -129,13 +131,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                 * соответствующий AMD-модулю
                  */
                if (ext === '.json') {
-                  return prettyPath.replace(ext, `${ext}.min.js`);
+                  objectToStore.path = prettyPath.replace(ext, `${ext}.min.js`);
+               } else if (!prettyPath.endsWith(`.min${ext}`)) {
+                  objectToStore.path = prettyPath.replace(ext, `.min${ext}`);
+               } else {
+                  objectToStore.path = prettyPath.replace(/(\.ts|\.es)$/, '.js');
                }
+               mDeps.nodes[nodeName] = objectToStore;
 
-               if (!prettyPath.endsWith(`.min${ext}`)) {
-                  return prettyPath.replace(ext, `.min${ext}`);
+               // only WS.Core interface module have actual requirejs substitutions. Store it for branch tests
+               if (moduleInfo.name === 'WS.Core' && taskParameters.config.branchTests) {
+                  mDeps.requireJsSubstitutions[`${nodeName}`] = helpers.prettifyPath(relativePath);
                }
-               return prettyPath;
             };
             const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
             Object.keys(componentsInfo).forEach((filePath) => {
@@ -159,10 +166,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                      }
                   }
                   json.links[info.componentName] = [...depsOfLink];
-                  json.nodes[info.componentName] = {
-                     amd: true,
-                     path: filePathToRelativeInResources(filePath).replace(/(\.ts|\.es)$/, '.js')
-                  };
+                  storeNode(json, info.componentName, { amd: true }, filePath);
                }
                if (info.hasOwnProperty('libraryName')) {
                   json.packedLibraries[info.libraryName] = info.packedModules;
@@ -200,10 +204,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   if (markupObj.nodeName.startsWith('tmpl!') || markupObj.nodeName.startsWith('wml!')) {
                      json.links[markupObj.nodeName] = markupObj.dependencies || [];
                   }
-                  json.nodes[markupObj.nodeName] = {
-                     amd: true,
-                     path: filePathToRelativeInResources(filePath)
-                  };
+                  storeNode(json, markupObj.nodeName, {amd: true}, filePath);
                }
             }
 
@@ -214,17 +215,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `css!${prettyPath.replace('.css', '')}`;
-               json.nodes[nodeName] = {
-                  path: filePathToRelativeInResources(filePath)
-               };
+               storeNode(json, nodeName, {}, filePath);
             }
             for (const filePath of jstplFiles) {
                const relativePath = path.relative(path.dirname(moduleInfo.path), filePath);
                const prettyPath = modulePathToRequire.getPrettyPath(helpers.prettifyPath(transliterate(relativePath)));
                const nodeName = `text!${prettyPath}`;
-               json.nodes[nodeName] = {
-                  path: filePathToRelativeInResources(filePath)
-               };
+               storeNode(json, nodeName, {}, filePath);
             }
 
             /**
