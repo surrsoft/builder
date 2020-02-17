@@ -1,10 +1,8 @@
 /**
- * Найти все темы стилей в проекте.
- * Темы при сборке определяются через поиск файла по шаблону:
- * {Имя модуля}/themes/{Имя темы}/<Имя темы>.less
- * Все less компилируем со всеми темами, которые удалось найти таким образом,
- * кроме less для разных локалей и внутри папки темы.
- * Имя темы очевидным образом получаем из пути.
+ * Search of all themes of styles in current project.
+ * Themes will be searched and filtered by this template:
+ * {Interface Module Name}/themes/{Theme name}/{Theme name}.less
+ * Theme name will be set as a name of its folder.
  * @author Kolbeshin F.A.
  */
 
@@ -20,6 +18,7 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
+const permittedMultiThemes = require('../../../resources/multi-themes.json');
 
 /**
  * Parses current interface module name. Checks it for new theme name template:
@@ -148,24 +147,31 @@ function generateTaskForCollectThemes(taskParameters) {
                   const fileName = path.basename(file.path, '.less');
                   const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
-                     const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
-                     let themeConfig;
-                     if (!(await fs.pathExists(themeConfigPath))) {
-                        logger.warning(`Для темы ${file.path} не задан файл конфигурации ${themeConfigPath}` +
-                           ' с набором тегов совместимости. Данная тема билдиться не будет.');
-                     } else {
-                        try {
-                           themeConfig = await fs.readJson(themeConfigPath);
-                        } catch (error) {
-                           logger.error({
-                              message: 'Ошибка чтения конфигурации темы. Проверьте правильность описания файла конфигугации',
-                              error,
-                              filePath: themeConfigPath,
-                              moduleInfo
-                           });
+                     if (permittedMultiThemes.includes(fileName)) {
+                        const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
+                        let themeConfig;
+                        if (!(await fs.pathExists(themeConfigPath))) {
+                           logger.warning(`There is no configuration file ${themeConfigPath} with set of compatibility tags ` +
+                              `for theme ${file.path}. This theme won't be participating in less build.`);
+                        } else {
+                           try {
+                              themeConfig = await fs.readJson(themeConfigPath);
+                           } catch (error) {
+                              logger.error({
+                                 message: 'Theme configuration file error occurred. Check validity of the configuration file',
+                                 error,
+                                 filePath: themeConfigPath,
+                                 moduleInfo
+                              });
+                           }
                         }
+                        taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path), themeConfig);
+                     } else {
+                        logger.error({
+                           message: 'Attempt of defining multi theme. Please, use new themes scheme by defining of an appropriate interface module.',
+                           filePath: file.path
+                        });
                      }
-                     taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path), themeConfig);
                   }
                }
                done();
