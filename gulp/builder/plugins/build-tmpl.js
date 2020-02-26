@@ -1,9 +1,11 @@
 /* eslint-disable no-invalid-this */
 
 /**
- * Плагин для компиляции xml из *.tmpl файлов в js.
- * В debug (при локализации) заменяет оригинальный файл.
- * В release создаёт новый файл *.min.tmpl.
+ * Plugin for compiling xml from wml/tmpl files into js,
+ * these will be replaced by patched file with localization
+ * inside of it if project needs to be localized.
+ * Generates minified and compiled *.min.(tmpl/wml) if uglify
+ * is enabled in current build.
  * @author Kolbeshin F.A.
  */
 
@@ -42,9 +44,9 @@ function checkForExternalPrivateDeps(moduleName, dependencies) {
 }
 
 /**
- * Объявление плагина
- * @param {TaskParameters} taskParameters параметры для задач
- * @param {ModuleInfo} moduleInfo информация о модуле
+ * Plugin declaration
+ * @param {TaskParameters} taskParameters - whole parameters list(gulp configuration, all builder cache, etc. )
+ * @param {ModuleInfo} moduleInfo - interface module info for current html
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
@@ -79,15 +81,16 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             return;
          }
 
-         // если tmpl не возможно скомпилировать, то запишем оригинал
+         // Write original file if tmpl can't be compiled
          let newText = file.contents.toString();
          let relativeFilePath = path.relative(moduleInfo.path, file.history[0]);
          relativeFilePath = path.join(path.basename(moduleInfo.path), relativeFilePath);
+         const extension = file.extname.slice(1, file.extname.length);
 
          const [error, result] = await execInPool(
             taskParameters.pool,
             'buildTmpl',
-            [newText, relativeFilePath, componentsPropertiesFilePath, file.extname.slice(1, file.extname.length)],
+            [newText, relativeFilePath, componentsPropertiesFilePath, extension],
             relativeFilePath,
             moduleInfo
          );
@@ -96,7 +99,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             taskParameters.cache.markFileAsFailed(file.history[0]);
 
             logger.error({
-               message: 'Ошибка компиляции TMPL',
+               message: `Error compiling ${extension.toUpperCase()}`,
                error,
                moduleInfo,
                filePath: relativeFilePath
@@ -109,9 +112,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             );
             if (externalPrivateDependencies.length > 0) {
                taskParameters.cache.markFileAsFailed(file.history[0]);
-               const message = 'Ошибка компиляции шаблона. Обнаружено использование приватных модулей из ' +
-                  `чужого Интерфейсного модуля. Список таких зависимостей: [${externalPrivateDependencies.toString()}]. ` +
-                  'Используйте соответствующую данному приватному модулю библиотеку';
+               const message = 'Template compiling error. Private modules usage was discovered from ' +
+                  `external Interface module. Bad dependencies list: [${externalPrivateDependencies.toString()}]. ` +
+                  'Please, for each private module use the corresponding library.';
                logger.warning({
                   message,
                   moduleInfo,
@@ -120,10 +123,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             /**
-             * запишем в markupCache информацию о версионировании, поскольку
-             * markupCache извлекаем при паковке собственных зависимостей. Так
-             * можно легко обьединить, помечать компонент как версионированный или нет.
-             * Аналогичная ситуация и для шаблонов с ссылками на cdn
+             * Store version-conjunction meta in markup cache to be extracted and used
+             * further in self-dependencies packing, furthermore this is the best way to determine
+             * whether or not packed component should be marked as one with version-conjunction.
+             * Do the same to cdn meta.
              */
             if (file.versioned) {
                result.versioned = true;
@@ -135,7 +138,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             newText = result.text;
 
             if (taskParameters.config.isReleaseMode) {
-               // если tmpl/wml невозможно минифицировать, то запишем оригинал
+               // Write original file if tmpl can't be compiled
 
                const [errorUglify, obj] = await execInPool(
                   taskParameters.pool,
@@ -148,13 +151,13 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   taskParameters.cache.markFileAsFailed(file.history[0]);
 
                   /**
-                   * ошибку uglify-js возвращает в виде объекта с 2мя свойствами:
-                   * 1)message - простое сообщение ошибки.
-                   * 2)stack - сообщение об ошибке + стек вызовов.
-                   * Воспользуемся для вывода вторым.
+                   * Uglify-js returns errors as 2 params based object:
+                   * 1)message - single message of error occurred.
+                   * 2)stack - the message with additional call stack.
+                   * Use second option for logs.
                    */
                   logger.error({
-                     message: `Ошибка минификации скомпилированного TMPL: ${errorUglify.stack}`,
+                     message: `Error occurred while minify'ing compiled ${extension.toUpperCase()}: ${errorUglify.stack}`,
                      moduleInfo,
                      filePath: relativeFilePath.replace(templateExtReg, '.min$1')
                   });
@@ -188,7 +191,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       } catch (error) {
          taskParameters.cache.markFileAsFailed(file.history[0]);
          logger.error({
-            message: "Ошибка builder'а при компиляции TMPL",
+            message: 'Builder error occurred while compiling tmpl/wml',
             error,
             moduleInfo,
             filePath: file.path
