@@ -2,6 +2,7 @@
   "resources/vdom-superbundle.package.min",
   "resources/TestPacker/core.package.min",
   "resources/TestPacker/test.package.min",
+  "resources/ACS/AcsPass.package.min",
   "resources/ACSEditor/packages/additionalPlugins.package.min",
   "resources/ACSEditor/packages/core.package.min",
   "resources/ACSEditor/packages/regularPlugins.package.min",
