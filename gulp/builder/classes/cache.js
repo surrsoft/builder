@@ -607,7 +607,7 @@ class Cache {
     * @param{String} moduleName - название Интерфейсного модуля
     * @param config
     */
-   addModuleLessConfiguration(moduleName, config) {
+   async addModuleLessConfiguration(moduleName, config, cacheDirectory) {
       const currentModuleCache = this.currentStore.modulesCache[moduleName];
       const lastModuleCache = this.lastStore.modulesCache[moduleName];
 
@@ -621,6 +621,9 @@ class Cache {
          this.dropCacheForLess = true;
       }
       currentModuleCache.lessConfig = config;
+      if (!await fs.pathExists(path.join(cacheDirectory, 'save-cache-for-less.json')) && !this.dropCacheForLess) {
+         this.dropCacheForLess = true;
+      }
    }
 
    /**
