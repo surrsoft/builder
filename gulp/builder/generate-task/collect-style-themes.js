@@ -114,7 +114,11 @@ function generateTaskForCollectThemes(taskParameters) {
                      if (!taskParameters.config.oldThemes) {
                         parsedLessConfig.old = false;
                      }
-                     taskParameters.cache.addModuleLessConfiguration(moduleInfo.name, parsedLessConfig);
+                     await taskParameters.cache.addModuleLessConfiguration(
+                        moduleInfo.name,
+                        parsedLessConfig,
+                        taskParameters.config.rawConfig.cache
+                     );
                   } catch (error) {
                      logger.error({
                         message: 'Ошибка обработки файла конфигурации less для Интерфейсного модуля',
