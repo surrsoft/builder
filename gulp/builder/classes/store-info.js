@@ -207,11 +207,6 @@ class StoreInfo {
             spaces: 1
          }
       );
-
-      await fs.outputJson(
-         path.join(cacheDirectory, 'save-cache-for-less.json'),
-         {}
-      );
    }
 
 

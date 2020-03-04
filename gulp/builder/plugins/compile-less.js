@@ -146,14 +146,13 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
     * and multi scheme for default theme. For 2100 only.
     * https://online.sbis.ru/doc/e88ff761-5db0-4fe0-bd23-021cb4c1b6f2
      */
-   allThemes.default = {
+   multiThemes.default = {
       path: `${gulpModulesInfo.gulpModulesPaths['Controls-default-theme']}/_theme`,
       config: {
          tags: ['ws4-default']
       },
       customPath: true
    };
-   multiThemes.default = allThemes.default;
    const newThemes = getNewThemesList(allThemes);
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
@@ -265,9 +264,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
 
                if (!isLangCss) {
                   Object.keys(allThemes).forEach((key) => {
-                     if (allThemes[key].type !== 'new') {
-                        taskParameters.cache.addOutputFile(file.history[0], getOutput(file, `_${key}.css`), moduleInfo);
-                     }
+                     taskParameters.cache.addOutputFile(file.history[0], getOutput(file, `_${key}.css`), moduleInfo);
                   });
                }
 
