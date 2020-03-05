@@ -22,6 +22,7 @@ class ModuleInfo {
       this.required = required;
       this.rebuild = rebuild;
       this.depends = depends || [];
+      this.cache = {};
 
       // TODO learn jinnee to set SDK identity for modules in gulp_config
       this.sdkElement = modulePath.includes('link_to_sdk');

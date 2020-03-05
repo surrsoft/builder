@@ -1,8 +1,8 @@
 /**
- * Плагин для паковки приватных частей библиотеки.
- * Приватная часть библиотеки - AMD-модуль, в начале имени
- * которого присутствует символ "_" или расположенных в
- * поддиректории папки, имя которой начинается с "_"
+ * Plugin for packing of private parts of libraries.
+ * Those are AMD-modules that have a pre-word symbol "_" or to be
+ * located inside of directory with pre-word symbol "_" in it's
+ * name.
  * @author Kolbeshin F.A.
  */
 
@@ -17,12 +17,12 @@ const through = require('through2'),
    helpers = require('../../../lib/helpers'),
    esExt = /\.(es|ts)$/;
 
-function getPrivatePartsCache(taskParameters, moduleInfo) {
+function getPrivatePartsCache(moduleInfo) {
    const
-      privatePartsCache = taskParameters.cache.getCompiledEsModuleCache(moduleInfo.name);
+      privatePartsCache = moduleInfo.cache.getCompiledEsModuleCache();
 
-   // кэш шаблонов также необходим, среди них могут быть приватные части библиотеки.
-   const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
+   // Take templates cache, it may contain private library dependencies content.
+   const markupCache = moduleInfo.cache.getMarkupCache();
    Object.keys(markupCache).forEach((currentKey) => {
       privatePartsCache[currentKey] = markupCache[currentKey];
    });
@@ -30,9 +30,9 @@ function getPrivatePartsCache(taskParameters, moduleInfo) {
 }
 
 /**
- * Объявление плагина
- * @param {TaskParameters} taskParameters параметры для задач
- * @param {ModuleInfo} moduleInfo информация о модуле
+ * Plugin declaration
+ * @param {TaskParameters} taskParameters - whole parameters list(gulp configuration, all builder cache, etc. )
+ * @param {ModuleInfo} moduleInfo - interface module info for current file in the flow
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
@@ -65,7 +65,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
       /* @this Stream */
       async function onFlush(callback) {
-         const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
+         const componentsInfo = moduleInfo.cache.getComponentsInfo();
          await pMap(
             libraries,
             async(library) => {
@@ -82,7 +82,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   [
                      sourceRoot,
                      library.contents.toString(),
-                     getPrivatePartsCache(taskParameters, moduleInfo)
+                     getPrivatePartsCache(moduleInfo)
                   ],
                   library.history[0],
                   moduleInfo
@@ -100,38 +100,33 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   library.modulepack = result.compiled;
 
                   /**
-                   * Для запакованных библиотек нужно обновить информацию в кэше о
-                   * зависимостях, чтобы при создании module-dependencies учитывалась
-                   * информация о запакованных библиотеках и приватные модули из
-                   * библиотек не вставлялись при Серверном рендеринге на VDOM
+                   * Builder cache information of dependencies have to be updated by
+                   * corresponding result dependencies to take it into consideration
+                   * when creating of module-dependencies meta file and to avoid private
+                   * library dependencies to be pasted into HTML-page by VDOM server-side
+                   * functionality.
                    * @type {string}
                    */
-                  const
-                     prettyPath = helpers.unixifyPath(library.history[0]),
-                     prettyCompiledPath = prettyPath.replace(/\.(ts|es)$/, '.js'),
-                     currentModuleStore = taskParameters.cache.currentStore.modulesCache[moduleInfo.name];
-
                   if (result.newModuleDependencies) {
-                     if (currentModuleStore.componentsInfo[prettyPath]) {
-                        currentModuleStore.componentsInfo[prettyPath].componentDep = result.newModuleDependencies;
-                     }
-                     const compiledComponentsInfo = currentModuleStore.componentsInfo[prettyCompiledPath];
-                     if (compiledComponentsInfo) {
-                        compiledComponentsInfo.componentDep = result.newModuleDependencies;
-                     }
+                     moduleInfo.cache.storeComponentParameters(library.history[0], {
+                        componentDep: result.newModuleDependencies
+                     });
+                     moduleInfo.cache.storeComponentParameters(library.history[0].replace(/\.(ts|es)$/, '.js'), {
+                        componentDep: result.newModuleDependencies
+                     });
                   }
                   if (result.fileDependencies && result.fileDependencies.length > 0) {
-                     if (currentModuleStore.componentsInfo[prettyPath]) {
-                        currentModuleStore.componentsInfo[prettyPath].packedModules = result.packedModules;
-                        currentModuleStore.componentsInfo[prettyPath].libraryName = result.name;
-                     }
+                     moduleInfo.cache.storeComponentParameters(library.history[0], {
+                        packedModules: result.packedModules,
+                        libraryName: result.name
+                     });
                      taskParameters.cache.addDependencies(library.history[0], result.fileDependencies);
                   }
                   library.library = true;
 
                   /**
-                   * Also add packed libraries in versioned_modules and cdn_modules meta files in case of
-                   * having packed private dependencies with an appropriate content to be replaced further
+                   * Add packed libraries in versioned_modules and cdn_modules meta file if there are
+                   * packed private dependencies with an appropriate content to be replaced further
                    * by jinnee
                    */
                   library.versioned = result.versioned;

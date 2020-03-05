@@ -5,31 +5,10 @@
 
 const fs = require('fs-extra'),
    path = require('path'),
-   logger = require('../../../lib/logger').logger(),
-   pMap = require('p-map');
+   logger = require('../../../lib/logger').logger();
 
 /**
- * Reads all files in selected meta folder and joins it into
- * one root cache meta
- * @param{String} cachePath - path to current build cache path
- * @param{String} currentMetaName - name of folder to be used for reading module-by-module meta files from it
- * @returns {Promise<void>}
- */
-async function readAllFilesByCurrentCacheMeta(cachePath, currentMetaName) {
-   const result = {};
-   const currentCacheFilesList = await fs.readdir(path.join(cachePath, currentMetaName));
-   await pMap(
-      currentCacheFilesList,
-      async(currentModuleCache) => {
-         const currentModuleName = path.basename(currentModuleCache, '.json');
-         result[currentModuleName] = await fs.readJson(path.join(cachePath, currentMetaName, currentModuleCache));
-      }
-   );
-   return result;
-}
-
-/**
- * Класс с данными про текущую сборку. Для реализации инкрементальной сборки.
+ * Class with current build data. For incremental build processing.
  */
 class StoreInfo {
    constructor() {
@@ -55,15 +34,16 @@ class StoreInfo {
       // - зависимости js на файлы вёрстки для паковки собственных зависмостей
       this.dependencies = {};
 
-      // нужно сохранять информацию о компонентах и роутингах для заполнения contents.json
-      this.modulesCache = {};
-
       // Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
       // и подавать их при повторном запуске как изменённые
       this.filesWithErrors = new Set();
 
       // Темы для компиляции less. <Имя темы>: <путь до файла <Имя темы>.less>
       this.styleThemes = {};
+
+      this.lessConfig = {};
+
+      this.newThemesModules = {};
    }
 
    static getLastRunningParametersPath(cacheDirectory) {
@@ -72,18 +52,18 @@ class StoreInfo {
 
    async load(cacheDirectory) {
       if (await fs.pathExists(path.join(cacheDirectory, 'builder-info.json'))) {
-         logger.debug(`Читаем файлы кеша билдера из директории ${cacheDirectory}`);
+         logger.debug(`Reading builder cache from directory "${cacheDirectory}"`);
          this.runningParameters = await fs.readJSON(StoreInfo.getLastRunningParametersPath(cacheDirectory));
 
          try {
             const builderInfo = await fs.readJson(path.join(cacheDirectory, 'builder-info.json'));
             this.versionOfBuilder = builderInfo.versionOfBuilder;
-            logger.debug(`В кеше versionOfBuilder: ${this.versionOfBuilder}`);
+            logger.debug(`"versionOfBuilder" in builder cache: ${this.versionOfBuilder}`);
             this.startBuildTime = builderInfo.startBuildTime;
-            logger.debug(`В кеше startBuildTime: ${this.startBuildTime}`);
+            logger.debug(`"startBuildTime" in builder cache: ${this.startBuildTime}`);
          } catch (error) {
             logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'builder-info.json')}`,
+               message: `Cache file "${path.join(cacheDirectory, 'builder-info.json')}" failed to be read`,
                error
             });
          }
@@ -91,7 +71,7 @@ class StoreInfo {
             this.inputPaths = await fs.readJson(path.join(cacheDirectory, 'input-paths.json'));
          } catch (error) {
             logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'input-paths.json')}`,
+               message: `Cache file "${path.join(cacheDirectory, 'input-paths.json')}" failed to be read`,
                error
             });
          }
@@ -99,15 +79,7 @@ class StoreInfo {
             this.dependencies = await fs.readJson(path.join(cacheDirectory, 'dependencies.json'));
          } catch (error) {
             logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'dependencies.json')}`,
-               error
-            });
-         }
-         try {
-            this.modulesCache = await readAllFilesByCurrentCacheMeta(cacheDirectory, 'modules-cache');
-         } catch (error) {
-            logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'modules-cache.json')}`,
+               message: `Cache file "${path.join(cacheDirectory, 'dependencies.json')}" failed to be read`,
                error
             });
          }
@@ -116,7 +88,7 @@ class StoreInfo {
             this.filesWithErrors = new Set(filesWithErrors);
          } catch (error) {
             logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'files-with-errors.json')}`,
+               message: `Cache file "${path.join(cacheDirectory, 'files-with-errors.json')}" failed to be read`,
                error
             });
          }
@@ -124,7 +96,25 @@ class StoreInfo {
             this.styleThemes = await fs.readJson(path.join(cacheDirectory, 'style-themes.json'));
          } catch (error) {
             logger.info({
-               message: `Не удалось прочитать файл кеша ${path.join(cacheDirectory, 'style-themes.json')}`,
+               message: `Cache file "${path.join(cacheDirectory, 'style-themes.json')}" failed to be read`,
+               error
+            });
+         }
+
+         try {
+            this.newThemesModules = await fs.readJson(path.join(cacheDirectory, 'new-themes.json'));
+         } catch (error) {
+            logger.info({
+               message: `Cache file "${path.join(cacheDirectory, 'new-themes.json')}" failed to be read`,
+               error
+            });
+         }
+
+         try {
+            this.lessConfig = await fs.readJson(path.join(cacheDirectory, 'less-configs.json'));
+         } catch (error) {
+            logger.info({
+               message: `Cache file "${path.join(cacheDirectory, 'less-configs.json')}" failed to be read`,
                error
             });
          }
@@ -157,23 +147,6 @@ class StoreInfo {
          }
       );
 
-      /**
-       * separate builder cache meta, particularly "modules-cache.json", by
-       * appropriating interface modules to reduce RAM overflow to make further
-       * debugging processes simpler.
-       */
-      await pMap(
-         Object.keys(this.modulesCache),
-         async(currentModule) => {
-            await fs.outputJson(
-               path.join(cacheDirectory, 'modules-cache', `${currentModule}.json`),
-               this.modulesCache[currentModule],
-               {
-                  spaces: 1
-               }
-            );
-         }
-      );
       await fs.outputJson(
          path.join(cacheDirectory, 'files-with-errors.json'),
          [...this.filesWithErrors],
@@ -184,6 +157,21 @@ class StoreInfo {
       await fs.outputJson(
          path.join(cacheDirectory, 'style-themes.json'),
          this.styleThemes,
+         {
+            spaces: 1
+         }
+      );
+      await fs.outputJson(
+         path.join(cacheDirectory, 'new-themes.json'),
+         this.newThemesModules,
+         {
+            spaces: 1
+         }
+      );
+
+      await fs.outputJson(
+         path.join(cacheDirectory, 'less-configs.json'),
+         this.lessConfig,
          {
             spaces: 1
          }
@@ -209,10 +197,11 @@ class StoreInfo {
       );
    }
 
-
    /**
-    * Получить набор выходных файлов. Нужно чтобы получать разницы между сборками и удалять лишнее.
-    * @returns {Set<string>}
+    * Get output files list to get difference between 2 builds and remove trash
+    * @param{String} cachePath - physical path to builder cache
+    * @param{Array} modulesForPatch - interface modules to be patched
+    * @returns {Set<any>}
     */
    getOutputFilesSet(cachePath, modulesForPatch) {
       const resultSet = new Set();
@@ -221,7 +210,7 @@ class StoreInfo {
             continue;
          }
          for (const outputFilePath of this.inputPaths[filePath].output) {
-            // for patch build get only paths for patching modules
+            // get only paths for patching modules in patch build
             if (modulesForPatch && modulesForPatch.length > 0) {
                const currentModuleName = outputFilePath
                   .replace(cachePath, '')

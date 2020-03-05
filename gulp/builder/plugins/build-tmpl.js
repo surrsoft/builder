@@ -131,7 +131,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.cdnLinked) {
                result.cdnLinked = true;
             }
-            taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, result);
+            moduleInfo.cache.storeBuildedMarkup(file.history[0], result);
             newText = result.text;
 
             if (taskParameters.config.isReleaseMode) {
@@ -167,11 +167,11 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
          if (outputMinFile) {
             if (file.versioned) {
-               taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
+               moduleInfo.cache.storeVersionedModule(file.history[0], outputMinFile);
                file.versioned = false;
             }
             if (file.cdnLinked) {
-               taskParameters.cache.storeCdnModule(file.history[0], moduleInfo.name, outputMinFile);
+               moduleInfo.cache.storeCdnModule(file.history[0], outputMinFile);
             }
             this.push(
                new Vinyl({

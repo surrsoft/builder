@@ -45,16 +45,6 @@ class Cache {
 
    // setting default store values for current interface module
    setDefaultStore(moduleInfo) {
-      this.currentStore.modulesCache[moduleInfo.name] = {
-         componentsInfo: {},
-         routesInfo: {},
-         markupCache: {},
-         esCompileCache: {},
-         versionedModules: {},
-         cdnModules: {},
-         newThemesModules: {},
-         lessConfig: ''
-      };
       this.currentStore.inputPaths[moduleInfo.path] = {
          hash: '',
          output: []
@@ -75,27 +65,16 @@ class Cache {
       this.currentStore.runningParameters = this.config.rawConfig;
       this.currentStore.versionOfBuilder = packageJson.version;
       this.currentStore.startBuildTime = new Date().getTime();
-      for (const moduleInfo of this.config.modules) {
-         if (patchBuild && this.lastStore.modulesCache[moduleInfo.name]) {
-            /**
-             * in patch for module with rebuild configuration we need to get new themes meta from the last cache value
-             * In patch build new themes interface modules may not be participating in patch build, so we can lose meta
-             * for this modules.
-             */
-            if (moduleInfo.rebuild) {
-               this.setDefaultStore(moduleInfo);
-               const currentStoreModulesCache = this.currentStore.modulesCache[moduleInfo.name];
-               const lastStoreModulesCache = this.lastStore.modulesCache[moduleInfo.name];
-               currentStoreModulesCache.newThemesModules = lastStoreModulesCache.newThemesModules;
-            } else {
-               // in patch for modules without rebuild configuration store cache "as is"
-               this.currentStore.modulesCache[moduleInfo.name] = this.lastStore.modulesCache[moduleInfo.name];
+      await pMap(
+         this.config.modules,
+         async(moduleInfo) => {
+            const currentModuleCachePath = path.join(this.config.cachePath, 'modules-cache', `${moduleInfo.name}.json`);
+            this.setDefaultStore(moduleInfo);
+            if (patchBuild && await fs.pathExists(currentModuleCachePath) && !moduleInfo.rebuild) {
                this.currentStore.inputPaths[moduleInfo.path] = this.lastStore.inputPaths[moduleInfo.path];
             }
-         } else {
-            this.setDefaultStore(moduleInfo);
          }
-      }
+      );
    }
 
    save() {
@@ -246,8 +225,8 @@ class Cache {
 
       if (!isChanged) {
          // вытащим данные из старого кеша в новый кеш
-         const lastModuleCache = this.lastStore.modulesCache[moduleInfo.name];
-         const currentModuleCache = this.currentStore.modulesCache[moduleInfo.name];
+         const lastModuleCache = moduleInfo.cache.lastStore;
+         const currentModuleCache = moduleInfo.cache.currentStore;
          if (lastModuleCache.componentsInfo.hasOwnProperty(prettyPath)) {
             currentModuleCache.componentsInfo[prettyPath] = lastModuleCache.componentsInfo[prettyPath];
          }
@@ -482,79 +461,89 @@ class Cache {
       return Array.from(results);
    }
 
-   /**
-    * Сохранить информацию о js компоненте после парсинга для использования в повторной сборке.
-    * @param {string} filePath путь до файла
-    * @param {string} moduleName имя модуля, в котором расположен файл
-    * @param {Object} componentInfo объект с информацией о компоненте
-    */
-   storeComponentInfo(filePath, moduleName, componentInfo) {
+   deleteFailedFromCacheInputs(filePath) {
       const prettyPath = helpers.prettifyPath(filePath);
-      if (!componentInfo) {
-         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
-         // чтобы ошибка повторилась при повторном запуске
-         if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
-            delete this.currentStore.inputPaths[prettyPath];
-         }
+      if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
+         delete this.currentStore.inputPaths[prettyPath];
+      }
+   }
+
+   /**
+    * Сохранить в кэше конфигурацию сборки less для данного Интерфейсного
+    * модуля
+    * @param{String} moduleName - название Интерфейсного модуля
+    * @param config
+    */
+   addModuleLessConfiguration(moduleName, config) {
+      const lastModuleLessConfig = this.lastStore.lessConfig[moduleName];
+
+      /**
+       * if themes config was changed since the last build,
+       * rebuild all less in current project to get actual themed css content
+       */
+      try {
+         assert.deepStrictEqual(config, lastModuleLessConfig);
+      } catch (error) {
+         this.dropCacheForLess = true;
+      }
+      this.currentStore.lessConfig[moduleName] = config;
+   }
+
+   /**
+    * Получить из кэша конфигурацию сборки less для данного Интерфейсного
+    * модуля
+    * @returns {*}
+    */
+   getModuleLessConfiguration(moduleName) {
+      return this.currentStore.lessConfig[moduleName];
+   }
+
+   /**
+    * adds new theme into style themes cache
+    * @param{String} folderName - Interface module name
+    * @param{Object} config - base info about current theme
+    */
+   addNewStyleTheme(themeModule, modifier, config) {
+      const { moduleName, themeName } = config;
+      const { styleThemes } = this.currentStore;
+      if (!styleThemes.hasOwnProperty(themeModule)) {
+         styleThemes[themeModule] = {
+            type: 'new',
+            moduleName,
+            themeName,
+            modifiers: [modifier]
+         };
       } else {
-         const currentModuleCache = this.currentStore.modulesCache[moduleName];
-         currentModuleCache.componentsInfo[prettyPath] = componentInfo;
+         styleThemes[themeModule].modifiers.push(modifier);
+      }
+   }
+
+   getNewStyleTheme(themeModule) {
+      const { styleThemes } = this.currentStore;
+      return styleThemes[themeModule];
+   }
+
+   addStyleTheme(themeName, filePath, themeConfig) {
+      this.currentStore.styleThemes[themeName] = {
+         path: filePath,
+         config: themeConfig
+      };
+   }
+
+   checkThemesForUpdate() {
+      try {
+         assert.deepStrictEqual(this.currentStore.styleThemes, this.lastStore.styleThemes);
+      } catch (error) {
+         this.dropCacheForLess = true;
       }
    }
 
    /**
-    * Получить информацию о JS компонентах модуля
-    * @param {string} moduleName имя модуля
-    * @returns {Object<string,Object>} Информация о JS компонентах модуля в виде
-    *    {
-    *       <путь до файла>: <информация о компоненте>
-    *    }
+    * Установить признак того, что верстку нужно скомпилировать заново.
+    * Это случается, если включена локализация и какой-либо класс в jsdoc поменялся.
     */
-   getComponentsInfo(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.componentsInfo;
-   }
-
-   /**
-    * Сохранить в кеше скомпилированную верстку xhtml или tmpl. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {Object} obj Объект с полями text, nodeName (имя файла для require) и dependencies
-    */
-   storeBuildedMarkup(filePath, moduleName, obj) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      currentModuleCache.markupCache[prettyPath] = obj;
-   }
-
-   /**
-    * Сохранить в кеше скомпилированный ES-модуль. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {Object} obj Объект с полями text, nodeName (имя файла для require) и dependencies
-    */
-   storeCompiledES(filePath, moduleName, obj) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      currentModuleCache.esCompileCache[prettyPath] = obj;
-   }
-
-   /**
-    * Сохранить в кеше версионированный модуль. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {string} outputName результат работы сборщика для файла
-    * @param {Object}
-    */
-   storeVersionedModule(filePath, moduleName, outputName) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      if (!currentModuleCache.versionedModules.hasOwnProperty(prettyPath)) {
-         currentModuleCache.versionedModules[prettyPath] = [];
-      }
-      if (!currentModuleCache.versionedModules[prettyPath].includes(outputName)) {
-         currentModuleCache.versionedModules[prettyPath].push(outputName);
-      }
+   setDropCacheForMarkup() {
+      this.dropCacheForMarkup = true;
    }
 
    /**
@@ -564,196 +553,51 @@ class Cache {
     * Controls/decorator: ["showcase"]
     * @param{String} moduleName - current interface module name
     * @param{String} lessName - current less file name
+    * @param{String} themeModifier - current theme name
     * @param{String} themeName - current theme name
     */
    storeNewThemesModules(moduleName, lessName, themeModifier, themeName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
       const currentLessControl = helpers.unixifyPath(`${moduleName}/${lessName}`);
-
-      /**
-       * current module cache will not be existing in this case:
-       * Theme module exists in current project(f.e. MyModule-default-theme), but
-       * it's origin isn't existing(module "MyModule")
-       */
-      if (!currentModuleCache) {
-         throw new Error(`For theme module ${moduleName} make sure for existing original interface module in your project!`);
+      if (!this.currentStore.newThemesModules.hasOwnProperty(moduleName)) {
+         this.currentStore.newThemesModules[moduleName] = {};
       }
-      if (!currentModuleCache.newThemesModules.hasOwnProperty(currentLessControl)) {
-         currentModuleCache.newThemesModules[currentLessControl] = [];
+      const currentNewThemesMeta = this.currentStore.newThemesModules[moduleName];
+      if (!currentNewThemesMeta.hasOwnProperty(currentLessControl)) {
+         currentNewThemesMeta[currentLessControl] = [];
       }
       const themeNameWithModifier = themeModifier ? `${themeName}:${themeModifier.replace(/\//g, ':')}` : themeName;
-      if (!currentModuleCache.newThemesModules[currentLessControl].includes(themeNameWithModifier)) {
-         currentModuleCache.newThemesModules[currentLessControl].push(themeNameWithModifier);
+      if (!currentNewThemesMeta[currentLessControl].includes(themeNameWithModifier)) {
+         currentNewThemesMeta[currentLessControl].push(themeNameWithModifier);
       }
-   }
-
-   /**
-    * Удалить из кэша версионированный модуль. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {string} outputName результат работы сборщика для файла
-    * @param {Object}
-    */
-   removeVersionedModule(filePath, moduleName) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      delete currentModuleCache.versionedModules[prettyPath];
-   }
-
-
-   /**
-    * Сохранить в кэше конфигурацию сборки less для данного Интерфейсного
-    * модуля
-    * @param{String} moduleName - название Интерфейсного модуля
-    * @param config
-    */
-   addModuleLessConfiguration(moduleName, config) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      const lastModuleCache = this.lastStore.modulesCache[moduleName];
-
-      /**
-       * if themes config was changed since the last build,
-       * rebuild all less in current project to get actual themed css content
-       */
-      try {
-         assert.deepStrictEqual(config, lastModuleCache.lessConfig);
-      } catch (error) {
-         this.dropCacheForLess = true;
-      }
-      currentModuleCache.lessConfig = config;
-   }
-
-   /**
-    * Получить из кэша конфигурацию сборки less для данного Интерфейсного
-    * модуля
-    * @param{String} moduleName - название Интерфейсного модуля
-    * @returns {*}
-    */
-   getModuleLessConfiguration(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.lessConfig;
-   }
-
-   /**
-    * Сохранить в кеше модуль, содержащий линки на cdn. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {string} outputName результат работы сборщика для файла
-    * @param {Object}
-    */
-   storeCdnModule(filePath, moduleName, outputName) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      if (!currentModuleCache.cdnModules.hasOwnProperty(prettyPath)) {
-         currentModuleCache.cdnModules[prettyPath] = [];
-      }
-      if (!currentModuleCache.cdnModules[prettyPath].includes(outputName)) {
-         currentModuleCache.cdnModules[prettyPath].push(outputName);
-      }
-   }
-
-   /**
-    * Удалить из кэша модуль, содержащий линки на cdn. Для инкрементальной сборки.
-    * @param {string} filePath имя файла
-    * @param {string} moduleName имя модуля
-    * @param {string} outputName результат работы сборщика для файла
-    * @param {Object}
-    */
-   removeCdnModule(filePath, moduleName) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      delete currentModuleCache.cdnModules[prettyPath];
-   }
-
-   /**
-    * Получить всю скомпилированную верстку для конкретного модуля
-    * @param {string} moduleName имя модуля
-    * @returns {Object} Информация о скомпилированной верстки модуля в виде
-    *    {
-    *       <путь до файла>: {
-    *          text: <js код>
-    *          nodeName: <имя файла для require>,
-    *          dependencies: [...<зависимости>]
-    *       }
-    *    }
-    */
-   getMarkupCache(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.markupCache;
-   }
-
-   /**
-    * Получить все скомпилированные ES модули для конкретного интерфейсного модуля.
-    * @param {string} moduleName имя модуля
-    * @returns {Object} Информация о скомпилированном ES модуле в виде
-    *    {
-    *       <путь до файла>: {
-    *          text: <js код>
-    *          nodeName: <имя файла для require>
-    *       }
-    *    }
-    */
-   getCompiledEsModuleCache(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.esCompileCache;
-   }
-
-   /**
-    * Получить все версионированные модули для конкретного Интерфейсного модуля.
-    * @param {string} moduleName имя модуля
-    * @returns {Array} Набор файлов, в которые был скомпилирован исходник
-    */
-   getVersionedModulesCache(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.versionedModules;
    }
 
    /**
     * Gets new themes meta info for current Interface module
-    * @param moduleName
     * @returns {newThemesModules|{}}
     */
    getNewThemesModulesCache(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.newThemesModules;
+      return this.currentStore.newThemesModules[moduleName] || {};
    }
 
-   getCdnModulesCache(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.cdnModules;
+
+   /**
+    * Сохраняем moduleDependencies конкретного модуля в общий для проекта moduleDependencies
+    * @param {{links: {}, nodes: {}, packedLibraries: {}}} obj Объект moduleDependencies конкретного модуля
+    */
+   storeLocalModuleDependencies(obj) {
+      this.moduleDependencies = {
+         links: { ...this.moduleDependencies.links, ...obj.links },
+         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes },
+         packedLibraries: { ...this.moduleDependencies.packedLibraries, ...obj.packedLibraries },
+      };
    }
 
    /**
-    * Сохранить информацию о роутинге после парсинга для использования в повторной сборке.
-    * @param {string} filePath путь до файла
-    * @param {string} moduleName имя модуля
-    * @param {Object} routeInfo объект с информацией о роутинге
+    * Получить общий для проекта moduleDependencies
+    * @returns {{links: {}, nodes: {}}}
     */
-   storeRouteInfo(filePath, moduleName, routeInfo) {
-      const prettyPath = helpers.prettifyPath(filePath);
-      if (!routeInfo) {
-         // если парсер упал на файле, то нужно выкинуть файл из inputPaths,
-         // чтобы ошибка повторилась при повторном запуске
-         if (this.currentStore.inputPaths.hasOwnProperty(prettyPath)) {
-            delete this.currentStore.inputPaths[prettyPath];
-         }
-      } else {
-         const currentModuleCache = this.currentStore.modulesCache[moduleName];
-         currentModuleCache.routesInfo[prettyPath] = routeInfo;
-      }
-   }
-
-   /**
-    * Получить всю информацию о роутингах для конкретного модуля
-    * @param {string} moduleName имя модуля
-    * @returns {Object} Информация о роутингах модуля в виде
-    *    {
-    *       <путь до файла>: {...<роунги файла>}
-    *    }
-    */
-   getRoutesInfo(moduleName) {
-      const currentModuleCache = this.currentStore.modulesCache[moduleName];
-      return currentModuleCache.routesInfo;
+   getModuleDependencies() {
+      return this.moduleDependencies;
    }
 
    /**
@@ -811,74 +655,6 @@ class Cache {
             return null;
          })
          .filter(filePath => !!filePath);
-   }
-
-   /**
-    * adds new theme into style themes cache
-    * @param{String} folderName - Interface module name
-    * @param{Object} config - base info about current theme
-    */
-   addNewStyleTheme(themeModule, modifier, config) {
-      const { moduleName, themeName } = config;
-      const { styleThemes } = this.currentStore;
-      if (!styleThemes.hasOwnProperty(themeModule)) {
-         styleThemes[themeModule] = {
-            type: 'new',
-            moduleName,
-            themeName,
-            modifiers: [modifier]
-         };
-      } else {
-         styleThemes[themeModule].modifiers.push(modifier);
-      }
-   }
-
-   getNewStyleTheme(themeModule) {
-      const { styleThemes } = this.currentStore;
-      return styleThemes[themeModule];
-   }
-
-   addStyleTheme(themeName, filePath, themeConfig) {
-      this.currentStore.styleThemes[themeName] = {
-         path: filePath,
-         config: themeConfig
-      };
-   }
-
-   checkThemesForUpdate() {
-      try {
-         assert.deepStrictEqual(this.currentStore.styleThemes, this.lastStore.styleThemes);
-      } catch (error) {
-         this.dropCacheForLess = true;
-      }
-   }
-
-   /**
-    * Установить признак того, что верстку нужно скомпилировать заново.
-    * Это случается, если включена локализация и какой-либо класс в jsdoc поменялся.
-    */
-   setDropCacheForMarkup() {
-      this.dropCacheForMarkup = true;
-   }
-
-   /**
-    * Сохраняем moduleDependencies конкретного модуля в общий для проекта moduleDependencies
-    * @param {{links: {}, nodes: {}, packedLibraries: {}}} obj Объект moduleDependencies конкретного модуля
-    */
-   storeLocalModuleDependencies(obj) {
-      this.moduleDependencies = {
-         links: { ...this.moduleDependencies.links, ...obj.links },
-         nodes: { ...this.moduleDependencies.nodes, ...obj.nodes },
-         packedLibraries: { ...this.moduleDependencies.packedLibraries, ...obj.packedLibraries },
-      };
-   }
-
-   /**
-    * Получить общий для проекта moduleDependencies
-    * @returns {{links: {}, nodes: {}}}
-    */
-   getModuleDependencies() {
-      return this.moduleDependencies;
    }
 }
 

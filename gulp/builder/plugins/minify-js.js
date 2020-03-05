@@ -196,7 +196,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                newFile.contents = Buffer.from(minText);
                this.push(newFile);
                if (file.versioned) {
-                  taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinJsFile);
+                  moduleInfo.cache.storeVersionedModule(file.history[0], outputMinJsFile);
                }
                taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
 

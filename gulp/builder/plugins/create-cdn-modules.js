@@ -38,9 +38,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`));
          }
          if (cdnCondition) {
-            taskParameters.cache.storeCdnModule(
+            moduleInfo.cache.storeCdnModule(
                file.history[0],
-               moduleInfo.name,
                transliterate(file.history[file.history.length - 1])
             );
          }
@@ -53,7 +52,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const startTime = Date.now();
          try {
             const cdnModules = [];
-            const versionCache = taskParameters.cache.getCdnModulesCache(moduleInfo.name);
+            const versionCache = moduleInfo.cache.getCdnModulesCache();
             const prettyCacheModulePath = helpers.prettifyPath(transliterate(moduleInfo.output));
             const prettyModulePath = helpers.prettifyPath(transliterate(moduleInfo.path));
             const currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop();

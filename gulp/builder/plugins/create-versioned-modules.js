@@ -28,9 +28,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
           * не забываем записать в кэш информацию
           */
          if (file.versioned && (file.basename.endsWith('.html') || file.basename.endsWith(`.min${file.extname}`))) {
-            taskParameters.cache.storeVersionedModule(
+            moduleInfo.cache.storeVersionedModule(
                file.history[0],
-               moduleInfo.name,
                transliterate(file.history[file.history.length - 1])
             );
          }
@@ -43,7 +42,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const startTime = Date.now();
          try {
             const versionedModules = [];
-            const versionCache = taskParameters.cache.getVersionedModulesCache(moduleInfo.name);
+            const versionCache = moduleInfo.cache.getVersionedModulesCache(moduleInfo.name);
             const prettyCacheModulePath = helpers.prettifyPath(transliterate(moduleInfo.output));
             const prettyModulePath = helpers.prettifyPath(transliterate(moduleInfo.path));
             const currentModuleName = helpers.prettifyPath(moduleInfo.output).split('/').pop();
