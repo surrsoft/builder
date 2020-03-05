@@ -49,7 +49,7 @@ const logger = require('../../../lib/logger').logger(),
 
 const { needSymlink } = require('../../common/helpers');
 const startTask = require('../../common/start-task-with-timer');
-const ModuleCache = require('../classes/modules-cache');
+const generateDownloadModuleCache = require('../classes/modules-cache');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -89,19 +89,6 @@ function generateTaskForBuildModules(taskParameters) {
 }
 
 /**
- * Read cache from disk if it exists
- * @param moduleCachePath - path to current cache
- * @returns {Promise<null>}
- */
-async function getLastModuleCache(moduleCachePath) {
-   if (await fs.pathExists(moduleCachePath)) {
-      const result = await fs.readJson(moduleCachePath);
-      return result;
-   }
-   return null;
-}
-
-/**
  * Task for saving current module cache on disk
  * @param moduleInfo - main info about current module
  * @returns {saveModuleCache}
@@ -110,36 +97,6 @@ function generateSaveModuleCache(moduleInfo) {
    return async function saveModuleCache() {
       await fs.outputJson(moduleInfo.cachePath, moduleInfo.cache.currentStore);
       delete moduleInfo.cache;
-   };
-}
-
-/**
- * Task for getting saved module cache from disk if needed
- * @param taskParameters - whole parameters list of current project build
- * @param moduleInfo - main info about current module
- * @returns {downloadModuleCache}
- */
-function generateDownloadModuleCache(taskParameters, moduleInfo) {
-   const patchBuild = taskParameters.config.modulesForPatch && taskParameters.config.modulesForPatch.length > 0;
-   return async function downloadModuleCache() {
-      const lastCache = await getLastModuleCache(moduleInfo.cachePath);
-      moduleInfo.cache = new ModuleCache(lastCache);
-      if (patchBuild && lastCache) {
-         /**
-          * in patch for module with rebuild configuration we need to get new themes meta from the
-          * last cache value
-          * In patch build new themes interface modules may not be participating in patch build,
-          * so we can lose meta for this modules.
-          */
-         if (moduleInfo.rebuild) {
-            const currentStoreModulesCache = taskParameters.cache.currentStore;
-            const lastStoreModulesCache = taskParameters.cache.lastStore;
-            currentStoreModulesCache.newThemesModules = lastStoreModulesCache.newThemesModules;
-         } else {
-            // in patch for modules without rebuild configuration store cache "as is"
-            moduleInfo.cache.currentStore = moduleInfo.cache.lastStore;
-         }
-      }
    };
 }
 

@@ -17,46 +17,7 @@ const path = require('path'),
    TaskParameters = require('../../common/classes/task-parameters'),
    startTask = require('../start-task-with-timer'),
    logger = require('../../../lib/logger').logger(),
-   fs = require('fs-extra'),
-   ModuleCache = require('../../builder/classes/modules-cache');
-
-function generateDownloadModuleCache(taskParameters, moduleInfo) {
-   const patchBuild = taskParameters.config.modulesForPatch && taskParameters.config.modulesForPatch.length > 0;
-   return async function downloadModuleCache() {
-      const lastCache = await getLastModuleCache(moduleInfo.cachePath);
-      moduleInfo.cache = new ModuleCache(lastCache);
-      if (patchBuild && lastCache) {
-         /**
-          * in patch for module with rebuild configuration we need to get new themes meta from the
-          * last cache value
-          * In patch build new themes interface modules may not be participating in patch build,
-          * so we can lose meta for this modules.
-          */
-         if (moduleInfo.rebuild) {
-            const currentStoreModulesCache = taskParameters.cache.currentStore;
-            const lastStoreModulesCache = taskParameters.cache.lastStore;
-            currentStoreModulesCache.newThemesModules = lastStoreModulesCache.newThemesModules;
-         } else {
-            // in patch for modules without rebuild configuration store cache "as is"
-            moduleInfo.cache.currentStore = moduleInfo.cache.lastStore;
-         }
-      }
-   };
-}
-
-async function getLastModuleCache(moduleCachePath) {
-   if (await fs.pathExists(moduleCachePath)) {
-      const result = await fs.readJson(moduleCachePath);
-      return result;
-   }
-   return null;
-}
-
-function generateSaveModuleCache(moduleInfo) {
-   return async function saveModuleCache() {
-      await fs.outputJson(moduleInfo.cachePath, moduleInfo.cache.currentStore);
-   };
-}
+   { generateDownloadModuleCache } = require('../../builder/classes/modules-cache');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -77,7 +38,6 @@ function generateTaskForPrepareWS(taskParameters) {
    if (requiredModules.length) {
       const tasks = [];
       for (const moduleInfo of requiredModules) {
-         moduleInfo.cachePath = path.join(taskParameters.config.cachePath, 'modules-cache', `${moduleInfo.name}.json`);
          tasks.push(
             gulp.series(
                generateTaskForPrepareWSModule(localTaskParameters, moduleInfo)
@@ -125,7 +85,10 @@ function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
    return gulp.series(
       generateDownloadModuleCache(localTaskParameters, moduleInfo),
       buildWSModule,
-      generateSaveModuleCache(moduleInfo)
+      (done) => {
+         delete moduleInfo.cache;
+         done();
+      }
    );
 }
 
