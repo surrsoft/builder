@@ -80,7 +80,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   resultBuild.cdnLinked = true;
                }
                taskParameters.storePluginTime('build xhtml', resultBuild.passedTime, true);
-               taskParameters.cache.storeBuildedMarkup(file.history[0], moduleInfo.name, resultBuild);
+               moduleInfo.cache.storeBuildedMarkup(file.history[0], resultBuild);
                newText = resultBuild.text;
 
                // если xhtml не возможно минифицировать, то запишем оригинал
@@ -100,7 +100,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
 
             if (file.versioned) {
-               taskParameters.cache.storeVersionedModule(file.history[0], moduleInfo.name, outputMinFile);
+               moduleInfo.cache.storeVersionedModule(file.history[0], outputMinFile);
                file.versioned = false;
             }
             this.push(

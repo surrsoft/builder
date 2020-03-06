@@ -36,8 +36,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
       function onFlush(callback) {
          const startTime = Date.now();
          try {
-            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
-            const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
+            const componentsInfo = moduleInfo.cache.getComponentsInfo();
+            const markupCache = moduleInfo.cache.getMarkupCache();
             const nodenameToMarkup = new Map();
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];

@@ -37,7 +37,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, modulesMap) 
                wsPath: taskParameters.config.resourcesUrl ? 'resources/WS.Core/' : 'WS.Core'
             };
             const needReplacePath = !taskParameters.config.multiService;
-            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
+            const componentsInfo = moduleInfo.cache.getComponentsInfo();
             const results = await pMap(
                Object.keys(componentsInfo),
                async(filePath) => {

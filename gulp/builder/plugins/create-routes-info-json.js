@@ -50,7 +50,12 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          } else {
             taskParameters.storePluginTime('routes-info', routeInfo.passedTime, true);
             delete routeInfo.passedTime;
-            taskParameters.cache.storeRouteInfo(file.history[0], moduleInfo.name, routeInfo);
+            if (!routeInfo) {
+               // if current file parse was completed with error, remove file
+               // from inputPaths to repeat this error further in next build.
+               taskParameters.cache.deleteFailedFromCacheInputs(file.history[0]);
+            }
+            moduleInfo.cache.storeRouteInfo(file.history[0], routeInfo);
          }
          callback(null, file);
       },
@@ -62,7 +67,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             // Всегда сохраняем файл, чтобы не было ошибки при удалении последнего роутинга в модуле.
 
             // нужно преобразовать абсолютные пути в исходниках в относительные пути в стенде
-            const routesInfoBySourceFiles = taskParameters.cache.getRoutesInfo(moduleInfo.name);
+            const routesInfoBySourceFiles = moduleInfo.cache.getRoutesInfo();
             const resultRoutesInfo = {};
             const { resourcesUrl } = taskParameters.config;
             Object.keys(routesInfoBySourceFiles).forEach((filePath) => {

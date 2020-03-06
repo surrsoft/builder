@@ -16,7 +16,8 @@ const path = require('path'),
    changedInPlace = require('../../common/plugins/changed-in-place'),
    TaskParameters = require('../../common/classes/task-parameters'),
    startTask = require('../start-task-with-timer'),
-   logger = require('../../../lib/logger').logger();
+   logger = require('../../../lib/logger').logger(),
+   generateDownloadModuleCache = require('../../builder/classes/modules-cache');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -35,12 +36,17 @@ function generateTaskForPrepareWS(taskParameters) {
    const requiredModules = taskParameters.config.modules.filter(moduleInfo => moduleInfo.required);
    const buildWSModule = startTask('buildWSModule', localTaskParameters);
    if (requiredModules.length) {
+      const tasks = [];
+      for (const moduleInfo of requiredModules) {
+         tasks.push(
+            gulp.series(
+               generateTaskForPrepareWSModule(localTaskParameters, moduleInfo)
+            )
+         );
+      }
       return gulp.series(
          buildWSModule.start,
-         gulp.parallel(
-            requiredModules
-               .map(moduleInfo => generateTaskForPrepareWSModule(localTaskParameters, moduleInfo))
-         ),
+         gulp.parallel(tasks),
          buildWSModule.finish
       );
    }
@@ -50,7 +56,7 @@ function generateTaskForPrepareWS(taskParameters) {
 }
 
 function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
-   return function buildWSModule() {
+   function buildWSModule() {
       const moduleInput = path.join(moduleInfo.path, '/**/*.*');
       const moduleOutput = path.join(localTaskParameters.config.cachePath, 'platform', path.basename(moduleInfo.path));
       logger.debug(`Задача buildWSModule. moduleInput: "${moduleInput}", moduleOutput: "${moduleOutput}"`);
@@ -74,7 +80,16 @@ function generateTaskForPrepareWSModule(localTaskParameters, moduleInfo) {
          .pipe(pluginCompileEsAndTs(localTaskParameters, moduleInfo))
          .pipe(gulpChmod({ read: true, write: true }))
          .pipe(gulp.dest(moduleOutput));
-   };
+   }
+
+   return gulp.series(
+      generateDownloadModuleCache(localTaskParameters, moduleInfo),
+      buildWSModule,
+      (done) => {
+         delete moduleInfo.cache;
+         done();
+      }
+   );
 }
 
 module.exports = generateTaskForPrepareWS;

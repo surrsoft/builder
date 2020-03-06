@@ -137,7 +137,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
                return prettyPath;
             };
-            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
+            const componentsInfo = moduleInfo.cache.getComponentsInfo();
             Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
                if (info.hasOwnProperty('componentName')) {
@@ -189,7 +189,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                }
             });
 
-            const markupCache = taskParameters.cache.getMarkupCache(moduleInfo.name);
+            const markupCache = moduleInfo.cache.getMarkupCache();
             for (const filePath of Object.keys(markupCache)) {
                const markupObj = markupCache[filePath];
                if (markupObj) {

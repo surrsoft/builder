@@ -10,6 +10,7 @@ const path = require('path'),
    gulpRename = require('gulp-rename'),
    gulpChmod = require('gulp-chmod'),
    plumber = require('gulp-plumber'),
+   fs = require('fs-extra'),
    gulpIf = require('gulp-if');
 
 // наши плагины
@@ -48,6 +49,7 @@ const logger = require('../../../lib/logger').logger(),
 
 const { needSymlink } = require('../../common/helpers');
 const startTask = require('../../common/start-task-with-timer');
+const generateDownloadModuleCache = require('../classes/modules-cache');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.
@@ -86,6 +88,18 @@ function generateTaskForBuildModules(taskParameters) {
    );
 }
 
+/**
+ * Task for saving current module cache on disk
+ * @param moduleInfo - main info about current module
+ * @returns {saveModuleCache}
+ */
+function generateSaveModuleCache(moduleInfo) {
+   return async function saveModuleCache() {
+      await fs.outputJson(moduleInfo.cachePath, moduleInfo.cache.currentStore);
+      delete moduleInfo.cache;
+   };
+}
+
 function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap) {
    const moduleInput = path.join(moduleInfo.path, '/**/*.*');
    const { config } = taskParameters;
@@ -112,7 +126,9 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
       gulpModulesPaths
    };
 
-   return function buildModule() {
+   moduleInfo.cachePath = path.join(taskParameters.config.cachePath, 'modules-cache', `${moduleInfo.name}.json`);
+
+   function buildModule() {
       return (
          gulp
             .src(moduleInput, { dot: false, nodir: true })
@@ -195,7 +211,13 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
                )
             )
       );
-   };
+   }
+
+   return gulp.series(
+      generateDownloadModuleCache(taskParameters, moduleInfo),
+      buildModule,
+      generateSaveModuleCache(moduleInfo),
+   );
 }
 
 module.exports = generateTaskForBuildModules;

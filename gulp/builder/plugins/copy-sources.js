@@ -193,8 +193,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             // remove from gulp stream packed into libraries files
             if (currentModulePrivateLibraries.has(normalizedModuleName)) {
                modulesToRemoveFromMeta.set(currentRelativePath, normalizedModuleName);
-               taskParameters.cache.removeVersionedModule(currentModule.history[0], moduleInfo.name);
-               taskParameters.cache.removeCdnModule(currentModule.history[0], moduleInfo.name);
+               moduleInfo.cache.removeVersionedModule(currentModule.history[0]);
+               moduleInfo.cache.removeCdnModule(currentModule.history[0]);
                taskParameters.storePluginTime('copy sources', startTime);
                return;
             }

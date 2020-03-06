@@ -55,13 +55,18 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
          taskParameters.storePluginTime('parseJsComponent', componentInfo.passedTime, true);
          delete componentInfo.passedTime;
-         taskParameters.cache.storeComponentInfo(file.history[0], moduleInfo.name, componentInfo);
+         if (!componentInfo) {
+            // if current file parse was completed with error, remove file
+            // from inputPaths to repeat this error further in next build.
+            taskParameters.cache.deleteFailedFromCacheInputs(file.history[0]);
+         }
+         moduleInfo.cache.storeComponentInfo(file.history[0], componentInfo);
          callback(null, file);
       },
       function onFlush(callback) {
          const startTime = Date.now();
          try {
-            const componentsInfo = taskParameters.cache.getComponentsInfo(moduleInfo.name);
+            const componentsInfo = moduleInfo.cache.getComponentsInfo();
             Object.keys(componentsInfo).forEach((filePath) => {
                const info = componentsInfo[filePath];
                if (info.hasOwnProperty('isNavigation') && info.isNavigation) {
