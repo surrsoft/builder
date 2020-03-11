@@ -295,4 +295,16 @@ describe('packer loaders', () => {
       const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/common.js'), 'utf8');
       result.should.equal(correctResult);
    });
+
+   it('SBIS3.CONTROLS css loader', async() => {
+      const cssRoot = path.join(loadersRoot, 'cssLoader');
+      const relativePackagePath = 'someFakePath.css';
+      const module = {
+         fullPath: path.join(cssRoot, 'MyModule/moduleStyle.css'),
+         fullName: 'css!SBIS3.CONTROLS/moduleStyle'
+      };
+      const result = await packLoaders.css(module, cssRoot, null, null, relativePackagePath);
+      const correctResult = await fs.readFile(path.join(cssRoot, 'correctResults/sbis3controls-common.js'), 'utf8');
+      result.should.equal(correctResult);
+   });
 });
