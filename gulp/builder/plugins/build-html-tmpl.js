@@ -53,7 +53,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   file.history[0],
                   {
                      multiService: taskParameters.config.multiService,
-                     servicesPath: `${taskParameters.config.urlDefaultServicePath}service/`,
+                     servicesPath: taskParameters.config.urlServicePath || '/service/',
                      application: taskParameters.config.applicationForRebase
                   },
                   relativeTmplPathWithModuleName,

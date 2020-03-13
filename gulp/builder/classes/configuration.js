@@ -47,9 +47,6 @@ class BuildConfiguration {
       // Current service relative url
       this.urlServicePath = '';
 
-      // BL service relative url
-      this.urlDefaultServicePath = '';
-
       // compiled content version
       this.version = '';
 
@@ -320,12 +317,6 @@ class BuildConfiguration {
          this.applicationForRebase = this.urlServicePath;
       } else {
          this.applicationForRebase = '/';
-      }
-
-      if (this.rawConfig.hasOwnProperty('url-default-service-path')) {
-         this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
-      } else {
-         this.urlDefaultServicePath = this.urlServicePath;
       }
 
       /**
