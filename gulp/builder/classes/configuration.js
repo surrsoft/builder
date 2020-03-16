@@ -7,6 +7,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs-extra');
 const ConfigurationReader = require('../../common/configuration-reader'),
    ModuleInfo = require('./module-info'),
    { getLanguageByLocale, clearSourcesSymlinks, checkForSourcesOutput } = require('../../../lib/config-helpers'),
@@ -28,6 +29,9 @@ class BuildConfiguration {
 
       // objects list of full information about every single interface module of the building project
       this.modules = [];
+
+      // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
+      this.modulesForPatch = [];
 
       // path to the folder of builder cache
       this.cachePath = '';
@@ -352,12 +356,7 @@ class BuildConfiguration {
       this.configFile = ConfigurationReader.getProcessParameters(argv).config;
       this.rawConfig = ConfigurationReader.readConfigFileSync(this.configFile, process.cwd());
       this.configMainBuildInfo();
-
       clearSourcesSymlinks(this.cachePath);
-
-      // modules for patch - when we need to rebuild part of project modules instead of full rebuild.
-      this.modulesForPatch = [];
-
       const mainModulesForTemplates = {
          View: false,
          UI: false
@@ -442,6 +441,18 @@ class BuildConfiguration {
             }
          }
       }
+   }
+
+   /**
+    * build only modules for patch if builder cache exists. Otherwise build whole project
+    * to get actual builder cache and all needed meta data for proper creating of interface module
+    * patch
+     */
+   getModulesForPatch() {
+      if (fs.pathExistsSync(path.join(this.cachePath, 'builder-info.json'))) {
+         return this.modulesForPatch;
+      }
+      return [];
    }
 }
 

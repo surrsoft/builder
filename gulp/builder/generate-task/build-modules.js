@@ -58,7 +58,8 @@ function generateTaskForBuildModules(taskParameters) {
    const tasks = [];
    let countCompletedModules = 0;
    const { config } = taskParameters;
-   const modulesForBuild = config.modulesForPatch.length > 0 ? config.modulesForPatch : config.modules;
+   const modulesForPatch = config.getModulesForPatch();
+   const modulesForBuild = modulesForPatch.length > 0 ? modulesForPatch : config.modules;
    const printPercentComplete = function(done) {
       countCompletedModules += 1;
       logger.progress(100 * countCompletedModules / modulesForBuild.length);

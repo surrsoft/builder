@@ -705,6 +705,11 @@ describe('gulp/builder/generate-workflow.js', () => {
       await fs.writeJSON(configPath, config);
       await runWorkflowWithTimeout(30000);
       await testResults();
+
+      // build patch without builder cache. contents should have new themes meta
+      await fs.remove(cacheFolder);
+      await runWorkflowWithTimeout(30000);
+      await testResults();
       await clearWorkspace();
    });
 
@@ -777,6 +782,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: patchOutputFolder,
          less: true,
          themes: true,
+         minimize: true,
          modules: [
             {
                name: 'SBIS3.CONTROLS',
@@ -818,7 +824,17 @@ describe('gulp/builder/generate-workflow.js', () => {
          'Stable_online.css',
          'Stable_default.css',
          'Stable.less',
-         'themes.config.json'
+         'themes.config.json',
+         'themes.config.min.json',
+         'ForChange.min.css',
+         'ForChange_online.min.css',
+         'ForChange_default.min.css',
+         'ForRename_old.min.css',
+         'ForRename_old_online.min.css',
+         'ForRename_old_default.min.css',
+         'Stable.min.css',
+         'Stable_online.min.css',
+         'Stable_default.min.css'
       ]);
       const noThemesDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Modul_bez_tem'));
       noThemesDirectoryExists.should.equal(false);
