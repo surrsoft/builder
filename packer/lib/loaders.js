@@ -231,7 +231,7 @@ function addIfCondition(content, modName) {
       modName.startsWith('css!Deprecated/Controls')
    ) {
       ifConditionThemes =
-         'var global=(function(){return this || (0,eval)(this);})();if(global.wsConfig && global.wsConfig.themeName){return;}';
+         'if(global.wsConfig && global.wsConfig.themeName){return;}';
    }
    if (ifConditionThemes) {
       const indexVar = content.indexOf('var style = document.createElement(');
@@ -246,12 +246,27 @@ function addIfCondition(content, modName) {
  * @return {Function}
  */
 function styleTagLoader(content) {
+   /**
+    * There are some html-pages that have a collision between page url and resourceRoot in page wsConfig
+    * F.e. page https://n.sbis.ru/nplus1/docs/
+    * 1) have an additional data in root to be equal "/nplus1/docs/"
+    * 2) have root in it's wsConfig to be equal "/"
+    * Therefore we should add an ability to get resourceRoot in runtime on a client side by
+    * using of wsConfig.resourceRoot parameter that contains an actual resourceRoot for current
+    * application(fits for both multi-service and single-service application types)
+    * @type {string}
+    */
+   const cssContent = JSON.stringify(content).replace(
+      /url\(resources\//g,
+      'url("+(global.wsConfig && global.wsConfig.resourceRoot ? global.wsConfig.resourceRoot : "resources/")+"'
+   );
    return `function() {\
+var global=(function(){return this || (0,eval)(this);})();\
 var style = document.createElement("style"),\
 head = document.head || document.getElementsByTagName("head")[0];\
 style.type = "text/css";\
 style.setAttribute("data-vdomignore", "true");\
-style.appendChild(document.createTextNode(${JSON.stringify(content)}));\
+style.appendChild(document.createTextNode(${cssContent}));\
 head.appendChild(style);\
 }`;
 }
