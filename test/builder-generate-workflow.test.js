@@ -1812,7 +1812,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             path.join(outputFolder, 'InterfaceModule1/interfacemodule1-styles-in-js.package.min.js'),
             'utf8'
          );
-         const result = resultExtendBundlesMeta.includes('url(resources/InterfaceModule1/images/logo-en.svg?x_module=%{MODULE_VERSION_STUB=InterfaceModule1})');
+         const result = resultExtendBundlesMeta.includes('url("+(global.wsConfig && global.wsConfig.resourceRoot ? global.wsConfig.resourceRoot : "resources/")+"InterfaceModule1/images/logo-en.svg?x_module=%{MODULE_VERSION_STUB=InterfaceModule1})');
          result.should.equal(true);
       });
       it('private packages should be generated despite of theirs not existing in bundles approved list', async() => {
