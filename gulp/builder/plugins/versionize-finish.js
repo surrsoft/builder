@@ -22,9 +22,11 @@ const includeExts = ['.css', '.js', '.html', '.tmpl', '.xhtml', '.wml'];
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
+   const versionNumber = taskParameters.config.multiService ? '%{BUILD_NUMBER}' : taskParameters.config.version;
+
    // regex for main root URLs. We have to remove version headers from files that has to be used in page with s3debug
    const rootUrlsRegex = new RegExp(
-      `(bundles|contents|router)\\.min\\.js(\\?x_module=${taskParameters.config.version})?(&x_app=%{PRODUCT_NAME})?`,
+      `(bundles|contents|router)\\.min\\.js(\\?x_module=${versionNumber})?(&x_app=%{PRODUCT_NAME})?`,
       'g'
    );
    return through.obj(function onTransform(file, encoding, callback) {
