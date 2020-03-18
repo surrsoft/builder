@@ -1156,9 +1156,9 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<START_DIALOG>Modul/ForChange</START_DIALOG>\n' +
             '<INCLUDE><INCLUDE1/>\n' +
             '</INCLUDE>\n' +
-            '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
-            '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
-            '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
+            '<RESOURCE_ROOT>/resources/</RESOURCE_ROOT>\n' +
+            '<WI.SBIS_ROOT>/resources/WS.Core/</WI.SBIS_ROOT>\n' +
+            '<APPLICATION_ROOT>/</APPLICATION_ROOT>\n' +
             '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
