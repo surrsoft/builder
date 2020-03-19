@@ -21,10 +21,11 @@ describe('convert html.tmpl', () => {
             application: '/',
             multiService: false
          },
-         'UIModule'
+         'UI Module'
       );
       result.includes('<html application="UI/_base/HTML"').should.equal(true);
-      result.includes('require([ \'i18n!UIModule\' ]').should.equal(true);
+      result.includes('require([ \'i18n!UI_Module\' ]').should.equal(true);
+      result.includes('.requirejs("i18n!UI_Module")').should.equal(true);
    });
 
    describe('templates config - check wsconfig setup', () => {
