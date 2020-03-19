@@ -60,7 +60,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                `${path.basename(moduleInfo.output)}/static_packages`,
                gd,
                taskParameters.config.urlServicePath,
-               taskParameters.config.version,
+               taskParameters.config.multiService ? '%{BUILD_NUMBER}' : taskParameters.config.version,
                replacePath,
                taskParameters.config.rawConfig.output,
                taskParameters.config.localizations

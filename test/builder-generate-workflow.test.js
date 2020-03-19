@@ -2271,7 +2271,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          const containsNeededPackage = page.includes(currentPackage);
          containsNeededPackage.should.equal(true);
       };
-      const testResults = async() => {
+      const testSingleServiceResults = async() => {
          /**
           * dependencies in current test are static, so we can also add check for package hash.
           */
@@ -2284,6 +2284,21 @@ describe('gulp/builder/generate-workflow.js', () => {
          testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/29b5d8206eadc7b5f1579f565da63ff0.js"');
          const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css'), 'utf8');
          staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png)}');
+      };
+
+      const testMultiServiceResults = async() => {
+         /**
+          * dependencies in current test are static, so we can also add check for package hash.
+          */
+         const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
+         testCurrentPackage(packedHtml, 'href="%{RESOURCE_ROOT}TestModule/static_packages/55ae7a3b8992d8a501a63806cb1e28a8.css?x_module=%{BUILD_NUMBER}"');
+         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/en-USd453b4a41d0ba63babee569a6b351f39.js?x_module=%{BUILD_NUMBER}"');
+         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/end453b4a41d0ba63babee569a6b351f39.js?x_module=%{BUILD_NUMBER}"');
+         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/ru-RU189e604be3df7a51aff15014143ace19.js?x_module=%{BUILD_NUMBER}"');
+         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/ru189e604be3df7a51aff15014143ace19.js?x_module=%{BUILD_NUMBER}"');
+         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/29b5d8206eadc7b5f1579f565da63ff0.js?x_module=%{BUILD_NUMBER}"');
+         const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/55ae7a3b8992d8a501a63806cb1e28a8.css'), 'utf8');
+         staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png?x_module=%{MODULE_VERSION_STUB=TestModule})}');
       };
 
       const config = {
@@ -2308,13 +2323,27 @@ describe('gulp/builder/generate-workflow.js', () => {
       };
       await fs.writeJSON(configPath, config);
 
-      // запустим таску
+      // run task
       await runWorkflowWithTimeout();
-      await testResults();
+      await testSingleServiceResults();
 
       // check incremental build
       await runWorkflowWithTimeout();
-      await testResults();
+      await testSingleServiceResults();
+
+      // test static packer with multi-service and version-conjunction
+      config['multi-service'] = true;
+      config.version = 'test-version';
+
+      await fs.writeJSON(configPath, config);
+
+      // run task
+      await runWorkflowWithTimeout();
+      await testMultiServiceResults();
+
+      // check incremental build
+      await runWorkflowWithTimeout();
+      await testMultiServiceResults();
       await clearWorkspace();
    });
 
