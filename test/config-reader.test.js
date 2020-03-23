@@ -100,14 +100,8 @@ describe('gulp configuration reader', () => {
          }]
       };
       await fs.outputJson(configPath, config);
-      try {
-         const result = readConfigFileSync(configPath, __dirname);
-
-         // forcibly fail test if config read was completed successfully
-         false.should.equal(true);
-      } catch (err) {
-         err.message.should.equal(`Config file ${configPath} is invalid. Cache parameter must be specified.`);
-      }
+      const result = readConfigFileSync(configPath, __dirname);
+      result.cache.should.equal(path.join(__dirname, '../.builder/cache'));
    });
    it('must throw an error if output parameter absents', async() => {
       const config = {
@@ -118,14 +112,8 @@ describe('gulp configuration reader', () => {
          }]
       };
       await fs.outputJson(configPath, config);
-      try {
-         const result = readConfigFileSync(configPath, __dirname);
-
-         // forcibly fail test if config read was completed successfully
-         false.should.equal(true);
-      } catch (err) {
-         err.message.should.equal(`Config file ${configPath} is invalid. Output parameter must be specified.`);
-      }
+      const result = readConfigFileSync(configPath, __dirname);
+      result.output.should.equal(path.join(__dirname, '../.builder/output'));
    });
    it('all relative paths must be resolved', async() => {
       const getResolvedPath = currentPath => path.resolve(workspaceFolder, currentPath).replace(/\\/g, '/');

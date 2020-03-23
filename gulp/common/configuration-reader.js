@@ -1,4 +1,4 @@
-/* eslint-disable no-sync */
+/* eslint-disable no-sync, no-console */
 
 /**
  * Общие для сборок методы работы с файлом конфигурации
@@ -55,7 +55,7 @@ function readConfigFileSync(configPath, currentWorkDir) {
    }
    const root = path.dirname(configPath);
    checkModules(rawConfig, root);
-   checkCacheAndLogsPath(rawConfig, root, startErrorMessage);
+   normalizeBuilderResultsPaths(rawConfig, root, startErrorMessage);
    return rawConfig;
 }
 
@@ -84,13 +84,15 @@ function checkModules(rawConfig, root) {
    }
 }
 
-function checkCacheAndLogsPath(rawConfig, root, startErrorMessage) {
+function normalizeBuilderResultsPaths(rawConfig, root) {
    if (!rawConfig.cache) {
-      throw new Error(`${startErrorMessage} Cache parameter must be specified.`);
+      rawConfig.cache = path.join(process.cwd(), '.builder/cache');
+      console.log(`Cache directory wasn't specified. A default directory ${rawConfig.cache} is specified.`);
    }
 
    if (!rawConfig.output) {
-      throw new Error(`${startErrorMessage} Output parameter must be specified.`);
+      rawConfig.output = path.join(process.cwd(), '.builder/output');
+      console.log(`Cache directory wasn't specified. A default directory ${rawConfig.output} is specified.`);
    }
 
    /**
