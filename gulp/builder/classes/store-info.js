@@ -16,9 +16,9 @@ class StoreInfo {
       // чем потом ошибки на стенде ловить. не сбрасываем только кеш json
       this.runningParameters = {};
 
-      // если поменялась версия билдера, могло помянятся решительно всё. и кеш json в том числе
-      // unknown используется далее
-      this.versionOfBuilder = 'unknown';
+      // If hash sum of builder source code was changed we can't use previous builder cache as valid.
+      // unknown has further using
+      this.hashOfBuilder = 'unknown';
 
       // время начала предыдущей сборки. нам не нужно хранить дату изменения каждого файла
       // для сравнения с mtime у файлов
@@ -57,8 +57,8 @@ class StoreInfo {
 
          try {
             const builderInfo = await fs.readJson(path.join(cacheDirectory, 'builder-info.json'));
-            this.versionOfBuilder = builderInfo.versionOfBuilder;
-            logger.debug(`"versionOfBuilder" in builder cache: ${this.versionOfBuilder}`);
+            this.hashOfBuilder = builderInfo.hashOfBuilder;
+            logger.debug(`"hashOfBuilder" in builder cache: ${this.hashOfBuilder}`);
             this.startBuildTime = builderInfo.startBuildTime;
             logger.debug(`"startBuildTime" in builder cache: ${this.startBuildTime}`);
          } catch (error) {
@@ -125,7 +125,7 @@ class StoreInfo {
       await fs.outputJson(
          path.join(cacheDirectory, 'builder-info.json'),
          {
-            versionOfBuilder: this.versionOfBuilder,
+            hashOfBuilder: this.hashOfBuilder,
             startBuildTime: this.startBuildTime
          },
          {

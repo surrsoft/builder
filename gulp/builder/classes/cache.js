@@ -12,7 +12,6 @@ const path = require('path'),
 
 const helpers = require('../../../lib/helpers'),
    transliterate = require('../../../lib/transliterate'),
-   packageJson = require('../../../package.json'),
    StoreInfo = require('./store-info'),
    logger = require('../../../lib/logger').logger();
 
@@ -63,7 +62,9 @@ class Cache {
          this.moduleDependencies = await fs.readJson(cachedModuleDependencies);
       }
       this.currentStore.runningParameters = this.config.rawConfig;
-      this.currentStore.versionOfBuilder = packageJson.version;
+
+      // read current builder hash from root of builder.
+      this.currentStore.hashOfBuilder = await fs.readFile(path.join(__dirname, '../../../builderHashFile'), 'utf8');
       this.currentStore.startBuildTime = new Date().getTime();
       await pMap(
          this.config.modules,
@@ -91,7 +92,7 @@ class Cache {
          logger.info(`В директории кэша с предыдущей сборки остался файл builder.lockfile. ${finishText}`);
          return true;
       }
-      if (this.lastStore.versionOfBuilder === 'unknown') {
+      if (this.lastStore.hashOfBuilder === 'unknown') {
          logger.info(`Не удалось обнаружить валидный кеш от предыдущей сборки. ${finishText}`);
          return true;
       }
@@ -110,10 +111,10 @@ class Cache {
          return true;
       }
 
-      // новая версия билдера может быть полностью не совместима
-      const isNewBuilder = this.lastStore.versionOfBuilder !== this.currentStore.versionOfBuilder;
+      // check hash of builder code for changes. If changed, rebuild the whole project.
+      const isNewBuilder = this.lastStore.hashOfBuilder !== this.currentStore.hashOfBuilder;
       if (isNewBuilder) {
-         logger.info(`Версия builder'а не соответствует сохранённому значению в кеше. ${finishText}`);
+         logger.info(`Hash of builder isn't corresponding to saved in cache. ${finishText}`);
          return true;
       }
 
