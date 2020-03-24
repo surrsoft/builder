@@ -16,9 +16,7 @@ async function recursiveGetAllBuilderFiles(dir) {
 }
 
 async function getBuilderCodeHash(filesList) {
-   const filesContent = await Promise.all(filesList.map((currentFile) => {
-      return fs.readFile(currentFile, 'utf8');
-   }));
+   const filesContent = await Promise.all(filesList.map(currentFile => fs.readFile(currentFile, 'utf8')));
    return crypto
       .createHash('sha1')
       .update(filesContent.join('\n'))
