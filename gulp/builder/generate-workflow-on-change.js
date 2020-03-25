@@ -115,6 +115,10 @@ function generateTaskForBuildFile(taskParameters, filePath) {
          done();
       };
    }
+   const currentModuleOutput = path.join(
+      taskParameters.config.rawConfig.output,
+      currentModuleInfo.runtimeModuleName
+   );
    const buildModule = function buildModule() {
       return gulp
          .src(filePathInProject, { dot: false, nodir: true, base: currentModuleInfo.path })
@@ -144,6 +148,12 @@ function generateTaskForBuildFile(taskParameters, filePath) {
                needSymlink(taskParameters.config, currentModuleInfo),
                gulp.symlink(currentModuleInfo.output),
                gulp.dest(currentModuleInfo.output)
+            )
+         )
+         .pipe(
+            gulpIf(
+               taskParameters.config.isReleaseMode,
+               gulp.dest(currentModuleOutput)
             )
          );
    };

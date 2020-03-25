@@ -162,6 +162,51 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       await clearWorkspace();
    });
 
+   it('release mod-watcher should copy all compiled resources into output and cache directories', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/copy');
+      await prepareTest(fixtureFolder);
+
+      // file that have processed by watcher should be copied to both cache and project output directories
+      const testWatcher = async(fileToRename, renamedFileName) => {
+         await fs.rename(path.join(sourceFolder, `Модуль/${fileToRename}`), path.join(sourceFolder, `Модуль/${renamedFileName}`));
+
+         await runWorkflowBuildOnChange(path.join(sourceFolder, `Модуль/${renamedFileName}`));
+
+         (await isRegularFile(path.join(cacheFolder, 'incremental_build/Modul'), renamedFileName)).should.equal(true);
+         (await isRegularFile(path.join(outputFolder, 'Modul'), renamedFileName)).should.equal(true);
+      };
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         typescript: true,
+         less: true,
+         themes: true,
+         minimize: true,
+         modules: [
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      // run build
+      await runWorkflowBuild();
+      await testWatcher('Test.js', 'Test-renamed.js');
+      await testWatcher('Test-ts.ts', 'Test-ts-renamed.ts');
+      await testWatcher('ForRename_old.less', 'ForRename_new.less');
+   });
+
    it('create symlink or copy', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow-on-change/symlink');
       await prepareTest(fixtureFolder);
