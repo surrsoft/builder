@@ -214,6 +214,15 @@ _Значение по умолчанию:_ **false**.\
 
 Где **last_build_gulp_config.json** - путь до JSON конфигарации последней сборки, **FilePath** - файл который мы хотим обновить.
 
+## Задача **runTypescript**
+Задача по запуску typescript для модулей, описанных в gulp_config.
+
+Выполнить из папки builder'а:
+
+        node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js runTypescript --config=gulp_config.json
+
+Где **gulp_config.json** - путь до JSON конфигарации сборки, используемой в основной задаче сборки "build"
+
 ## Задача **collectWordsForLocalization**
 
 Задача сборa фраз для локализации статики. Нужно для genie.sbis.ru и wi.sbis.ru.
