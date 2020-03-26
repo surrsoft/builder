@@ -212,7 +212,7 @@ _Значение по умолчанию:_ **false**.\
 
         node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js buildOnChange --config=last_build_gulp_config.json --filePath="FilePath"
 
-Где **last_build_gulp_config.json** - путь до JSON конфигарации последней сборки, **FilePath** - файл который мы хотим обновить.
+Где **last_build_gulp_config.json** - путь до JSON конфигурации последней сборки, **FilePath** - файл который мы хотим обновить.
 
 ## Задача **runTypescript**
 Задача по запуску typescript для модулей, описанных в gulp_config.
@@ -221,7 +221,7 @@ _Значение по умолчанию:_ **false**.\
 
         node ./node_modules/gulp/bin/gulp.js --gulpfile ./gulpfile.js runTypescript --config=gulp_config.json
 
-Где **gulp_config.json** - путь до JSON конфигарации сборки, используемой в основной задаче сборки "build"
+Где **gulp_config.json** - путь до JSON конфигурации сборки, используемой в основной задаче сборки "build"
 
 ## Задача **collectWordsForLocalization**
 
