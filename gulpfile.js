@@ -54,6 +54,9 @@ try {
    if (process.argv.includes('buildOnChange')) {
       const generateBuildWorkflowOnChange = require('./gulp/builder/generate-workflow-on-change.js');
       gulp.task('buildOnChange', generateBuildWorkflowOnChange(process.argv));
+   } else if (process.argv.includes('runTypescript')) {
+      const generateWorkflowTypescript = require('./gulp/builder/generate-workflow-typescript');
+      gulp.task('runTypescript', generateWorkflowTypescript(process.argv));
    } else if (process.argv.includes('build')) {
       const generateBuildWorkflow = require('./gulp/builder/generate-workflow.js');
       gulp.task('build', generateBuildWorkflow(process.argv));
