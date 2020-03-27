@@ -276,7 +276,7 @@ class BuildConfiguration {
 
       this.needTemplates = this.rawConfig.wml || this.rawConfig.htmlWml || this.rawConfig.deprecatedXhtml;
 
-      this.branchTests = this.rawConfig.cld_name === 'InTest';
+      this.branchTests = this.rawConfig.cld_name === 'InTest' || this.rawConfig.lessCoverage;
 
       if (this.rawConfig.hasOwnProperty('logs')) {
          this.logFolder = this.rawConfig.logs;

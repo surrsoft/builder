@@ -330,15 +330,15 @@ describe('gulp/builder/generate-workflow.js', () => {
       await runWorkflowWithTimeout();
 
       const testModuleDepsPath = path.join(outputFolder, 'TestModule/module-dependencies.json');
-      let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
+      let lessDependenciesExists = (await fs.readJson(testModuleDepsPath)).hasOwnProperty('lessDependencies');
 
-      lessDependenciesForTest.should.deep.equal({});
+      lessDependenciesExists.should.deep.equal(false);
 
       // запустим повторно таску
       await runWorkflowWithTimeout();
 
-      lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
-      lessDependenciesForTest.should.deep.equal({});
+      lessDependenciesExists = (await fs.readJson(testModuleDepsPath)).hasOwnProperty('lessDependencies');
+      lessDependenciesExists.should.equal(false);
 
       await clearWorkspace();
    });
@@ -1042,6 +1042,59 @@ describe('gulp/builder/generate-workflow.js', () => {
       // запустим повторно таску
       await runWorkflowWithTimeout();
       await testResults('/ForChange_new.html');
+      await clearWorkspace();
+   });
+
+   it('map for requirejs substitutions', async() => {
+      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
+      await prepareTest(fixtureFolder);
+
+      const testRequireJsSubstitutions = async() => {
+         // проверим, что все нужные файлы появились в "стенде"
+         const mDeps = await fs.readJson(path.join(outputFolder, 'WS.Core/module-dependencies.json'));
+         mDeps.hasOwnProperty('requireJsSubstitutions').should.equal(true);
+
+         // test common types of this map properties for validity.
+         const substitutions = mDeps.requireJsSubstitutions;
+         substitutions.hasOwnProperty('html').should.equal(true);
+         substitutions.html.should.equal('WS.Core/ext/requirejs/plugins/html.js');
+         substitutions.hasOwnProperty('css!WS/css/core').should.equal(true);
+         substitutions['css!WS/css/core'].should.equal('WS.Core/css/core.css');
+         substitutions.hasOwnProperty('WS/css/styles/RichContentStyles').should.equal(true);
+         substitutions['WS/css/styles/RichContentStyles'].should.equal('WS.Core/css/styles/RichContentStyles.js');
+      };
+
+      const config = {
+         cache: cacheFolder,
+         output: outputFolder,
+         dependenciesGraph: true,
+         typescript: true,
+         builderTests: true,
+         modules: [
+            {
+               name: 'SBIS3.CONTROLS',
+               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
+            },
+            {
+               name: 'Controls-default-theme',
+               path: path.join(sourceFolder, 'Controls-default-theme')
+            },
+            {
+               name: 'Модуль',
+               path: path.join(sourceFolder, 'Модуль')
+            },
+            {
+               name: 'WS.Core',
+               path: path.join(__dirname, 'fixtureWS/platform/WS.Core')
+            }
+         ]
+      };
+      await fs.writeJSON(configPath, config);
+
+      await runWorkflowWithTimeout();
+      await testRequireJsSubstitutions();
+      await runWorkflowWithTimeout();
+      await testRequireJsSubstitutions();
       await clearWorkspace();
    });
 
