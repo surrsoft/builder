@@ -1060,8 +1060,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          substitutions.html.should.equal('WS.Core/ext/requirejs/plugins/html.js');
          substitutions.hasOwnProperty('css!WS/css/core').should.equal(true);
          substitutions['css!WS/css/core'].should.equal('WS.Core/css/core.css');
-         substitutions.hasOwnProperty('WS/css/styles/RichContentStyles').should.equal(true);
-         substitutions['WS/css/styles/RichContentStyles'].should.equal('WS.Core/css/styles/RichContentStyles.js');
       };
 
       const config = {
