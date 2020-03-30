@@ -92,7 +92,7 @@ function normalizeBuilderResultsPaths(rawConfig, root) {
 
    if (!rawConfig.output) {
       rawConfig.output = path.join(process.cwd(), '.builder/output');
-      console.log(`Cache directory wasn't specified. A default directory ${rawConfig.output} is specified.`);
+      console.log(`Output directory wasn't specified. A default directory ${rawConfig.output} is specified.`);
    }
 
    /**
