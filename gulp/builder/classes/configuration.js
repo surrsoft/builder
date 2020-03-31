@@ -51,7 +51,10 @@ class BuildConfiguration {
       // Current service relative url
       this.urlServicePath = '';
 
-      // BL service relative url
+      /**
+       * BL service relative url. Using by desktop-application to set a specific location for theirs BL-service.
+       * F.e. retail-offline has "/RetailOffline/" as catalog for BL-service, but desktop applications have "/" for UI.
+       */
       this.urlDefaultServicePath = '';
 
       // compiled content version
