@@ -29,7 +29,7 @@ describe('convert html.tmpl', () => {
    });
 
    describe('templates config - check wsconfig setup', () => {
-      const servicesPath = '/';
+      const servicesPath = '/service/';
       const testMultiServiceResults = (templatesConfig) => {
          templatesConfig.RUMEnabled.should.equal('%{RUM_ENABLED}');
          templatesConfig.appRoot.should.equal('%{APPLICATION_ROOT}');
