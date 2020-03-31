@@ -1192,7 +1192,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
@@ -1209,7 +1209,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>/resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>/resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT>/</APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
@@ -1226,7 +1226,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
@@ -1326,7 +1326,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
@@ -1346,7 +1346,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
@@ -1364,7 +1364,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             '<RESOURCE_ROOT>resources/</RESOURCE_ROOT>\n' +
             '<WI.SBIS_ROOT>resources/WS.Core/</WI.SBIS_ROOT>\n' +
             '<APPLICATION_ROOT></APPLICATION_ROOT>\n' +
-            '<SERVICES_PATH>/service/</SERVICES_PATH>\n' +
+            '<SERVICES_PATH>service/</SERVICES_PATH>\n' +
             '<APPEND_STYLE></APPEND_STYLE>\n' +
             '<APPEND_JAVASCRIPT></APPEND_JAVASCRIPT>\n' +
             '<ACCESS_LIST></ACCESS_LIST>\n' +
