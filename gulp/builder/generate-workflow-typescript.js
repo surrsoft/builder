@@ -9,6 +9,7 @@ const Cache = require('./classes/cache');
 const Configuration = require('./classes/configuration.js');
 const TaskParameters = require('../common/classes/task-parameters');
 const { typescriptCompiler } = require('../../lib/typescript-compiler');
+const ConfigurationReader = require('../common/configuration-reader');
 
 /**
  *
@@ -23,12 +24,18 @@ function generateBuildWorkflowTypescript(processArgv) {
 
    const taskParameters = new TaskParameters(config, new Cache(config));
 
-   return generateTaskForTypescriptCompile(taskParameters);
+   const { output } = ConfigurationReader.getProcessParameters(processArgv);
+   if (!output) {
+      // eslint-disable-next-line no-console
+      console.log('output directory wasn\'t added. All ts errors will be caught by using stdout of "exec" command');
+   }
+
+   return generateTaskForTypescriptCompile(taskParameters, output);
 }
 
-function generateTaskForTypescriptCompile(taskParameters) {
+function generateTaskForTypescriptCompile(taskParameters, output) {
    return function runTypescriptCompiler() {
-      return typescriptCompiler(taskParameters);
+      return typescriptCompiler(taskParameters, output);
    };
 }
 
