@@ -20,7 +20,7 @@ describe('typescript compiler', () => {
    });
    it('should save tsc output into selected file', async() => {
       const outputPath = `${workspaceFolder}/result.txt`;
-      await runCompilerAndCheckForErrors(workspaceFolder, ` >> `);
+      await runCompilerAndCheckForErrors(workspaceFolder, ` >> ${outputPath}`);
       const result = await fs.readFile(outputPath, 'utf8');
       result.includes('public/publicInterface.ts(15,30): error TS1005: \'{\' expected.').should.equal(true);
       result.includes('public/publicInterface.ts(8,33): error TS1005: \')\' expected.').should.equal(true);
