@@ -23,7 +23,7 @@ describe('typescript compiler', () => {
       await runCompilerAndCheckForErrors(workspaceFolder, ` >> `);
       const result = await fs.readFile(outputPath, 'utf8');
       result.includes('public/publicInterface.ts(15,30): error TS1005: \'{\' expected.').should.equal(true);
-      result.includes('public/publicInterface.ts(8,33): error TS1005: \')\' expected.').should.equal(true)s;
+      result.includes('public/publicInterface.ts(8,33): error TS1005: \')\' expected.').should.equal(true);
    });
    it('should return corrent compilerOptions in depends of content format(basic ts module or amd-formatted)', () => {
       let tsContent = "define('Module/myComponent', [], function() { return 'test123'; }";
