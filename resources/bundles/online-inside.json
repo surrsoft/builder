@@ -496,6 +496,7 @@
   "resources/CACore/packages/DilutingTemplate.package.min",
   "resources/CACore/packages/RenewalWrapVDOM.package.min",
   "resources/CACore/packages/Revoke.package.min",
+  "resources/CACore/packages/cacore_petition.package.min",
   "resources/PopupNotifications/popup-notifications-overlay.package.min",
   "resources/PopupNotifications/popup-notifications.package.min",
   "resources/PowerOfAttorney/packages/poa_list.package.min",
