@@ -10,7 +10,6 @@ const gulp = require('gulp'),
    plumber = require('gulp-plumber');
 
 const logger = require('../../../lib/logger').logger(),
-   normalizeKey = require('../../../lib/i18n/normalize-key'),
    versionizeFinish = require('../plugins/versionize-finish'),
    startTask = require('../../common/start-task-with-timer');
 
@@ -25,16 +24,11 @@ function generateTaskForFinalizeDistrib(taskParameters) {
       };
    }
 
-   const tasks = [generateTaskForCopyResources(taskParameters)];
-   if (taskParameters.config.localizations.length > 0) {
-      tasks.push(generateTaskForNormalizeKey(taskParameters));
-   }
-
-   const finalizeDistrib = startTask('finalize distrib', taskParameters);
+   const copyResources = startTask('copy resources', taskParameters);
    return gulp.series(
-      finalizeDistrib.start,
-      tasks,
-      finalizeDistrib.finish
+      copyResources.start,
+      generateTaskForCopyResources(taskParameters),
+      copyResources.finish
    );
 }
 
@@ -68,22 +62,6 @@ function generateTaskForCopyResources(taskParameters) {
    });
 
    return gulp.parallel(tasks);
-}
-
-function generateTaskForNormalizeKey(taskParameters) {
-   return async function normalizeKeyTask(done) {
-      const startTime = Date.now();
-      try {
-         await normalizeKey(taskParameters.config.rawConfig.output, taskParameters.config.localizations);
-         done();
-      } catch (e) {
-         logger.error({
-            message: "Ошибка Builder'а",
-            error: e
-         });
-      }
-      taskParameters.storePluginTime('normalize key', startTime);
-   };
 }
 
 module.exports = generateTaskForFinalizeDistrib;
