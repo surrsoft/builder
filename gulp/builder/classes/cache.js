@@ -763,7 +763,7 @@ class Cache {
     * Получить список файлов, которые нужно удалить из целевой директории после инкрементальной сборки
     * @returns {Promise<string[]>}
     */
-   async getListForRemoveFromOutputDir(cachePath, modulesForPatch) {
+   async getListForRemoveFromOutputDir(outputPath, modulesForPatch) {
       const currentOutputSet = this.currentStore.getOutputFilesSet();
 
       /**
@@ -773,7 +773,7 @@ class Cache {
        * builder cache and get artifacts in next patch builds.
        * @type {Set<string>}
        */
-      const lastOutputSet = this.lastStore.getOutputFilesSet(cachePath, modulesForPatch.map(
+      const lastOutputSet = this.lastStore.getOutputFilesSet(outputPath, modulesForPatch.map(
          currentModule => path.basename(currentModule.output)
       ));
       const removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));

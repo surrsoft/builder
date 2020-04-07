@@ -219,7 +219,7 @@ class StoreInfo {
     * Получить набор выходных файлов. Нужно чтобы получать разницы между сборками и удалять лишнее.
     * @returns {Set<string>}
     */
-   getOutputFilesSet(cachePath, modulesForPatch) {
+   getOutputFilesSet(outputPath, modulesForPatch) {
       const resultSet = new Set();
       for (const filePath in this.inputPaths) {
          if (!this.inputPaths.hasOwnProperty(filePath)) {
@@ -229,7 +229,7 @@ class StoreInfo {
             // for patch build get only paths for patching modules
             if (modulesForPatch && modulesForPatch.length > 0) {
                const currentModuleName = outputFilePath
-                  .replace(cachePath, '')
+                  .replace(outputPath, '')
                   .split('/')
                   .shift();
                if (modulesForPatch.includes(currentModuleName)) {

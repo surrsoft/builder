@@ -7,7 +7,8 @@
 
 const fs = require('fs-extra'),
    gulp = require('gulp'),
-   pMap = require('p-map');
+   pMap = require('p-map'),
+   path = require('path');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    { generateTaskForCollectThemes } = require('./generate-task/collect-style-themes'),
@@ -50,7 +51,6 @@ function generateWorkflow(processArgv) {
    );
 
    return gulp.series(
-
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
       generateTaskForLoadCache(taskParameters),
@@ -165,6 +165,7 @@ function generateTaskForSaveTimeReport(taskParameters) {
       await fs.outputJson(`${taskParameters.config.cachePath}/time-report.json`, resultJson);
    };
 }
+
 function generateTaskForClearCache(taskParameters) {
    return async function clearCache() {
       const startTime = Date.now();
@@ -194,16 +195,46 @@ function generateTaskForSaveCache(taskParameters) {
    };
 }
 
+async function removeFromMeta(metaName, moduleName, removeQueue) {
+
+}
+
 function generateTaskForRemoveFiles(taskParameters) {
    return async function removeOutdatedFiles() {
       const startTime = Date.now();
+      const normalizedOutputDirectory = `${taskParameters.config.outputPath.replace(/\\/g, '/')}/`;
       const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir(
-         taskParameters.config.cachePath,
+         normalizedOutputDirectory,
          taskParameters.config.modulesForPatch
       );
-      await pMap(filesForRemove, filePath => fs.remove(filePath), {
-         concurrency: 20
-      });
+      const metaToUpdate = {
+         libraries: {},
+         compiledLess: {}
+      };
+      await pMap(
+         filesForRemove,
+         async(filePath) => {
+            await fs.remove(filePath);
+            const relativePath = path.relative(
+               taskParameters.config.outputPath,
+               filePath
+            );
+            const moduleName = relativePath.split('/')[0];
+            if (relativePath.endsWith('.ts')) {
+               if (!metaToUpdate.libraries[moduleName]) {
+                  metaToUpdate.libraries[moduleName] = [];
+               }
+               metaToUpdate.libraries[moduleName].push(relativePath.replace(/\.ts$/, '.min.js'));
+            }
+            if (relativePath.endsWith('.less') || relativePath.endsWith('.css')) {
+               if (!metaToUpdate.compiledLess[moduleName]) {
+                  metaToUpdate.compiledLess[moduleName] = [];
+               }
+               metaToUpdate.compiledLess[moduleName].push(relativePath.replace(/\.(less|css)$/, '.min.css'));
+            }
+         },
+         { concurrency: 20 }
+      );
       taskParameters.storeTaskTime('remove outdated files from output', startTime);
    };
 }
