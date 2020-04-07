@@ -329,7 +329,7 @@ class BuildConfiguration {
          this.applicationForRebase = '/';
       }
 
-      if (this.rawConfig.hasOwnProperty('url-default-service-path')) {
+      if (this.rawConfig['url-default-service-path']) {
          this.urlDefaultServicePath = this.rawConfig['url-default-service-path'];
       } else {
          this.urlDefaultServicePath = this.urlServicePath;

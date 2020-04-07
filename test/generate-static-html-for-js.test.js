@@ -13,10 +13,10 @@ const generateStaticHtmlForJs = require('../lib/generate-static-html-for-js');
 const config = {
    root: helpers.prettifyPath(path.join(__dirname, 'fixture/generate-static-html-for-js')),
    application: '/',
-   servicesPath: '/service/',
    userParams: true,
    globalParams: false,
    urlServicePath: '/',
+   urlDefaultServicePath: '/',
    wsPath: 'resources/WS.Core/'
 };
 
