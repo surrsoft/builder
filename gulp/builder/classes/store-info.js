@@ -208,7 +208,7 @@ class StoreInfo {
     * @param{Array} modulesForPatch - interface modules to be patched
     * @returns {Set<any>}
     */
-   getOutputFilesSet(cachePath, modulesForPatch) {
+   getOutputFilesSet(outputPath, modulesForPatch) {
       const resultSet = new Set();
       for (const filePath in this.inputPaths) {
          if (!this.inputPaths.hasOwnProperty(filePath)) {
@@ -218,7 +218,7 @@ class StoreInfo {
             // get only paths for patching modules in patch build
             if (modulesForPatch && modulesForPatch.length > 0) {
                const currentModuleName = outputFilePath
-                  .replace(cachePath, '')
+                  .replace(outputPath, '')
                   .split('/')
                   .shift();
                if (modulesForPatch.includes(currentModuleName)) {
