@@ -1,13 +1,12 @@
 /**
- * Генерирует поток выполнения сборки статики
+ * Generates a workflow for build of current project static files.
  * @author Kolbeshin F.A.
  */
 
 'use strict';
 
-const fs = require('fs-extra'),
-   gulp = require('gulp'),
-   pMap = require('p-map');
+const fs = require('fs-extra');
+const gulp = require('gulp');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
    { generateTaskForCollectThemes } = require('./generate-task/collect-style-themes'),
@@ -15,6 +14,7 @@ const generateTaskForBuildModules = require('./generate-task/build-modules'),
    generateTaskForCompress = require('./generate-task/compress'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
+   { generateTaskForRemoveFiles } = require('./generate-task/remove-outdated-files'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
    generateTaskForSaveNewThemes = require('./generate-task/save-new-themes'),
    guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
@@ -34,9 +34,9 @@ const {
 } = require('../common/helpers');
 
 /**
- * Генерирует поток выполнения сборки статики
- * @param {string[]} processArgv массив аргументов запуска утилиты
- * @returns {Undertaker.TaskFunction} gulp задача
+ * Generates a workflow for build of current project static files.
+ * @param {string[]} processArgv array of an arguments of running of builder
+ * @returns {Undertaker.TaskFunction} gulp task
  */
 function generateWorkflow(processArgv) {
    // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
@@ -165,6 +165,7 @@ function generateTaskForSaveTimeReport(taskParameters) {
       await fs.outputJson(`${taskParameters.config.cachePath}/time-report.json`, resultJson);
    };
 }
+
 function generateTaskForClearCache(taskParameters) {
    return async function clearCache() {
       const startTime = Date.now();
@@ -191,20 +192,6 @@ function generateTaskForSaveCache(taskParameters) {
       const startTime = Date.now();
       await taskParameters.cache.save();
       taskParameters.storeTaskTime('save cache', startTime);
-   };
-}
-
-function generateTaskForRemoveFiles(taskParameters) {
-   return async function removeOutdatedFiles() {
-      const startTime = Date.now();
-      const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir(
-         taskParameters.config.cachePath,
-         taskParameters.config.modulesForPatch
-      );
-      await pMap(filesForRemove, filePath => fs.remove(filePath), {
-         concurrency: 20
-      });
-      taskParameters.storeTaskTime('remove outdated files from output', startTime);
    };
 }
 
