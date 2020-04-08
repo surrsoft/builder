@@ -36,11 +36,18 @@ class MetaClass {
                if (this.meta[moduleName].hasOwnProperty(metaName)) {
                   promises.push((async() => {
                      const metaPath = path.join(outputPath, moduleName, '.builder', metaName);
-                     const currentMeta = await fs.readJson(metaPath);
-                     const newMeta = currentMeta.filter(
-                        currentElement => !this.meta[moduleName][metaName].includes(currentElement)
-                     );
-                     await fs.outputJson(metaPath, newMeta.sort());
+
+                     /**
+                      * some meta files can be created only in case of custom pack enabled.
+                      * Therefore there is no need of updating of the meta.
+                       */
+                     if (await fs.pathExists(metaPath)) {
+                        const currentMeta = await fs.readJson(metaPath);
+                        const newMeta = currentMeta.filter(
+                           currentElement => !this.meta[moduleName][metaName].includes(currentElement)
+                        );
+                        await fs.outputJson(metaPath, newMeta.sort());
+                     }
                   })());
                }
             }
