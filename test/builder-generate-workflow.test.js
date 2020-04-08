@@ -2229,6 +2229,49 @@ describe('gulp/builder/generate-workflow.js', () => {
             'router.min.js'
          ]);
       });
+      it('patch - meta should be updated after sources removal', async() => {
+         const currentMetaOutput = path.join(outputFolder, 'ExternalInterfaceModule', '.builder');
+         let librariesMeta = await fs.readJson(path.join(currentMetaOutput, 'libraries.json'));
+         let compiledLessMeta = await fs.readJson(path.join(currentMetaOutput, 'compiled-less.min.json'));
+         librariesMeta.should.have.members([
+            'ExternalInterfaceModule/library'
+         ]);
+         compiledLessMeta.should.have.members([]);
+
+         /**
+          * rename ts-file(to check libraries.json for an update)
+          * create less file(to check compiled-less.min.json for an update)
+          */
+         await fs.rename(
+            path.join(sourceFolder, 'ExternalInterfaceModule', 'library.ts'),
+            path.join(sourceFolder, 'ExternalInterfaceModule', 'library_new.ts')
+         );
+         await fs.outputFile(
+            path.join(sourceFolder, 'ExternalInterfaceModule', 'test.less'),
+            '.interfaceModule1_logoDefault{background-image:url(images/logo-en.svg)}'
+         );
+
+         // run build
+         await runWorkflowWithTimeout();
+
+         // read meta and check it for updated data
+         librariesMeta = await fs.readJson(path.join(currentMetaOutput, 'libraries.json'));
+         compiledLessMeta = await fs.readJson(path.join(currentMetaOutput, 'compiled-less.min.json'));
+         librariesMeta.should.have.members([
+            'ExternalInterfaceModule/library_new'
+         ]);
+         compiledLessMeta.should.have.members([
+            'ExternalInterfaceModule/test.min.css'
+         ]);
+
+         // rollback for further unit tests
+         await fs.rename(
+            path.join(sourceFolder, 'ExternalInterfaceModule', 'library_new.ts'),
+            path.join(sourceFolder, 'ExternalInterfaceModule', 'library.ts')
+         );
+         await fs.remove(path.join(sourceFolder, 'ExternalInterfaceModule', 'test.less'));
+         await clearWorkspace();
+      });
       it('patch module with cleared cache', async() => {
          await clearWorkspace();
          const fixtureFolder = path.join(__dirname, 'fixture/custompack');
