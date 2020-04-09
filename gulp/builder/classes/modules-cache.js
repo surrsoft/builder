@@ -21,8 +21,22 @@ function setDefaultStore() {
 }
 class ModuleCache {
    constructor(lastStore) {
+      this.markupProperties = ['text', 'nodeName', 'dependencies', 'versioned', 'cdnLinked'];
       this.lastStore = lastStore || setDefaultStore();
       this.currentStore = setDefaultStore();
+   }
+
+   /**
+    * removes all properties have been transmitted from templates processor but there is
+    * no further need of them in builder's cache.
+    * @param object
+    */
+   removeUnnededProperties(object) {
+      for (const property in object) {
+         if (object.hasOwnProperty(property) && !this.markupProperties.includes(property)) {
+            delete object.property;
+         }
+      }
    }
 
    /**
@@ -43,6 +57,7 @@ class ModuleCache {
     */
    storeBuildedMarkup(filePath, obj) {
       const prettyPath = helpers.prettifyPath(filePath);
+      this.removeUnnededProperties(obj);
       this.currentStore.markupCache[prettyPath] = obj;
    }
 
