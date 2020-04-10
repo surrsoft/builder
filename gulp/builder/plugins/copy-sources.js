@@ -9,6 +9,7 @@
 
 const through = require('through2');
 const { checkSourceNecessityByConfig } = require('../../common/helpers');
+const logger = require('../../../lib/logger');
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
@@ -223,23 +224,30 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
          }
          if (taskParameters.config.version) {
-            // remove private parts of libraries from versioned and cdn meta
-            taskParameters.versionedModules[currentModuleName] = taskParameters.versionedModules[currentModuleName]
-               .filter(
-                  currentPath => !modulesToRemoveFromMeta.has(currentPath)
-               );
-            taskParameters.cdnModules[currentModuleName] = taskParameters.cdnModules[currentModuleName]
-               .filter(
-                  currentPath => !modulesToRemoveFromMeta.has(currentPath)
-               );
-            versionedMetaFile.contents = Buffer.from(JSON.stringify(
-               taskParameters.versionedModules[currentModuleName].sort()
-            ));
-            cdnMetaFile.contents = Buffer.from(JSON.stringify(
-               taskParameters.cdnModules[currentModuleName].sort()
-            ));
-            this.push(versionedMetaFile);
-            this.push(cdnMetaFile);
+            if (taskParameters.versionedModules[currentModuleName]) {
+               // remove private parts of libraries from versioned and cdn meta
+               taskParameters.versionedModules[currentModuleName] = taskParameters.versionedModules[currentModuleName]
+                  .filter(
+                     currentPath => !modulesToRemoveFromMeta.has(currentPath)
+                  );
+               taskParameters.cdnModules[currentModuleName] = taskParameters.cdnModules[currentModuleName]
+                  .filter(
+                     currentPath => !modulesToRemoveFromMeta.has(currentPath)
+                  );
+               versionedMetaFile.contents = Buffer.from(JSON.stringify(
+                  taskParameters.versionedModules[currentModuleName].sort()
+               ));
+               cdnMetaFile.contents = Buffer.from(JSON.stringify(
+                  taskParameters.cdnModules[currentModuleName].sort()
+               ));
+               this.push(versionedMetaFile);
+               this.push(cdnMetaFile);
+            } else {
+               // add additional logging to get more info about this problem
+               logger.warning({
+                  message: `taskParameters versioned modules wasn't found! ModuleInfo: ${JSON.stringify(moduleInfo)}`
+               });
+            }
          }
 
          callback();
