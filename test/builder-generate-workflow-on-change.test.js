@@ -96,7 +96,6 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       let resultsFiles = await fs.readdir(moduleOutputFolder);
       let noThemesResultsFiles = await fs.readdir(noThemesModuleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRename_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
          'themes.config.json'
@@ -119,11 +118,9 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // старый файл ForRename_old остаётся. это нормально
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRename_old_online.css',
          'ForRename_old.css',
          'ForRename_old.less',
          'ForRename_new.css',
-         'ForRename_new_online.css',
          'ForRename_new.less',
          'themes.config.json'
       ]);
@@ -137,9 +134,7 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       ]);
 
       (await isRegularFile(moduleOutputFolder, 'ForRename_new.css')).should.equal(true);
-      (await isRegularFile(moduleOutputFolder, 'ForRename_new_online.css')).should.equal(true);
       (await isRegularFile(noThemesModuleOutputFolder, 'ForRename_new.css')).should.equal(true);
-      (await isRegularFile(noThemesModuleOutputFolder, 'ForRename_new_online.css')).should.equal(false);
 
       // запустим таску повторно
       await runWorkflowBuild();
@@ -147,7 +142,6 @@ describe('gulp/builder/generate-workflow-on-change.js', () => {
       // проверим, что все лишние файлы (ForRename_old.css) удалились
       resultsFiles = await fs.readdir(moduleOutputFolder);
       resultsFiles.should.have.members([
-         'ForRename_new_online.css',
          'ForRename_new.css',
          'ForRename_new.less',
          'themes.config.json'

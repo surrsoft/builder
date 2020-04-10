@@ -163,9 +163,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       let lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
 
       lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-default-theme/_mixins',
          'css!Controls-default-theme/_old-mixins',
-         'css!Controls-default-theme/_theme',
          'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
          'css!TestModule/Stable-for-import',
@@ -182,9 +180,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
       lessDependenciesForTest = (await fs.readJson(testModuleDepsPath)).lessDependencies;
       lessDependenciesForTest['TestModule/stable'].should.have.members([
-         'css!Controls-default-theme/_mixins',
          'css!Controls-default-theme/_old-mixins',
-         'css!Controls-default-theme/_theme',
          'css!SBIS3.CONTROLS/themes/_mixins',
          'css!SBIS3.CONTROLS/themes/online/_variables',
          'css!TestModule/Stable-for-import',
@@ -394,16 +390,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
-         'ForChange_online.css',
-         'ForChange_default.css',
          'ForChange.less',
          'ForRename_old.css',
-         'ForRename_old_online.css',
-         'ForRename_old_default.css',
          'ForRename_old.less',
          'Stable.css',
-         'Stable_online.css',
-         'Stable_default.css',
          'Stable.less',
          'module-dependencies.json',
          'themes.config.json'
@@ -458,16 +448,10 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
-         'ForChange_online.css',
-         'ForChange_default.css',
          'ForChange.less',
          'ForRename_new.css',
-         'ForRename_new_online.css',
-         'ForRename_new_default.css',
          'ForRename_new.less',
          'Stable.css',
-         'Stable_online.css',
-         'Stable_default.css',
          'module-dependencies.json',
          'Stable.less',
          'themes.config.json'
@@ -485,52 +469,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          'themes.config.json'
       ]);
 
-      // update themes.config.json for interface module "Модуль". all less must be rebuilded for this new themes config.
-      await fs.outputJson(path.join(sourceFolder, 'Модуль/themes.config.json'), { old: false, multi: true });
-
-      // rebuild static with new theme
-      await runWorkflowWithTimeout();
-      await testEmptyLessLog(['emptyLess.less', 'emptyCss.css'], ['less', 'css']);
-
-      // in results of interface module "Модуль" must exist only css with theme postfix(new theme scheme)
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'Error.less',
-         'ForChange_online.css',
-         'ForChange_default.css',
-         'ForChange.less',
-         'ForRename_new_online.css',
-         'ForRename_new_default.css',
-         'ForRename_new.less',
-         'Stable_online.css',
-         'Stable_default.css',
-         'module-dependencies.json',
-         'Stable.less',
-         'themes.config.json'
-      ]);
-
-      resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
-      resultsFiles.should.have.members([
-         'Stable-for-import.css',
-         'Stable-for-import.less',
-         'Stable-for-import_online.css',
-         'Stable-for-import_default.css',
-         'Stable-for-theme-import.css',
-         'Stable-for-theme-import.less',
-         'Stable-for-theme-import_online.css',
-         'Stable-for-theme-import_default.css',
-         'Stable-with-import.css',
-         'Stable-with-import.less',
-         'Stable-with-import_online.css',
-         'Stable-with-import_default.css',
-         'emptyLess.less',
-         'emptyCss.css',
-         'module-dependencies.json',
-         'stable.js',
-         'stable.ts',
-         'themes.config.json'
-      ]);
-
       // disable old themes for current project.
       config.oldThemes = false;
       await fs.writeJSON(configPath, config);
@@ -542,14 +480,8 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultsFiles = await fs.readdir(path.join(outputFolder, 'TestModule'));
       resultsFiles.should.have.members([
          'Stable-for-import.less',
-         'Stable-for-import_online.css',
-         'Stable-for-import_default.css',
          'Stable-for-theme-import.less',
-         'Stable-for-theme-import_online.css',
-         'Stable-for-theme-import_default.css',
          'Stable-with-import.less',
-         'Stable-with-import_online.css',
-         'Stable-with-import_default.css',
          'emptyLess.less',
          'emptyCss.css',
          'module-dependencies.json',
@@ -807,28 +739,16 @@ describe('gulp/builder/generate-workflow.js', () => {
       resultsFiles.should.have.members([
          'Error.less',
          'ForChange.css',
-         'ForChange_online.css',
-         'ForChange_default.css',
          'ForChange.less',
          'ForRename_old.css',
-         'ForRename_old_online.css',
-         'ForRename_old_default.css',
          'ForRename_old.less',
          'Stable.css',
-         'Stable_online.css',
-         'Stable_default.css',
          'Stable.less',
          'themes.config.json',
          'themes.config.min.json',
          'ForChange.min.css',
-         'ForChange_online.min.css',
-         'ForChange_default.min.css',
          'ForRename_old.min.css',
-         'ForRename_old_online.min.css',
-         'ForRename_old_default.min.css',
-         'Stable.min.css',
-         'Stable_online.min.css',
-         'Stable_default.min.css'
+         'Stable.min.css'
       ]);
       const noThemesDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Modul_bez_tem'));
       noThemesDirectoryExists.should.equal(false);
@@ -836,77 +756,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       sbis3controlsDirectoryExists.should.equal(false);
       const controlsThemeDirectoryExists = await fs.pathExists(path.join(patchOutputFolder, 'Controls-default-theme'));
       controlsThemeDirectoryExists.should.equal(false);
-      await clearWorkspace();
-   });
-
-   it('compile only selected less', async() => {
-      const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
-      await prepareTest(fixtureFolder);
-
-      const config = {
-         cache: cacheFolder,
-         output: outputFolder,
-         less: true,
-         themes: ['default'],
-         modules: [
-            {
-               name: 'SBIS3.CONTROLS',
-               path: path.join(sourceFolder, 'SBIS3.CONTROLS')
-            },
-            {
-               name: 'Controls-default-theme',
-               path: path.join(sourceFolder, 'Controls-default-theme')
-            },
-            {
-               name: 'Модуль',
-               path: path.join(sourceFolder, 'Модуль')
-            }
-         ]
-      };
-      await fs.writeJSON(configPath, config);
-
-      // запустим таску
-      await runWorkflowWithTimeout();
-
-      let resultsFiles;
-
-      // check for selected themes builded properly
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'Error.less',
-         'ForChange.css',
-         'ForChange_default.css',
-         'ForChange.less',
-         'ForRename_old.css',
-         'ForRename_old_default.css',
-         'ForRename_old.less',
-         'Stable.css',
-         'Stable_default.css',
-         'Stable.less',
-         'themes.config.json'
-      ]);
-
-      // изменим "исходники"
-      await timeoutForMacOS();
-
-      // запустим повторно таску
-      await runWorkflowWithTimeout();
-
-      // проверим, что все нужные файлы появились в "стенде", лишние удалились
-      resultsFiles = await fs.readdir(moduleOutputFolder);
-      resultsFiles.should.have.members([
-         'Error.less',
-         'ForChange.css',
-         'ForChange_default.css',
-         'ForChange.less',
-         'ForRename_old.css',
-         'ForRename_old_default.css',
-         'ForRename_old.less',
-         'Stable.css',
-         'Stable_default.css',
-         'Stable.less',
-         'themes.config.json'
-      ]);
       await clearWorkspace();
    });
 
@@ -1438,7 +1287,6 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          // генерируемые файлы из исходников
          (await isRegularFile(moduleOutputFolder, 'StaticHtml.html')).should.equal(true);
-         (await isRegularFile(moduleOutputFolder, 'TestLess_online.css')).should.equal(true);
 
          // генерируемые файлы на модуль
          (await isRegularFile(moduleOutputFolder, 'contents.js')).should.equal(true);
