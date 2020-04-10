@@ -90,7 +90,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          const [error, result] = await execInPool(
             taskParameters.pool,
             'buildTmpl',
-            [newText, relativeFilePath, componentsPropertiesFilePath, extension],
+            [newText, relativeFilePath, componentsPropertiesFilePath],
             relativeFilePath,
             moduleInfo
          );
