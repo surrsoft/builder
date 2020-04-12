@@ -70,45 +70,6 @@ function checkForNewThemeType(currentTheme) {
 }
 
 /**
- * Gets themes list for multi themes build
- * configuration
- * @param allThemes
- * @param taskParameters
- */
-function getMultiThemesList(allThemes, themesParam) {
-   const multiThemes = {};
-   switch (typeof themesParam) {
-      case 'boolean':
-         if (themesParam) {
-            Object.keys(allThemes).forEach((currentTheme) => {
-               if (checkForNewThemeType(allThemes[currentTheme])) {
-                  return;
-               }
-               multiThemes[currentTheme] = allThemes[currentTheme];
-            });
-         }
-         break;
-
-      // selected array of themes
-      case 'object':
-         if (themesParam instanceof Array === true) {
-            Object.keys(allThemes).forEach((currentTheme) => {
-               if (themesParam.includes(currentTheme)) {
-                  if (checkForNewThemeType(allThemes[currentTheme])) {
-                     return;
-                  }
-                  multiThemes[currentTheme] = allThemes[currentTheme];
-               }
-            });
-         }
-         break;
-      default:
-         break;
-   }
-   return multiThemes;
-}
-
-/**
  * gets new themes list
  * @param allThemes
  */
@@ -137,23 +98,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    const moduleLess = [];
    const allThemes = taskParameters.cache.currentStore.styleThemes;
    const moduleName = path.basename(moduleInfo.output);
-
-   // check for offline plugin application
-   const multiThemes = getMultiThemesList(allThemes, taskParameters.config.themes);
-
-   /**
-    * temporary decision in 2100 to provide backward compatibility between new
-    * and multi scheme for default theme. For 2100 only.
-    * https://online.sbis.ru/doc/e88ff761-5db0-4fe0-bd23-021cb4c1b6f2
-     */
-   allThemes.default = {
-      path: `${gulpModulesInfo.gulpModulesPaths['Controls-default-theme']}/_theme`,
-      config: {
-         tags: ['ws4-default']
-      },
-      customPath: true
-   };
-   multiThemes.default = allThemes.default;
    const newThemes = getNewThemesList(allThemes);
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
@@ -333,7 +277,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      modulePath: moduleInfo.path,
                      text: currentLessFile.contents.toString(),
                      moduleLessConfig,
-                     multiThemes,
                      autoprefixerOptions
                   };
                   const [error, results] = await execInPool(
@@ -486,6 +429,5 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
 
 module.exports = {
    compileLess,
-   getMultiThemesList,
    checkForNewThemeType
 };
