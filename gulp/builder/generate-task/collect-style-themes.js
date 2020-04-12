@@ -18,7 +18,6 @@ const gulp = require('gulp'),
 
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
-const permittedMultiThemes = require('../../../resources/multi-themes.json');
 
 /**
  * Parses current interface module name. Checks it for new theme name template:
@@ -160,40 +159,33 @@ function generateTaskForCollectThemes(taskParameters) {
                   const fileName = path.basename(file.path, '.less');
                   const folderName = path.basename(path.dirname(file.path));
                   if (fileName === folderName) {
-                     if (permittedMultiThemes.includes(fileName)) {
-                        const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
-                        let themeConfig;
-                        if (!(await fs.pathExists(themeConfigPath))) {
-                           logger.warning(`There is no configuration file ${themeConfigPath} with set of compatibility tags ` +
-                              `for theme ${file.path}. This theme won't be participating in less build.`);
-                        } else {
-                           /**
-                            * if "theme.config.json" config file was found, log it as warning
-                            * so folks responsible for project building can write errors
-                            * for this to fix it and dont miss any of the config file.
-                            */
-                           logger.warning({
-                              message: '"theme.config.json" is deprecated. You have to get rid of it.',
-                              filePath: file.path
-                           });
-                           try {
-                              themeConfig = await fs.readJson(themeConfigPath);
-                           } catch (error) {
-                              logger.error({
-                                 message: 'Theme configuration file error occurred. Check validity of the configuration file',
-                                 error,
-                                 filePath: themeConfigPath,
-                                 moduleInfo
-                              });
-                           }
-                        }
-                        taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path), themeConfig);
+                     const themeConfigPath = `${path.dirname(file.path)}/theme.config.json`;
+                     let themeConfig;
+                     if (!(await fs.pathExists(themeConfigPath))) {
+                        logger.warning(`There is no configuration file ${themeConfigPath} with set of compatibility tags ` +
+                           `for theme ${file.path}. This theme won't be participating in less build.`);
                      } else {
-                        logger.error({
-                           message: 'Attempt of defining multi theme. Please, use new themes scheme by defining of an appropriate interface module.',
+                        /**
+                         * if "theme.config.json" config file was found, log it as warning
+                         * so folks responsible for project building can write errors
+                         * for this to fix it and dont miss any of the config file.
+                         */
+                        logger.warning({
+                           message: '"theme.config.json" is deprecated. You have to get rid of it.',
                            filePath: file.path
                         });
+                        try {
+                           themeConfig = await fs.readJson(themeConfigPath);
+                        } catch (error) {
+                           logger.error({
+                              message: 'Theme configuration file error occurred. Check validity of the configuration file',
+                              error,
+                              filePath: themeConfigPath,
+                              moduleInfo
+                           });
+                        }
                      }
+                     taskParameters.cache.addStyleTheme(folderName, path.dirname(file.path), themeConfig);
                   }
                }
                done();

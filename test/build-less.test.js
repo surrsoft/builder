@@ -2,7 +2,7 @@
 
 const initTest = require('./init-test');
 const { parseCurrentModuleName, getThemeModifier } = require('../gulp/builder/generate-task/collect-style-themes');
-const { getMultiThemesList, checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
+const { checkForNewThemeType } = require('../gulp/builder/plugins/compile-less');
 const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
 const
    path = require('path'),
@@ -234,26 +234,6 @@ describe('build less', () => {
       result = getThemeModifier(root, darkLThemePath);
       result.should.equal('dark-large');
    });
-   it('get correct list of multi themes', () => {
-      const multiThemes = {
-         myTheme: {
-            path: 'path/to/myTheme'
-         },
-         myAnotherTheme: {
-            path: 'path/to/myAnotherTheme'
-         }
-      };
-      const allThemes = {
-         'TestModule-online-theme': {
-            type: 'new',
-            moduleName: 'TestModule',
-            themeName: 'online'
-         },
-         ...multiThemes
-      };
-      const result = getMultiThemesList(allThemes, true);
-      result.should.deep.equal(multiThemes);
-   });
    it('check theme for new type', () => {
       const multiTheme = {
          path: 'path/to/myTheme'
@@ -271,10 +251,6 @@ describe('build less', () => {
          path: 'path/to/default',
          name: 'default',
          isDefault: true
-      };
-      const multiTheme = {
-         path: 'path/to/myTheme',
-         name: 'myTheme'
       };
       const oldThemeWithCustomVariables = {
          path: 'path/to/online',
@@ -311,15 +287,6 @@ describe('build less', () => {
             '@import \'Controls-default-theme/_theme\';',
             '@import "SBIS3.CONTROLS/themes/_mixins";',
             '@themeName: default;'
-         ]);
-      });
-      it('multi theme - should return correct imports list', () => {
-         const result = getCurrentImports('path/to/some/less.less', multiTheme, gulpModulesInfo.gulpModulesPaths);
-         result.length.should.equal(3);
-         result.should.have.members([
-            '@import \'path/to/myTheme/myTheme\';',
-            '@import "Controls-default-theme/_mixins";',
-            '@themeName: myTheme;'
          ]);
       });
       it('old theme - for theme with custom variables', () => {
