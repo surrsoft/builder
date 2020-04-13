@@ -9,7 +9,7 @@
 
 const through = require('through2');
 const { checkSourceNecessityByConfig } = require('../../common/helpers');
-const logger = require('../../../lib/logger');
+const logger = require('../../../lib/logger').logger();
 const builderMeta = new Set([
    'module-dependencies.json',
    'navigation-modules.json',
