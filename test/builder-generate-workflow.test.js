@@ -2208,21 +2208,13 @@ describe('gulp/builder/generate-workflow.js', () => {
       await prepareTest(fixtureFolder);
       await linkPlatform(sourceFolder);
 
-      const testCurrentPackage = (page, currentPackage) => {
-         const containsNeededPackage = page.includes(currentPackage);
-         containsNeededPackage.should.equal(true);
-      };
       const testSingleServiceResults = async() => {
          /**
           * dependencies in current test are static, so we can also add check for package hash.
           */
          const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
-         testCurrentPackage(packedHtml, 'href="/testService/resources/TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css"');
-         testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/en-USd453b4a41d0ba63babee569a6b351f39.js"');
-         testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/end453b4a41d0ba63babee569a6b351f39.js"');
-         testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/ru-RU189e604be3df7a51aff15014143ace19.js"');
-         testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/ru189e604be3df7a51aff15014143ace19.js"');
-         testCurrentPackage(packedHtml, 'src="/testService/resources/TestModule/static_packages/29b5d8206eadc7b5f1579f565da63ff0.js"');
+         const correctHtmlResult = await fs.readFile(path.join(fixtureFolder, 'correctSingleHtmlResult.html'), 'utf8');
+         packedHtml.should.equal(correctHtmlResult);
          const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css'), 'utf8');
          staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png)}');
       };
@@ -2232,12 +2224,8 @@ describe('gulp/builder/generate-workflow.js', () => {
           * dependencies in current test are static, so we can also add check for package hash.
           */
          const packedHtml = await fs.readFile(path.join(outputFolder, 'TestModule/testPage.html'), 'utf8');
-         testCurrentPackage(packedHtml, 'href="%{RESOURCE_ROOT}TestModule/static_packages/55ae7a3b8992d8a501a63806cb1e28a8.css?x_module=%{BUILD_NUMBER}"');
-         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/en-USd453b4a41d0ba63babee569a6b351f39.js?x_module=%{BUILD_NUMBER}"');
-         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/end453b4a41d0ba63babee569a6b351f39.js?x_module=%{BUILD_NUMBER}"');
-         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/ru-RU189e604be3df7a51aff15014143ace19.js?x_module=%{BUILD_NUMBER}"');
-         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/ru189e604be3df7a51aff15014143ace19.js?x_module=%{BUILD_NUMBER}"');
-         testCurrentPackage(packedHtml, 'src="%{RESOURCE_ROOT}TestModule/static_packages/29b5d8206eadc7b5f1579f565da63ff0.js?x_module=%{BUILD_NUMBER}"');
+         const correctHtmlResult = await fs.readFile(path.join(fixtureFolder, 'correctMultiHtmlResult.html'), 'utf8');
+         packedHtml.should.equal(correctHtmlResult);
          const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/55ae7a3b8992d8a501a63806cb1e28a8.css'), 'utf8');
          staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png?x_module=%{MODULE_VERSION_STUB=TestModule})}');
       };
