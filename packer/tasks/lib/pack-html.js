@@ -251,6 +251,17 @@ function insertAllDependenciesToDocument(filesToPack, type, insertAfter) {
          curFilesToPack
             .reverse()
             .filter(file => file.name)
+
+            // sort links to avoid order issues in ui-patch building
+            .sort((a, b) => {
+               if (a.name < b.name) {
+                  return -1;
+               }
+               if (a.name > b.name) {
+                  return 1;
+               }
+               return 0;
+            })
             .forEach((file) => {
                options['data-pack-name'] = file.skip ? 'skip' : `ws-mods-${type}`;
 
