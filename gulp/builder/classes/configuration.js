@@ -416,43 +416,6 @@ class BuildConfiguration {
        * 3) localization was enabled for current project.
        */
       this.initCore = this.needTemplates || this.builderTests || this.localizations.length > 0;
-
-      // try to get iltorb library only in case of necessity of brotli building.
-      if (this.compress) {
-         // eslint-disable-next-line global-require
-         const { brotliCompress } = require('zlib');
-
-         /**
-          * We have to check native brotli availability until all tensor servers have been upgraded theirs
-          * Node.Js to 12+ LTS-version.
-          */
-         if (!brotliCompress) {
-            /**
-             * Some of tensor servers haven't got Node.Js in version 10.14.2. For some reasons
-             * they are using 8.11.x Node instead of 10.14.2 at the right moment and can't do an
-             * update to latest LTS-version of it. Therefore don't make any attempts of requiring
-             * "iltorb" library because of fatal error issue to be thrown in this case. Example
-             * https://online.sbis.ru/opendoc.html?guid=4b714203-dffe-4a7d-a2d5-2eb947c3171a
-             */
-            try {
-               if (!isWindows) {
-                  // eslint-disable-next-line global-require, no-unused-vars
-                  const iltorb = require('iltorb');
-               }
-            } catch (error) {
-               if (!semver.satisfies(process.versions.node, `>=${NODE_VERSION}`)) {
-                  throw new Error(
-                     `Your Node.JS version(${process.version}) in outdated! Please reinstall it to ${NODE_VERSION} or newer for builder properly work!`
-                  );
-               } else {
-                  const message = `Your Node.JS version(${process.version}) have different C++ compiler!` +
-                     `Therefore we can't compile brotli using 'iltorb' library. Please reinstall Node.JS to actual SDK version ${NODE_VERSION} ` +
-                     `or run "npm install" command as administrator in "${process.cwd()}" directory`;
-                  throw new Error(message);
-               }
-            }
-         }
-      }
    }
 
    /**
