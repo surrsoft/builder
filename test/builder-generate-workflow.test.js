@@ -11,7 +11,7 @@ const path = require('path'),
    fs = require('fs-extra'),
    pMap = require('p-map'),
    helpers = require('../lib/helpers'),
-   { brotliDecompress } = require('zlib'),
+   { decompress } = require('iltorb'),
    { isWindows } = require('../lib/builder-constants'),
    { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
@@ -56,9 +56,9 @@ const runWorkflow = function() {
    });
 };
 
-const decompress = function(data) {
+const brotliDecompress = function(data) {
    return new Promise((resolve, reject) => {
-      brotliDecompress(data, (err, decompressed) => {
+      decompress(data, (err, decompressed) => {
          if (err) {
             reject(err);
          } else {
@@ -1970,7 +1970,7 @@ describe('gulp/builder/generate-workflow.js', () => {
          if (!isWindows) {
             const cssContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css'));
             const cssBrotliContent = await fs.readFile(path.join(moduleOutputFolder, 'test-brotli.package.min.css.br'));
-            const cssDecompressed = await decompress(cssBrotliContent);
+            const cssDecompressed = await brotliDecompress(cssBrotliContent);
 
             // decompressed brotli must be equal source css content
             cssDecompressed.toString().should.equal(cssContent.toString());
