@@ -8,8 +8,7 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
-   execInPool = require('../../common/exec-in-pool'),
-   { isWindows } = require('../../../lib/builder-constants');
+   execInPool = require('../../common/exec-in-pool');
 
 const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.ttf'];
 

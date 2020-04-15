@@ -8,13 +8,10 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const ConfigurationReader = require('../../common/configuration-reader'),
-   ModuleInfo = require('./module-info'),
-   { getLanguageByLocale, clearSourcesSymlinks, checkForSourcesOutput } = require('../../../lib/config-helpers'),
-   availableLanguage = require('../../../resources/availableLanguage.json');
-const semver = require('semver');
-const NODE_VERSION = '10.14.2';
-const { isWindows } = require('../../../lib/builder-constants');
+const ConfigurationReader = require('../../common/configuration-reader');
+const ModuleInfo = require('./module-info');
+const { getLanguageByLocale, clearSourcesSymlinks, checkForSourcesOutput } = require('../../../lib/config-helpers');
+const availableLanguage = require('../../../resources/availableLanguage.json');
 
 /**
  * Class with data about configuration of the build.
