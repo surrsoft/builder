@@ -1,6 +1,6 @@
 @Library('pipeline') _
 
-def version = '20.3000/bugfix/fix_coverage_builds_fail'
+def version = '20.3000'
 
 node ('controls') {
     checkout_pipeline("rc-${version}")
