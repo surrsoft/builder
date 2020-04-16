@@ -12,7 +12,6 @@ const path = require('path'),
    pMap = require('p-map'),
    helpers = require('../lib/helpers'),
    { brotliDecompress } = require('zlib'),
-   { isWindows } = require('../lib/builder-constants'),
    { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
@@ -1847,7 +1846,7 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('gzip and brotli - check for brotli correct encoding and decoding. Should compressed only minified and packed', async() => {
          const resultFiles = await fs.readdir(moduleOutputFolder);
-         let correctMembers = [
+         const correctMembers = [
             '.builder',
             'Test',
             'lang',
@@ -1855,6 +1854,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'TestBSort',
             'Page.min.wml',
             'Page.min.wml.gz',
+            'Page.min.wml.br',
             'Page.wml',
             'Page.min.xhtml',
             'Page.xhtml',
@@ -1864,6 +1864,7 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Stable.less',
             'Stable.min.css',
             'Stable.min.css.gz',
+            'Stable.min.css.br',
             'cbuc-icons.eot',
             'bundles.json',
             'bundlesRoute.json',
@@ -1871,31 +1872,24 @@ describe('gulp/builder/generate-workflow.js', () => {
             'pack.package.json',
             'test-brotli.package.min.css',
             'test-brotli.package.min.css.gz',
+            'test-brotli.package.min.css.br',
             'test-brotli.package.min.js',
             'test-brotli.package.min.js.gz',
+            'test-brotli.package.min.js.br',
             'themes.config.json',
             'themes.config.min.json',
             'themes.config.min.json.gz',
+            'themes.config.min.json.br',
             'private.js',
             'private.min.css',
             'private.min.css.gz',
+            'private.min.css.br',
             'private.min.js',
             'private.min.js.gz',
+            'private.min.js.br',
             'private.min.original.js',
             'private.package.json',
          ];
-
-         if (!isWindows) {
-            correctMembers = correctMembers.concat([
-               'Page.min.wml.br',
-               'Stable.min.css.br',
-               'test-brotli.package.min.css.br',
-               'test-brotli.package.min.js.br',
-               'themes.config.min.json.br',
-               'private.min.css.br',
-               'private.min.js.br',
-            ]);
-         }
 
          // output directory must have brotli(except windows os) and gzip files, only for minified files and packages.
          resultFiles.should.have.members(correctMembers);
