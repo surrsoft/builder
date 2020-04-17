@@ -1,6 +1,6 @@
 {
   "includeCore": true,
   "modules": ["InterfaceModule1/*","InterfaceModule2/*"],
-  "include": ["*"],
+  "include": ["InterfaceModule1/*","InterfaceModule2/*"],
   "output": "Modul/private"
 }
