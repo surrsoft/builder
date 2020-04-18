@@ -229,10 +229,6 @@ describe('build less', () => {
          isDefault: true,
          variablesFromLessConfig: 'Controls-default-theme'
       };
-      const oldThemeWithoutPath = {
-         name: 'default',
-         isDefault: true
-      };
       const newTheme = {
          type: 'new',
          moduleName: 'TestModule',
@@ -244,15 +240,6 @@ describe('build less', () => {
       });
       it('old theme - for theme with path should return correct imports list', () => {
          const result = getCurrentImports('path/to/some/less.less', oldTheme, gulpModulesInfo.gulpModulesPaths);
-         result.length.should.equal(3);
-         result.should.have.members([
-            '@import \'Controls-default-theme/_theme\';',
-            '@import "SBIS3.CONTROLS/themes/_mixins";',
-            '@themeName: default;'
-         ]);
-      });
-      it('old theme - for theme without path should return correct imports list without errors', () => {
-         const result = getCurrentImports('path/to/some/less.less', oldThemeWithoutPath, gulpModulesInfo.gulpModulesPaths);
          result.length.should.equal(3);
          result.should.have.members([
             '@import \'Controls-default-theme/_theme\';',
