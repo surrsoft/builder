@@ -17,17 +17,17 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
    pathsForImport = [workspaceFolder],
    themes = {
       'online': {
-         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/online'),
+         path: 'SBIS3.CONTROLS/themes/online',
          moduleName: 'SBIS3.CONTROLS'
       },
       'presto': {
-         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/presto'),
+         path: 'SBIS3.CONTROLS/themes/presto',
          name: 'presto',
          moduleName: 'SBIS3.CONTROLS'
 
       },
       'carry': {
-         path: path.join(workspaceFolder, 'SBIS3.CONTROLS/themes/carry'),
+         path: 'SBIS3.CONTROLS/themes/carry',
          name: 'carry',
          moduleName: 'SBIS3.CONTROLS'
       }
