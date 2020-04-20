@@ -496,13 +496,13 @@ describe('gulp/builder/generate-workflow.js', () => {
          testModuleThemes(testModuleContents);
 
          // test common contents.json for correct new themes content
-         let testCommonModuleContents = await fs.readJson(path.join(outputFolder, 'contents.json'));
+         const testCommonModuleContents = await fs.readJson(path.join(outputFolder, 'contents.json'));
          testModuleThemes(testCommonModuleContents);
 
-         // also contents.js needs to be tested for correct content of new themes
-         testCommonModuleContents = await fs.readFile(path.join(outputFolder, 'TestModule/contents.js'), 'utf8');
-         testCommonModuleContents = JSON.parse(testCommonModuleContents.slice(9, testCommonModuleContents.length));
-         testModuleThemes(testModuleContents);
+         // There shouldn't be any information about themed interface modules(f.e. MyModule-myTheme-theme)
+         // in resulting contents. All of the information should be used only within builder functionality.
+         const testThemedModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule-anotherTheme-theme/contents.json'));
+         ({}).should.deep.equal(testThemedModuleContents.modules['TestModule-anotherTheme-theme']);
 
          /**
           * We need to import SBIS3.CONTROLS variables into new theme less files to get an ability to move

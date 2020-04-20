@@ -530,6 +530,11 @@ class Cache {
     * @returns {themeModules|{}}
     */
    getNewThemesModulesCache(moduleName) {
+      // newThemes in contents is needed only for origin interface modules
+      // themed modules data from cache is needed only for builder execution purposes
+      if (moduleName.endsWith('-theme')) {
+         return {};
+      }
       return this.currentStore.themeModules[moduleName] || {};
    }
 
