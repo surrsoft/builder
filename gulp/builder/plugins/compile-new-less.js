@@ -68,7 +68,13 @@ function getThemeModificatorForLess(themeModifier, moduleModifiers) {
  * @returns {*}
  */
 function getThemedModules(modulesListFromCache) {
-   return modulesListFromCache.filter(currentModule => currentModule.type === 'new');
+   const result = {};
+   Object.keys(modulesListFromCache).forEach((currentModule) => {
+      if (modulesListFromCache[currentModule].type === 'new') {
+         result[currentModule] = modulesListFromCache[currentModule];
+      }
+   });
+   return result;
 }
 
 /**
