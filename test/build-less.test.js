@@ -196,6 +196,16 @@ describe('build less', () => {
       );
    });
 
+   it('less from CloudControls', async() => {
+      const filePath = path.join(workspaceFolder, 'CloudControls/myLess.less');
+      const text = ".test-selector {\ntest-mixin: 'mixin there';test-var: 'it is regular less';}";
+      const result = await processLessFile(text, filePath, null, gulpModulesInfo);
+      result.imports.length.should.equal(0);
+      result.text.should.equal(
+         ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is regular less';\n}\n"
+      );
+   });
+
    it("get correct base info for new theme's interface module", () => {
       const modulesList = new Set(['Controls', 'Controls-myModule']);
       let result = parseCurrentModuleName(modulesList, ['Controls', 'online']);
