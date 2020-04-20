@@ -228,7 +228,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      moduleInfo: moduleInfoForFail
                   };
                } else {
-                  const message = `Less compiler error: ${result.error}. Source file: ${file.history[0]}.\n`;
+                  const message = `new less compiler error: ${result.error}. Source file: ${file.history[0]}.\n`;
                   logger.error({ message });
                }
                errors = true;
