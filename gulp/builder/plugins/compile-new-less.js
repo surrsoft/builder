@@ -61,10 +61,28 @@ function getThemeModificatorForLess(themeModifier, moduleModifiers) {
 }
 
 /**
- * Объявление плагина
- * @param {TaskParameters} taskParameters параметры для задач
- * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
+ * Get from builder cache only interface modules that are being
+ * themed interface modules
+ * @param modulesListFromCache - list of all modules from builder modules
+ * containing meta information about new themes
+ * @returns {*}
+ */
+function getThemedModules(modulesListFromCache) {
+   const result = {};
+   Object.keys(modulesListFromCache).forEach((currentModule) => {
+      if (modulesListFromCache[currentModule].type === 'new') {
+         result[currentModule] = modulesListFromCache[currentModule];
+      }
+   });
+   return result;
+}
+
+/**
+ * Plugin declaration
+ * @param {TaskParameters} taskParameters a whole parameters list for execution of build of current project
+ * @param {ModuleInfo} moduleInfo all needed information about current interface module
+ * @param {string[]} gulpModulesInfo paths to be used by less compiler for finding of imports.
+ * Needed for proper work of trans-module imports
  * @returns {stream}
  */
 function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
@@ -74,7 +92,7 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
    };
    const moduleName = path.basename(moduleInfo.output);
 
-   const newThemes = taskParameters.cache.currentStore.themeModules;
+   const newThemes = getThemedModules(taskParameters.cache.currentStore.themeModules);
    const currentModuleNewTheme = taskParameters.cache.getNewStyleTheme(moduleInfo.name);
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
@@ -106,7 +124,6 @@ function compileNewLess(taskParameters, moduleInfo, gulpModulesInfo) {
       return defaultPipe;
    }
 
-   //
    if (!newThemes[moduleName].moduleName) {
       logger.error({
          message: `For theme module ${moduleName} properly building you must also specify origin interface module!`,
