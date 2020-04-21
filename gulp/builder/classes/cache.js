@@ -468,74 +468,11 @@ class Cache {
    }
 
    /**
-    * adds new theme into style themes cache
-    * @param{String} folderName - Interface module name
-    * @param{Object} config - base info about current theme
-    */
-   addNewStyleTheme(themeModule, modifier, config) {
-      const { moduleName, themeName } = config;
-      const { themeModules } = this.currentStore;
-      if (!themeModules.hasOwnProperty(themeModule)) {
-         themeModules[themeModule] = {
-            type: 'new',
-            moduleName,
-            themeName,
-            modifiers: [modifier]
-         };
-      } else {
-         themeModules[themeModule].modifiers.push(modifier);
-      }
-   }
-
-   getNewStyleTheme(themeModule) {
-      const { themeModules } = this.currentStore;
-      return themeModules[themeModule];
-   }
-
-   /**
     * Установить признак того, что верстку нужно скомпилировать заново.
     * Это случается, если включена локализация и какой-либо класс в jsdoc поменялся.
     */
    setDropCacheForMarkup() {
       this.dropCacheForMarkup = true;
-   }
-
-   /**
-    * Stores themed modules meta into current interface module cache.
-    * Example: for theme Interface module "Controls-showcase-theme",
-    * for themed less component "decorator" would be stored next information:
-    * Controls/decorator: ["showcase"]
-    * @param{String} moduleName - current interface module name
-    * @param{String} lessName - current less file name
-    * @param{String} themeModifier - current theme name
-    * @param{String} themeName - current theme name
-    */
-   storeNewThemesModules(moduleName, lessName, themeModifier, themeName) {
-      const currentLessControl = helpers.unixifyPath(`${moduleName}/${lessName}`);
-      if (!this.currentStore.themeModules.hasOwnProperty(moduleName)) {
-         this.currentStore.themeModules[moduleName] = {};
-      }
-      const currentNewThemesMeta = this.currentStore.themeModules[moduleName];
-      if (!currentNewThemesMeta.hasOwnProperty(currentLessControl)) {
-         currentNewThemesMeta[currentLessControl] = [];
-      }
-      const themeNameWithModifier = themeModifier ? `${themeName}:${themeModifier.replace(/\//g, ':')}` : themeName;
-      if (!currentNewThemesMeta[currentLessControl].includes(themeNameWithModifier)) {
-         currentNewThemesMeta[currentLessControl].push(themeNameWithModifier);
-      }
-   }
-
-   /**
-    * Gets new themes meta info for current Interface module
-    * @returns {themeModules|{}}
-    */
-   getNewThemesModulesCache(moduleName) {
-      // newThemes in contents is needed only for origin interface modules
-      // themed modules data from cache is needed only for builder execution purposes
-      if (moduleName.endsWith('-theme')) {
-         return {};
-      }
-      return this.currentStore.themeModules[moduleName] || {};
    }
 
 

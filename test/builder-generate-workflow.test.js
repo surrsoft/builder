@@ -469,41 +469,7 @@ describe('gulp/builder/generate-workflow.js', () => {
    it('compile less - should return correct meta in "contents" for new themes', async() => {
       const fixtureFolder = path.join(__dirname, 'fixture/builder-generate-workflow/less');
       await prepareTest(fixtureFolder);
-
-      const testModuleThemes = (currentContents) => {
-         const testModuleNewThemes = currentContents.modules.TestModule.newThemes;
-         testModuleNewThemes.hasOwnProperty('TestModule/test-online').should.equal(true);
-         testModuleNewThemes['TestModule/test-online'].should.have.members([
-            'online', 'anotherTheme', 'online:dark-large', 'online:dark:medium'
-         ]);
-         testModuleNewThemes.hasOwnProperty('TestModule/dark/subDirectoryForOnline/test-online').should.equal(true);
-         testModuleNewThemes['TestModule/dark/subDirectoryForOnline/test-online'].should.have.members([
-            'online'
-         ]);
-         testModuleNewThemes.hasOwnProperty('TestModule/subDirectoryForDarkMedium/test-online').should.equal(true);
-         testModuleNewThemes['TestModule/subDirectoryForDarkMedium/test-online'].should.have.members([
-            'online:dark:medium'
-         ]);
-      };
       const testResults = async() => {
-         // test contents.json for correct new themes content
-         let testModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule/contents.json'));
-         testModuleThemes(testModuleContents);
-
-         // also contents.js needs to be tested for correct content of new themes
-         testModuleContents = await fs.readFile(path.join(outputFolder, 'TestModule/contents.js'), 'utf8');
-         testModuleContents = JSON.parse(testModuleContents.slice(9, testModuleContents.length));
-         testModuleThemes(testModuleContents);
-
-         // test common contents.json for correct new themes content
-         const testCommonModuleContents = await fs.readJson(path.join(outputFolder, 'contents.json'));
-         testModuleThemes(testCommonModuleContents);
-
-         // There shouldn't be any information about themed interface modules(f.e. MyModule-myTheme-theme)
-         // in resulting contents. All of the information should be used only within builder functionality.
-         const testThemedModuleContents = await fs.readJson(path.join(outputFolder, 'TestModule-anotherTheme-theme/contents.json'));
-         ({}).should.deep.equal(testThemedModuleContents.modules['TestModule-anotherTheme-theme']);
-
          /**
           * We need to import SBIS3.CONTROLS variables into new theme less files to get an ability to move
           * old variables from Controls-default-theme into SBIS3.CONTROLS without errors.
@@ -572,7 +538,6 @@ describe('gulp/builder/generate-workflow.js', () => {
       await runWorkflowWithTimeout(30000);
       await testResults();
 
-      // build patch without builder cache. contents should have new themes meta
       await fs.remove(cacheFolder);
       await runWorkflowWithTimeout(30000);
       await testResults();

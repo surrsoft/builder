@@ -31,10 +31,11 @@ function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
 }
 
 /**
- * Объявление плагина
- * @param {TaskParameters} taskParameters параметры для задач
- * @param {ModuleInfo} moduleInfo информация о модуле
- * @param {string[]} pathsForImport пути, в которыи less будет искать импорты. нужно для работы межмодульных импортов.
+ * Plugin declaration
+ * @param {TaskParameters} taskParameters a whole parameters list for execution of build of current project
+ * @param {ModuleInfo} moduleInfo all needed information about current interface module
+ * @param {string[]} gulpModulesInfo paths to be used by less compiler for finding of imports.
+ * Needed for proper work of trans-module imports
  * @returns {stream}
  */
 function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
@@ -42,9 +43,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
       const relativePath = path.relative(moduleInfo.path, file.history[0]).replace(/\.less$/, replacingExt);
       return path.join(moduleInfo.output, transliterate(relativePath));
    };
-   const moduleLess = [];
-   const moduleName = path.basename(moduleInfo.output);
-   const newThemes = taskParameters.cache.currentStore.themeModules;
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
       case 'boolean':
@@ -64,17 +62,8 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          break;
    }
 
-   /**
-    * skip new themes interface modules. Gulp have own plugin for this situation.
-    */
-   if (newThemes[moduleName]) {
-      return through.obj(
-         function onTransform(file, encoding, callback) {
-            callback(null, file);
-         }
-      );
-   }
-
+   const errorsList = {};
+   let errors = false;
    return through.obj(
 
       /* @this Stream */
@@ -118,7 +107,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                if (lessInSource) {
                   const
                      warnMessage = 'Compiled style from sources will be ignored: ' +
-                     'current style will be compiled from less source analog',
+                        'current style will be compiled from less source analog',
                      logObj = {
                         message: warnMessage,
                         filePath: file.path,
@@ -156,119 +145,99 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                return;
             }
 
-            moduleLess.push(file);
-            callback(null);
+            const [error, result] = await execInPool(
+               taskParameters.pool,
+               'buildLess',
+               [
+                  file.history[0],
+                  file.contents.toString(),
+                  moduleInfo.newThemesModule,
+                  moduleInfo.path,
+                  autoprefixerOptions,
+                  gulpModulesInfo
+               ],
+               file.history[0],
+               moduleInfo,
+
+               /**
+                * for some project in one execute machine builder can be used multiple times in parallel -
+                * f.e. in offline desktop application building debug and release versions of current product.
+                * In this case will be created 2x more node.js workers, than we have CPU threads in current
+                * machine, that would cause "resources war" between 2 builder workerpools and significant
+                * performance decrease. In this case we need extra timeout for heavy tasks
+                * (less compiler is the heaviest of all builder tasks for worker)
+                */
+               600000
+            );
+            if (error) {
+               taskParameters.cache.markFileAsFailed(file.history[0]);
+               logger.error({
+                  message: 'Uncaught less compiler error',
+                  error,
+                  filePath: file.history[0]
+               });
+               return;
+            }
+
+            taskParameters.storePluginTime('less compiler', result.passedTime, true);
+            if (result.error) {
+               if (result.type) {
+                  const moduleNameForFail = getModuleNameForFailedImportLess(
+                     file.base,
+                     result.failedLess
+                  );
+                  const moduleInfoForFail = taskParameters.config.modules.find(
+                     currentModuleInfo => currentModuleInfo.name === moduleNameForFail
+                  );
+                  let message = result.error;
+
+                  // add more additional logs information for bad import in less
+                  if (result.type === 'import') {
+                     const errorLoadAttempts = result.error.slice(result.error.indexOf('Tried -'), result.error.length);
+                     result.error = result.error.replace(errorLoadAttempts, '');
+
+                     message = `Bad import detected ${result.error}. Check interface module of current import ` +
+                        `for existing in current project. Needed by: ${file.history[0]}.\n${errorLoadAttempts}`;
+                  }
+                  errorsList[result.failedLess] = {
+                     message,
+                     moduleInfo: moduleInfoForFail
+                  };
+               } else {
+                  const messageParts = [];
+                  messageParts.push(`Less compiler error: ${result.error}. Source file: ${file.history[0]}. `);
+                  messageParts.push('\n');
+                  logger.error({ message: messageParts.join('') });
+               }
+               errors = true;
+               taskParameters.cache.markFileAsFailed(file.history[0]);
+            } else {
+               const { compiled } = result;
+               const outputPath = getOutput(file, '.css');
+               taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
+               taskParameters.cache.addDependencies(file.history[0], compiled.imports);
+
+               const newFile = file.clone();
+               newFile.contents = Buffer.from(compiled.text);
+               newFile.path = outputPath;
+               newFile.base = moduleInfo.output;
+               newFile.lessSource = file.contents;
+               this.push(newFile);
+            }
+            this.push(file);
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
-               message: 'Ошибка builder\'а при сборе less-файлов',
+               message: 'Builder error occurred in less compiler',
                error,
                moduleInfo,
                filePath: file.history[0]
             });
-            callback(null, file);
          }
+         callback(null, file);
       },
 
-      /* @this Stream */
-      async function onFlush(callback) {
-         const promises = [];
-         const errorsList = {};
-         let errors = false;
-         Object.keys(moduleLess).forEach((lessFile) => {
-            promises.push((async(currentLessFile) => {
-               try {
-                  const [error, result] = await execInPool(
-                     taskParameters.pool,
-                     'buildLess',
-                     [
-                        currentLessFile.history[0],
-                        currentLessFile.contents.toString(),
-                        moduleInfo.path,
-                        autoprefixerOptions,
-                        gulpModulesInfo
-                     ],
-                     currentLessFile.history[0],
-                     moduleInfo,
-
-                     /**
-                      * for some project in one execute machine builder can be used multiple times in parallel -
-                      * f.e. in offline desktop application building debug and release versions of current product.
-                      * In this case will be created 2x more node.js workers, than we have CPU threads in current
-                      * machine, that would cause "resources war" between 2 builder workerpools and significant
-                      * performance decrease. In this case we need extra timeout for heavy tasks
-                      * (less compiler is the heaviest of all builder tasks for worker)
-                      */
-                     600000
-                  );
-                  if (error) {
-                     taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
-                     logger.error({
-                        message: 'Uncaught less compiler error',
-                        error,
-                        filePath: currentLessFile.history[0]
-                     });
-                     return;
-                  }
-
-                  taskParameters.storePluginTime('less compiler', result.passedTime, true);
-                  if (result.error) {
-                     if (result.type) {
-                        const moduleNameForFail = getModuleNameForFailedImportLess(
-                           currentLessFile.base,
-                           result.failedLess
-                        );
-                        const moduleInfoForFail = taskParameters.config.modules.find(
-                           currentModuleInfo => currentModuleInfo.name === moduleNameForFail
-                        );
-                        let message = result.error;
-
-                        // add more additional logs information for bad import in less
-                        if (result.type === 'import') {
-                           const errorLoadAttempts = result.error.slice(result.error.indexOf('Tried -'), result.error.length);
-                           result.error = result.error.replace(errorLoadAttempts, '');
-
-                           message = `Bad import detected ${result.error}. Check interface module of current import ` +
-                              `for existing in current project. Needed by: ${currentLessFile.history[0]}.\n${errorLoadAttempts}`;
-                        }
-                        errorsList[result.failedLess] = {
-                           message,
-                           moduleInfo: moduleInfoForFail
-                        };
-                     } else {
-                        const messageParts = [];
-                        messageParts.push(`Less compiler error: ${result.error}. Source file: ${currentLessFile.history[0]}. `);
-                        messageParts.push('\n');
-                        logger.error({ message: messageParts.join('') });
-                     }
-                     errors = true;
-                     taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
-                  } else {
-                     const { compiled } = result;
-                     const outputPath = getOutput(currentLessFile, '.css');
-                     taskParameters.cache.addOutputFile(currentLessFile.history[0], outputPath, moduleInfo);
-                     taskParameters.cache.addDependencies(currentLessFile.history[0], compiled.imports);
-
-                     const newFile = currentLessFile.clone();
-                     newFile.contents = Buffer.from(compiled.text);
-                     newFile.path = outputPath;
-                     newFile.base = moduleInfo.output;
-                     newFile.lessSource = currentLessFile.contents;
-                     this.push(newFile);
-                  }
-               } catch (error) {
-                  taskParameters.cache.markFileAsFailed(currentLessFile.history[0]);
-                  logger.error({
-                     message: 'Builder error occurred in less compiler',
-                     error,
-                     filePath: currentLessFile.history[0]
-                  });
-               }
-               this.push(currentLessFile);
-            })(moduleLess[lessFile]));
-         });
-         await Promise.all(promises);
-
+      function onFlush(callback) {
          /**
           * do logging errors of current errored less for once to avoid hell of logs
           * in case of error had been occured by sort of theme's source.
@@ -284,6 +253,4 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    );
 }
 
-module.exports = {
-   compileLess
-};
+module.exports = compileLess;
