@@ -31,6 +31,23 @@ function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
 }
 
 /**
+ * Get from builder cache only interface modules that are being
+ * themed interface modules
+ * @param modulesListFromCache - list of all modules from builder modules
+ * containing meta information about new themes
+ * @returns {*}
+ */
+function getThemedModules(modulesListFromCache) {
+   const result = {};
+   Object.keys(modulesListFromCache).forEach((currentModule) => {
+      if (modulesListFromCache[currentModule].type === 'new') {
+         result[currentModule] = modulesListFromCache[currentModule];
+      }
+   });
+   return result;
+}
+
+/**
  * Объявление плагина
  * @param {TaskParameters} taskParameters параметры для задач
  * @param {ModuleInfo} moduleInfo информация о модуле
@@ -44,7 +61,7 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
    };
    const moduleLess = [];
    const moduleName = path.basename(moduleInfo.output);
-   const newThemes = taskParameters.cache.currentStore.themeModules;
+   const newThemes = getThemedModules(taskParameters.cache.currentStore.themeModules);
    let autoprefixerOptions = false;
    switch (typeof taskParameters.config.autoprefixer) {
       case 'boolean':
