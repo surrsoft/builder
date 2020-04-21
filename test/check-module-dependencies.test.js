@@ -113,6 +113,9 @@ describe('check-module-dependencies', () => {
       let currentName = 'css!myModule/module1';
       let result = getCurrentNodePlugin(currentName);
       result.should.equal('css');
+      currentName = 'css!theme?myModule/module1';
+      result = getCurrentNodePlugin(currentName);
+      result.should.equal('css');
       currentName = 'is!browser?myModule/module1';
       result = getCurrentNodePlugin(currentName);
       result.should.equal('');
@@ -152,6 +155,9 @@ describe('check-module-dependencies', () => {
       result = checkDependencyForExcludeRules(projectModulesNames, currentName, 'MyModule/module1');
       result.should.equal(true);
       currentName = 'i18n!MyModule/module1';
+      result = checkDependencyForExcludeRules(projectModulesNames, currentName, 'MyModule/module1');
+      result.should.equal(true);
+      currentName = 'css!theme?MyModule/module1';
       result = checkDependencyForExcludeRules(projectModulesNames, currentName, 'MyModule/module1');
       result.should.equal(true);
    });
