@@ -12,56 +12,8 @@ const gulp = require('gulp');
 const path = require('path');
 const plumber = require('gulp-plumber');
 const mapStream = require('map-stream');
-const helpers = require('../../../lib/helpers');
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
-
-/**
- * Parses current interface module name. Checks it for new theme name template:
- * <first part> - <second part> - theme.
- * First part - interface module name, that exists in current project
- * Second part - theme name
- * Example: for interface module "Controls" with theme name "online" interface module
- * for this theme would be named to "Controls-online-theme"
- * Returns base theme info:
- * 1)moduleName - interface module name for current theme
- * 2)themeName - current theme name
- * @param{Set} modulesList - current project list of interface modules
- * @param{Array} currentModuleParts - parts of current interface module name
- * @returns {{themeName: string, moduleName: *}}
- */
-function parseCurrentModuleName(modulesList, currentModuleParts) {
-   const themeNameParts = [];
-   let interfaceModuleParsed = false;
-   while (!interfaceModuleParsed && currentModuleParts.length > 0) {
-      themeNameParts.unshift(currentModuleParts.pop());
-      if (modulesList.has(currentModuleParts.join('-'))) {
-         interfaceModuleParsed = true;
-      }
-   }
-   return {
-      moduleName: currentModuleParts.join('-'),
-      themeName: themeNameParts.join('-')
-   };
-}
-
-/**
- * Gets new themes modifier by current theme module name and theme
- * definition less.
- * @param{String} modulePath - path to new theme interface module
- * @param{String} filePath - path to theme definition less
- * @returns {string}
- */
-function getThemeModifier(modulePath, filePath) {
-   const relativePath = path.relative(modulePath, filePath);
-   const modifier = helpers.unixifyPath(path.dirname(relativePath));
-
-   /**
-    * for root theme relative path will be resolved as '.'
-    * Set modifier as empty string in this case
-    */
-   return modifier === '.' ? '' : modifier;
-}
 
 /**
  * Генерация задачи поиска тем
@@ -79,11 +31,7 @@ function generateTaskForCollectThemes(taskParameters) {
       currentModule => buildModulesNames.add(path.basename(currentModule.output))
    );
    const tasks = taskParameters.config.modules.map((moduleInfo) => {
-      const input = [
-         path.join(moduleInfo.path, '/themes/*/theme.config.json'),
-         path.join(moduleInfo.path, '/themes.config.json'),
-         path.join(moduleInfo.path, '/**/_theme.less')
-      ];
+      const input = path.join(moduleInfo.path, '/**/_theme.less');
       return function collectStyleThemes() {
          return gulp
             .src(input, { dot: false, nodir: true, allowEmpty: true })
@@ -100,18 +48,7 @@ function generateTaskForCollectThemes(taskParameters) {
                })
             )
             .pipe(mapStream((file, done) => {
-               const currentFileName = path.basename(file.path);
-               if (currentFileName === 'themes.config.json' || currentFileName === 'theme.config.json') {
-                  /**
-                   * if "(themes/theme).config.json" config file was found, log it as warning
-                   * so folks responsible for project building can write errors
-                   * for this to fix it and dont miss any of the config file.
-                   */
-                  logger.warning({
-                     message: `"${currentFileName}" is deprecated. You have to get rid of it.`,
-                     filePath: file.path
-                  });
-               } else {
+               if (path.basename(file.path) === '_theme.less') {
                   const currentModuleName = path.basename(moduleInfo.output);
                   const currentModuleNameParts = currentModuleName.split('-');
 
@@ -123,13 +60,7 @@ function generateTaskForCollectThemes(taskParameters) {
                    * Other Interface modules will be ignored from new theme's processing
                    */
                   if (currentModuleNameParts.length > 2 && currentModuleNameParts.pop() === 'theme') {
-                     const themeModule = path.basename(moduleInfo.output);
-                     const result = parseCurrentModuleName(buildModulesNames, currentModuleNameParts);
-                     const modifier = getThemeModifier(
-                        helpers.unixifyPath(moduleInfo.path),
-                        helpers.unixifyPath(file.path),
-                     );
-                     taskParameters.cache.addNewStyleTheme(themeModule, modifier, result);
+                     moduleInfo.newThemesModule = true;
                   }
                }
                done();
@@ -145,8 +76,4 @@ function generateTaskForCollectThemes(taskParameters) {
    );
 }
 
-module.exports = {
-   generateTaskForCollectThemes,
-   parseCurrentModuleName,
-   getThemeModifier
-};
+module.exports = generateTaskForCollectThemes;

@@ -37,10 +37,6 @@ class StoreInfo {
       // Чтобы ошибки не терялись при инкрементальной сборке, нужно запоминать файлы с ошибками
       // и подавать их при повторном запуске как изменённые
       this.filesWithErrors = new Set();
-
-      // List of all interface modules with theme. Template <interface module>-<theme name>-theme
-      // F.e. Controls-default-theme
-      this.themeModules = {};
    }
 
    static getLastRunningParametersPath(cacheDirectory) {
@@ -89,14 +85,6 @@ class StoreInfo {
                error
             });
          }
-         try {
-            this.themeModules = await fs.readJson(path.join(cacheDirectory, 'new-themes.json'));
-         } catch (error) {
-            logger.info({
-               message: `Cache file "${path.join(cacheDirectory, 'new-themes.json')}" failed to be read`,
-               error
-            });
-         }
       }
    }
 
@@ -129,13 +117,6 @@ class StoreInfo {
       await fs.outputJson(
          path.join(cacheDirectory, 'files-with-errors.json'),
          [...this.filesWithErrors],
-         {
-            spaces: 1
-         }
-      );
-      await fs.outputJson(
-         path.join(cacheDirectory, 'new-themes.json'),
-         this.themeModules,
          {
             spaces: 1
          }

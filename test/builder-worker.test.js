@@ -60,6 +60,7 @@ describe('gulp/common/worker.js', () => {
          const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
             filePath,
             text,
+            false,
             modulePath,
             builderConstants.defaultAutoprefixerOptions,
             gulpModulesInfo
@@ -105,6 +106,7 @@ describe('gulp/common/worker.js', () => {
          const [, resultsBuildLess] = await execInPool(pool, 'buildLess', [
             filePath,
             text,
+            false,
             modulePath,
             builderConstants.defaultAutoprefixerOptions,
             gulpModulesInfo
@@ -141,6 +143,7 @@ describe('gulp/common/worker.js', () => {
          const [, lessResult] = await execInPool(pool, 'buildLess', [
             filePath,
             text,
+            false,
             modulePath,
             builderConstants.defaultAutoprefixerOptions,
             gulpModulesInfo
