@@ -1,7 +1,6 @@
 'use strict';
 
 const initTest = require('./init-test');
-const { parseCurrentModuleName, getThemeModifier } = require('../gulp/builder/generate-task/collect-style-themes');
 const { defaultAutoprefixerOptions } = require('../lib/builder-constants');
 const
    path = require('path'),
@@ -34,9 +33,12 @@ const workspaceFolder = helpers.prettifyPath(path.join(__dirname, 'fixture/build
    };
 
 const defaultModuleThemeObject = {
-   name: 'online',
-   path: themes.online.path,
-   moduleName: themes.online.moduleName
+   newThemesModule: false,
+   theme: {
+      name: 'online',
+      path: themes.online.path,
+      moduleName: themes.online.moduleName
+   }
 };
 
 describe('build less', () => {
@@ -132,9 +134,12 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const themeName = resolveThemeName(filePath, retailModulePath);
       const result = await processLessFile(text, filePath, {
-         name: themeName,
-         path: themes[themeName].path,
-         moduleName: themes[themeName].moduleName
+         newThemesModule: false,
+         theme: {
+            name: themeName,
+            path: themes[themeName].path,
+            moduleName: themes[themeName].moduleName
+         }
       }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is carry';\n}\n");
@@ -145,9 +150,12 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const themeName = resolveThemeName(filePath, retailModulePath);
       const result = await processLessFile(text, filePath, {
-         name: themeName,
-         path: themes[themeName].path,
-         moduleName: themes[themeName].moduleName
+         newThemesModule: false,
+         theme: {
+            name: themeName,
+            path: themes[themeName].path,
+            moduleName: themes[themeName].moduleName
+         }
       }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is presto';\n}\n");
@@ -157,9 +165,12 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const themeName = resolveThemeName(filePath, filePath);
       const result = await processLessFile(text, filePath, {
-         name: themeName,
-         path: themes[themeName].path,
-         moduleName: themes[themeName].moduleName
+         newThemesModule: false,
+         theme: {
+            name: themeName,
+            path: themes[themeName].path,
+            moduleName: themes[themeName].moduleName
+         }
       }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is online';\n}\n");
@@ -171,9 +182,12 @@ describe('build less', () => {
       const text = '@import "notExist";';
       const themeName = resolveThemeName(filePath, filePath);
       const result = await processLessFile(text, filePath, {
-         name: themeName,
-         path: themes[themeName].path,
-         moduleName: themes[themeName].moduleName
+         newThemesModule: false,
+         theme: {
+            name: themeName,
+            path: themes[themeName].path,
+            moduleName: themes[themeName].moduleName
+         }
       }, gulpModulesInfo);
       const errorMessage = result.error.replace(/\\/g, '/');
       return lib
@@ -186,9 +200,12 @@ describe('build less', () => {
       const text = '.test-selector {\ntest-mixin: @test-mixin;test-var: @test-var;}';
       const themeName = resolveThemeName(filePath, filePath);
       const result = await processLessFile(text, filePath, {
-         name: themeName,
-         path: themes[themeName].path,
-         moduleName: themes[themeName].moduleName
+         newThemesModule: false,
+         theme: {
+            name: themeName,
+            path: themes[themeName].path,
+            moduleName: themes[themeName].moduleName
+         }
       }, gulpModulesInfo);
       result.imports.length.should.equal(2);
       result.text.should.equal(
@@ -199,50 +216,33 @@ describe('build less', () => {
    it('less from CloudControls', async() => {
       const filePath = path.join(workspaceFolder, 'CloudControls/myLess.less');
       const text = ".test-selector {\ntest-mixin: 'mixin there';test-var: 'it is regular less';}";
-      const result = await processLessFile(text, filePath, null, gulpModulesInfo);
+      const result = await processLessFile(text, filePath, {}, gulpModulesInfo);
       result.imports.length.should.equal(0);
       result.text.should.equal(
          ".test-selector {\n  test-mixin: 'mixin there';\n  test-var: 'it is regular less';\n}\n"
       );
    });
-
-   it("get correct base info for new theme's interface module", () => {
-      const modulesList = new Set(['Controls', 'Controls-myModule']);
-      let result = parseCurrentModuleName(modulesList, ['Controls', 'online']);
-      result.themeName.should.equal('online');
-      result.moduleName.should.equal('Controls');
-      result = parseCurrentModuleName(modulesList, ['Controls', 'myModule', 'online', 'default']);
-      result.themeName.should.equal('online-default');
-      result.moduleName.should.equal('Controls-myModule');
-   });
-   it('get correct theme modifier for current path', () => {
-      const root = 'path/to/root/';
-      const rootThemePath = 'path/to/root/_theme.less';
-      const darkMThemePath = 'path/to/root/dark/medium/_theme.less';
-      const darkLThemePath = 'path/to/root/dark-large/_theme.less';
-      let result = getThemeModifier(root, rootThemePath);
-      result.should.equal('');
-      result = getThemeModifier(root, darkMThemePath);
-      result.should.equal('dark/medium');
-      result = getThemeModifier(root, darkLThemePath);
-      result.should.equal('dark-large');
-   });
    describe('get correct imports for current less', () => {
       const oldTheme = {
-         path: 'path/to/default',
-         name: 'default',
-         isDefault: true
+         newThemesModule: false,
+         theme: {
+            path: 'path/to/default',
+            name: 'default',
+            isDefault: true
+         }
       };
       const oldThemeWithCustomVariables = {
-         path: 'path/to/online',
-         name: 'online',
-         isDefault: true,
-         variablesFromLessConfig: 'Controls-default-theme'
+         newThemesModule: false,
+         theme: {
+            path: 'path/to/online',
+            name: 'online',
+            isDefault: true,
+            variablesFromLessConfig: 'Controls-default-theme'
+         }
       };
       const newTheme = {
-         type: 'new',
-         moduleName: 'TestModule',
-         themeName: 'online'
+         newThemesModule: true,
+         theme: {}
       };
       it('old theme - for theme less building should return empty array', () => {
          const result = getCurrentImports('path/to/default/default.less', oldTheme, gulpModulesInfo.gulpModulesPaths);

@@ -238,21 +238,9 @@ function generateDownloadModuleCache(taskParameters, moduleInfo) {
    return async function downloadModuleCache() {
       const lastCache = await getLastModuleCache(moduleInfo.cachePath);
       moduleInfo.cache = new ModuleCache(lastCache);
-      if (patchBuild && lastCache) {
-         /**
-          * in patch for module with rebuild configuration we need to get new themes meta from the
-          * last cache value
-          * In patch build new themes interface modules may not be participating in patch build,
-          * so we can lose meta for this modules.
-          */
-         if (moduleInfo.rebuild) {
-            const currentStoreModulesCache = taskParameters.cache.currentStore;
-            const lastStoreModulesCache = taskParameters.cache.lastStore;
-            currentStoreModulesCache.themeModules = lastStoreModulesCache.themeModules;
-         } else {
-            // in patch for modules without rebuild configuration store cache "as is"
-            moduleInfo.cache.currentStore = moduleInfo.cache.lastStore;
-         }
+      if (patchBuild && lastCache && !moduleInfo.rebuild) {
+         // in patch for modules without rebuild configuration store cache "as is"
+         moduleInfo.cache.currentStore = moduleInfo.cache.lastStore;
       }
    };
 }

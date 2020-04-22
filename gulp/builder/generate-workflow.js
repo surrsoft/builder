@@ -9,14 +9,13 @@ const fs = require('fs-extra');
 const gulp = require('gulp');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
-   { generateTaskForCollectThemes } = require('./generate-task/collect-style-themes'),
+   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForCompress = require('./generate-task/compress'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
    generateTaskForCustomPack = require('./generate-task/custom-packer'),
    { generateTaskForRemoveFiles } = require('./generate-task/remove-outdated-files'),
    generateTaskForGenerateJson = require('../common/generate-task/generate-json'),
-   generateTaskForSaveNewThemes = require('./generate-task/save-new-themes'),
    guardSingleProcess = require('../common/generate-task/guard-single-process.js'),
    generateTaskForPrepareWS = require('../common/generate-task/prepare-ws'),
    generateTaskForSaveJoinedMeta = require('../common/generate-task/save-joined-meta'),
@@ -67,7 +66,6 @@ function generateWorkflow(processArgv) {
       generateTaskForBuildModules(taskParameters),
 
       generateTaskForRemoveFiles(taskParameters),
-      generateTaskForSaveNewThemes(taskParameters),
       generateTaskForSaveCache(taskParameters),
       generateTaskForFinalizeDistrib(taskParameters),
       generateTaskForCheckModuleDeps(taskParameters),
