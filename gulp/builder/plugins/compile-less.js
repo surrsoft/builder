@@ -224,7 +224,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                newFile.lessSource = file.contents;
                this.push(newFile);
             }
-            this.push(file);
          } catch (error) {
             taskParameters.cache.markFileAsFailed(file.history[0]);
             logger.error({
