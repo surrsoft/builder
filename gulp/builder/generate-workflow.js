@@ -9,7 +9,7 @@ const fs = require('fs-extra');
 const gulp = require('gulp');
 
 const generateTaskForBuildModules = require('./generate-task/build-modules'),
-   generateTaskForCollectThemes = require('./generate-task/collect-style-themes'),
+   generateTaskForMarkThemeModules = require('./generate-task/mark-theme-modules'),
    generateTaskForFinalizeDistrib = require('./generate-task/finalize-distrib'),
    generateTaskForCompress = require('./generate-task/compress'),
    generateTaskForPackHtml = require('./generate-task/pack-html'),
@@ -53,7 +53,7 @@ function generateWorkflow(processArgv) {
       // generateTaskForLock прежде всего
       guardSingleProcess.generateTaskForLock(taskParameters),
       generateTaskForLoadCache(taskParameters),
-      generateTaskForCollectThemes(taskParameters),
+      generateTaskForMarkThemeModules(taskParameters),
 
       // в generateTaskForClearCache нужен загруженный кеш
       generateTaskForClearCache(taskParameters),
