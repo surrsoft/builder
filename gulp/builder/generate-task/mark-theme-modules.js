@@ -1,8 +1,6 @@
 /**
- * Search of all themes of styles in current project.
- * Themes will be searched and filtered by this template:
- * {Interface Module Name}/themes/{Theme name}/{Theme name}.less
- * Theme name will be set as a name of its folder.
+ * Marks interface modules as themed if there is a _theme.less file
+ * in them - it's a definite description of new theme type
  * @author Kolbeshin F.A.
  */
 
@@ -16,30 +14,30 @@ const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
 
 /**
- * Генерация задачи поиска тем
- * @param {TaskParameters} taskParameters кеш сборки статики
+ * Search theme task initialization
+ * @param {TaskParameters} taskParameters a whole list of parameters needed for current project
+ * build
  * @returns {Undertaker.TaskFunction}
  */
-function generateTaskForCollectThemes(taskParameters) {
-   if (!taskParameters.config.less) {
-      return function skipCollectStyleThemes(done) {
+function generateTaskForMarkThemeModules(taskParameters) {
+   // analyse only interface modules supposed to have themes
+   const modulesWithThemes = taskParameters.config.modules
+      .filter(currentModule => currentModule.name.endsWith('-theme'));
+   if (!taskParameters.config.less || modulesWithThemes.length === 0) {
+      return function skipMarkThemeModules(done) {
          done();
       };
    }
-   const buildModulesNames = new Set();
-   taskParameters.config.modules.forEach(
-      currentModule => buildModulesNames.add(path.basename(currentModule.output))
-   );
-   const tasks = taskParameters.config.modules.map((moduleInfo) => {
+   const tasks = modulesWithThemes.map((moduleInfo) => {
       const input = path.join(moduleInfo.path, '/**/_theme.less');
       return function collectStyleThemes() {
          return gulp
-            .src(input, { dot: false, nodir: true, allowEmpty: true })
+            .src(input, { dot: false, nodir: true })
             .pipe(
                plumber({
                   errorHandler(err) {
                      logger.error({
-                        message: 'Задача collectStyleThemes завершилась с ошибкой',
+                        message: 'Task markThemeModules was completed with error',
                         error: err,
                         moduleInfo
                      });
@@ -59,7 +57,7 @@ function generateTaskForCollectThemes(taskParameters) {
                    * 3) "theme" postfix
                    * Other Interface modules will be ignored from new theme's processing
                    */
-                  if (currentModuleNameParts.length > 2 && currentModuleNameParts.pop() === 'theme') {
+                  if (currentModuleNameParts.length > 2) {
                      moduleInfo.newThemesModule = true;
                   }
                }
@@ -68,7 +66,7 @@ function generateTaskForCollectThemes(taskParameters) {
       };
    });
 
-   const collectStyleThemes = startTask('collectStyleThemes', taskParameters);
+   const collectStyleThemes = startTask('markThemeModules', taskParameters);
    return gulp.series(
       collectStyleThemes.start,
       gulp.parallel(tasks),
@@ -76,4 +74,4 @@ function generateTaskForCollectThemes(taskParameters) {
    );
 }
 
-module.exports = generateTaskForCollectThemes;
+module.exports = generateTaskForMarkThemeModules;
