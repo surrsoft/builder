@@ -10,25 +10,9 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   helpers = require('../../../lib/helpers'),
    fs = require('fs-extra'),
    { defaultAutoprefixerOptions } = require('../../../lib/builder-constants'),
    cssExt = /\.css$/;
-
-/**
- * Get interface module name from failed less path
- * @param{String} currentLessBase - path to current less interface module
- * @param{String} failedLessPath - full path to failed less
- * @returns {*}
- */
-function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
-   const root = helpers.unixifyPath(path.dirname(currentLessBase));
-   const prettyFailedLessPath = helpers.unixifyPath(failedLessPath);
-   const prettyRelativePath = helpers.removeLeadingSlashes(
-      prettyFailedLessPath.replace(root, '')
-   );
-   return prettyRelativePath.split('/').shift();
-}
 
 /**
  * Plugin declaration
@@ -62,8 +46,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          break;
    }
 
-   const errorsList = {};
-   let errors = false;
    return through.obj(
 
       /* @this Stream */
@@ -203,7 +185,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                   messageParts.push('\n');
                   logger.error({ message: messageParts.join('') });
                }
-               errors = true;
                taskParameters.cache.markFileAsFailed(file.history[0]);
             } else {
                const { compiled } = result;
