@@ -10,25 +10,9 @@ const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
    transliterate = require('../../../lib/transliterate'),
    execInPool = require('../../common/exec-in-pool'),
-   helpers = require('../../../lib/helpers'),
    fs = require('fs-extra'),
    { defaultAutoprefixerOptions } = require('../../../lib/builder-constants'),
    cssExt = /\.css$/;
-
-/**
- * Get interface module name from failed less path
- * @param{String} currentLessBase - path to current less interface module
- * @param{String} failedLessPath - full path to failed less
- * @returns {*}
- */
-function getModuleNameForFailedImportLess(currentLessBase, failedLessPath) {
-   const root = helpers.unixifyPath(path.dirname(currentLessBase));
-   const prettyFailedLessPath = helpers.unixifyPath(failedLessPath);
-   const prettyRelativePath = helpers.removeLeadingSlashes(
-      prettyFailedLessPath.replace(root, '')
-   );
-   return prettyRelativePath.split('/').shift();
-}
 
 /**
  * Plugin declaration
@@ -62,8 +46,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
          break;
    }
 
-   const errorsList = {};
-   let errors = false;
    return through.obj(
 
       /* @this Stream */
@@ -182,13 +164,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             taskParameters.storePluginTime('less compiler', result.passedTime, true);
             if (result.error) {
                if (result.type) {
-                  const moduleNameForFail = getModuleNameForFailedImportLess(
-                     file.base,
-                     result.failedLess
-                  );
-                  const moduleInfoForFail = taskParameters.config.modules.find(
-                     currentModuleInfo => currentModuleInfo.name === moduleNameForFail
-                  );
                   let message = result.error;
 
                   // add more additional logs information for bad import in less
@@ -197,19 +172,19 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
                      result.error = result.error.replace(errorLoadAttempts, '');
 
                      message = `Bad import detected ${result.error}. Check interface module of current import ` +
-                        `for existing in current project. Needed by: ${file.history[0]}.\n${errorLoadAttempts}`;
+                        `for existing in current project. \n${errorLoadAttempts}`;
                   }
-                  errorsList[result.failedLess] = {
+                  logger.error({
                      message,
-                     moduleInfo: moduleInfoForFail
-                  };
+                     filePath: file.history[0],
+                     moduleInfo
+                  });
                } else {
                   const messageParts = [];
                   messageParts.push(`Less compiler error: ${result.error}. Source file: ${file.history[0]}. `);
                   messageParts.push('\n');
                   logger.error({ message: messageParts.join('') });
                }
-               errors = true;
                taskParameters.cache.markFileAsFailed(file.history[0]);
             } else {
                const { compiled } = result;
@@ -234,20 +209,6 @@ function compileLess(taskParameters, moduleInfo, gulpModulesInfo) {
             });
          }
          callback(null, file);
-      },
-
-      function onFlush(callback) {
-         /**
-          * do logging errors of current errored less for once to avoid hell of logs
-          * in case of error had been occured by sort of theme's source.
-          */
-         if (errors) {
-            Object.keys(errorsList).forEach(
-               failedLessFile => logger.error({ filePath: failedLessFile, ...errorsList[failedLessFile] })
-            );
-            logger.info(`Information about interface modules used by less compiler during the build: ${JSON.stringify(gulpModulesInfo)}`);
-         }
-         callback();
       }
    );
 }
