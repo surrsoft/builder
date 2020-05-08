@@ -4,6 +4,9 @@
 
 'use strict';
 
+const fs = require('fs-extra');
+const path = require('path');
+
 /**
  * Класс с базовой информацией для всех gulp задач.
  */
@@ -21,6 +24,9 @@ class TaskParameters {
       this.needGenerateJson = needGenerateJson;
       this.currentTask = '';
       this.tasksTimer = {};
+      this.filesToRemoveFromOutput = [];
+      this.versionedModules = {};
+      this.cdnModules = {};
    }
 
    /**
@@ -76,6 +82,26 @@ class TaskParameters {
             plugins[currentPlugin].summary = (currentSummary / plugins.summary) * summary;
          });
       }
+   }
+
+   /**
+    * adds file into list to be removed further from output directory
+    * to get an actual state of output directory file set after incremental build
+    * @param outputPath
+    */
+   addFileForRemoval(outputPath, isCompressed) {
+      this.filesToRemoveFromOutput.push(outputPath);
+      if (this.config.compress && isCompressed) {
+         this.filesToRemoveFromOutput.push(`${outputPath}.br`);
+         this.filesToRemoveFromOutput.push(`${outputPath}.gz`);
+      }
+   }
+
+   async saveRemovalListMeta() {
+      await fs.outputJson(
+         path.join(this.config.cachePath, 'output-files-to-remove.json'),
+         this.filesToRemoveFromOutput
+      );
    }
 }
 

@@ -234,7 +234,7 @@ function generateInterceptCollectorTask(taskParameters, root, results) {
 function generateSaveResultsTask(taskParameters, results, applicationRoot, modulesForPatch) {
    return async function saveCustomPackerResults() {
       if (taskParameters.config.joinedMeta) {
-         await saveRootBundlesMeta(applicationRoot, results);
+         await saveRootBundlesMeta(taskParameters, applicationRoot, results);
       }
       await saveModuleCustomPackResults(taskParameters, results, applicationRoot, modulesForPatch);
 
@@ -245,6 +245,12 @@ function generateSaveResultsTask(taskParameters, results, applicationRoot, modul
       await fs.outputJson(
          path.join(taskParameters.config.cachePath, 'module-dependencies.json'),
          taskParameters.cache.getModuleDependencies()
+      );
+
+      await taskParameters.saveRemovalListMeta();
+      await fs.outputJson(
+         path.join(taskParameters.config.cachePath, 'cached-minified.json'),
+         JSON.stringify(taskParameters.cache.currentStore.cachedMinified)
       );
    };
 }

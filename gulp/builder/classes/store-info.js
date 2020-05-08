@@ -29,6 +29,9 @@ class StoreInfo {
       // 2. удалить лишние файлы
       this.inputPaths = {};
 
+      // information about all minified files that haven't changed since last build.
+      this.cachedMinified = {};
+
       // для инкрементальной сборки нужно знать зависимости файлов:
       // - imports из less файлов
       // - зависимости js на файлы вёрстки для паковки собственных зависмостей

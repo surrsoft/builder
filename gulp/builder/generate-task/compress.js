@@ -20,7 +20,8 @@ const compressPlugin = require('../plugins/compress'),
  * @returns {Undertaker.TaskFunction|function(done)} В debug режиме вернёт пустышку, чтобы gulp не упал
  */
 function generateTaskForCompress(taskParameters) {
-   if (!taskParameters.config.compress) {
+   // for local stands there is no practical need of using archives, it just increases build time.
+   if (!taskParameters.config.compress || taskParameters.config.outputPath.includes('.genie')) {
       return function skipCompress(done) {
          done();
       };
@@ -30,7 +31,7 @@ function generateTaskForCompress(taskParameters) {
       const moduleOutput = path.join(taskParameters.config.rawConfig.output, path.basename(moduleInfo.output));
 
       // generate compressed resources only for minified content and fonts.
-      const input = path.join(moduleOutput, '/**/*.min.*');
+      const input = path.join(moduleOutput, '/**/*.min.{js,json,css,tmpl,wml,ttf}');
 
       return function compress() {
          return gulp

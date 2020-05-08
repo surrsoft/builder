@@ -125,7 +125,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          lessCoverage: true,
          less: true,
-         themes: true,
          typescript: true,
          dependenciesGraph: true,
          modules: [
@@ -286,7 +285,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          less: true,
-         themes: true,
          typescript: true,
          dependenciesGraph: true,
          modules: [
@@ -339,7 +337,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          less: true,
          logs: logsFolder,
          builderTests: true,
-         themes: true,
          typescript: true,
          dependenciesGraph: true,
          modules: [
@@ -483,7 +480,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          logs: logsFolder,
          less: true,
-         themes: true,
          typescript: true,
          dependenciesGraph: true,
          contents: true,
@@ -546,7 +542,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: outputFolder,
          less: true,
-         themes: true,
          modules: [
             {
                name: 'Controls-default-theme',
@@ -577,7 +572,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: renamedCacheFolder,
          output: renamedOutputFolder,
          less: true,
-         themes: true,
          modules: [
             {
                name: 'Controls-default-theme',
@@ -606,7 +600,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          cache: cacheFolder,
          output: patchOutputFolder,
          less: true,
-         themes: true,
          minimize: true,
          modules: [
             {
@@ -1140,7 +1133,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          htmlWml: true,
          contents: true,
          less: true,
-         themes: true,
          builderTests: true,
          modules: [
             {
@@ -1197,7 +1189,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          htmlWml: true,
          contents: true,
          less: true,
-         themes: true,
          builderTests: true,
          modules: [
             {
@@ -1512,7 +1503,6 @@ describe('gulp/builder/generate-workflow.js', () => {
          output: outputFolder,
          typescript: true,
          less: true,
-         themes: true,
          minimize: true,
          wml: true,
          version: 'builder.unit.tests',
@@ -2026,7 +2016,6 @@ describe('gulp/builder/generate-workflow.js', () => {
             output: outputFolder,
             typescript: true,
             less: true,
-            themes: true,
             minimize: true,
             wml: true,
             builderTests: true,
@@ -2065,7 +2054,6 @@ describe('gulp/builder/generate-workflow.js', () => {
           */
          (await isRegularFile(moduleOutputFolder, 'bundlesRoute.json')).should.equal(false);
          (await isRegularFile(moduleOutputFolder, 'bundles.json')).should.equal(true);
-         await clearWorkspace();
       });
    });
 
