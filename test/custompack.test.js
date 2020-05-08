@@ -13,7 +13,8 @@ const path = require('path'),
    { rebaseCSS } = require('../lib/pack/custom-packer'),
    DependencyGraph = require('../packer/lib/dependency-graph'),
    pMap = require('p-map'),
-   builderConstants = require('../lib/builder-constants');
+   builderConstants = require('../lib/builder-constants'),
+   TaskParameters = require('../gulp/common/classes/task-parameters');
 
 const removeAllNewLines = function(str) {
    return str.replace(/\n|\r/g, '');
@@ -21,17 +22,16 @@ const removeAllNewLines = function(str) {
 
 describe('custompack', () => {
    let moduleDeps, currentNodes, currentLinks, depsTree;
-   const customPackParameters = {
-      versionedModules: {},
-      cdnModules: {},
-      config: {
+   const customPackParameters = new TaskParameters(
+      {
          localizations: [],
          sources: true,
          resourcesUrl: true,
          urlServicePath: '/fixture/custompack/',
          applicationForRebase: '/fixture/custompack/'
-      }
-   };
+      },
+      {}
+   );
    before(async() => {
       moduleDeps = await fs.readJson(path.join(applicationRoot, 'module-dependencies.json'));
       currentNodes = Object.keys(moduleDeps.nodes);
@@ -294,18 +294,17 @@ describe('custompack-intersects', () => {
    it('intersects-should-be-founded-and-splitted-by-interface-modules', async() => {
       const
          configs = await fs.readJson(path.join(applicationRoot, 'configs/intersects.package.json')),
-         taskParams = {
-            versionedModules: {},
-            cdnModules: {},
-            config: {
+         taskParams = new TaskParameters(
+            {
                defaultLocalization: '',
                localizations: [],
                sources: true,
                resourcesUrl: true,
                modules: [],
                applicationForRebase: '/'
-            }
-         },
+            },
+            {}
+         ),
          results = {
             bundles: {},
             bundlesRoute: {},

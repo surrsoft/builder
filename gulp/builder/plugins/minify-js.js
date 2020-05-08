@@ -101,8 +101,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
              */
             if (file.unitedDict) {
                outputFileWoExt = file.path.replace(extName, '');
-               taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.js`, moduleInfo, true);
-               if (taskParameters.config.isReleaseMode) {
+               taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.js`, moduleInfo);
+               if (taskParameters.config.isReleaseMode && file.cached) {
                   taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.min.js`, moduleInfo, true);
                }
             } else {
@@ -145,7 +145,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                newFile.base = moduleInfo.output;
                newFile.path = outputMinJsFile;
                this.push(newFile);
-               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
             } else {
                // минимизируем оригинальный JS
                // если файл не возможно минифицировать, то запишем оригинал
@@ -209,7 +209,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                if (file.versioned) {
                   moduleInfo.cache.storeVersionedModule(file.history[0], outputMinJsFile);
                }
-               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
 
                /**
                 * В случае работы тестов нам нужно сохранить неминифицированный запакованный модуль,

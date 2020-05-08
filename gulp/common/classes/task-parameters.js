@@ -25,6 +25,8 @@ class TaskParameters {
       this.currentTask = '';
       this.tasksTimer = {};
       this.filesToRemoveFromOutput = [];
+      this.versionedModules = {};
+      this.cdnModules = {};
    }
 
    /**
