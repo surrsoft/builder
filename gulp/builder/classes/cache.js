@@ -164,7 +164,8 @@ class Cache {
     */
    async clearCacheIfNeeded() {
       const removePromises = [];
-      if (await this.cacheHasIncompatibleChanges()) {
+      const cacheHasIncompatibleChanges = await this.cacheHasIncompatibleChanges();
+      if (cacheHasIncompatibleChanges) {
          this.lastStore = new StoreInfo();
 
          /**
@@ -184,8 +185,10 @@ class Cache {
          }
       }
 
-      // если собираем дистрибутив, то config.rawConfig.output нужно всегда очищать
+      // output directory must be force cleaned if cache is incompatible or it is patch build.
+      const needToCleanOutput = cacheHasIncompatibleChanges || this.config.modulesForPatch.length > 0;
       if (
+         needToCleanOutput &&
          this.config.outputPath !== this.config.rawConfig.output &&
          !this.config.isSourcesOutput &&
          this.config.clearOutput
@@ -194,9 +197,23 @@ class Cache {
             removePromises.push(fs.remove(this.config.rawConfig.output));
          }
       }
-      logger.info('Запускается очистка кэша');
+
+      /**
+       * Clean all custom pack artifacts of previous build from output directory to always get an actual
+       * output directory list content without any outdated files.
+       * @type {string}
+       */
+      const outputFilesListPath = path.join(this.config.cachePath, 'output-files-to-remove.json');
+      if (await fs.pathExists(outputFilesListPath)) {
+         const filesListToRemove = await fs.readJson(outputFilesListPath);
+         filesListToRemove.forEach(filePath => removePromises.push(fs.remove(filePath)));
+      }
+      if (removePromises.length === 0) {
+         return;
+      }
+      logger.info('Running cache clean');
       await Promise.all(removePromises);
-      logger.info('Очистка кэша завершена');
+      logger.info('Cache clean was completed successfully!');
    }
 
    /**
@@ -320,7 +337,7 @@ class Cache {
     * @param {string} outputFilePath путь до генерируемого файла.
     * @param {ModuleInfo} moduleInfo информация о модуле.
     */
-   addOutputFile(filePath, outputFilePath, moduleInfo) {
+   addOutputFile(filePath, outputFilePath, moduleInfo, isCachedMinified) {
       const prettyFilePath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
       if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
@@ -329,6 +346,18 @@ class Cache {
          // некоторые файлы являются производными от всего модуля. например en-US.js, en-US.css
          this.currentStore.inputPaths[moduleInfo.path].output.push(outputPrettyPath);
       }
+      if (isCachedMinified) {
+         this.currentStore.cachedMinified[outputPrettyPath] = true;
+      }
+   }
+
+   /**
+    * check path for existing in cache of minified files.
+    * @param outputPath - physical path of minified file
+    * @returns {boolean}
+    */
+   isCachedMinified(outputPath) {
+      return this.currentStore.cachedMinified.hasOwnProperty(outputPath);
    }
 
    getOutputForFile(filePath) {
@@ -500,7 +529,7 @@ class Cache {
     * Получить список файлов, которые нужно удалить из целевой директории после инкрементальной сборки
     * @returns {Promise<string[]>}
     */
-   async getListForRemoveFromOutputDir(outputPath, modulesForPatch) {
+   async getListForRemoveFromOutputDir(cachePath, outputPath, modulesForPatch) {
       const currentOutputSet = this.currentStore.getOutputFilesSet();
 
       /**
@@ -510,11 +539,20 @@ class Cache {
        * builder cache and get artifacts in next patch builds.
        * @type {Set<string>}
        */
-      const lastOutputSet = this.lastStore.getOutputFilesSet(outputPath, modulesForPatch.map(
+      const lastOutputSet = this.lastStore.getOutputFilesSet(cachePath, modulesForPatch.map(
          currentModule => path.basename(currentModule.output)
       ));
-      const removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));
+      let removeFiles = Array.from(lastOutputSet).filter(filePath => !currentOutputSet.has(filePath));
 
+      /**
+       * in case of release mode there are 2 folder to remove outdated files therefrom:
+       * 1) cache directory
+       * 2) output directory
+       * We need to remove it from these directories
+       */
+      if (outputPath !== cachePath) {
+         removeFiles = [...removeFiles, removeFiles.map(currentFile => currentFile.replace(cachePath, outputPath))];
+      }
       const results = await pMap(
          removeFiles,
          async(filePath) => {

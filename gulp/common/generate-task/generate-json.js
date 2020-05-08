@@ -65,13 +65,13 @@ function generateTaskForGenerateJson(taskParameters) {
             isComponentsPropertiesChanged = true;
          }
          if (isComponentsPropertiesChanged) {
-            logger.info('Кеш для файлов верстки будет сброшен, если был.');
+            logger.info('Template files cache will be erased if it exists');
             taskParameters.cache.setDropCacheForMarkup();
             await fs.writeJSON(filePath, resultJsonGenerator.index, { spaces: 1 });
          }
       } catch (error) {
          logger.error({
-            message: "Ошибка Builder'а. Задача generateJson",
+            message: "Builder's error in 'generateJson' task",
             error
          });
       }

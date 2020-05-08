@@ -24,9 +24,6 @@ describe('custompack', () => {
    const customPackParameters = {
       versionedModules: {},
       cdnModules: {},
-      compiledLessByModules: {
-         '': ['InterfaceModule1/moduleStyle.min.css']
-      },
       config: {
          localizations: [],
          sources: true,

@@ -42,7 +42,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const outputMinFile = path.join(moduleInfo.output, transliterate(relativePath));
 
             if (file.cached) {
-               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo, true);
                callback(null, file);
                return;
             }

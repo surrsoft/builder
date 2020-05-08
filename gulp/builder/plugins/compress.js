@@ -1,6 +1,7 @@
 /**
- * Плагин архивации файлов с помощью gzip.
- * Генерирует в поток gzip файлы, но не пропускает через себя все остальные файлы, чтобы не перезаписывать лишинй раз.
+ * Builder plugin for compressing of files using both of gzip and brotli algorithms
+ * Pushes into file stream nothing but compressed versions of minified files to be written into output directory
+ * to avoid unnecessary files rewriting
  * @author Kolbeshin F.A.
  */
 
@@ -8,19 +9,12 @@
 
 const through = require('through2'),
    logger = require('../../../lib/logger').logger(),
+   helpers = require('../../../lib/helpers'),
+   path = require('path'),
    execInPool = require('../../common/exec-in-pool');
 
-const includeExts = ['.js', '.json', '.css', '.tmpl', '.wml', '.ttf'];
-
 const excludeRegexes = [
-   /.*\.routes\.js$/,
-   /.*\.test\.js$/,
    /[/\\]ServerEvent[/\\]worker[/\\].*/,
-   /.*\.routes\.js$/,
-   /.*\.original\.js$/,
-   /.*\.modulepack\.js$/,
-   /.*\.test\.js$/,
-   /.*\.esp\.json$/,
    /.*[/\\]data-providers[/\\].*\.js$/,
    /.*[/\\]design[/\\].*\.js$/
 ];
@@ -41,16 +35,24 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            if (!includeExts.includes(file.extname)) {
-               callback();
-               return;
-            }
-
             for (const regex of excludeRegexes) {
                if (regex.test(file.path)) {
                   callback();
                   return;
                }
+            }
+
+            const prettyOutputPath = helpers.unixifyPath(
+               path.join(
+                  moduleInfo.output,
+                  file.relative
+               )
+            );
+
+            // if input minified file has already been cached, it already has an archived version of itself.
+            if (taskParameters.cache.isCachedMinified(prettyOutputPath)) {
+               callback();
+               return;
             }
 
             const [error, result] = await execInPool(
@@ -62,7 +64,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             );
             if (error) {
                logger.error({
-                  message: 'Ошибка при архивации',
+                  message: 'Error occurred while compressing',
                   error,
                   moduleInfo,
                   filePath: file.path
@@ -78,7 +80,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
          } catch (error) {
             logger.error({
-               message: "Ошибка builder'а при архивации",
+               message: "Builder's error occurred in 'compress' task",
                error,
                moduleInfo,
                filePath: file.path

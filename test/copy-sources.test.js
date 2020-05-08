@@ -107,7 +107,6 @@ describe('copy sources', () => {
          output: outputFolder,
          typescript: true,
          less: true,
-         themes: true,
          wml: true,
          minimize: true,
          dependenciesGraph: true,

@@ -57,7 +57,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             }
             if (file.cached) {
                taskParameters.cache.getOutputForFile(file.history[0]).forEach((outputFile) => {
-                  taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo);
+                  taskParameters.cache.addOutputFile(file.history[0], outputFile.replace(/\.css$/, '.min.css'), moduleInfo, true);
                });
                callback(null, file);
                return;

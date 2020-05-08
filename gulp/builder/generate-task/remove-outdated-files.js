@@ -28,14 +28,14 @@ class MetaClass {
    }
 
    // reads, updates and saves all meta files that have to be updated
-   async updateFiles(outputPath) {
+   async updateFiles(cachePath) {
       const promises = [];
       for (const moduleName in this.meta) {
          if (this.meta.hasOwnProperty(moduleName)) {
             for (const metaName in this.meta[moduleName]) {
                if (this.meta[moduleName].hasOwnProperty(metaName)) {
                   promises.push((async() => {
-                     const metaPath = path.join(outputPath, moduleName, '.builder', metaName);
+                     const metaPath = path.join(cachePath, moduleName, '.builder', metaName);
 
                      /**
                       * some meta files can be created only in case of custom pack enabled.
@@ -65,8 +65,10 @@ class MetaClass {
 function generateTaskForRemoveFiles(taskParameters) {
    return async function removeOutdatedFiles() {
       const startTime = Date.now();
-      const normalizedOutputDirectory = `${taskParameters.config.outputPath.replace(/\\/g, '/')}/`;
+      const normalizedCacheDirectory = `${taskParameters.config.outputPath.replace(/\\/g, '/')}/`;
+      const normalizedOutputDirectory = `${taskParameters.config.rawConfig.output.replace(/\\/g, '/')}/`;
       const filesForRemove = await taskParameters.cache.getListForRemoveFromOutputDir(
+         normalizedCacheDirectory,
          normalizedOutputDirectory,
          taskParameters.config.modulesForPatch
       );
@@ -95,7 +97,7 @@ function generateTaskForRemoveFiles(taskParameters) {
          )
       );
       await Promise.all(removePromises);
-      await metaToUpdate.updateFiles(normalizedOutputDirectory);
+      await metaToUpdate.updateFiles(normalizedCacheDirectory);
       taskParameters.storeTaskTime('remove outdated files from output', startTime);
    };
 }
