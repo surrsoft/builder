@@ -203,6 +203,17 @@ class Cache {
          if (await fs.pathExists(this.config.outputPath) && !this.config.isSourcesOutput && this.config.clearOutput) {
             removePromises.push(fs.remove(this.config.outputPath));
          }
+      } else {
+         /**
+          * Clean all custom pack artifacts of previous build from output directory to always get an actual
+          * output directory list content without any outdated files.
+          * @type {string}
+          */
+         const outputFilesListPath = path.join(this.config.cachePath, 'output-files-to-remove.json');
+         if (await fs.pathExists(outputFilesListPath)) {
+            const filesListToRemove = await fs.readJson(outputFilesListPath);
+            filesListToRemove.forEach(filePath => removePromises.push(fs.remove(filePath)));
+         }
       }
 
       // output directory must be force cleaned if cache is incompatible or it is patch build.
@@ -218,16 +229,6 @@ class Cache {
          }
       }
 
-      /**
-       * Clean all custom pack artifacts of previous build from output directory to always get an actual
-       * output directory list content without any outdated files.
-       * @type {string}
-       */
-      const outputFilesListPath = path.join(this.config.cachePath, 'output-files-to-remove.json');
-      if (await fs.pathExists(outputFilesListPath)) {
-         const filesListToRemove = await fs.readJson(outputFilesListPath);
-         filesListToRemove.forEach(filePath => removePromises.push(fs.remove(filePath)));
-      }
       if (removePromises.length === 0) {
          return;
       }
