@@ -68,7 +68,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
 
                // modulepack is needed to check packed non-minified libraries for correctness in builder unit tests

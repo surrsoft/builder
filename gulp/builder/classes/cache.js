@@ -353,7 +353,7 @@ class Cache {
     * @param {string} outputFilePath путь до генерируемого файла.
     * @param {ModuleInfo} moduleInfo информация о модуле.
     */
-   addOutputFile(filePath, outputFilePath, moduleInfo, isCachedMinified) {
+   addOutputFile(filePath, outputFilePath, moduleInfo) {
       const prettyFilePath = helpers.prettifyPath(filePath);
       const outputPrettyPath = helpers.prettifyPath(outputFilePath);
       if (this.currentStore.inputPaths.hasOwnProperty(prettyFilePath)) {
@@ -362,18 +362,32 @@ class Cache {
          // некоторые файлы являются производными от всего модуля. например en-US.js, en-US.css
          this.currentStore.inputPaths[moduleInfo.path].output.push(outputPrettyPath);
       }
-      if (isCachedMinified) {
-         this.currentStore.cachedMinified[outputPrettyPath] = true;
-      }
    }
 
    /**
-    * check path for existing in cache of minified files.
-    * @param outputPath - physical path of minified file
+    * Creates a hash by content for current file
+    * @param filePath
+    * @param fileContents
+    */
+   createContentHash(filePath, fileContents) {
+      this.currentStore.cachedMinified[filePath] = crypto
+         .createHash('sha1')
+         .update(fileContents)
+         .digest('base64');
+   }
+
+   /**
+    * checks file hash to be equal as previously generated in cache
+    * Needed for incremental build.
+    * @param{String} filePath - full path of current file
     * @returns {boolean}
     */
-   isCachedMinified(outputPath) {
-      return this.currentStore.cachedMinified.hasOwnProperty(outputPath);
+   minifiedIsCached(filePath) {
+      return this.currentStore.cachedMinified[filePath] === this.lastStore.cachedMinified[filePath];
+   }
+
+   getCachedMinified() {
+      return this.currentStore.cachedMinified;
    }
 
    getOutputForFile(filePath) {

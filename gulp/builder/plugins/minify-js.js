@@ -102,9 +102,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             if (file.unitedDict) {
                outputFileWoExt = file.path.replace(extName, '');
                taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.js`, moduleInfo);
-               if (taskParameters.config.isReleaseMode && file.cached) {
-                  taskParameters.cache.addOutputFile(file.history[0], `${outputFileWoExt}.min.js`, moduleInfo, true);
-               }
             } else {
                const relativePathWoExt = path.relative(moduleInfo.path, file.history[0]).replace(extName, '');
                outputFileWoExt = path.join(moduleInfo.output, transliterate(relativePathWoExt));
@@ -114,7 +111,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             const outputModulepackJsFile = `${outputFileWoExt}.modulepack.js`;
 
             if (file.cached) {
-               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinJsFile, moduleInfo);
                taskParameters.cache.addOutputFile(file.history[0], outputMinOriginalJsFile, moduleInfo);
                callback(null, file);
                return;

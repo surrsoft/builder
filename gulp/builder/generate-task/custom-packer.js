@@ -248,10 +248,6 @@ function generateSaveResultsTask(taskParameters, results, applicationRoot, modul
       );
 
       await taskParameters.saveRemovalListMeta();
-      await fs.outputJson(
-         path.join(taskParameters.config.cachePath, 'cached-minified.json'),
-         JSON.stringify(taskParameters.cache.currentStore.cachedMinified)
-      );
    };
 }
 
