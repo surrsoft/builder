@@ -75,7 +75,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          }
          if (file.cached) {
             if (outputMinFile) {
-               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinFile, moduleInfo);
             }
             callback(null, file);
             return;

@@ -74,7 +74,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             if (file.cached) {
                taskParameters.cache.addOutputFile(file.history[0], outputPath, moduleInfo);
-               taskParameters.cache.addOutputFile(file.history[0], outputMinPath, moduleInfo, true);
+               taskParameters.cache.addOutputFile(file.history[0], outputMinPath, moduleInfo);
                callback(null, file);
                taskParameters.storePluginTime('jsonJs', startTime);
                return;

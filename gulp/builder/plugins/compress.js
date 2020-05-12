@@ -49,8 +49,10 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                )
             );
 
+            taskParameters.cache.createContentHash(prettyOutputPath, file.contents);
+
             // if input minified file has already been cached, it already has an archived version of itself.
-            if (taskParameters.cache.isCachedMinified(prettyOutputPath)) {
+            if (taskParameters.cache.minifiedIsCached(prettyOutputPath)) {
                callback();
                return;
             }

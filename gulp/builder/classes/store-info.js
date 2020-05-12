@@ -72,6 +72,14 @@ class StoreInfo {
             });
          }
          try {
+            this.cachedMinified = await fs.readJson(path.join(cacheDirectory, 'cached-minified.json'));
+         } catch (error) {
+            logger.info({
+               message: `Cache file "${path.join(cacheDirectory, 'cached-minified.json')}" failed to be read`,
+               error
+            });
+         }
+         try {
             this.dependencies = await fs.readJson(path.join(cacheDirectory, 'dependencies.json'));
          } catch (error) {
             logger.info({
