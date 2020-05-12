@@ -57,7 +57,6 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                return;
             }
 
-            console.log(file.path);
             const [error, result] = await execInPool(
                taskParameters.pool,
                'compress',
