@@ -30,7 +30,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
          try {
             // нам нужны только css и json локализации
             const locale = path.basename(path.dirname(file.path));
-            if ((file.extname !== '.json' && file.extname !== '.css') || !taskParameters.config.localizations.includes(locale)) {
+            if (!['.json', '.css', '.less'].includes(file.extname) || !taskParameters.config.localizations.includes(locale)) {
                callback(null, file);
                taskParameters.storePluginTime('index localization dictionary', startTime);
                return;
@@ -55,7 +55,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   taskParameters.storePluginTime('index localization dictionary', startTime);
                   return;
                }
-            } else if (file.extname === '.css') {
+            } else if (file.extname === '.css' || file.extname === '.less') {
                const prettyRelativePath = unixifyPath(file.relative);
 
                /**
@@ -70,7 +70,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                   });
                   taskParameters.cache.markFileAsFailed(file.history[0]);
                }
-               indexer.addLocalizationCSS(file.path, locale, file.contents.toString());
+               indexer.addLocalizationCSS(file.path.replace(/\.less$/, '.css'), locale, file.contents.toString());
             }
          } catch (error) {
             logger.error({
