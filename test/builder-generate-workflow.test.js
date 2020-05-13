@@ -207,7 +207,9 @@ describe('gulp/builder/generate-workflow.js', () => {
                   'en',
                   'en-GB',
                   'en-US',
-                  'ru-RU'
+                  'en.css',
+                  'ru-RU',
+                  'ru-RU.css',
                ],
                name: 'Модуль'
             }
@@ -226,7 +228,9 @@ describe('gulp/builder/generate-workflow.js', () => {
             'en-US.json.js',
             'en.js',
             'en.json',
-            'en.json.js'
+            'en.json.js',
+            'en.less',
+            'en.css'
          ]);
          const currentDictDirectory = path.join(moduleOutputFolder, 'lang/en');
          (await fs.readJson(path.join(currentDictDirectory, 'en.json'))).should.deep.equal({
@@ -244,13 +248,16 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Ключ для Британии': 'GB key'
          });
          (await fs.readFile(path.join(currentDictDirectory, 'en-US.js'), 'utf8')).includes(
-            'global.requirejs(["Core/i18n","Modul/lang/en/en-US.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-US.json", "en");});'
+            'global.requirejs(["Core/i18n","Modul/lang/en/en-US.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-US.json", "en");' +
+                  'if(i18n.getLang()=="en"){global.requirejs(["native-css!Modul/lang/en/en-US"]);}});'
          ).should.equal(true);
          (await fs.readFile(path.join(currentDictDirectory, 'en-GB.js'), 'utf8')).includes(
-            'global.requirejs(["Core/i18n","Modul/lang/en/en-GB.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-GB.json", "en");});'
+            'global.requirejs(["Core/i18n","Modul/lang/en/en-GB.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en-GB.json", "en");' +
+            'if(i18n.getLang()=="en"){global.requirejs(["native-css!Modul/lang/en/en-GB"]);}});'
          ).should.equal(true);
          (await fs.readFile(path.join(currentDictDirectory, 'en.js'), 'utf8')).includes(
-            'global.requirejs(["Core/i18n","Modul/lang/en/en.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en.json", "en");});'
+            'global.requirejs(["Core/i18n","Modul/lang/en/en.json"],function(i18n,dict){i18n.setDict(dict, "Modul/lang/en/en.json", "en");' +
+            'if(i18n.getLang()=="en"){global.requirejs(["native-css!Modul/lang/en/en"]);}});'
          ).should.equal(true);
       };
       const config = {
