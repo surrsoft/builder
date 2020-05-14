@@ -128,7 +128,10 @@ function generateTaskForInitWorkerPool(taskParameters) {
                'main-process-cwd': process.cwd(),
                'required-modules': JSON.stringify(requiredModules)
             },
-            execArgv: ['--max-old-space-size=1024']
+
+            // sometimes worker needs more space size, f.e. "Specs" interface module
+            // contains bunch of different kinds of document forms.
+            execArgv: ['--max-old-space-size=2048']
          }
       };
 
