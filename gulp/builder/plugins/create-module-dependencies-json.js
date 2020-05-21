@@ -94,11 +94,11 @@ function getNodePath(prettyPath, ext) {
 
    // An AMD-module formatted json generates, so there should be corresponding path for it
    if (ext === '.json') {
-      return prettyPath.replace(ext, `${ext}.min.js`);
+      return prettyPath.replace(ext, `${ext}.js`);
    }
 
-   if (!prettyPath.endsWith(`.min${ext}`)) {
-      result = prettyPath.replace(ext, `.min${ext}`);
+   if (!prettyPath.endsWith(`${ext}`)) {
+      result = prettyPath.replace(ext, `${ext}`);
    }
 
    if (ext === '.ts') {
