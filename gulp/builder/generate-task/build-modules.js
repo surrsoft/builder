@@ -173,11 +173,11 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
 
             // packOwnDeps зависит от buildTmp  l, buildXhtml
             .pipe(gulpIf(config.deprecatedOwnDependencies, packOwnDeps(taskParameters, moduleInfo)))
-            .pipe(gulpIf(config.minimize, minifyCss(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize && !moduleInfo.isUnitTestModule, minifyCss(taskParameters, moduleInfo)))
 
             // minifyJs зависит от packOwnDeps
-            .pipe(gulpIf(config.minimize, minifyJs(taskParameters, moduleInfo)))
-            .pipe(gulpIf(config.minimize, minifyOther(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize && !moduleInfo.isUnitTestModule, minifyJs(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize && !moduleInfo.isUnitTestModule, minifyOther(taskParameters, moduleInfo)))
 
             // createVersionedModules и createCdnModules зависит от versionizeToStub
             .pipe(gulpIf(!!config.version, createVersionedModules(taskParameters, moduleInfo)))

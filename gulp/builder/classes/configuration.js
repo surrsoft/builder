@@ -361,6 +361,13 @@ class BuildConfiguration {
             module.depends
          );
 
+         moduleInfo.isUnitTestModule = this.branchTests &&
+            (
+               module.name.endsWith('Test') ||
+               module.name.endsWith('Unit') ||
+               module.name.endsWith('Tests')
+            );
+
          if (moduleInfo.rebuild) {
             this.modulesForPatch.push(moduleInfo);
          }
