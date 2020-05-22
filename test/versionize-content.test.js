@@ -44,7 +44,8 @@ const runWorkflow = function() {
 const runWorkflowWithTimeout = async function() {
    let result;
    try {
-      result = await promiseWithTimeout(runWorkflow(), 60000);
+      // mac sometimes needs more than 60 seconds to build test project
+      result = await promiseWithTimeout(runWorkflow(), 600000);
    } catch (err) {
       result = err;
    }
