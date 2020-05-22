@@ -244,7 +244,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
                this.push(cdnMetaFile);
             } else {
                // add additional logging to get more info about this problem
-               logger.warning({
+               logger.info({
                   message: `taskParameters versioned modules wasn't found! ModuleInfo: ${JSON.stringify(moduleInfo)}`
                });
             }
