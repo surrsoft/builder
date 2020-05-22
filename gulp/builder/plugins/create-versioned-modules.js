@@ -64,7 +64,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             const file = new Vinyl({
                path: '.builder/versioned_modules.json',
-               contents: Buffer.from(JSON.stringify(versionedModulesPaths.sort(), null, 2)),
+               contents: Buffer.from(JSON.stringify(versionedModulesPaths.sort())),
                moduleInfo
             });
             this.push(file);

@@ -70,7 +70,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
 
             const file = new Vinyl({
                path: '.builder/cdn_modules.json',
-               contents: Buffer.from(JSON.stringify(cdnModulesPaths.sort(), null, 2)),
+               contents: Buffer.from(JSON.stringify(cdnModulesPaths.sort())),
                moduleInfo
             });
             this.push(file);
