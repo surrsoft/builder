@@ -1571,6 +1571,10 @@ describe('gulp/builder/generate-workflow.js', () => {
             {
                name: 'Types',
                path: path.join(sourceFolder, 'Types')
+            },
+            {
+               name: 'Module_with_library',
+               path: path.join(sourceFolder, 'Module_with_library')
             }
          ]
       };
@@ -1787,11 +1791,22 @@ describe('gulp/builder/generate-workflow.js', () => {
       });
       it('module-dependencies must have actual info after source component remove', async() => {
          await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
+
+         // clear output to ensure correct work of incremental rebuild
+         await fs.remove(outputFolder);
          await runWorkflowWithTimeout();
          const { nodes } = await fs.readJson(path.join(outputFolder, 'module-dependencies.json'));
 
          // after source remove and project rebuild module-dependencies must not have node for current source file
          nodes.hasOwnProperty('wml!Modul/Page').should.equal(false);
+      });
+      it('bundlesRoute meta must have all of libraries after incremental rebuild', async() => {
+         const bundlesRoutePath = path.join(outputFolder, 'Module_with_library', 'bundlesRoute.json');
+         (await isRegularFile(path.join(outputFolder, 'Module_with_library'), 'bundlesRoute.json')).should.equal(true);
+         const bundlesRouteResult = await fs.readJson(bundlesRoutePath);
+         bundlesRouteResult.should.deep.equal({
+            'Module_with_library/library': 'resources/Module_with_library/library.min.js'
+         });
       });
       it('bundlesRoute meta for intersecting packages must have meta for the latest sorted package', async() => {
          const bundlesRouteResult = await fs.readJson(path.join(moduleOutputFolder, 'bundlesRoute.json'));
