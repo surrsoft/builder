@@ -51,6 +51,16 @@ class ModuleCache {
    }
 
    /**
+    * Get full info about current component from cache storage
+    * @param filePath - full path to file
+    * @returns {*}
+    */
+   getCurrentComponentInfo(filePath) {
+      const prettyPath = helpers.unixifyPath(filePath);
+      return this.currentStore.componentsInfo[prettyPath];
+   }
+
+   /**
     * Сохранить в кеше скомпилированную верстку xhtml или tmpl. Для инкрементальной сборки.
     * @param {string} filePath имя файла
     * @param {Object} obj Объект с полями text, nodeName (имя файла для require) и dependencies
