@@ -21,6 +21,7 @@ class TaskParameters {
       this.needGenerateJson = needGenerateJson;
       this.currentTask = '';
       this.tasksTimer = {};
+      this.librariesMeta = {};
    }
 
    /**
