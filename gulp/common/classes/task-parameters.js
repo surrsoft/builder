@@ -27,6 +27,7 @@ class TaskParameters {
       this.filesToRemoveFromOutput = [];
       this.versionedModules = {};
       this.cdnModules = {};
+      this.librariesMeta = {};
    }
 
    /**
