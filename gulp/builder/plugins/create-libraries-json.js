@@ -19,12 +19,15 @@ const through = require('through2'),
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
-   taskParameters.librariesMeta = {};
    const libraries = [];
    return through.obj(
       function onTransform(file, encoding, callback) {
          const startTime = Date.now();
-         if (file.library) {
+
+         // check for library from builder cache. Works in incremental build and always has actual
+         // meta about every ts file processed by builder
+         const currentComponentInfo = moduleInfo.cache.getCurrentComponentInfo(file.history[0]);
+         if (file.library || (currentComponentInfo && currentComponentInfo.libraryName)) {
             libraries.push(file);
             callback(null);
          } else {
@@ -54,7 +57,9 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             });
 
             librariesPaths.forEach((libraryPath) => {
-               const normalizedPath = libraryPath.replace(/(\.min)?\.js$/, '');
+               const normalizedPath = libraryPath
+                  .replace(/\.ts$/, '')
+                  .replace(/(\.min)?\.js$/, '');
                if (!librariesMeta.includes(normalizedPath)) {
                   librariesMeta.push(normalizedPath);
                }
