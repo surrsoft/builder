@@ -158,8 +158,18 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             .pipe(gulpIf(!!config.version, versionizeToStub(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, indexDictionary(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
-            .pipe(gulpIf(hasLocalization || config.wml, buildTmpl(taskParameters, moduleInfo)))
-            .pipe(gulpIf(config.deprecatedXhtml, buildXhtml(taskParameters, moduleInfo)))
+            .pipe(
+               gulpIf(
+                  (hasLocalization || config.wml) && !moduleInfo.isUnitTestModule,
+                  buildTmpl(taskParameters, moduleInfo)
+               )
+            )
+            .pipe(
+               gulpIf(
+                  config.deprecatedXhtml && !moduleInfo.isUnitTestModule,
+                  buildXhtml(taskParameters, moduleInfo)
+               )
+            )
             .pipe(compileJsonToJs(taskParameters, moduleInfo))
 
             /**
@@ -169,7 +179,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
              * оригинальной скомпиленной библиотеки.
              * Также в библиотеках нужен кэш шаблонов, чтобы паковать приватные части шаблонов.
              */
-            .pipe(gulpIf(config.minimize, packLibrary(taskParameters, moduleInfo)))
+            .pipe(gulpIf(config.minimize && !moduleInfo.isUnitTestModule, packLibrary(taskParameters, moduleInfo)))
 
             // packOwnDeps зависит от buildTmp  l, buildXhtml
             .pipe(gulpIf(config.deprecatedOwnDependencies, packOwnDeps(taskParameters, moduleInfo)))
