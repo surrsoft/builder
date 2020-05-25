@@ -12,7 +12,7 @@ async function recursiveGetAllBuilderFiles(dir) {
       const res = path.resolve(dir, dirent.name);
       return dirent.isDirectory() ? recursiveGetAllBuilderFiles(res) : res;
    }));
-   return [].concat(...files);
+   return files.flat();
 }
 
 async function getBuilderCodeHash(filesList) {
