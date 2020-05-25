@@ -2105,6 +2105,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          packedHtml.should.equal(correctHtmlResult);
          const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/7d6fb458c2376d100c20793aecae03f5.css'), 'utf8');
          staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png)}');
+
+         // in single service there should be static url for cdn
+         packedHtml.includes('href="/cdn/EmojiFont/1.0.1/TFEmojiFont.woff2"').should.equal(true);
       };
 
       const testMultiServiceResults = async() => {
@@ -2116,6 +2119,9 @@ describe('gulp/builder/generate-workflow.js', () => {
          packedHtml.should.equal(correctHtmlResult);
          const staticCssPackage = await fs.readFile(path.join(outputFolder, 'TestModule/static_packages/55ae7a3b8992d8a501a63806cb1e28a8.css'), 'utf8');
          staticCssPackage.should.equal('.test-selector{test-var:1px;background:url(../Test/image/test.png?x_module=%{MODULE_VERSION_STUB=TestModule})}');
+
+         // in multi service there should be placeholder for cdn in url
+         packedHtml.includes('href="%{CDN_ROOT}EmojiFont/1.0.1/TFEmojiFont.woff2"').should.equal(true);
       };
 
       const config = {
