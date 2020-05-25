@@ -50,6 +50,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
 
             // sets application root as builder cache, for proper html packing in patch build
             const root = taskParameters.config.cachePath ? `${taskParameters.config.cachePath}/incremental_build` : path.dirname(taskParameters.config.rawConfig.output),
+               buildNumber = taskParameters.config.multiService ? `%{MODULE_VERSION_STUB=${path.basename(moduleInfo.output)}}` : taskParameters.config.version,
                replacePath = !taskParameters.config.multiService;
 
             dom = await packHtml.packageSingleHtml(
@@ -60,7 +61,7 @@ module.exports = function declarePlugin(taskParameters, moduleInfo, gd) {
                `${path.basename(moduleInfo.output)}/static_packages`,
                gd,
                taskParameters.config.urlServicePath,
-               taskParameters.config.multiService ? '%{BUILD_NUMBER}' : taskParameters.config.version,
+               buildNumber,
                replacePath,
                taskParameters.config.rawConfig.output,
                taskParameters.config.localizations

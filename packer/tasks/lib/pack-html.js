@@ -375,8 +375,9 @@ function getStartNodes(divs) {
  * @param buildNumber
  * @param key
  */
-function getKey(buildNumber, key) {
-   return buildNumber ? `${key}?x_module=${buildNumber}` : key;
+function getKey(buildNumber, key, isMinimize) {
+   const normalizedExt = isMinimize ? `min.${key}` : key;
+   return buildNumber ? `${normalizedExt}?x_module=${buildNumber}` : normalizedExt;
 }
 
 /**
@@ -426,7 +427,8 @@ async function packageSingleHtml(
       htmlPath = filePath.split(path.sep),
       htmlName = htmlPath[htmlPath.length - 1],
       localeExcludeTargets = [],
-      wsConfig = newDom.getElementById('ws-config');
+      wsConfig = newDom.getElementById('ws-config'),
+      { minimize } = taskParameters.config;
 
    let themeName;
 
@@ -485,9 +487,9 @@ async function packageSingleHtml(
                packages[key] = packages[key].concat(
                   generatePackage(
                      taskParameters,
-                     key,
+                     minimize ? `min.${key}` : key,
                      content,
-                     getKey(buildNumber, key),
+                     getKey(buildNumber, key, minimize),
                      packageHome,
                      application,
                      root,
@@ -510,9 +512,9 @@ async function packageSingleHtml(
                packages[attr2ext[key]] = packages[attr2ext[key]].concat(
                   generatePackage(
                      taskParameters,
-                     attr2ext[key],
+                     minimize ? `min.${attr2ext[key]}` : attr2ext[key],
                      filesToPack[key][locale],
-                     getKey(buildNumber, attr2ext[key]),
+                     getKey(buildNumber, attr2ext[key], minimize),
                      packageHome,
                      application,
                      root,
@@ -527,9 +529,9 @@ async function packageSingleHtml(
          // "js": "..."
          const generatedScript = generatePackage(
             taskParameters,
-            key,
+            minimize ? `min.${key}` : key,
             filesToPack[key],
-            getKey(buildNumber, key),
+            getKey(buildNumber, key, minimize),
             packageHome,
             application,
             root,
