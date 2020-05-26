@@ -96,6 +96,9 @@ class BuildConfiguration {
       // generate packages based on custom developer's configuration
       this.customPack = false;
 
+      // same as customPack but with debug sources to be packed
+      this.debugCustomPack = false;
+
       // generate project dependencies tree meta
       this.dependenciesGraph = false;
 
