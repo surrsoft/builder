@@ -30,12 +30,14 @@ function generateBuildWorkflowTypescript(processArgv) {
       console.log('output directory wasn\'t added. All ts errors will be caught by using stdout of "exec" command');
    }
 
-   return generateTaskForTypescriptCompile(taskParameters, output);
+   const tscFlags = '--incremental --tsBuildInfoFile "../front-end"';
+
+   return generateTaskForTypescriptCompile(taskParameters, output, tscFlags);
 }
 
-function generateTaskForTypescriptCompile(taskParameters, output) {
+function generateTaskForTypescriptCompile(taskParameters, output, tscFlags) {
    return function runTypescriptCompiler() {
-      return typescriptCompiler(taskParameters, output);
+      return typescriptCompiler(taskParameters, output, tscFlags);
    };
 }
 
