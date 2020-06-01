@@ -54,6 +54,22 @@ try {
    if (process.argv.includes('buildOnChange')) {
       const generateBuildWorkflowOnChange = require('./gulp/builder/generate-workflow-on-change.js');
       gulp.task('buildOnChange', generateBuildWorkflowOnChange(process.argv));
+   } else if (process.argv.includes('buildOnChangeWatcher')) {
+      gulp.task('buildOnChangeWatcher', () => {
+         const { WatcherTask, getFolderForWatcher } = require('./gulp/builder/generate-watcher');
+         const gulpWatcher = gulp.watch(getFolderForWatcher());
+         const addSubscribe = (currentEvent) => {
+            const watcher = new WatcherTask();
+            gulpWatcher.on(currentEvent, watcher.execute.bind(watcher));
+         };
+
+         // we have to add eventListeners manually, otherwise we cant get a path of a file to build
+         addSubscribe('change');
+         addSubscribe('addDir');
+         addSubscribe('add');
+         addSubscribe('unlink');
+         addSubscribe('unlinkDir');
+      });
    } else if (process.argv.includes('runTypescript')) {
       const generateWorkflowTypescript = require('./gulp/builder/generate-workflow-typescript');
       gulp.task('runTypescript', generateWorkflowTypescript(process.argv));
