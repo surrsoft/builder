@@ -157,7 +157,7 @@ function generateTaskForBuildSingleModule(taskParameters, moduleInfo, modulesMap
             // versionizeToStub зависит от compileLess, buildStaticHtml и gulpBuildHtmlTmpl
             .pipe(gulpIf(!!config.version, versionizeToStub(taskParameters, moduleInfo)))
             .pipe(gulpIf(hasLocalization, indexDictionary(taskParameters, moduleInfo)))
-            .pipe(gulpIf(hasLocalization, localizeXhtml(taskParameters, moduleInfo)))
+            .pipe(gulpIf(hasLocalization && !moduleInfo.isUnitTestModule, localizeXhtml(taskParameters, moduleInfo)))
             .pipe(
                gulpIf(
                   (hasLocalization || config.wml) && !moduleInfo.isUnitTestModule,
