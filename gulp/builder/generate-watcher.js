@@ -165,7 +165,7 @@ class WatcherTask {
             if (this.hasErrors) {
                logger.info(`watcher: build was completed with these errors:\n${this.errors.join('\n')}`);
             }
-            if (this.hasWarnings > 0) {
+            if (this.hasWarnings) {
                logger.info(`watcher: build was completed with these warnings:\n${this.errors.join('\n')}`);
             }
             if (!this.hasErrors) {
@@ -194,12 +194,14 @@ class WatcherTask {
    }
 
    /**
-    * reset errors/warnings list each time the watcher is triggering
+    * reset common watcher params list each time the watcher is triggering
     */
    reset() {
       this.errors = [];
       this.warnings = [];
       this.filesToRemove = [];
+      this.hasErrors = false;
+      this.hasWarnings = false;
    }
 }
 
