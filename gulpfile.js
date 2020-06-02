@@ -55,7 +55,10 @@ try {
       const generateBuildWorkflowOnChange = require('./gulp/builder/generate-workflow-on-change.js');
       gulp.task('buildOnChange', generateBuildWorkflowOnChange(process.argv));
    } else if (process.argv.includes('buildOnChangeWatcher')) {
+      const generateBuildWorkflow = require('./gulp/builder/generate-workflow.js');
       gulp.task('buildOnChangeWatcher', () => {
+         // run common build to catch all of changes that was happened while watcher wasn't working
+         generateBuildWorkflow(process.argv)();
          const { WatcherTask, SOURCE_ROOT } = require('./gulp/builder/generate-watcher');
          const gulpWatcher = gulp.watch(SOURCE_ROOT);
          const addSubscriptions = (events) => {
