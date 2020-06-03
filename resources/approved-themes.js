@@ -9,5 +9,5 @@ module.exports = new Set([
    'retail',
    'eventCard',
    'onlinenavigation',
-   'helpsbis'
+   'sbis'
 ]);

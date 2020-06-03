@@ -13,7 +13,6 @@ const mapStream = require('map-stream');
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
 const approvedThemes = require('../../../resources/approved-themes');
-const THEMES_LIST_REFERENCE = 'https://github.com/saby/builder/tree/rc-20.5000/resources/approved-themes.js';
 
 /**
  * Parses current theme name. Checks it for new theme name template:
@@ -98,7 +97,7 @@ function generateTaskForMarkThemeModules(taskParameters) {
                      const themeName = parseThemeName(buildModulesNames, currentModuleNameParts);
                      if (!approvedThemes.has(themeName)) {
                         logger.warning({
-                           message: `Theme "${themeName}" isn't found in approved themes list. You should approve it and add into the list then! ${THEMES_LIST_REFERENCE}`,
+                           message: `Theme "${themeName}" isn't found in approved themes list. You need to get an approval from Begunov A. for this theme first and then write a task to Kolbeshin F. for updating the list.`,
                            moduleInfo
                         });
                      }
