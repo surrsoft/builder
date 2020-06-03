@@ -12,6 +12,35 @@ const plumber = require('gulp-plumber');
 const mapStream = require('map-stream');
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
+const approvedThemes = require('../../../resources/approved-themes');
+const THEMES_LIST_REFERENCE = 'https://github.com/saby/builder/tree/rc-20.5000/resources/approved-themes.js';
+
+/**
+ * Parses current theme name. Checks it for new theme name template:
+ * <first part> - <second part> - theme.
+ * First part - interface module name, that exists in current project
+ * Second part - theme name
+ * Example: for interface module "Controls" with theme name "online" interface module
+ * module would be named to "Controls-online-theme"
+ * Returns themeName - current theme name
+ * @param{Set} modulesList - current project list of interface modules
+ * @param{Array} currentModuleParts - parts of current interface module name
+ * @returns {{themeName: string, moduleName: *}}
+ */
+function parseThemeName(modulesList, currentModuleParts) {
+   const themeNameParts = [];
+   let interfaceModuleParsed = false;
+   while (!interfaceModuleParsed && currentModuleParts.length > 0) {
+      themeNameParts.unshift(currentModuleParts.pop());
+      if (modulesList.has(currentModuleParts.join('-'))) {
+         interfaceModuleParsed = true;
+      }
+   }
+
+   // remove "theme" postfix from array to get exact theme name
+   themeNameParts.pop();
+   return themeNameParts.join('-');
+}
 
 /**
  * Search theme task initialization
@@ -28,9 +57,17 @@ function generateTaskForMarkThemeModules(taskParameters) {
          done();
       };
    }
+   const buildModulesNames = new Set();
+   taskParameters.config.modules.forEach(
+      (currentModule) => {
+         if (!currentModule.name.endsWith('-theme')) {
+            buildModulesNames.add(path.basename(currentModule.output));
+         }
+      }
+   );
    const tasks = modulesWithThemes.map((moduleInfo) => {
       const input = path.join(moduleInfo.path, '/**/_theme.less');
-      return function collectStyleThemes() {
+      return function markThemeModules() {
          return gulp
             .src(input, { dot: false, nodir: true })
             .pipe(
@@ -58,6 +95,13 @@ function generateTaskForMarkThemeModules(taskParameters) {
                    * Other Interface modules will be ignored from new theme's processing
                    */
                   if (currentModuleNameParts.length > 2) {
+                     const themeName = parseThemeName(buildModulesNames, currentModuleNameParts);
+                     if (!approvedThemes.has(themeName)) {
+                        logger.warning({
+                           message: `Theme "${themeName}" isn't found in approved themes list. You should approve it and add into the list then! ${THEMES_LIST_REFERENCE}`,
+                           moduleInfo
+                        });
+                     }
                      moduleInfo.newThemesModule = true;
                   }
                }
