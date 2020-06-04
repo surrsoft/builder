@@ -3,6 +3,7 @@
 const path = require('path'),
    fs = require('fs-extra');
 
+const TIMEOUT_FOR_HEAVY_TASKS = 600000;
 const trimLessError = function(message) {
    const startIndexForTriedBlock = message.indexOf(' Tried - ');
    if (startIndexForTriedBlock !== -1) {
@@ -75,5 +76,6 @@ module.exports = {
    removeRSymbol,
    isSymlink,
    isRegularFile,
-   linkPlatform
+   linkPlatform,
+   TIMEOUT_FOR_HEAVY_TASKS
 };

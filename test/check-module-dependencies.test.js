@@ -22,7 +22,7 @@ const
 
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
-const { linkPlatform } = require('./lib');
+const { linkPlatform, TIMEOUT_FOR_HEAVY_TASKS } = require('./lib');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
@@ -54,7 +54,7 @@ const runWorkflow = function() {
 const runWorkflowWithTimeout = async function(timeout) {
    let result;
    try {
-      result = await promiseWithTimeout(runWorkflow(), timeout || 600000);
+      result = await promiseWithTimeout(runWorkflow(), timeout || TIMEOUT_FOR_HEAVY_TASKS);
    } catch (err) {
       result = err;
    }
