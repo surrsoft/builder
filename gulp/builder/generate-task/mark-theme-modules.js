@@ -13,6 +13,7 @@ const mapStream = require('map-stream');
 const logger = require('../../../lib/logger').logger();
 const startTask = require('../../common/start-task-with-timer');
 const approvedThemes = require('../../../resources/approved-themes');
+const unapprovedThemes = new Set();
 
 /**
  * Parses current theme name. Checks it for new theme name template:
@@ -95,11 +96,15 @@ function generateTaskForMarkThemeModules(taskParameters) {
                    */
                   if (currentModuleNameParts.length > 2) {
                      const themeName = parseThemeName(buildModulesNames, currentModuleNameParts);
-                     if (!approvedThemes.has(themeName)) {
+
+                     // if unapproved theme has already been declared in unapproved themes list,
+                     // we don't need to log it then.
+                     if (!approvedThemes.has(themeName) && !unapprovedThemes.has(themeName)) {
                         logger.warning({
                            message: `Theme "${themeName}" isn't found in approved themes list. You need to get an approval from Begunov A. for this theme first and then write a task to Kolbeshin F. for updating the list.`,
                            moduleInfo
                         });
+                        unapprovedThemes.add(themeName);
                      }
                      moduleInfo.newThemesModule = true;
                   }
