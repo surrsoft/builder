@@ -8,7 +8,7 @@ const path = require('path'),
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 const { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 
-const { isRegularFile, linkPlatform } = require('./lib');
+const { isRegularFile, linkPlatform, TIMEOUT_FOR_HEAVY_TASKS } = require('./lib');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
    cacheFolder = path.join(workspaceFolder, 'cache'),
@@ -52,7 +52,7 @@ const runWorkflowWithTimeout = async function() {
        * For example sources task running more than a minute, set timeout for
        * 2 minutes to give an opportunity for task to be completed properly
        */
-      result = await promiseWithTimeout(runWorkflow(), 120000);
+      result = await promiseWithTimeout(runWorkflow(), TIMEOUT_FOR_HEAVY_TASKS);
    } catch (err) {
       result = err;
    }

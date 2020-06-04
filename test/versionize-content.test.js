@@ -12,7 +12,7 @@ const configPath = path.join(workspaceFolder, 'config.json');
 const ModuleInfo = require('../gulp/builder/classes/module-info');
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 const {
-   isRegularFile, linkPlatform
+   isRegularFile, linkPlatform, TIMEOUT_FOR_HEAVY_TASKS
 } = require('./lib');
 const { promiseWithTimeout, TimeoutError } = require('../lib/promise-with-timeout');
 const clearWorkspace = function() {
@@ -45,7 +45,7 @@ const runWorkflowWithTimeout = async function() {
    let result;
    try {
       // mac sometimes needs more than 60 seconds to build test project
-      result = await promiseWithTimeout(runWorkflow(), 600000);
+      result = await promiseWithTimeout(runWorkflow(), TIMEOUT_FOR_HEAVY_TASKS);
    } catch (err) {
       result = err;
    }
