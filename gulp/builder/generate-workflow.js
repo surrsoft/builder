@@ -38,9 +38,9 @@ const {
  * @returns {Undertaker.TaskFunction} gulp task
  */
 function generateWorkflow(processArgv) {
-   // загрузка конфигурации должна быть синхронной, иначе не построятся задачи для сборки модулей
+   // configuration loading should be synchronous, otherwise tasks queue of current build will not be built
    const config = new Configuration();
-   config.loadSync(processArgv); // eslint-disable-line no-sync
+   config.loadSync(processArgv);
 
    const taskParameters = new TaskParameters(
       config,
@@ -50,15 +50,15 @@ function generateWorkflow(processArgv) {
 
    return gulp.series(
 
-      // generateTaskForLock прежде всего
+      // generateTaskForLock's first of all
       guardSingleProcess.generateTaskForLock(taskParameters),
       generateTaskForLoadCache(taskParameters),
       generateTaskForMarkThemeModules(taskParameters),
 
-      // в generateTaskForClearCache нужен загруженный кеш
+      // generateTaskForClearCache needs loaded cache
       generateTaskForClearCache(taskParameters),
 
-      // подготовка WS для воркера
+      // WS prepare for worker
       generateTaskForPrepareWS(taskParameters),
       generateTaskForInitWorkerPool(taskParameters),
       generateTaskForGenerateJson(taskParameters),
@@ -77,7 +77,7 @@ function generateWorkflow(processArgv) {
       generateTaskForSaveLoggerReport(taskParameters),
       generateTaskForSaveTimeReport(taskParameters),
 
-      // generateTaskForUnlock после всего
+      // generateTaskForUnlock's after all
       guardSingleProcess.generateTaskForUnlock()
    );
 }
