@@ -9,5 +9,6 @@ module.exports = new Set([
    'retail',
    'eventCard',
    'onlinenavigation',
-   'sbis'
+   'sbis',
+   'tensorru'
 ]);
