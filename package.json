@@ -79,7 +79,7 @@
       "saby-i18n": "git+https://platform-git.sbis.ru/saby/i18n.git#rc-20.5000",
       "Router": "git+https://platform-git.sbis.ru/saby/router.git#rc-20.5000",
       "saby-types": "git+https://platform-git.sbis.ru/saby/Types.git#rc-20.5000",
-      "wasaby-app": "git+https://platform-git.sbis.ru/saby/wasaby-app.git#rc-20.5000",
+      "wasaby-app": "git+https://platform-git.sbis.ru/saby/wasaby-app.git#20.5000/feature/start/app",
       "saby-ui": "git+https://platform-git.sbis.ru/saby/UI.git#rc-20.5000",
       "saby-inferno": "git+https://platform-git.sbis.ru/saby/inferno.git#rc-20.5000"
    },
