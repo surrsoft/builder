@@ -212,7 +212,14 @@ class Cache {
          const outputFilesListPath = path.join(this.config.cachePath, 'output-files-to-remove.json');
          if (await fs.pathExists(outputFilesListPath)) {
             const filesListToRemove = await fs.readJson(outputFilesListPath);
-            filesListToRemove.forEach(filePath => removePromises.push(fs.remove(filePath)));
+            const prettyCurrentOutput = helpers.prettifyPath(this.config.rawConfig.output);
+            filesListToRemove.forEach((filePath) => {
+               // clearance of custompack artifacts is needed if builder results
+               // will be written in the same folder as a previous build was.
+               if (filePath.startsWith(prettyCurrentOutput)) {
+                  removePromises.push(fs.remove(filePath));
+               }
+            });
          }
       }
 

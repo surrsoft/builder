@@ -20,8 +20,9 @@ const excludeRegexes = [
 ];
 
 /**
- * Объявление плагина
- * @param {ModuleInfo} moduleInfo информация о модуле
+ * Plugin declaration
+ * @param {TaskParameters} taskParameters - a whole parameters list for execution of build of current project
+ * @param {ModuleInfo} moduleInfo - all needed information about current interface module
  * @returns {stream}
  */
 module.exports = function declarePlugin(taskParameters, moduleInfo) {
@@ -52,7 +53,8 @@ module.exports = function declarePlugin(taskParameters, moduleInfo) {
             taskParameters.cache.createContentHash(prettyOutputPath, file.contents);
 
             // if input minified file has already been cached, it already has an archived version of itself.
-            if (taskParameters.cache.minifiedIsCached(prettyOutputPath)) {
+            // if this interface module has to be patched, compression should be engaged
+            if (!moduleInfo.rebuild && taskParameters.cache.minifiedIsCached(prettyOutputPath)) {
                callback();
                return;
             }
