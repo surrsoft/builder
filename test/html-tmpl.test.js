@@ -23,7 +23,7 @@ describe('convert html.tmpl', () => {
          },
          'UI Module'
       );
-      result.includes('<html application="UI/_base/HTML"').should.equal(true);
+      result.includes('application="UI/_base/HTML"').should.equal(true);
       result.includes('require([ \'i18n!UI_Module\' ]').should.equal(true);
       result.includes('.requirejs("i18n!UI_Module")').should.equal(true);
    });
