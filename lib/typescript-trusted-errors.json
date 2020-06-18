@@ -280,6 +280,7 @@
   "Engine-demo/SafetyChecker/Demo.ts(8,23): error TS2749:",
   "Engine-demo/Selector/StackWithTabs/StackWithTabs.ts(43,21): error TS2345:",
   "Engine-demo/Selector/StackWithTabs/StackWithTabs.ts(64,17): error TS2345:",
+  "Engine-demo/Selector/StackWithTabs/StackWithTabs.ts(64,17): error TS234",
   "Engine-demo/Selector/StackWithTabs/StackWithTabs.ts(69,13): error TS2345:",
   "Engine-demo/Selector/StackWithTabs/StackWithTabs.ts(78,13): error TS2345:",
   "Engine-demo/Wizard/demoHorizontal/Autorization.ts(9,13): error TS6133:",

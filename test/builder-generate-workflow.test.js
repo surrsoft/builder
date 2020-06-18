@@ -17,7 +17,7 @@ const path = require('path'),
 const generateWorkflow = require('../gulp/builder/generate-workflow.js');
 
 const {
-   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile, linkPlatform
+   timeoutForMacOS, getMTime, removeRSymbol, isSymlink, isRegularFile, linkPlatform, TIMEOUT_FOR_HEAVY_TASKS
 } = require('./lib');
 
 const workspaceFolder = path.join(__dirname, 'workspace'),
@@ -73,7 +73,7 @@ const decompress = function(data) {
 const runWorkflowWithTimeout = async function(timeout) {
    let result;
    try {
-      result = await promiseWithTimeout(runWorkflow(), timeout || 600000);
+      result = await promiseWithTimeout(runWorkflow(), timeout || TIMEOUT_FOR_HEAVY_TASKS);
    } catch (err) {
       result = err;
    }
@@ -1753,6 +1753,9 @@ describe('gulp/builder/generate-workflow.js', () => {
             'Page.xhtml',
             'contents.js',
             'contents.json',
+            'contents.min.json',
+            'contents.min.json.br',
+            'contents.min.json.gz',
             'Stable.css',
             'Stable.less',
             'Stable.min.css',
@@ -1913,7 +1916,8 @@ describe('gulp/builder/generate-workflow.js', () => {
             'moduleStyle.css',
             'moduleStyle.min.css',
             'contents.js',
-            'contents.json'
+            'contents.json',
+            'contents.min.json'
          ]);
 
          // check builder meta
