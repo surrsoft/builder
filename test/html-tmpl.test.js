@@ -23,7 +23,9 @@ describe('convert html.tmpl', () => {
          },
          'UI Module'
       );
+      /* eslint-disable no-console */
       console.log(result);
+      /* eslint-enable no-console */
       result.includes('<html application="UI/_base/HTML"').should.equal(true);
       result.includes('require([ \'i18n!UI_Module\' ]').should.equal(true);
       result.includes('.requirejs("i18n!UI_Module")').should.equal(true);
