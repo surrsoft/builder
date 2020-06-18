@@ -17,7 +17,7 @@ const path = require('path'),
    TaskParameters = require('../../common/classes/task-parameters'),
    startTask = require('../start-task-with-timer'),
    logger = require('../../../lib/logger').logger(),
-   generateDownloadModuleCache = require('../../builder/classes/modules-cache');
+   { generateDownloadModuleCache } = require('../../builder/classes/modules-cache');
 
 /**
  * Генерация задачи инкрементальной сборки модулей.

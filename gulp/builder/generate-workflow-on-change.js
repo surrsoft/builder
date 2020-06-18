@@ -25,7 +25,8 @@ const Cache = require('./classes/cache'),
    compileLess = require('./plugins/compile-less'),
    compileEsAndTs = require('./plugins/compile-es-and-ts'),
    logger = require('../../lib/logger').logger(),
-   transliterate = require('../../lib/transliterate');
+   transliterate = require('../../lib/transliterate'),
+   { generateDownloadModuleCache, generateSaveModuleCache } = require('./classes/modules-cache');
 
 const {
    needSymlink,
@@ -160,7 +161,9 @@ function generateTaskForBuildFile(taskParameters, filePath) {
    const buildFile = startTask('buildModule', taskParameters);
    return gulp.series(
       buildFile.start,
+      generateDownloadModuleCache(taskParameters, currentModuleInfo),
       buildModule,
+      generateSaveModuleCache(currentModuleInfo),
       buildFile.finish
    );
 }
