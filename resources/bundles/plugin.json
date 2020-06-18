@@ -19,5 +19,6 @@
   "resources/SBISPluginBaseVDOM/packages/sbisplugin_ws4_windows_bundle.package.min",
   "resources/SBISPluginBaseVDOM/packages/sbisplugin_ws4_popular_bundle.package.min",
   "resources/NoticeCenterPlugin/NoticeCenterPluginNotice.package.min",
-  "resources/NoticeCenterPlugin/NoticeCenterPluginList.package.min"
+  "resources/NoticeCenterPlugin/NoticeCenterPluginList.package.min",
+  "resources/SBISPlugin/packages/sbisplugin_feed.package.min"
 ]
