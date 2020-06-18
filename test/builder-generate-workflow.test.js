@@ -1830,7 +1830,7 @@ describe('gulp/builder/generate-workflow.js', () => {
 
          delete config.modules[0].rebuild;
          delete config.modules[1].rebuild;
-         config.output = config.output.replace('-patch', '');
+         config.output = config.output.replace(/-patch$/, '');
          await fs.writeJSON(configPath, config);
       });
       it('module-dependencies must have actual info after source component remove', async() => {
