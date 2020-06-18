@@ -255,4 +255,19 @@ function generateDownloadModuleCache(taskParameters, moduleInfo) {
    };
 }
 
-module.exports = generateDownloadModuleCache;
+/**
+ * Task for saving current module cache on disk
+ * @param moduleInfo - main info about current module
+ * @returns {saveModuleCache}
+ */
+function generateSaveModuleCache(moduleInfo) {
+   return async function saveModuleCache() {
+      await fs.outputJson(moduleInfo.cachePath, moduleInfo.cache.currentStore);
+      delete moduleInfo.cache;
+   };
+}
+
+module.exports = {
+   generateDownloadModuleCache,
+   generateSaveModuleCache
+};
