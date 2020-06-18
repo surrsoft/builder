@@ -142,7 +142,7 @@
   "resources/ContractorCard/contractor-dialog_topblock.package.min",
   "resources/ContractorCard/contractor-dialog_valuation.package.min",
   "resources/ContractorCard/contractor-dialog_about_bankrupt.package.min",
-  "resources/Controls/controls-application.package.min",
+  "resources/Controls-default-theme/controls-application.package.min",
   "resources/Controls/controls-container-async.package.min",
   "resources/Controls/controls-container.package.min",
   "resources/Controls/controls-context.package.min",
