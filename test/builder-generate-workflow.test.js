@@ -1789,6 +1789,50 @@ describe('gulp/builder/generate-workflow.js', () => {
          // decompressed brotli must be equal source css content
          cssDecompressed.toString().should.equal(cssContent.toString());
       });
+      it('patch module to another output', async() => {
+         config.modules[0].rebuild = true;
+         config.modules[1].rebuild = true;
+         config.output = `${config.output}-patch`;
+         await fs.writeJSON(configPath, config);
+         await runWorkflowWithTimeout();
+      });
+      it('check base output - custompack and regular compressed artifacts should be on its places', async() => {
+         // check current list of files to be existing in checking folder
+         const checkResults = async(filesToCheck, folderToCheck) => {
+            const promises = filesToCheck.map(
+               currentFile => (async() => {
+                  (await isRegularFile(folderToCheck, currentFile)).should.equal(true);
+               })()
+            );
+            await Promise.all(promises);
+         };
+         await checkResults(
+            [
+               'test-brotli.package.min.js',
+               'test-brotli.package.min.css',
+               'test-brotli.package.min.js.br',
+               'test-brotli.package.min.js.gz',
+               'bundlesRoute.json',
+               'bundles.json'
+            ],
+            moduleOutputFolder
+         );
+         await runWorkflowWithTimeout();
+         await checkResults(
+            [
+               'private.min.css.br',
+               'private.min.css.gz',
+               'private.min.js.br',
+               'private.min.js.gz',
+            ],
+            path.join(`${outputFolder}-patch`, 'Modul')
+         );
+
+         delete config.modules[0].rebuild;
+         delete config.modules[1].rebuild;
+         config.output = config.output.replace(/-patch$/, '');
+         await fs.writeJSON(configPath, config);
+      });
       it('module-dependencies must have actual info after source component remove', async() => {
          await fs.remove(path.join(sourceFolder, 'Модуль/Page.wml'));
 
