@@ -10,5 +10,6 @@ module.exports = new Set([
    'eventCard',
    'onlinenavigation',
    'sbis',
-   'tensorru'
+   'tensorru',
+   'fed2'
 ]);
