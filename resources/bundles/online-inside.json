@@ -262,6 +262,7 @@
   "resources/Entry/AccountingCatalog/ExpenseItemField.package.min",
   "resources/Entry/AccountingCatalog/IncomeItemField.package.min",
   "resources/Entry/AccountingOperation.package.min",
+  "resources/OnlinePage/base-modules.package.min",
   "resources/Entry/Balance.package.min",
   "resources/Entry/ChartOfAccounts.package.min",
   "resources/Entry/Content.package.min",
